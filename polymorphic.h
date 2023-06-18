@@ -1,69 +1,116 @@
+#ifndef XYZ_POLYMORPHIC_H_
+#define XYZ_POLYMORPHIC_H_
+
+#include <exception>
 #include <utility>
 
-namespace xyz
-{
-    template <typename T, typename A>
-    class polymorphic
-    {
-    public:
-        // Default constructor
-        polymorphic();
+#include "copy_and_delete.h"
 
-        // Copy constructor
-        polymorphic(const polymorphic &p);
+namespace xyz {
 
-        // Move constructor
-        polymorphic(polymorphic &&p);
+class bad_polymorphic_access : public std::exception {
+ public:
+  const char *what() const noexcept override {
+    return "bad_polymorphic_access";
+  }
+};
 
-        // Value constructor
-        template <typename U, typename... Ts>
-        polymorphic(std::in_place_type_t<U>, Ts &&...ts);
+class bad_polymorphic_construction : public std::exception {
+ public:
+  bad_polymorphic_construction() noexcept = default;
 
-        // Pointer constructor
-        template <typename U, typename C, typename D>
-        polymorphic(U *, C c, D d);
+  const char* what() const noexcept override {
+    return "Dynamic and static type mismatch in polymorphic "
+           "construction";
+  }
+};
 
-        // Converting constructors
-        template <typename U>
-        polymorphic(const polymorphic<U, A> &p);
+template <typename T, typename A = std::allocator<T>>
+class control_block {
+ public:
+  virtual ~control_block() = default;
+  virtual control_block *clone() const = 0;
+  virtual void *get() noexcept = 0;
+  virtual const void *get() const noexcept = 0;
+  virtual T *operator->() noexcept = 0;
+};
 
-        template <typename U>
-        polymorphic(polymorphic<U, A> &&p);
+template <typename T, typename A = std::allocator<T>>
+class polymorphic {
+  control_block<T, A> *cb_;
 
-        // Destruction.
-        ~polymorphic();
+ public:
+  // Default constructor
+  polymorphic();
 
-        // Assignment
-        polymorphic &operator=(const polymorphic &p);
+  polymorphic(std::nullptr_t);
 
-        polymorphic &operator=(polymorphic &&p);
+  // Copy constructor
+  polymorphic(const polymorphic &p);
 
-        // Converting assignment
-        template <typename U>
-        polymorphic &operator=(const polymorphic<U, A> &p);
+  // Move constructor
+  polymorphic(polymorphic &&p);
 
-        template <typename U>
-        polymorphic &operator=(polymorphic<U, A> &&p);
+  // Value constructor
+  template <typename U, typename... Ts>
+  polymorphic(std::in_place_type_t<U>, Ts &&...ts);
 
-        // Observers
-        operator bool() const noexcept;
+  // Pointer constructor
+  template <typename U, typename C = default_copy<T>,
+            typename D = default_delete<T>>
+  polymorphic(U *, C c = C{}, D d = D{});
 
-        // Accessors
-        const T* operator->() const noexcept;
-        const T& operator*() const noexcept;
+  // Converting constructors
+  template <typename U>
+  polymorphic(const polymorphic<U, A> &p);
 
-        // Modifiers
-        T* operator->() noexcept;
-        T& operator*() noexcept;
+  template <typename U>
+  polymorphic(polymorphic<U, A> &&p);
 
-        // Member swap
-        void swap(polymorphic &p) noexcept;
+  // Destruction.
+  ~polymorphic();
 
-        // Non-member swap
-        friend std::swap(polymorphic &lhs, polymorphic &rhs) noexcept;
+  // Assignment
+  polymorphic &operator=(const polymorphic &p);
 
-        // Factory methods
-        template <typename T, typename U, typename... Ts>
-        friend polymorphic<T, A> make_polymorphic(Ts &&...ts);
-    };
-} // namespace xyz
+  polymorphic &operator=(polymorphic &&p);
+
+  // Converting assignment
+  template <typename U>
+  polymorphic &operator=(const polymorphic<U, A> &p);
+
+  template <typename U>
+  polymorphic &operator=(polymorphic<U, A> &&p);
+
+  // Observers
+  operator bool() const noexcept;
+
+  // Accessors
+  const T *operator->() const noexcept;
+  const T &operator*() const noexcept;
+
+  // Modifiers
+  T *operator->() noexcept;
+  T &operator*() noexcept;
+
+  // Member swap
+  void swap(polymorphic &p) noexcept;
+
+  // Non-member swap
+  friend void swap(polymorphic &lhs, polymorphic &rhs) noexcept;
+
+  // Factory methods
+  template <typename T_, typename U, typename A_, typename... Ts>
+  friend polymorphic<T_, A_> make_polymorphic(Ts &&...ts);
+};
+
+template <class T, class U = T, class... Ts>
+polymorphic<T> make_polymorphic(
+    Ts&&... ts) {
+  polymorphic<T> p;
+  return p;
+}
+
+}  // namespace xyz
+
+#endif  // XYZ_POLYMORPHIC_H_

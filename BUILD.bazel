@@ -1,0 +1,43 @@
+cc_library(
+    name = "copy_and_delete",
+    hdrs = ["copy_and_delete.h"],
+    copts = ["-Iexternal/value_types/"],
+)
+
+cc_library(
+    name = "indirect",
+    hdrs = ["indirect.h"],
+    copts = ["-Iexternal/value_types/"],
+    deps = ["copy_and_delete"],
+)
+
+cc_test(
+    name = "indirect_test",
+    srcs = [
+        "indirect_test.cc",
+    ],
+    copts = ["-Iexternal/value_types/"],
+    deps = [
+        ":indirect",
+        "@catch2//:catch2_main",
+    ],
+)
+
+cc_library(
+    name = "polymorphic",
+    hdrs = ["polymorphic.h"],
+    copts = ["-Iexternal/value_types/"],
+    deps = ["copy_and_delete"],
+)
+
+cc_test(
+    name = "polymorphic_test",
+    srcs = [
+        "polymorphic_test.cc",
+    ],
+    copts = ["-Iexternal/value_types/"],
+    deps = [
+        ":polymorphic",
+        "@catch2//:catch2_main",
+    ],
+)
