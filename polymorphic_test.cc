@@ -673,7 +673,7 @@ TEST_CASE("Exception safety: throw in copy constructor",
 template <typename T>
 struct throwing_copier {
   using deleter_type = std::default_delete<T>;
-  T* operator()(const T& t) const { throw std::bad_alloc{}; }
+  T* operator()(const T&) const { throw std::bad_alloc{}; }
 };
 
 struct TrackedValue : Tracked {
@@ -742,7 +742,7 @@ TEST_CASE("polymorphic dynamic and static type mismatch",
 
 struct fake_copy {
   template <class T>
-  DerivedType* operator()(const T& b) const {
+  DerivedType* operator()(const T&) const {
     return nullptr;
   }
 };
