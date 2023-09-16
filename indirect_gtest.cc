@@ -22,7 +22,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <utility>
 
+#ifdef XYZ_INDIRECT_USES_ALLOCATORS
+#include "indirect_with_allocators.h"
+#else
 #include "indirect.h"
+#endif
+
+TEST(IndirectTest, ValueAccess) {
+  xyz::indirect<int> a(std::in_place, 42);
+  EXPECT_EQ(*a, 42);
+}
 
 TEST(IndirectTest, CopiesAreDistinct) {
   xyz::indirect<int> a(std::in_place, 42);

@@ -62,6 +62,17 @@ cc_test(
 )
 
 cc_test(
+    name = "indirect_with_allocators_gtest",
+    size = "small",
+    srcs = ["indirect_gtest.cc"],
+    defines = ["XYZ_INDIRECT_USES_ALLOCATORS"],
+    deps = [
+        "indirect_with_allocators",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "polymorphic_gtest",
     size = "small",
     srcs = ["polymorphic_gtest.cc"],
