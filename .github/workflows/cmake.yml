@@ -17,58 +17,40 @@ jobs:
         settings:
           - {
               name: "Ubuntu GCC-11",
-              os: ubuntu-20.04,
-              compiler: { type: GCC, version: 11, cc: "gcc-11", cxx: "g++-11" },
+              os: ubuntu-22.04,
+              compiler:
+                { type: GCC, version: 11, cc: "gcc-11", cxx: "g++-11", std: 20 },
               lib: "libstdc++11",
             }
           - {
-              name: "Ubuntu Clang-10 + libc++",
-              os: ubuntu-20.04,
+              name: "Ubuntu GCC-12",
+              os: ubuntu-22.04,
+              compiler:
+                { type: GCC, version: 12, cc: "gcc-12", cxx: "g++-12", std: 20},
+              lib: "libstdc++11",
+            }
+          - {
+              name: "Ubuntu Clang-14 + libc++",
+              os: ubuntu-22.04,
               compiler:
                 {
                   type: CLANG,
-                  version: 10,
-                  cc: "clang-10",
-                  cxx: "clang++-10",
+                  version: 14,
+                  cc: "clang-14",
+                  cxx: "clang++-14",
                   std: 20,
                 },
               lib: "libc++",
             }
           - {
-              name: "Ubuntu Clang-11 + libc++",
-              os: ubuntu-20.04,
+              name: "Ubuntu Clang-15+ libc++",
+              os: ubuntu-22.04,
               compiler:
                 {
                   type: CLANG,
-                  version: 11,
-                  cc: "clang-11",
-                  cxx: "clang++-11",
-                  std: 20,
-                },
-              lib: "libc++",
-            }
-          - {
-              name: "Ubuntu Clang-12 + libc++",
-              os: ubuntu-20.04,
-              compiler:
-                {
-                  type: CLANG,
-                  version: 12,
-                  cc: "clang-12",
-                  cxx: "clang++-12",
-                  std: 20,
-                },
-              lib: "libc++",
-            }
-          - {
-              name: "Ubuntu Clang-13 + libc++",
-              os: ubuntu-20.04,
-              compiler:
-                {
-                  type: CLANG,
-                  version: 13,
-                  cc: "clang-13",
-                  cxx: "clang++-13",
+                  version: 15,
+                  cc: "clang-15",
+                  cxx: "clang++-15",
                   std: 20,
                 },
               lib: "libc++",
