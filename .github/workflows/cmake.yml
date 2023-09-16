@@ -10,7 +10,8 @@ jobs:
   build:
     name: ${{ matrix.settings.name }} ${{ matrix.configuration }}
     runs-on: ${{ matrix.settings.os }}
-    strategy:
+    strategy:   
+      fail-fast: true
       matrix:
         configuration: ["Release", "Debug"]
         settings:
