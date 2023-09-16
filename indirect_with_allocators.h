@@ -26,12 +26,14 @@ class indirect {
   }
 
   indirect(const indirect& other) {
+    assert(other.p_ != nullptr);
     T* mem = t_traits::allocate(alloc_, 1);
     t_traits::construct(alloc_, mem, *other);
     p_ = mem;
   }
 
   indirect(indirect&& other) noexcept : p_(nullptr) {
+    assert(other.p_ != nullptr);
     using std::swap;
     swap(p_, other.p_);
   }
@@ -71,7 +73,6 @@ class indirect {
   }
 
   void swap(indirect& other) noexcept {
-    assert(p_ != nullptr);
     using std::swap;
     swap(p_, other.p_);
   }
