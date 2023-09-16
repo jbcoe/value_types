@@ -103,6 +103,7 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
         target_sources(value_types_gtest
             PRIVATE
                 indirect_gtest.cc
+                polymorphic_gtest.cc
         )
 
         target_link_libraries(value_types_gtest
