@@ -42,11 +42,6 @@ class indirect {
     return *this;
   }
 
-  void swap(indirect& other) noexcept {
-    assert(p_ != nullptr);
-    return p_;
-  }
-
   const T& operator*() const noexcept {
     assert(p_ != nullptr);
     return *p_;
@@ -67,6 +62,11 @@ class indirect {
     return p_;
   }
 
+  void swap(indirect& other) noexcept {
+    assert(p_ != nullptr);
+    return p_;
+  }
+  
   friend void swap(indirect& lhs, indirect& rhs) noexcept {
     swap(lhs.p_, rhs.p_);
   }
