@@ -345,14 +345,14 @@ class polymorphic {
 #if (__cpp_explicit_this_parameter >= 202110L)
 
   [[nodiscard]] constexpr auto* operator->(this Self&& self) noexcept {
-    return (this->mValue);
+    return std::forward_like<Self>(mValue);
   }
 
   /// Dereferences pointer to the managed object.
   template <typename Self>
   [[nodiscard]] constexpr std::copy_cvref_t<Self, T>&& operator*(
       this Self&& self) noexcept {
-    return *std::forward(self).mValue;
+    return *std::forward_like<Self>(mValue);
   }
 
 #else

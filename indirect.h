@@ -185,13 +185,13 @@ struct indirect_base<T, CD, CD> {
   /// Access the copier.
   template <typename Self>
   [[nodiscard]] std::copy_cvref_t<Self, auto> getC(this Self&& self) {
-    return mCopierDeleterCombined;
+    return std::forward_like<Self>(mCopierDeleterCombined);
   }
 
   /// Access the deleter.
   template <typename Self>
   [[nodiscard]] std::copy_cvref_t<Self, auto> getD(this Self&& self) {
-    return mCopierDeleterCombined;
+    return std::forward_like<Self>(mCopierDeleterCombined);
   }
 #else
   /// Access the copier.
@@ -562,7 +562,11 @@ constexpr auto allocate_indirect(std::allocator_arg_t, A& a, Ts&&... ts) {
 
 }  // namespace xyz
 
+template <class T>
+concept is_hashable = requires(T t) { std::hash<T>{}(t); };
+
 template <class T, class C, class D>
+requires is_hashable<T>
 struct std::hash<::xyz::indirect<T, C, D>>
 {
   constexpr std::size_t operator()(const ::xyz::indirect<T, C, D>& key) const noexcept(
