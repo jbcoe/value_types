@@ -15,76 +15,18 @@ jobs:
         configuration: ["Release", "Debug"]
         settings:
           - {
-              name: "Ubuntu GCC-8",
-              os: ubuntu-20.04,
-              compiler:
-                { type: GCC, version: 10, cc: "gcc-8", cxx: "g++-8", std: 17 },
-              lib: "libstdc++11",
-            }
-          - {
-              name: "Ubuntu GCC-9",
-              os: ubuntu-20.04,
-              compiler:
-                { type: GCC, version: 10, cc: "gcc-9", cxx: "g++-9", std: 17 },
-              lib: "libstdc++11",
-            }
-          - {
-              name: "Ubuntu GCC-10",
-              os: ubuntu-20.04,
-              compiler:
-                {
-                  type: GCC,
-                  version: 10,
-                  cc: "gcc-10",
-                  cxx: "g++-10",
-                  std: 20,
-                },
-              lib: "libstdc++11",
-            }
-          - {
               name: "Ubuntu GCC-11",
               os: ubuntu-20.04,
-              compiler: { type: GCC, version: 11, cc: "gcc-11", cxx: "g++-11" },
+              compiler:
+                { type: GCC, version: 11, cc: "gcc-11", cxx: "g++-11", std: 20 },
               lib: "libstdc++11",
             }
           - {
-              name: "Ubuntu Clang-10 + libc++",
+              name: "Ubuntu GCC-12",
               os: ubuntu-20.04,
               compiler:
-                {
-                  type: CLANG,
-                  version: 10,
-                  cc: "clang-10",
-                  cxx: "clang++-10",
-                  std: 20,
-                },
-              lib: "libc++",
-            }
-          - {
-              name: "Ubuntu Clang-11 + libc++",
-              os: ubuntu-20.04,
-              compiler:
-                {
-                  type: CLANG,
-                  version: 11,
-                  cc: "clang-11",
-                  cxx: "clang++-11",
-                  std: 20,
-                },
-              lib: "libc++",
-            }
-          - {
-              name: "Ubuntu Clang-12 + libc++",
-              os: ubuntu-20.04,
-              compiler:
-                {
-                  type: CLANG,
-                  version: 12,
-                  cc: "clang-12",
-                  cxx: "clang++-12",
-                  std: 20,
-                },
-              lib: "libc++",
+                { type: GCC, version: 12, cc: "gcc-12", cxx: "g++-12", std: 20},
+              lib: "libstdc++11",
             }
           - {
               name: "Ubuntu Clang-13 + libc++",
@@ -95,6 +37,19 @@ jobs:
                   version: 13,
                   cc: "clang-13",
                   cxx: "clang++-13",
+                  std: 20,
+                },
+              lib: "libc++",
+            }
+          - {
+              name: "Ubuntu Clang-14 + libc++",
+              os: ubuntu-20.04,
+              compiler:
+                {
+                  type: CLANG,
+                  version: 14,
+                  cc: "clang-14",
+                  cxx: "clang++-14",
                   std: 20,
                 },
               lib: "libc++",
