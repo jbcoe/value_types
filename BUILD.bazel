@@ -50,3 +50,23 @@ cc_test(
         "@catch2//:catch2_main",
     ],
 )
+
+cc_test(
+    name = "indirect_gtest",
+    size = "small",
+    srcs = ["indirect_gtest.cc"],
+    deps = [
+        "indirect",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "polymorphic_gtest",
+    size = "small",
+    srcs = ["polymorphic_gtest.cc"],
+    deps = [
+        "polymorphic",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
