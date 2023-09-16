@@ -142,6 +142,10 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
                 GTest::gtest_main
                 common_compiler_settings
         )
+        target_compile_definitions(indirect_with_allocators_gtest 
+            PRIVATE
+                XYZ_INDIRECT_USES_ALLOCATORS
+        )
 
         if (ENABLE_SANITIZERS)
             set(SANITIZER_FLAGS_ASAN "-fsanitize=address -fno-omit-frame-pointer")
