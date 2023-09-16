@@ -28,7 +28,7 @@ jobs:
                 { type: GCC, version: 12, cc: "gcc-12", cxx: "g++-12", std: 20},
               lib: "libstdc++11",
             }
-         - {
+          - {
               name: "Ubuntu Clang-14 + libc++",
               os: ubuntu-22.04,
               compiler:
@@ -54,7 +54,7 @@ jobs:
                 },
               lib: "libc++",
             }
-           - {
+          - {
               name: "Visual Studio 2019",
               os: windows-latest,
               compiler: { type: VISUAL, version: 16, cc: "cl", cxx: "cl" },
