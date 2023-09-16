@@ -52,6 +52,14 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
             GIT_TAG v3.4.0
         )
 
+        FetchContent_Declare(
+          googletest
+          URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+        )
+        # For Windows: Prevent overriding the parent project's compiler/linker settings
+        set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+        FetchContent_MakeAvailable(googletest)
+
         # TODO(Avoid gloablly setting C++ standard) Force C++23 for Catchv2
         # Fix for: https://stackoverflow.com/questions/66227246/catch2-undefined-reference-to-catchstringmaker
         set(CMAKE_CXX_STANDARD 23)
@@ -91,6 +99,32 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
             CXX_EXTENSIONS NO
         )
 
+        add_executable(value_types_gtest "")
+        target_sources(value_types_gtest
+            PRIVATE
+                indirect_gtest.cc
+        )
+
+        target_link_libraries(value_types_gtest
+            PRIVATE
+                value_types::value_types
+                GTest::gtest_main
+        )
+
+        target_compile_options(value_types_gtest
+            PRIVATE
+                $<$<CXX_COMPILER_ID:MSVC>:/EHsc>
+                $<$<CXX_COMPILER_ID:MSVC>:/W4>
+                $<$<CXX_COMPILER_ID:MSVC>:/bigobj>
+                $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:Clang>>:-Werror;-Wall;-Wno-self-assign-overloaded;-Wno-unknown-warning-option>
+        )
+
+        set_target_properties(value_types_gtest PROPERTIES
+            CXX_STANDARD 23
+            CXX_STANDARD_REQUIRED YES
+            CXX_EXTENSIONS NO
+        )
+
         if (ENABLE_SANITIZERS)
             set(SANITIZER_FLAGS_ASAN "-fsanitize=address -fno-omit-frame-pointer")
             set(SANITIZER_FLAGS_UBSAN "-fsanitize=undefined")
@@ -109,6 +143,10 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
                     PRIVATE
                         asan
                 )
+                target_link_libraries(indirect_value_gtest
+                    PRIVATE
+                        asan
+                )
             endif(COMPILER_SUPPORTS_ASAN)
 
             if (COMPILER_SUPPORTS_UBSAN)
@@ -121,6 +159,10 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
                     PRIVATE
                         ubsan
                 )
+                target_link_libraries(value_types_gtest
+                    PRIVATE
+                        ubsan
+                )
             endif(COMPILER_SUPPORTS_UBSAN)
         endif(ENABLE_SANITIZERS)
 
@@ -129,10 +171,16 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
             NAME value_types_test
             COMMAND value_types_test
             WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+        add_test(
+            NAME value_types_gtest
+            COMMAND value_types_gtest
+            WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
         list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/contrib)
         include(Catch)
         catch_discover_tests(value_types_test)
+        include(GoogleTest)
+        gtest_discover_tests(value_types_gtest)
 
         if (ENABLE_CODE_COVERAGE)
             FetchContent_Declare(
@@ -149,6 +197,7 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
             set(ENABLE_COVERAGE ON CACHE BOOL "Enable coverage build." FORCE)
             find_package(codecov)
             add_coverage(value_types_test)
+            add_coverage(value_types_gtest)
             list(APPEND LCOV_REMOVE_PATTERNS "'/usr/*'")
             coverage_evaluate()
         endif()
