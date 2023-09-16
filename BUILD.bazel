@@ -11,6 +11,12 @@ cc_library(
     deps = ["copy_and_delete"],
 )
 
+cc_library(
+    name = "indirect_with_allocators",
+    hdrs = ["indirect_with_allocators.h"],
+    copts = ["-Iexternal/value_types/"],
+)
+
 cc_test(
     name = "indirect_test",
     srcs = [
