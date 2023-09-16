@@ -25,14 +25,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "polymorphic.h"
 
 class A {
-    int value_ = 0;
-public:
-    A() = default;
-    A(int value) : value_(value) {}
-    int value() const { return value_; }
-    friend bool operator == (const A& lhs, const A& rhs) {
-        return lhs.value_ == rhs.value_;
-    }
+  int value_ = 0;
+
+ public:
+  A() = default;
+  A(int value) : value_(value) {}
+  int value() const { return value_; }
+  friend bool operator==(const A& lhs, const A& rhs) {
+    return lhs.value_ == rhs.value_;
+  }
 };
 
 TEST(PolymorphicTest, CopiesAreDistinct) {
@@ -74,4 +75,35 @@ TEST(PolymorphicTest, Swap) {
   EXPECT_EQ(*b, 42);
   EXPECT_EQ(address_a, &*b);
   EXPECT_EQ(address_b, &*a);
+}
+class Base {
+ public:
+  virtual int value() const { return -1; }
+};
+class Derived : public Base {
+ private:
+  int value_;
+
+ public:
+  Derived(int v) : value_(v) {}
+  int value() const override { return value_; }
+};
+
+TEST(PolymorphicTest, AccessDerivedObject) {
+  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
+  EXPECT_EQ(a->value(), 42);
+}
+
+TEST(PolymorphicTest, CopiesOfDerivedObjectsAreDistinct) {
+  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
+  auto aa = a;
+  EXPECT_EQ(a->value(), aa->value());
+  EXPECT_NE(&*a, &*aa);
+}
+
+TEST(PolymorphicTest, DISABLED_MovePreservesOwnedDerivedObjectAddress) {
+  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
+  auto address = &*a;
+  auto aa = std::move(a);
+  EXPECT_EQ(address, &*aa);
 }
