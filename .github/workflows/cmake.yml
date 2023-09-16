@@ -29,7 +29,7 @@ jobs:
                 { type: GCC, version: 12, cc: "gcc-12", cxx: "g++-12", std: 20},
               lib: "libstdc++11",
             }
-            {
+          - {
               name: "Visual Studio 2019",
               os: windows-latest,
               compiler: { type: VISUAL, version: 16, cc: "cl", cxx: "cl" },
