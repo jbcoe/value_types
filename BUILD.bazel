@@ -27,7 +27,10 @@ cc_library(
     name = "polymorphic",
     hdrs = ["polymorphic.h"],
     copts = ["-Iexternal/value_types/"],
-    deps = ["copy_and_delete"],
+    deps = [
+        "copy_and_delete",
+        "indirect",
+    ],
 )
 
 cc_test(
