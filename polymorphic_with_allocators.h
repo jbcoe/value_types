@@ -84,7 +84,6 @@ class polymorphic {
 
   polymorphic(const polymorphic& other) {
     assert(other.cb_ != nullptr);
-
     cb_ = other.cb_->clone();
   }
 
@@ -97,7 +96,6 @@ class polymorphic {
 
   polymorphic& operator=(const polymorphic& other) {
     assert(other.cb_ != nullptr);
-
     polymorphic tmp(other);
     swap(tmp);
     return *this;
@@ -105,7 +103,6 @@ class polymorphic {
 
   polymorphic& operator=(polymorphic&& other) noexcept {
     assert(other.cb_ != nullptr);
-
     using std::swap;
     swap(cb_, other.cb_);
     return *this;
@@ -145,8 +142,8 @@ class polymorphic {
   void reset() {
     if (cb_ != nullptr) {
       cb_->destroy();
+      cb_ = nullptr;
     }
-    cb_ = nullptr;
   }
 };
 
