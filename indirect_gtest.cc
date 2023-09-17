@@ -34,6 +34,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #error "XYZ_USES_ALLOCATORS must be 0 or 1"
 #endif  // XYZ_USES_ALLOCATORS == 0 or 1
 
+namespace {
+
 TEST(IndirectTest, ValueAccess) {
   xyz::indirect<int> a(std::in_place, 42);
   EXPECT_EQ(*a, 42);
@@ -220,3 +222,5 @@ TEST(IndirectTest, CountAllocationsForInPlaceConstruction) {
 }
 
 #endif  // XYZ_USES_ALLOCATORS == 1
+
+}  // namespace
