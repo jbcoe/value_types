@@ -1,3 +1,5 @@
+#ifndef INDIRECT_WITH_ALLOCATORS_H
+#define INDIRECT_WITH_ALLOCATORS_H
 #include <memory>
 #include <utility>
 
@@ -98,3 +100,5 @@ struct std::hash<xyz::indirect<T>> {
     return std::hash<typename xyz::indirect<T>::value_type>{}(*key);
   }
 };
+
+#endif  // INDIRECT_WITH_ALLOCATORS_H
