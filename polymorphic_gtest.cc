@@ -20,8 +20,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <gtest/gtest.h>
 
+#include <map>
 #include <optional>
+#include <unordered_map>
 #include <utility>
+#include <vector>
 
 #ifndef XYZ_USES_ALLOCATORS
 #error "XYZ_USES_ALLOCATORS must be defined"
@@ -106,7 +109,8 @@ TEST(PolymorphicTest, Swap) {
 }
 class Base {
  public:
-  virtual int value() const { return -1; }
+  virtual ~Base() = default;
+  virtual int value() const = 0;
 };
 class Derived : public Base {
  private:
@@ -192,14 +196,6 @@ TEST(IndirectTest, ConstPropagation) {
   EXPECT_EQ((*ca).member(), SomeType::Constness::CONST);
 }
 
-TEST(PolymorphicTest, Optional) {
-  std::optional<xyz::polymorphic<Base>> a;
-  EXPECT_FALSE(a.has_value());
-  a.emplace(std::in_place_type<Derived>, 42);
-  EXPECT_TRUE(a.has_value());
-  EXPECT_EQ((*a)->value(), 42);
-}
-
 #if (XYZ_USES_ALLOCATORS == 1)
 
 template <typename T>
@@ -208,8 +204,7 @@ struct TrackingAllocator {
   unsigned* dealloc_counter_;
 
   TrackingAllocator(unsigned* alloc_counter, unsigned* dealloc_counter)
-      : alloc_counter_(alloc_counter),
-        dealloc_counter_(dealloc_counter) {}
+      : alloc_counter_(alloc_counter), dealloc_counter_(dealloc_counter) {}
 
   template <typename U>
   TrackingAllocator(const TrackingAllocator<U>& other)
@@ -265,4 +260,43 @@ TEST(PolymorphicTest, CountAllocationsForDerivedTypeConstruction) {
   EXPECT_EQ(dealloc_counter, 1);
 }
 #endif  // (XYZ_USES_ALLOCATORS == 1)
+
+TEST(PolymorphicTest, InteractionWithOptional) {
+  std::optional<xyz::polymorphic<Base>> a;
+  EXPECT_FALSE(a.has_value());
+  a.emplace(std::in_place_type<Derived>, 42);
+  EXPECT_TRUE(a.has_value());
+  EXPECT_EQ((*a)->value(), 42);
+}
+
+TEST(PolymorphicTest, InteractionWithVector) {
+  std::vector<xyz::polymorphic<Base>> as;
+  for (int i = 0; i < 16; ++i) {
+    as.push_back(xyz::polymorphic<Base>(std::in_place_type<Derived>, i));
+  }
+  for (int i = 0; i < 16; ++i) {
+    EXPECT_EQ(as[i]->value(), i);
+  }
+}
+
+TEST(PolymorphicTest, InteractionWithMap) {
+  std::map<int, xyz::polymorphic<Base>> as;
+  for (int i = 0; i < 16; ++i) {
+    as.emplace(i, xyz::polymorphic<Base>(std::in_place_type<Derived>, i));
+  }
+  for (auto [k, v] : as) {
+    EXPECT_EQ(v->value(), k);
+  }
+}
+
+TEST(PolymorphicTest, InteractionWithUnorderedMap) {
+  std::unordered_map<int, xyz::polymorphic<Base>> as;
+  for (int i = 0; i < 16; ++i) {
+    as.emplace(i, xyz::polymorphic<Base>(std::in_place_type<Derived>, i));
+  }
+  for (auto [k, v] : as) {
+    EXPECT_EQ(v->value(), k);
+  }
+}
+
 }  // namespace
