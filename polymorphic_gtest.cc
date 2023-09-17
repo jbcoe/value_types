@@ -21,6 +21,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <gtest/gtest.h>
 
 #include <mutex>
+#include <optional>
 #include <utility>
 
 #ifndef XYZ_USES_ALLOCATORS
@@ -136,7 +137,7 @@ TEST(PolymorphicTest, CopyAssignment) {
   xyz::polymorphic<Base> b(std::in_place_type<Derived>, 101);
   EXPECT_EQ(a->value(), 42);
   a = b;
-  
+
   EXPECT_EQ(a->value(), 101);
   EXPECT_NE(&*a, &*b);
 }
@@ -146,7 +147,7 @@ TEST(PolymorphicTest, MoveAssignment) {
   xyz::polymorphic<Base> b(std::in_place_type<Derived>, 101);
   EXPECT_EQ(a->value(), 42);
   a = std::move(b);
-  
+
   EXPECT_EQ(a->value(), 101);
 }
 
@@ -154,7 +155,7 @@ TEST(PolymorphicTest, NonMemberSwap) {
   xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
   xyz::polymorphic<Base> b(std::in_place_type<Derived>, 101);
   using std::swap;
-  swap(a,b);
+  swap(a, b);
   EXPECT_EQ(a->value(), 101);
   EXPECT_EQ(b->value(), 42);
 }
@@ -181,6 +182,14 @@ TEST(IndirectTest, ConstPropagation) {
   const auto& ca = a;
   EXPECT_EQ(ca->member(), SomeType::Constness::CONST);
   EXPECT_EQ((*ca).member(), SomeType::Constness::CONST);
+}
+
+TEST(PolymorphicTest, Optional) {
+  std::optional<xyz::polymorphic<Base>> a;
+  EXPECT_FALSE(a.has_value());
+  a.emplace(std::in_place_type<Derived>, 42);
+  EXPECT_TRUE(a.has_value());
+  EXPECT_EQ((*a)->value(), 42);
 }
 
 #if (XYZ_USES_ALLOCATORS == 1)
