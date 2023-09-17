@@ -26,15 +26,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef XYZ_USES_ALLOCATORS
 #error "XYZ_USES_ALLOCATORS must be defined"
 #endif  // XYZ_USES_ALLOCATORS
-#if XYZ_USES_ALLOCATORS == 1
+#if (XYZ_USES_ALLOCATORS == 1)
 #include "polymorphic_with_allocators.h"
-#elif XYZ_USES_ALLOCATORS == 0
+#elif (XYZ_USES_ALLOCATORS == 0)
 #include "polymorphic.h"
 #else
 #error "XYZ_USES_ALLOCATORS must be 0 or 1"
 #endif  // XYZ_USES_ALLOCATORS == 0 or 1
 
-#if XYZ_USES_ALLOCATORS == 1
+#if (XYZ_USES_ALLOCATORS == 1)
 #define XYZ_ALLOC_TEST(S, N) TEST(S, N)
 #else
 #define XYZ_ALLOC_TEST(S, N) TEST(S, DISABLED_##N)
@@ -131,6 +131,8 @@ XYZ_ALLOC_TEST(PolymorphicTest, MovePreservesOwnedDerivedObjectAddress) {
   EXPECT_EQ(address, &*aa);
 }
 
+#if (XYZ_USES_ALLOCATORS == 1)
+
 // TODO: Use the allocator to count allocations.
 std::mutex alloc_counter_mutex;
 static unsigned alloc_counter = 0;
@@ -162,14 +164,13 @@ struct TrackingAllocator {
   }
 };
 
-XYZ_ALLOC_TEST(PolymorphicTest, CountAllocationsForInPlaceConstruction) {
+TEST(PolymorphicTest, CountAllocationsForInPlaceConstruction) {
   // TODO: Use the allocator to count allocations.
   std::lock_guard<std::mutex> lock(alloc_counter_mutex);
   alloc_counter = 0;
   dealloc_counter = 0;
   {
-    xyz::polymorphic<A, TrackingAllocator<A>> a(
-        std::in_place_type<A>, 42);
+    xyz::polymorphic<A, TrackingAllocator<A>> a(std::in_place_type<A>, 42);
     EXPECT_EQ(alloc_counter, 1);
     EXPECT_EQ(dealloc_counter, 0);
   }
@@ -177,7 +178,7 @@ XYZ_ALLOC_TEST(PolymorphicTest, CountAllocationsForInPlaceConstruction) {
   EXPECT_EQ(dealloc_counter, 1);
 }
 
-XYZ_ALLOC_TEST(PolymorphicTest, CountAllocationsForDerivedTypeConstruction) {
+TEST(PolymorphicTest, CountAllocationsForDerivedTypeConstruction) {
   // TODO: Use the allocator to count allocations.
   std::lock_guard<std::mutex> lock(alloc_counter_mutex);
   alloc_counter = 0;
@@ -191,5 +192,5 @@ XYZ_ALLOC_TEST(PolymorphicTest, CountAllocationsForDerivedTypeConstruction) {
   EXPECT_EQ(alloc_counter, 1);
   EXPECT_EQ(dealloc_counter, 1);
 }
-
+#endif  // (XYZ_USES_ALLOCATORS == 1)
 }  // namespace

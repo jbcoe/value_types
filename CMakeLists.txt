@@ -145,6 +145,10 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
                 GTest::gtest_main
                 common_compiler_settings
         )
+        target_compile_definitions(value_types_gtest 
+            PRIVATE
+                XYZ_USES_ALLOCATORS=0
+        )
 
         add_executable(value_types_with_allocators_gtest "")
         target_sources(value_types_with_allocators_gtest
@@ -162,7 +166,7 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
         )
         target_compile_definitions(value_types_with_allocators_gtest 
             PRIVATE
-                XYZ_USES_ALLOCATORS
+                XYZ_USES_ALLOCATORS=1
         )
 
         if (ENABLE_SANITIZERS)
