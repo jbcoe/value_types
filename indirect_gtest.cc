@@ -169,3 +169,54 @@ TEST(IndirectTest, Comparison) {
   EXPECT_TRUE(c >= a);
 }
 #endif     // Indirect does not support >, >=, <, <= yet.
+
+#if (XYZ_USES_ALLOCATORS == 1)
+
+template <typename T>
+struct TrackingAllocator {
+  unsigned* alloc_counter_;
+  unsigned* dealloc_counter_;
+
+  TrackingAllocator(unsigned* alloc_counter, unsigned* dealloc_counter)
+      : alloc_counter_(alloc_counter), dealloc_counter_(dealloc_counter) {}
+
+  template <typename U>
+  TrackingAllocator(const TrackingAllocator<U>& other)
+      : alloc_counter_(other.alloc_counter_),
+        dealloc_counter_(other.dealloc_counter_) {}
+
+  using value_type = T;
+
+  template <typename Other>
+  struct rebind {
+    using other = TrackingAllocator<Other>;
+  };
+
+  constexpr T* allocate(std::size_t n) {
+    ++(*alloc_counter_);
+    std::allocator<T> default_allocator{};
+    return default_allocator.allocate(n);
+  }
+  constexpr void deallocate(T* p, std::size_t n) {
+    ++(*dealloc_counter_);
+    std::allocator<T> default_allocator{};
+    default_allocator.deallocate(p, n);
+  }
+};
+
+TEST(IndirectTest, CountAllocationsForInPlaceConstruction) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::indirect<int, TrackingAllocator<int>> a(
+        std::allocator_arg,
+        TrackingAllocator<int>(&alloc_counter, &dealloc_counter), std::in_place,
+        42);
+    EXPECT_EQ(alloc_counter, 1);
+    EXPECT_EQ(dealloc_counter, 0);
+  }
+  EXPECT_EQ(alloc_counter, 1);
+  EXPECT_EQ(dealloc_counter, 1);
+}
+
+#endif  // XYZ_USES_ALLOCATORS == 1

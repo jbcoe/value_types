@@ -203,17 +203,19 @@ TEST(PolymorphicTest, Optional) {
 
 #if (XYZ_USES_ALLOCATORS == 1)
 
-// TODO: Use the allocator to count allocations.
-std::mutex alloc_counter_mutex;
-static unsigned alloc_counter = 0;
-static unsigned dealloc_counter = 0;
-
 template <typename T>
 struct TrackingAllocator {
-  TrackingAllocator() = default;
+  unsigned* alloc_counter_;
+  unsigned* dealloc_counter_;
+
+  TrackingAllocator(unsigned* alloc_counter, unsigned* dealloc_counter)
+      : alloc_counter_(alloc_counter),
+        dealloc_counter_(dealloc_counter) {}
 
   template <typename U>
-  TrackingAllocator(const TrackingAllocator<U>& other) {}
+  TrackingAllocator(const TrackingAllocator<U>& other)
+      : alloc_counter_(other.alloc_counter_),
+        dealloc_counter_(other.dealloc_counter_) {}
 
   using value_type = T;
 
@@ -223,24 +225,25 @@ struct TrackingAllocator {
   };
 
   constexpr T* allocate(std::size_t n) {
-    ++alloc_counter;
+    ++(*alloc_counter_);
     std::allocator<T> default_allocator{};
     return default_allocator.allocate(n);
   }
   constexpr void deallocate(T* p, std::size_t n) {
-    ++dealloc_counter;
+    ++(*dealloc_counter_);
     std::allocator<T> default_allocator{};
     default_allocator.deallocate(p, n);
   }
 };
 
 TEST(PolymorphicTest, CountAllocationsForInPlaceConstruction) {
-  // TODO: Use the allocator to count allocations.
-  std::lock_guard<std::mutex> lock(alloc_counter_mutex);
-  alloc_counter = 0;
-  dealloc_counter = 0;
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
   {
-    xyz::polymorphic<A, TrackingAllocator<A>> a(std::in_place_type<A>, 42);
+    xyz::polymorphic<A, TrackingAllocator<A>> a(
+        std::allocator_arg,
+        TrackingAllocator<A>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<A>, 42);
     EXPECT_EQ(alloc_counter, 1);
     EXPECT_EQ(dealloc_counter, 0);
   }
@@ -249,12 +252,12 @@ TEST(PolymorphicTest, CountAllocationsForInPlaceConstruction) {
 }
 
 TEST(PolymorphicTest, CountAllocationsForDerivedTypeConstruction) {
-  // TODO: Use the allocator to count allocations.
-  std::lock_guard<std::mutex> lock(alloc_counter_mutex);
-  alloc_counter = 0;
-  dealloc_counter = 0;
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
   {
     xyz::polymorphic<Base, TrackingAllocator<Base>> a(
+        std::allocator_arg,
+        TrackingAllocator<A>(&alloc_counter, &dealloc_counter),
         std::in_place_type<Derived>, 42);
     EXPECT_EQ(alloc_counter, 1);
     EXPECT_EQ(dealloc_counter, 0);
