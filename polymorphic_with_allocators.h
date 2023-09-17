@@ -90,10 +90,7 @@ class polymorphic {
 
   polymorphic(polymorphic&& other) noexcept {
     assert(other.cb_ != nullptr);
-
-    using std::swap;
-    swap(cb_, other.cb_);
-    cb_ = nullptr;
+    cb_ = std::exchange(other.cb_, nullptr);
   }
 
   ~polymorphic() { reset(); }

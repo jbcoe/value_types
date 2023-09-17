@@ -22,11 +22,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <utility>
 
-#ifdef XYZ_INDIRECT_USES_ALLOCATORS
+#ifndef XYZ_USES_ALLOCATORS
+#error "XYZ_USES_ALLOCATORS must be defined"
+#endif // XYZ_USES_ALLOCATORS
+#if XYZ_USES_ALLOCATORS == 1
 #include "indirect_with_allocators.h"
-#else
+#elif XYZ_USES_ALLOCATORS == 0
 #include "indirect.h"
-#endif
+#else
+#error "XYZ_USES_ALLOCATORS must be 0 or 1"
+#endif  // XYZ_USES_ALLOCATORS == 0 or 1
 
 TEST(IndirectTest, ValueAccess) {
   xyz::indirect<int> a(std::in_place, 42);

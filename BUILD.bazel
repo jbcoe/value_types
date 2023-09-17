@@ -61,6 +61,7 @@ cc_test(
     name = "indirect_gtest",
     size = "small",
     srcs = ["indirect_gtest.cc"],
+    defines = ["XYZ_USES_ALLOCATORS=0"],
     deps = [
         "indirect",
         "@com_google_googletest//:gtest_main",
@@ -71,7 +72,7 @@ cc_test(
     name = "indirect_with_allocators_gtest",
     size = "small",
     srcs = ["indirect_gtest.cc"],
-    defines = ["XYZ_INDIRECT_USES_ALLOCATORS"],
+    defines = ["XYZ_USES_ALLOCATORS=1"],
     deps = [
         "indirect_with_allocators",
         "@com_google_googletest//:gtest_main",
@@ -82,6 +83,7 @@ cc_test(
     name = "polymorphic_gtest",
     size = "small",
     srcs = ["polymorphic_gtest.cc"],
+    defines = ["XYZ_USES_ALLOCATORS=0"],
     deps = [
         "polymorphic",
         "@com_google_googletest//:gtest_main",
@@ -92,7 +94,7 @@ cc_test(
     name = "polymorphic_with_allocators_gtest",
     size = "small",
     srcs = ["polymorphic_gtest.cc"],
-    defines = ["XYZ_POLYMORPHIC_USES_ALLOCATORS"],
+    defines = ["XYZ_USES_ALLOCATORS=1"],
     deps = [
         "polymorphic_with_allocators",
         "@com_google_googletest//:gtest_main",
