@@ -50,6 +50,11 @@ TEST(IndirectTest, MovePreservesIndirectObjectAddress) {
   xyz::indirect<int> a(std::in_place, 42);
   auto address = &*a;
   auto aa = std::move(a);
+
+#if XYZ_USES_ALLOCATORS == 1
+  EXPECT_TRUE(a.valueless_after_move());
+#endif
+
   EXPECT_EQ(address, &*aa);
 }
 
@@ -68,6 +73,10 @@ TEST(IndirectTest, MoveAssignment) {
   xyz::indirect<int> b(std::in_place, 101);
   EXPECT_EQ(*a, 42);
   a = std::move(b);
+
+#if XYZ_USES_ALLOCATORS == 1
+  EXPECT_TRUE(b.valueless_after_move());
+#endif
 
   EXPECT_EQ(*a, 101);
 }

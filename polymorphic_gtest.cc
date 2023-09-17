@@ -71,6 +71,11 @@ XYZ_ALLOC_TEST(PolymorphicTest, MovePreservesOwnedObjectAddress) {
   xyz::polymorphic<A> a(std::in_place_type<A>, 42);
   auto address = &*a;
   auto aa = std::move(a);
+
+#if XYZ_USES_ALLOCATORS == 1
+  EXPECT_TRUE(a.valueless_after_move());
+#endif
+
   EXPECT_EQ(address, &*aa);
 }
 
@@ -147,6 +152,10 @@ TEST(PolymorphicTest, MoveAssignment) {
   xyz::polymorphic<Base> b(std::in_place_type<Derived>, 101);
   EXPECT_EQ(a->value(), 42);
   a = std::move(b);
+
+#if XYZ_USES_ALLOCATORS == 1
+  EXPECT_TRUE(b.valueless_after_move());
+#endif
 
   EXPECT_EQ(a->value(), 101);
 }

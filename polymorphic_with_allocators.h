@@ -105,6 +105,7 @@ class polymorphic {
     assert(other.cb_ != nullptr);
     using std::swap;
     swap(cb_, other.cb_);
+    other.reset();
     return *this;
   }
 
@@ -137,6 +138,8 @@ class polymorphic {
     using std::swap;
     swap(lhs.cb_, rhs.cb_);
   }
+
+  bool valueless_after_move() const noexcept { return cb_ == nullptr; }
 
  private:
   void reset() {
