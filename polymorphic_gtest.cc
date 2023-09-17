@@ -33,6 +33,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #error "XYZ_USES_ALLOCATORS must be 0 or 1"
 #endif  // XYZ_USES_ALLOCATORS == 0 or 1
 
+#if XYZ_USES_ALLOCATORS == 1
+#define XYZ_ALLOC_TEST(S, N) \
+  TEST(S, N)
+#else
+#define XYZ_ALLOC_TEST(S, N) \
+  TEST(S, DISABLED_##N)
+#endif  // XYZ_USES_ALLOCATORS == 1
+
 class A {
   int value_ = 0;
 
@@ -57,16 +65,12 @@ TEST(PolymorphicTest, CopiesAreDistinct) {
   EXPECT_NE(&*a, &*aa);
 }
 
-#if XYZ_USES_ALLOCATORS == 1
-TEST(PolymorphicTest, MovePreservesOwnedObjectAddress) {
+XYZ_ALLOC_TEST(PolymorphicTest, MovePreservesOwnedObjectAddress) {
   xyz::polymorphic<A> a(std::in_place_type<A>, 42);
   auto address = &*a;
   auto aa = std::move(a);
   EXPECT_EQ(address, &*aa);
 }
-#else
-TEST(PolymorphicTest, DISABLED_MovePreservesOwnedObjectAddress) {}
-#endif  // XYZ_USES_ALLOCATORS == 1
 
 TEST(PolymorphicTest, ConstPropagation) {
   struct SomeType {
@@ -119,13 +123,9 @@ TEST(PolymorphicTest, CopiesOfDerivedObjectsAreDistinct) {
   EXPECT_NE(&*a, &*aa);
 }
 
-#if XYZ_USES_ALLOCATORS == 1
-TEST(PolymorphicTest, MovePreservesOwnedDerivedObjectAddress) {
+XYZ_ALLOC_TEST(PolymorphicTest, MovePreservesOwnedDerivedObjectAddress) {
   xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
   auto address = &*a;
   auto aa = std::move(a);
   EXPECT_EQ(address, &*aa);
 }
-#else
-TEST(PolymorphicTest, DISABLED_MovePreservesOwnedDerivedObjectAddress) {}
-#endif  // XYZ_USES_ALLOCATORS == 1
