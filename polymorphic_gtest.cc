@@ -20,6 +20,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <gtest/gtest.h>
 
+#include <mutex>
 #include <utility>
 
 #ifndef XYZ_USES_ALLOCATORS
@@ -34,12 +35,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #endif  // XYZ_USES_ALLOCATORS == 0 or 1
 
 #if XYZ_USES_ALLOCATORS == 1
-#define XYZ_ALLOC_TEST(S, N) \
-  TEST(S, N)
+#define XYZ_ALLOC_TEST(S, N) TEST(S, N)
 #else
-#define XYZ_ALLOC_TEST(S, N) \
-  TEST(S, DISABLED_##N)
+#define XYZ_ALLOC_TEST(S, N) TEST(S, DISABLED_##N)
 #endif  // XYZ_USES_ALLOCATORS == 1
+
+namespace {
 
 class A {
   int value_ = 0;
@@ -129,3 +130,66 @@ XYZ_ALLOC_TEST(PolymorphicTest, MovePreservesOwnedDerivedObjectAddress) {
   auto aa = std::move(a);
   EXPECT_EQ(address, &*aa);
 }
+
+// TODO: Use the allocator to count allocations.
+std::mutex alloc_counter_mutex;
+static unsigned alloc_counter = 0;
+static unsigned dealloc_counter = 0;
+
+template <typename T>
+struct TrackingAllocator {
+  TrackingAllocator() = default;
+
+  template <typename U>
+  TrackingAllocator(const TrackingAllocator<U>& other) {}
+
+  using value_type = T;
+
+  template <typename Other>
+  struct rebind {
+    using other = TrackingAllocator<Other>;
+  };
+
+  constexpr T* allocate(std::size_t n) {
+    ++alloc_counter;
+    std::allocator<T> default_allocator{};
+    return default_allocator.allocate(n);
+  }
+  constexpr void deallocate(T* p, std::size_t n) {
+    ++dealloc_counter;
+    std::allocator<T> default_allocator{};
+    default_allocator.deallocate(p, n);
+  }
+};
+
+XYZ_ALLOC_TEST(PolymorphicTest, CountAllocationsForInPlaceConstruction) {
+  // TODO: Use the allocator to count allocations.
+  std::lock_guard<std::mutex> lock(alloc_counter_mutex);
+  alloc_counter = 0;
+  dealloc_counter = 0;
+  {
+    xyz::polymorphic<A, TrackingAllocator<A>> a(
+        std::in_place_type<A>, 42);
+    EXPECT_EQ(alloc_counter, 1);
+    EXPECT_EQ(dealloc_counter, 0);
+  }
+  EXPECT_EQ(alloc_counter, 1);
+  EXPECT_EQ(dealloc_counter, 1);
+}
+
+XYZ_ALLOC_TEST(PolymorphicTest, CountAllocationsForDerivedTypeConstruction) {
+  // TODO: Use the allocator to count allocations.
+  std::lock_guard<std::mutex> lock(alloc_counter_mutex);
+  alloc_counter = 0;
+  dealloc_counter = 0;
+  {
+    xyz::polymorphic<Base, TrackingAllocator<Base>> a(
+        std::in_place_type<Derived>, 42);
+    EXPECT_EQ(alloc_counter, 1);
+    EXPECT_EQ(dealloc_counter, 0);
+  }
+  EXPECT_EQ(alloc_counter, 1);
+  EXPECT_EQ(dealloc_counter, 1);
+}
+
+}  // namespace
