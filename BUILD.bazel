@@ -39,6 +39,12 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "polymorphic_with_allocators",
+    hdrs = ["polymorphic_with_allocators.h"],
+    copts = ["-Iexternal/value_types/"],
+)
+
 cc_test(
     name = "polymorphic_test",
     srcs = [
@@ -78,6 +84,17 @@ cc_test(
     srcs = ["polymorphic_gtest.cc"],
     deps = [
         "polymorphic",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "polymorphic_with_allocators_gtest",
+    size = "small",
+    srcs = ["polymorphic_gtest.cc"],
+    defines = ["XYZ_POLYMORPHIC_USES_ALLOCATORS"],
+    deps = [
+        "polymorphic_with_allocators",
         "@com_google_googletest//:gtest_main",
     ],
 )

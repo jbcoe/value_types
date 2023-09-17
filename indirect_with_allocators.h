@@ -1,5 +1,5 @@
-#ifndef INDIRECT_WITH_ALLOCATORS_H
-#define INDIRECT_WITH_ALLOCATORS_H
+#ifndef XYZ_INDIRECT_WITH_ALLOCATORS_H
+#define XYZ_INDIRECT_WITH_ALLOCATORS_H
 #include <memory>
 #include <utility>
 
@@ -9,28 +9,28 @@ class indirect {
   T* p_;
   [[no_unique_address]] A alloc_;
 
-  using t_traits = std::allocator_traits<A>;
+  using allocator_traits = std::allocator_traits<A>;
 
  public:
   using value_type = T;
 
   indirect() {
-    T* mem = t_traits::allocate(alloc_, 1);
-    t_traits::construct(alloc_, mem);
+    T* mem = allocator_traits::allocate(alloc_, 1);
+    allocator_traits::construct(alloc_, mem);
     p_ = mem;
   }
 
   template <class... Ts>
   indirect(std::in_place_t, Ts&&... ts) {
-    T* mem = t_traits::allocate(alloc_, 1);
-    t_traits::construct(alloc_, mem, std::forward<Ts>(ts)...);
+    T* mem = allocator_traits::allocate(alloc_, 1);
+    allocator_traits::construct(alloc_, mem, std::forward<Ts>(ts)...);
     p_ = mem;
   }
 
   indirect(const indirect& other) {
     assert(other.p_ != nullptr);
-    T* mem = t_traits::allocate(alloc_, 1);
-    t_traits::construct(alloc_, mem, *other);
+    T* mem = allocator_traits::allocate(alloc_, 1);
+    allocator_traits::construct(alloc_, mem, *other);
     p_ = mem;
   }
 
@@ -87,8 +87,8 @@ class indirect {
  private:
   void reset() {
     if (p_ == nullptr) return;
-    t_traits::destroy(alloc_, p_);
-    t_traits::deallocate(alloc_, p_, 1);
+    allocator_traits::destroy(alloc_, p_);
+    allocator_traits::deallocate(alloc_, p_, 1);
     p_ = nullptr;
   }
 };
@@ -101,4 +101,4 @@ struct std::hash<xyz::indirect<T>> {
   }
 };
 
-#endif  // INDIRECT_WITH_ALLOCATORS_H
+#endif  // XYZ_INDIRECT_WITH_ALLOCATORS_H

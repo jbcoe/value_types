@@ -22,7 +22,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <utility>
 
+#ifdef XYZ_POLYMORPHIC_USES_ALLOCATORS
+#include "polymorphic_with_allocators.h"
+#else
 #include "polymorphic.h"
+#endif
 
 class A {
   int value_ = 0;
