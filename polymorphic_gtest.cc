@@ -131,6 +131,58 @@ XYZ_ALLOC_TEST(PolymorphicTest, MovePreservesOwnedDerivedObjectAddress) {
   EXPECT_EQ(address, &*aa);
 }
 
+TEST(PolymorphicTest, CopyAssignment) {
+  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
+  xyz::polymorphic<Base> b(std::in_place_type<Derived>, 101);
+  EXPECT_EQ(a->value(), 42);
+  a = b;
+  
+  EXPECT_EQ(a->value(), 101);
+  EXPECT_NE(&*a, &*b);
+}
+
+TEST(PolymorphicTest, MoveAssignment) {
+  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
+  xyz::polymorphic<Base> b(std::in_place_type<Derived>, 101);
+  EXPECT_EQ(a->value(), 42);
+  a = std::move(b);
+  
+  EXPECT_EQ(a->value(), 101);
+}
+
+TEST(PolymorphicTest, NonMemberSwap) {
+  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
+  xyz::polymorphic<Base> b(std::in_place_type<Derived>, 101);
+  using std::swap;
+  swap(a,b);
+  EXPECT_EQ(a->value(), 101);
+  EXPECT_EQ(b->value(), 42);
+}
+
+TEST(PolymorphicTest, MemberSwap) {
+  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
+  xyz::polymorphic<Base> b(std::in_place_type<Derived>, 101);
+
+  a.swap(b);
+  EXPECT_EQ(a->value(), 101);
+  EXPECT_EQ(b->value(), 42);
+}
+
+TEST(IndirectTest, ConstPropagation) {
+  struct SomeType {
+    enum class Constness { CONST, NON_CONST };
+    Constness member() { return Constness::NON_CONST; }
+    Constness member() const { return Constness::CONST; }
+  };
+
+  xyz::polymorphic<SomeType> a(std::in_place_type<SomeType>);
+  EXPECT_EQ(a->member(), SomeType::Constness::NON_CONST);
+  EXPECT_EQ((*a).member(), SomeType::Constness::NON_CONST);
+  const auto& ca = a;
+  EXPECT_EQ(ca->member(), SomeType::Constness::CONST);
+  EXPECT_EQ((*ca).member(), SomeType::Constness::CONST);
+}
+
 #if (XYZ_USES_ALLOCATORS == 1)
 
 // TODO: Use the allocator to count allocations.

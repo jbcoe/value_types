@@ -13,6 +13,7 @@ class indirect {
 
  public:
   using value_type = T;
+  using allocator_type = A;
 
   indirect() {
     T* mem = allocator_traits::allocate(alloc_, 1);
@@ -45,6 +46,7 @@ class indirect {
   indirect& operator=(const indirect& other) {
     assert(other.p_ != nullptr);
     indirect tmp(std::in_place, *other.p_);
+    swap(tmp);
     return *this;
   }
 

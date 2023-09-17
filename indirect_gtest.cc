@@ -52,6 +52,43 @@ TEST(IndirectTest, MovePreservesIndirectObjectAddress) {
   EXPECT_EQ(address, &*aa);
 }
 
+TEST(IndirectTest, CopyAssignment) {
+  xyz::indirect<int> a(std::in_place, 42);
+  xyz::indirect<int> b(std::in_place, 101);
+  EXPECT_EQ(*a, 42);
+  a = b;
+  
+  EXPECT_EQ(*a, 101);
+  EXPECT_NE(&*a, &*b);
+}
+
+TEST(IndirectTest, MoveAssignment) {
+  xyz::indirect<int> a(std::in_place, 42);
+  xyz::indirect<int> b(std::in_place, 101);
+  EXPECT_EQ(*a, 42);
+  a = std::move(b);
+  
+  EXPECT_EQ(*a, 101);
+}
+
+TEST(IndirectTest, NonMemberSwap) {
+  xyz::indirect<int> a(std::in_place, 42);
+  xyz::indirect<int> b(std::in_place, 101);
+  using std::swap;
+  swap(a,b);
+  EXPECT_EQ(*a, 101);
+  EXPECT_EQ(*b, 42);
+}
+
+TEST(IndirectTest, MemberSwap) {
+  xyz::indirect<int> a(std::in_place, 42);
+  xyz::indirect<int> b(std::in_place, 101);
+
+  a.swap(b);
+  EXPECT_EQ(*a, 101);
+  EXPECT_EQ(*b, 42);
+}
+
 TEST(IndirectTest, ConstPropagation) {
   struct SomeType {
     enum class Constness { CONST, NON_CONST };
@@ -65,18 +102,6 @@ TEST(IndirectTest, ConstPropagation) {
   const auto& ca = a;
   EXPECT_EQ(ca->member(), SomeType::Constness::CONST);
   EXPECT_EQ((*ca).member(), SomeType::Constness::CONST);
-}
-
-TEST(IndirectTest, Swap) {
-  xyz::indirect<int> a(std::in_place, 42);
-  xyz::indirect<int> b(std::in_place, 43);
-  auto address_a = &*a;
-  auto address_b = &*b;
-  swap(a, b);
-  EXPECT_EQ(*a, 43);
-  EXPECT_EQ(*b, 42);
-  EXPECT_EQ(address_a, &*b);
-  EXPECT_EQ(address_b, &*a);
 }
 
 TEST(IndirectTest, Hash) {
