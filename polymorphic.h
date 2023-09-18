@@ -1,5 +1,5 @@
-#ifndef XYZ_POLYMORPHIC_WITH_ALLOCATORS_H
-#define XYZ_POLYMORPHIC_WITH_ALLOCATORS_H
+#ifndef XYZ_POLYMORPHIC_H
+#define XYZ_POLYMORPHIC_H
 
 #include <memory>
 #include <utility>
@@ -181,4 +181,4 @@ class polymorphic {
 };
 
 }  // namespace xyz
-#endif  // XYZ_POLYMORPHIC_WITH_ALLOCATORS_H
+#endif  // XYZ_POLYMORPHIC_H

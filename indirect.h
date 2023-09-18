@@ -1,5 +1,5 @@
-#ifndef XYZ_INDIRECT_WITH_ALLOCATORS_H
-#define XYZ_INDIRECT_WITH_ALLOCATORS_H
+#ifndef XYZ_INDIRECT_H
+#define XYZ_INDIRECT_H
 #include <memory>
 #include <utility>
 
@@ -136,4 +136,4 @@ struct std::hash<xyz::indirect<T>> {
   }
 };
 
-#endif  // XYZ_INDIRECT_WITH_ALLOCATORS_H
+#endif  // XYZ_INDIRECT_H
