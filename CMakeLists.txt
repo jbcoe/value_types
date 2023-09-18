@@ -103,17 +103,28 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
             CXX_STANDARD_REQUIRED YES
             CXX_EXTENSIONS NO
         )
-
-        add_executable(value_types_test "")
-        target_sources(value_types_test
+        
+        add_executable(indirect_test "")
+        target_sources(indirect_test
             PRIVATE
                 indirect_test.cc
+        )
+
+        target_link_libraries(indirect_test
+            PRIVATE
+                indirect
+                GTest::gtest_main
+                common_compiler_settings
+        )
+
+        add_executable(polymorphic_test "")
+        target_sources(polymorphic_test
+            PRIVATE
                 polymorphic_test.cc
         )
 
-        target_link_libraries(value_types_test
+        target_link_libraries(polymorphic_test
             PRIVATE
-                indirect
                 polymorphic
                 GTest::gtest_main
                 common_compiler_settings
@@ -133,11 +144,11 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
                     INTERFACE_COMPILE_OPTIONS "${SANITIZER_FLAGS_ASAN}"
                     INTERFACE_LINK_OPTIONS "${SANITIZER_FLAGS_ASAN}"
                 )
-                target_link_libraries(indirect_value_test
+                target_link_libraries(indirect_test
                     PRIVATE
                         asan
                 )
-                target_link_libraries(indirect_value_test
+                target_link_libraries(polymorphic_test
                     PRIVATE
                         asan
                 )
@@ -149,7 +160,11 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
                     INTERFACE_COMPILE_OPTIONS "${SANITIZER_FLAGS_UBSAN}"
                     INTERFACE_LINK_OPTIONS "${SANITIZER_FLAGS_UBSAN}"
                 )
-                target_link_libraries(value_types_test
+                target_link_libraries(indirect_test
+                    PRIVATE
+                        ubsan
+                )
+                target_link_libraries(polymorphic_test
                     PRIVATE
                         ubsan
                 )
@@ -158,13 +173,18 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
 
         enable_testing()
         add_test(
-            NAME value_types_test
-            COMMAND value_types_test
+            NAME indirect_test
+            COMMAND indirect_test
+            WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+        add_test(
+            NAME polymorphic_test
+            COMMAND polymorphic_test
             WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
         list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/contrib)
         include(GoogleTest)
-        gtest_discover_tests(value_types_test)
+        gtest_discover_tests(indirect_test)
+        gtest_discover_tests(polymorphic_test)
 
         if (ENABLE_CODE_COVERAGE)
             FetchContent_Declare(
@@ -180,7 +200,8 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
 
             set(ENABLE_COVERAGE ON CACHE BOOL "Enable coverage build." FORCE)
             find_package(codecov)
-            add_coverage(value_types_test)
+            add_coverage(indirect_test)
+            add_coverage(polymorphic_test)
             list(APPEND LCOV_REMOVE_PATTERNS "'/usr/*'")
             coverage_evaluate()
         endif()
