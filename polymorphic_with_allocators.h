@@ -64,7 +64,7 @@ class polymorphic {
     using cb_traits = std::allocator_traits<cb_allocator>;
     cb_allocator cb_alloc(alloc_);
     auto* mem = cb_traits::allocate(cb_alloc, 1);
-    cb_traits::construct(cb_alloc, mem, A{});
+    cb_traits::construct(cb_alloc, mem, alloc_);
     cb_ = mem;
   }
 
