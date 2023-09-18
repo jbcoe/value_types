@@ -9,10 +9,9 @@ namespace xyz {
 namespace detail {
 template <class T, class A>
 struct control_block {
+  T* p_;
   virtual ~control_block() = default;
   virtual void destroy() = 0;
-  virtual T* get() noexcept = 0;
-  virtual const T* get() const noexcept = 0;
   virtual control_block<T, A>* clone() = 0;
 };
 
@@ -24,11 +23,9 @@ class direct_control_block : public control_block<T, A> {
  public:
   template <class... Ts>
   direct_control_block(A alloc, Ts&&... ts)
-      : u_(std::forward<Ts>(ts)...), alloc_(alloc) {}
-
-  T* get() noexcept override { return &u_; }
-
-  const T* get() const noexcept override { return &u_; }
+      : u_(std::forward<Ts>(ts)...), alloc_(alloc) {
+    control_block<T, A>::p_ = &u_;
+  }
 
   control_block<T, A>* clone() override {
     using cb_allocator = typename std::allocator_traits<
@@ -105,27 +102,28 @@ class polymorphic {
     assert(other.cb_ != nullptr);
     using std::swap;
     swap(cb_, other.cb_);
+    other.reset();
     return *this;
   }
 
   T* operator->() noexcept {
     assert(cb_ != nullptr);
-    return cb_->get();
+    return cb_->p_;
   }
 
   const T* operator->() const noexcept {
     assert(cb_ != nullptr);
-    return cb_->get();
+    return cb_->p_;
   }
 
   T& operator*() noexcept {
     assert(cb_ != nullptr);
-    return *cb_->get();
+    return *cb_->p_;
   }
 
   const T& operator*() const noexcept {
     assert(cb_ != nullptr);
-    return *cb_->get();
+    return *cb_->p_;
   }
 
   void swap(polymorphic& other) noexcept {
@@ -137,6 +135,8 @@ class polymorphic {
     using std::swap;
     swap(lhs.cb_, rhs.cb_);
   }
+
+  bool valueless_after_move() const noexcept { return cb_ == nullptr; }
 
  private:
   void reset() {

@@ -86,6 +86,8 @@ class indirect {
     swap(lhs.p_, rhs.p_);
   }
 
+  bool valueless_after_move() const noexcept { return p_ == nullptr; }
+
  private:
   void reset() {
     if (p_ == nullptr) return;
