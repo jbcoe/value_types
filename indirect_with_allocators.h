@@ -28,6 +28,14 @@ class indirect {
     p_ = mem;
   }
 
+  template <class... Ts>
+  indirect(std::allocator_arg_t, const A& alloc, std::in_place_t, Ts&&... ts)
+      : alloc_(alloc) {
+    T* mem = allocator_traits::allocate(alloc_, 1);
+    allocator_traits::construct(alloc_, mem, std::forward<Ts>(ts)...);
+    p_ = mem;
+  }
+
   indirect(const indirect& other) {
     assert(other.p_ != nullptr);
     T* mem = allocator_traits::allocate(alloc_, 1);

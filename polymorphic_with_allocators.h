@@ -22,7 +22,7 @@ class direct_control_block : public control_block<T, A> {
 
  public:
   template <class... Ts>
-  direct_control_block(A alloc, Ts&&... ts)
+  direct_control_block(const A& alloc, Ts&&... ts)
       : u_(std::forward<Ts>(ts)...), alloc_(alloc) {
     control_block<T, A>::p_ = &u_;
   }
@@ -75,7 +75,20 @@ class polymorphic {
     using cb_traits = std::allocator_traits<cb_allocator>;
     cb_allocator cb_alloc(alloc_);
     auto* mem = cb_traits::allocate(cb_alloc, 1);
-    cb_traits::construct(cb_alloc, mem, A{}, std::forward<Ts>(ts)...);
+    cb_traits::construct(cb_alloc, mem, alloc_, std::forward<Ts>(ts)...);
+    cb_ = mem;
+  }
+
+  template <class U, class... Ts>
+  polymorphic(std::allocator_arg_t, const A& alloc, std::in_place_type_t<U>,
+              Ts&&... ts)
+      : alloc_(alloc) {
+    using cb_allocator = typename std::allocator_traits<
+        A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
+    using cb_traits = std::allocator_traits<cb_allocator>;
+    cb_allocator cb_alloc(alloc_);
+    auto* mem = cb_traits::allocate(cb_alloc, 1);
+    cb_traits::construct(cb_alloc, mem, alloc_, std::forward<Ts>(ts)...);
     cb_ = mem;
   }
 
