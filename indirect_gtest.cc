@@ -216,6 +216,117 @@ TEST(IndirectTest, CountAllocationsForInPlaceConstruction) {
   EXPECT_EQ(dealloc_counter, 1);
 }
 
+TEST(IndirectTest, CountAllocationsForCopyConstruction) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::indirect<int, TrackingAllocator<int>> a(
+        std::allocator_arg,
+        TrackingAllocator<int>(&alloc_counter, &dealloc_counter), std::in_place,
+        42);
+    EXPECT_EQ(alloc_counter, 1);
+    EXPECT_EQ(dealloc_counter, 0);
+    xyz::indirect<int, TrackingAllocator<int>> b(a);
+  }
+  EXPECT_EQ(alloc_counter, 2);
+  EXPECT_EQ(dealloc_counter, 2);
+}
+
+TEST(IndirectTest, CountAllocationsForCopyAssignment) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::indirect<int, TrackingAllocator<int>> a(
+        std::allocator_arg,
+        TrackingAllocator<int>(&alloc_counter, &dealloc_counter), std::in_place,
+        42);
+    xyz::indirect<int, TrackingAllocator<int>> b(
+        std::allocator_arg,
+        TrackingAllocator<int>(&alloc_counter, &dealloc_counter), std::in_place,
+        101);
+    EXPECT_EQ(alloc_counter, 2);
+    EXPECT_EQ(dealloc_counter, 0);
+    b = a;
+  }
+  EXPECT_EQ(alloc_counter, 3);
+  EXPECT_EQ(dealloc_counter, 3);
+}
+
+TEST(IndirectTest, CountAllocationsForMoveAssignment) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::indirect<int, TrackingAllocator<int>> a(
+        std::allocator_arg,
+        TrackingAllocator<int>(&alloc_counter, &dealloc_counter), std::in_place,
+        42);
+    xyz::indirect<int, TrackingAllocator<int>> b(
+        std::allocator_arg,
+        TrackingAllocator<int>(&alloc_counter, &dealloc_counter), std::in_place,
+        101);
+    EXPECT_EQ(alloc_counter, 2);
+    EXPECT_EQ(dealloc_counter, 0);
+    b = std::move(a);
+  }
+  EXPECT_EQ(alloc_counter, 2);
+  EXPECT_EQ(dealloc_counter, 2);
+}
+
+TEST(IndirectTest, CountAllocationsForMoveConstruction) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::indirect<int, TrackingAllocator<int>> a(
+        std::allocator_arg,
+        TrackingAllocator<int>(&alloc_counter, &dealloc_counter), std::in_place,
+        42);
+    EXPECT_EQ(alloc_counter, 1);
+    EXPECT_EQ(dealloc_counter, 0);
+    xyz::indirect<int, TrackingAllocator<int>> b(std::move(a));
+  }
+  EXPECT_EQ(alloc_counter, 1);
+  EXPECT_EQ(dealloc_counter, 1);
+}
+
+struct ThrowsOnConstruction {
+  class Exception : public std::exception {
+    const char* what() const noexcept override {
+      return "ThrowsOnConstruction::Exception";
+    }
+  };
+
+  template <typename... Args>
+  ThrowsOnConstruction(Args&&...) {
+    throw Exception();
+  }
+};
+
+TEST(IndirectTest, DefaultConstructorWithExceptions) {
+  EXPECT_THROW(xyz::indirect<ThrowsOnConstruction>(),
+               ThrowsOnConstruction::Exception);
+}
+
+TEST(IndirectTest, ConstructorWithExceptions) {
+  EXPECT_THROW(xyz::indirect<ThrowsOnConstruction>(std::in_place, "unused"),
+               ThrowsOnConstruction::Exception);
+}
+
+TEST(IndirectTest, ConstructorWithExceptionsTrackingAllocations) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  auto construct = [&]() {
+    return xyz::indirect<ThrowsOnConstruction,
+                         TrackingAllocator<ThrowsOnConstruction>>(
+        std::allocator_arg,
+        TrackingAllocator<ThrowsOnConstruction>(&alloc_counter,
+                                                &dealloc_counter),
+        std::in_place, "unused");
+  };
+  EXPECT_THROW(construct(), ThrowsOnConstruction::Exception);
+  EXPECT_EQ(alloc_counter, 1);
+  EXPECT_EQ(dealloc_counter, 1);
+}
+
 #endif  // XYZ_USES_ALLOCATORS == 1
 
 TEST(IndirectTest, InteractionWithOptional) {

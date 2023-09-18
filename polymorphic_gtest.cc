@@ -81,21 +81,6 @@ XYZ_ALLOC_TEST(PolymorphicTest, MovePreservesOwnedObjectAddress) {
   EXPECT_EQ(address, &*aa);
 }
 
-TEST(PolymorphicTest, ConstPropagation) {
-  struct SomeType {
-    enum class Constness { CONST, NON_CONST };
-    Constness member() { return Constness::NON_CONST; }
-    Constness member() const { return Constness::CONST; }
-  };
-
-  xyz::polymorphic<SomeType> a(std::in_place_type<SomeType>);
-  EXPECT_EQ(a->member(), SomeType::Constness::NON_CONST);
-  EXPECT_EQ((*a).member(), SomeType::Constness::NON_CONST);
-  const auto& ca = a;
-  EXPECT_EQ(ca->member(), SomeType::Constness::CONST);
-  EXPECT_EQ((*ca).member(), SomeType::Constness::CONST);
-}
-
 TEST(PolymorphicTest, Swap) {
   xyz::polymorphic<A> a(std::in_place_type<A>, 42);
   xyz::polymorphic<A> b(std::in_place_type<A>, 43);
@@ -181,7 +166,7 @@ TEST(PolymorphicTest, MemberSwap) {
   EXPECT_EQ(b->value(), 42);
 }
 
-TEST(IndirectTest, ConstPropagation) {
+TEST(PolymorphicTest, ConstPropagation) {
   struct SomeType {
     enum class Constness { CONST, NON_CONST };
     Constness member() { return Constness::NON_CONST; }
@@ -259,6 +244,119 @@ TEST(PolymorphicTest, CountAllocationsForDerivedTypeConstruction) {
   EXPECT_EQ(alloc_counter, 1);
   EXPECT_EQ(dealloc_counter, 1);
 }
+
+TEST(PolymorphicTest, CountAllocationsForCopyConstruction) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::polymorphic<Derived, TrackingAllocator<Derived>> a(
+        std::allocator_arg,
+        TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived>, 42);
+    EXPECT_EQ(alloc_counter, 1);
+    EXPECT_EQ(dealloc_counter, 0);
+    xyz::polymorphic<Derived, TrackingAllocator<Derived>> b(a);
+  }
+  EXPECT_EQ(alloc_counter, 2);
+  EXPECT_EQ(dealloc_counter, 2);
+}
+
+TEST(PolymorphicTest, CountAllocationsForCopyAssignment) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::polymorphic<Derived, TrackingAllocator<Derived>> a(
+        std::allocator_arg,
+        TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived>, 42);
+    xyz::polymorphic<Derived, TrackingAllocator<Derived>> b(
+        std::allocator_arg,
+        TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived>, 101);
+    EXPECT_EQ(alloc_counter, 2);
+    EXPECT_EQ(dealloc_counter, 0);
+    b = a;
+  }
+  EXPECT_EQ(alloc_counter, 3);
+  EXPECT_EQ(dealloc_counter, 3);
+}
+
+TEST(PolymorphicTest, CountAllocationsForMoveAssignment) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::polymorphic<Derived, TrackingAllocator<Derived>> a(
+        std::allocator_arg,
+        TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived>, 42);
+    xyz::polymorphic<Derived, TrackingAllocator<Derived>> b(
+        std::allocator_arg,
+        TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived>, 101);
+    EXPECT_EQ(alloc_counter, 2);
+    EXPECT_EQ(dealloc_counter, 0);
+    b = std::move(a);
+  }
+  EXPECT_EQ(alloc_counter, 2);
+  EXPECT_EQ(dealloc_counter, 2);
+}
+
+TEST(PolymorphicTest, CountAllocationsForMoveConstruction) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::polymorphic<Derived, TrackingAllocator<Derived>> a(
+        std::allocator_arg,
+        TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived>, 42);
+    EXPECT_EQ(alloc_counter, 1);
+    EXPECT_EQ(dealloc_counter, 0);
+    xyz::polymorphic<Derived, TrackingAllocator<Derived>> b(std::move(a));
+  }
+  EXPECT_EQ(alloc_counter, 1);
+  EXPECT_EQ(dealloc_counter, 1);
+}
+
+struct ThrowsOnConstruction {
+  class Exception : public std::exception {
+    const char* what() const noexcept override {
+      return "ThrowsOnConstruction::Exception";
+    }
+  };
+
+  template <typename... Args>
+  ThrowsOnConstruction(Args&&...) {
+    throw Exception();
+  }
+};
+
+TEST(PolymorphicTest, DefaultConstructorWithExceptions) {
+  EXPECT_THROW(xyz::polymorphic<ThrowsOnConstruction>(),
+               ThrowsOnConstruction::Exception);
+}
+
+TEST(PolymorphicTest, ConstructorWithExceptions) {
+  EXPECT_THROW(xyz::polymorphic<ThrowsOnConstruction>(
+                   std::in_place_type<ThrowsOnConstruction>, "unused"),
+               ThrowsOnConstruction::Exception);
+}
+
+TEST(PolymorphicTest, ConstructorWithExceptionsTrackingAllocations) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  auto construct = [&]() {
+    return xyz::polymorphic<ThrowsOnConstruction,
+                            TrackingAllocator<ThrowsOnConstruction>>(
+        std::allocator_arg,
+        TrackingAllocator<ThrowsOnConstruction>(&alloc_counter,
+                                                &dealloc_counter),
+        std::in_place_type<ThrowsOnConstruction>, "unused");
+  };
+  EXPECT_THROW(construct(), ThrowsOnConstruction::Exception);
+  EXPECT_EQ(alloc_counter, 1);
+  EXPECT_EQ(dealloc_counter, 1);
+}
+
 #endif  // (XYZ_USES_ALLOCATORS == 1)
 
 TEST(PolymorphicTest, InteractionWithOptional) {
