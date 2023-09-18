@@ -64,37 +64,37 @@ class indirect {
     return *this;
   }
 
-  const T& operator*() const noexcept {
+  constexpr const T& operator*() const noexcept {
     assert(p_ != nullptr);
     return *p_;
   }
 
-  T& operator*() noexcept {
+  constexpr T& operator*() noexcept {
     assert(p_ != nullptr);
     return *p_;
   }
 
-  const T* operator->() const noexcept {
+  constexpr const T* operator->() const noexcept {
     assert(p_ != nullptr);
     return p_;
   }
 
-  T* operator->() noexcept {
+  constexpr T* operator->() noexcept {
     assert(p_ != nullptr);
     return p_;
   }
 
-  void swap(indirect& other) noexcept {
+  constexpr void swap(indirect& other) noexcept {
     using std::swap;
     swap(p_, other.p_);
   }
 
-  friend void swap(indirect& lhs, indirect& rhs) noexcept {
+  friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept {
     using std::swap;
     swap(lhs.p_, rhs.p_);
   }
 
-  bool valueless_after_move() const noexcept { return p_ == nullptr; }
+  constexpr bool valueless_after_move() const noexcept { return p_ == nullptr; }
 
  private:
   void reset() {
