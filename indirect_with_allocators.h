@@ -17,33 +17,53 @@ class indirect {
 
   indirect() {
     T* mem = allocator_traits::allocate(alloc_, 1);
-    allocator_traits::construct(alloc_, mem);
-    p_ = mem;
+    try {
+      allocator_traits::construct(alloc_, mem);
+      p_ = mem;
+    } catch (...) {
+      allocator_traits::deallocate(alloc_, mem, 1);
+      throw;
+    }
   }
 
   template <class... Ts>
   indirect(std::in_place_t, Ts&&... ts) {
     T* mem = allocator_traits::allocate(alloc_, 1);
-    allocator_traits::construct(alloc_, mem, std::forward<Ts>(ts)...);
-    p_ = mem;
+    try {
+      allocator_traits::construct(alloc_, mem, std::forward<Ts>(ts)...);
+      p_ = mem;
+    } catch (...) {
+      allocator_traits::deallocate(alloc_, mem, 1);
+      throw;
+    }
   }
 
   template <class... Ts>
   indirect(std::allocator_arg_t, const A& alloc, std::in_place_t, Ts&&... ts)
       : alloc_(alloc) {
     T* mem = allocator_traits::allocate(alloc_, 1);
-    allocator_traits::construct(alloc_, mem, std::forward<Ts>(ts)...);
-    p_ = mem;
+    try {
+      allocator_traits::construct(alloc_, mem, std::forward<Ts>(ts)...);
+      p_ = mem;
+    } catch (...) {
+      allocator_traits::deallocate(alloc_, mem, 1);
+      throw;
+    }
   }
 
-  indirect(const indirect& other) {
+  indirect(const indirect& other) : alloc_(other.alloc_) {
     assert(other.p_ != nullptr);
     T* mem = allocator_traits::allocate(alloc_, 1);
-    allocator_traits::construct(alloc_, mem, *other);
-    p_ = mem;
+    try {
+      allocator_traits::construct(alloc_, mem, *other);
+      p_ = mem;
+    } catch (...) {
+      allocator_traits::deallocate(alloc_, mem, 1);
+      throw;
+    }
   }
 
-  indirect(indirect&& other) noexcept : p_(nullptr) {
+  indirect(indirect&& other) noexcept : p_(nullptr), alloc_(std::move(other.alloc_)) {
     assert(other.p_ != nullptr);
     using std::swap;
     swap(p_, other.p_);
@@ -53,13 +73,15 @@ class indirect {
 
   indirect& operator=(const indirect& other) {
     assert(other.p_ != nullptr);
-    indirect tmp(std::in_place, *other.p_);
+    indirect tmp(other);
     swap(tmp);
     return *this;
   }
 
   indirect& operator=(indirect&& other) noexcept {
     assert(other.p_ != nullptr);
+    reset();
+    alloc_ = std::move(other.alloc_);
     p_ = std::exchange(other.p_, nullptr);
     return *this;
   }
@@ -97,7 +119,7 @@ class indirect {
   constexpr bool valueless_after_move() const noexcept { return p_ == nullptr; }
 
  private:
-  void reset() {
+  void reset() noexcept {
     if (p_ == nullptr) return;
     allocator_traits::destroy(alloc_, p_);
     allocator_traits::deallocate(alloc_, p_, 1);
