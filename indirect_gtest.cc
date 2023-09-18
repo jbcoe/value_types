@@ -20,8 +20,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <gtest/gtest.h>
 
+#include <map>
 #include <optional>
+#include <unordered_map>
 #include <utility>
+#include <vector>
 
 #ifndef XYZ_USES_ALLOCATORS
 #error "XYZ_USES_ALLOCATORS must be defined"
@@ -222,5 +225,43 @@ TEST(IndirectTest, CountAllocationsForInPlaceConstruction) {
 }
 
 #endif  // XYZ_USES_ALLOCATORS == 1
+
+TEST(IndirectTest, InteractionWithOptional) {
+  std::optional<xyz::indirect<int>> a;
+  EXPECT_FALSE(a.has_value());
+  a.emplace(std::in_place, 42);
+  EXPECT_TRUE(a.has_value());
+  EXPECT_EQ(**a, 42);
+}
+
+TEST(IndirectTest, InteractionWithVector) {
+  std::vector<xyz::indirect<int>> as;
+  for (int i = 0; i < 16; ++i) {
+    as.push_back(xyz::indirect<int>(std::in_place, i));
+  }
+  for (int i = 0; i < 16; ++i) {
+    EXPECT_EQ(*as[i], i);
+  }
+}
+
+TEST(IndirectTest, InteractionWithMap) {
+  std::map<int, xyz::indirect<int>> as;
+  for (int i = 0; i < 16; ++i) {
+    as.emplace(i, xyz::indirect<int>(std::in_place, i));
+  }
+  for (auto [k, v] : as) {
+    EXPECT_EQ(*v, k);
+  }
+}
+
+TEST(IndirectTest, InteractionWithUnorderedMap) {
+  std::unordered_map<int, xyz::indirect<int>> as;
+  for (int i = 0; i < 16; ++i) {
+    as.emplace(i, xyz::indirect<int>(std::in_place, i));
+  }
+  for (auto [k, v] : as) {
+    EXPECT_EQ(*v, k);
+  }
+}
 
 }  // namespace
