@@ -11,30 +11,28 @@ template <class T, class A>
 struct control_block {
   T* p_;
   virtual ~control_block() = default;
-  virtual void destroy() = 0;
-  virtual control_block<T, A>* clone() = 0;
+  virtual void destroy(A& alloc) = 0;
+  virtual control_block<T, A>* clone(A& alloc) = 0;
 };
 
 template <class T, class U, class A>
 class direct_control_block : public control_block<T, A> {
   U u_;
-  [[no_unique_address]] A alloc_;
 
  public:
   template <class... Ts>
-  direct_control_block(const A& alloc, Ts&&... ts)
-      : u_(std::forward<Ts>(ts)...), alloc_(alloc) {
+  direct_control_block(Ts&&... ts) : u_(std::forward<Ts>(ts)...) {
     control_block<T, A>::p_ = &u_;
   }
 
-  control_block<T, A>* clone() override {
+  control_block<T, A>* clone(A& alloc) override {
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<direct_control_block<T, U, A>>;
-    cb_allocator cb_alloc(alloc_);
+    cb_allocator cb_alloc(alloc);
     using cb_alloc_traits = std::allocator_traits<cb_allocator>;
     auto* mem = cb_alloc_traits::allocate(cb_alloc, 1);
     try {
-      cb_alloc_traits::construct(cb_alloc, mem, alloc_, u_);
+      cb_alloc_traits::construct(cb_alloc, mem, u_);
       return mem;
     } catch (...) {
       cb_alloc_traits::deallocate(cb_alloc, mem, 1);
@@ -42,10 +40,10 @@ class direct_control_block : public control_block<T, A> {
     }
   }
 
-  void destroy() override {
+  void destroy(A& alloc) override {
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<direct_control_block<T, U, A>>;
-    cb_allocator cb_alloc(alloc_);
+    cb_allocator cb_alloc(alloc);
     using cb_alloc_traits = std::allocator_traits<cb_allocator>;
     cb_alloc_traits::destroy(cb_alloc, this);
     cb_alloc_traits::deallocate(cb_alloc, this, 1);
@@ -70,7 +68,7 @@ class polymorphic {
     cb_allocator cb_alloc(alloc_);
     auto* mem = cb_traits::allocate(cb_alloc, 1);
     try {
-      cb_traits::construct(cb_alloc, mem, alloc_);
+      cb_traits::construct(cb_alloc, mem);
       cb_ = mem;
     } catch (...) {
       cb_traits::deallocate(cb_alloc, mem, 1);
@@ -86,7 +84,7 @@ class polymorphic {
     cb_allocator cb_alloc(alloc_);
     auto* mem = cb_traits::allocate(cb_alloc, 1);
     try {
-      cb_traits::construct(cb_alloc, mem, alloc_, std::forward<Ts>(ts)...);
+      cb_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
       cb_ = mem;
     } catch (...) {
       cb_traits::deallocate(cb_alloc, mem, 1);
@@ -104,7 +102,7 @@ class polymorphic {
     cb_allocator cb_alloc(alloc_);
     auto* mem = cb_traits::allocate(cb_alloc, 1);
     try {
-      cb_traits::construct(cb_alloc, mem, alloc_, std::forward<Ts>(ts)...);
+      cb_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
       cb_ = mem;
     } catch (...) {
       cb_traits::deallocate(cb_alloc, mem, 1);
@@ -114,7 +112,7 @@ class polymorphic {
 
   polymorphic(const polymorphic& other) : alloc_(other.alloc_) {
     assert(other.cb_ != nullptr);
-    cb_ = other.cb_->clone();
+    cb_ = other.cb_->clone(alloc_);
   }
 
   polymorphic(polymorphic&& other) noexcept : alloc_(std::move(other.alloc_)) {
@@ -176,7 +174,7 @@ class polymorphic {
  private:
   void reset() noexcept {
     if (cb_ != nullptr) {
-      cb_->destroy();
+      cb_->destroy(alloc_);
       cb_ = nullptr;
     }
   }
