@@ -124,6 +124,14 @@ TEST(IndirectTest, Hash) {
   EXPECT_EQ(std::hash<xyz::indirect<int>>()(a), std::hash<int>()(*a));
 }
 
+TEST(IndirectTest, Optional) {
+  std::optional<xyz::indirect<int>> a;
+  EXPECT_FALSE(a.has_value());
+  a.emplace(std::in_place, 42);
+  EXPECT_TRUE(a.has_value());
+  EXPECT_EQ(**a, 42);
+}
+
 #if false  // Indirect does not support == and != yet.
 TEST(IndirectTest, Equality) {
   xyz::indirect<int> a(std::in_place, 42);
