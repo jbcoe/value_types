@@ -11,6 +11,12 @@ cc_library(
     deps = ["copy_and_delete"],
 )
 
+cc_library(
+    name = "indirect_with_allocators",
+    hdrs = ["indirect_with_allocators.h"],
+    copts = ["-Iexternal/value_types/"],
+)
+
 cc_test(
     name = "indirect_test",
     srcs = [
@@ -33,6 +39,12 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "polymorphic_with_allocators",
+    hdrs = ["polymorphic_with_allocators.h"],
+    copts = ["-Iexternal/value_types/"],
+)
+
 cc_test(
     name = "polymorphic_test",
     srcs = [
@@ -49,8 +61,20 @@ cc_test(
     name = "indirect_gtest",
     size = "small",
     srcs = ["indirect_gtest.cc"],
+    defines = ["XYZ_USES_ALLOCATORS=0"],
     deps = [
         "indirect",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "indirect_with_allocators_gtest",
+    size = "small",
+    srcs = ["indirect_gtest.cc"],
+    defines = ["XYZ_USES_ALLOCATORS=1"],
+    deps = [
+        "indirect_with_allocators",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -59,8 +83,20 @@ cc_test(
     name = "polymorphic_gtest",
     size = "small",
     srcs = ["polymorphic_gtest.cc"],
+    defines = ["XYZ_USES_ALLOCATORS=0"],
     deps = [
         "polymorphic",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "polymorphic_with_allocators_gtest",
+    size = "small",
+    srcs = ["polymorphic_gtest.cc"],
+    defines = ["XYZ_USES_ALLOCATORS=1"],
+    deps = [
+        "polymorphic_with_allocators",
         "@com_google_googletest//:gtest_main",
     ],
 )

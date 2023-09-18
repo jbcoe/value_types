@@ -20,9 +20,24 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <gtest/gtest.h>
 
+#include <optional>
 #include <utility>
 
+#ifndef XYZ_USES_ALLOCATORS
+#error "XYZ_USES_ALLOCATORS must be defined"
+#endif  // XYZ_USES_ALLOCATORS
+#if XYZ_USES_ALLOCATORS == 1
+#include "indirect_with_allocators.h"
+#elif XYZ_USES_ALLOCATORS == 0
 #include "indirect.h"
+#else
+#error "XYZ_USES_ALLOCATORS must be 0 or 1"
+#endif  // XYZ_USES_ALLOCATORS == 0 or 1
+
+TEST(IndirectTest, ValueAccess) {
+  xyz::indirect<int> a(std::in_place, 42);
+  EXPECT_EQ(*a, 42);
+}
 
 TEST(IndirectTest, CopiesAreDistinct) {
   xyz::indirect<int> a(std::in_place, 42);
@@ -36,6 +51,43 @@ TEST(IndirectTest, MovePreservesIndirectObjectAddress) {
   auto address = &*a;
   auto aa = std::move(a);
   EXPECT_EQ(address, &*aa);
+}
+
+TEST(IndirectTest, CopyAssignment) {
+  xyz::indirect<int> a(std::in_place, 42);
+  xyz::indirect<int> b(std::in_place, 101);
+  EXPECT_EQ(*a, 42);
+  a = b;
+
+  EXPECT_EQ(*a, 101);
+  EXPECT_NE(&*a, &*b);
+}
+
+TEST(IndirectTest, MoveAssignment) {
+  xyz::indirect<int> a(std::in_place, 42);
+  xyz::indirect<int> b(std::in_place, 101);
+  EXPECT_EQ(*a, 42);
+  a = std::move(b);
+
+  EXPECT_EQ(*a, 101);
+}
+
+TEST(IndirectTest, NonMemberSwap) {
+  xyz::indirect<int> a(std::in_place, 42);
+  xyz::indirect<int> b(std::in_place, 101);
+  using std::swap;
+  swap(a, b);
+  EXPECT_EQ(*a, 101);
+  EXPECT_EQ(*b, 42);
+}
+
+TEST(IndirectTest, MemberSwap) {
+  xyz::indirect<int> a(std::in_place, 42);
+  xyz::indirect<int> b(std::in_place, 101);
+
+  a.swap(b);
+  EXPECT_EQ(*a, 101);
+  EXPECT_EQ(*b, 42);
 }
 
 TEST(IndirectTest, ConstPropagation) {
@@ -53,21 +105,17 @@ TEST(IndirectTest, ConstPropagation) {
   EXPECT_EQ((*ca).member(), SomeType::Constness::CONST);
 }
 
-TEST(IndirectTest, Swap) {
-  xyz::indirect<int> a(std::in_place, 42);
-  xyz::indirect<int> b(std::in_place, 43);
-  auto address_a = &*a;
-  auto address_b = &*b;
-  swap(a, b);
-  EXPECT_EQ(*a, 43);
-  EXPECT_EQ(*b, 42);
-  EXPECT_EQ(address_a, &*b);
-  EXPECT_EQ(address_b, &*a);
-}
-
 TEST(IndirectTest, Hash) {
   xyz::indirect<int> a(std::in_place, 42);
   EXPECT_EQ(std::hash<xyz::indirect<int>>()(a), std::hash<int>()(*a));
+}
+
+TEST(IndirectTest, Optional) {
+  std::optional<xyz::indirect<int>> a;
+  EXPECT_FALSE(a.has_value());
+  a.emplace(std::in_place, 42);
+  EXPECT_TRUE(a.has_value());
+  EXPECT_EQ(**a, 42);
 }
 
 #if false  // Indirect does not support == and != yet.

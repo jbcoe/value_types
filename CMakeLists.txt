@@ -41,6 +41,40 @@ target_compile_features(value_types
         cxx_std_23
 )
 
+add_library(indirect_with_allocators INTERFACE)
+target_include_directories(indirect_with_allocators
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+target_sources(indirect_with_allocators
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect_with_allocators.h>
+)
+
+target_compile_features(indirect_with_allocators
+    INTERFACE
+        cxx_std_23
+)
+
+add_library(polymorphic_with_allocators INTERFACE)
+target_include_directories(polymorphic_with_allocators
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+target_sources(polymorphic_with_allocators
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic_with_allocators.h>
+)
+
+target_compile_features(polymorphic_with_allocators
+    INTERFACE
+        cxx_std_23
+)
+
 add_library(value_types::value_types ALIAS value_types)
 
 if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
@@ -68,13 +102,25 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
             FetchContent_Populate(catch2)
             add_subdirectory(${catch2_SOURCE_DIR} ${catch2_BINARY_DIR})
         endif()
+        add_library(common_compiler_settings INTERFACE)
+
+        target_compile_options(common_compiler_settings
+            INTERFACE
+                $<$<CXX_COMPILER_ID:MSVC>:/EHsc>
+                $<$<CXX_COMPILER_ID:MSVC>:/W4>
+                $<$<CXX_COMPILER_ID:MSVC>:/bigobj>
+                $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:Clang>>:-Werror;-Wall;-Wno-self-assign-overloaded;-Wno-unknown-warning-option>
+        )
+
+        set_target_properties(common_compiler_settings PROPERTIES
+            CXX_STANDARD 23
+            CXX_STANDARD_REQUIRED YES
+            CXX_EXTENSIONS NO
+        )
 
         add_executable(value_types_test "")
         target_sources(value_types_test
             PRIVATE
-                #pimpl.h
-                #pimpl.cpp
-                #pimpl_test.cpp
                 indirect_test.cc
                 polymorphic_test.cc
         )
@@ -83,20 +129,7 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
             PRIVATE
                 value_types::value_types
                 Catch2::Catch2WithMain
-        )
-
-        target_compile_options(value_types_test
-            PRIVATE
-                $<$<CXX_COMPILER_ID:MSVC>:/EHsc>
-                $<$<CXX_COMPILER_ID:MSVC>:/W4>
-                $<$<CXX_COMPILER_ID:MSVC>:/bigobj>
-                $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:Clang>>:-Werror;-Wall;-Wno-self-assign-overloaded;-Wno-unknown-warning-option>
-        )
-
-        set_target_properties(value_types_test PROPERTIES
-            CXX_STANDARD 23
-            CXX_STANDARD_REQUIRED YES
-            CXX_EXTENSIONS NO
+                common_compiler_settings
         )
 
         add_executable(value_types_gtest "")
@@ -110,20 +143,30 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
             PRIVATE
                 value_types::value_types
                 GTest::gtest_main
+                common_compiler_settings
         )
-
-        target_compile_options(value_types_gtest
+        target_compile_definitions(value_types_gtest 
             PRIVATE
-                $<$<CXX_COMPILER_ID:MSVC>:/EHsc>
-                $<$<CXX_COMPILER_ID:MSVC>:/W4>
-                $<$<CXX_COMPILER_ID:MSVC>:/bigobj>
-                $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:Clang>>:-Werror;-Wall;-Wno-self-assign-overloaded;-Wno-unknown-warning-option>
+                XYZ_USES_ALLOCATORS=0
         )
 
-        set_target_properties(value_types_gtest PROPERTIES
-            CXX_STANDARD 23
-            CXX_STANDARD_REQUIRED YES
-            CXX_EXTENSIONS NO
+        add_executable(value_types_with_allocators_gtest "")
+        target_sources(value_types_with_allocators_gtest
+            PRIVATE
+                indirect_gtest.cc
+                polymorphic_gtest.cc
+        )
+
+        target_link_libraries(value_types_with_allocators_gtest
+            PRIVATE
+                indirect_with_allocators
+                polymorphic_with_allocators
+                GTest::gtest_main
+                common_compiler_settings
+        )
+        target_compile_definitions(value_types_with_allocators_gtest 
+            PRIVATE
+                XYZ_USES_ALLOCATORS=1
         )
 
         if (ENABLE_SANITIZERS)
@@ -182,6 +225,7 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
         catch_discover_tests(value_types_test)
         include(GoogleTest)
         gtest_discover_tests(value_types_gtest)
+        gtest_discover_tests(value_types_with_allocators_gtest)
 
         if (ENABLE_CODE_COVERAGE)
             FetchContent_Declare(
