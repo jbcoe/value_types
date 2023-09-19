@@ -30,9 +30,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace {
 
-TEST(IndirectTest, ValueAccess) {
+TEST(IndirectTest, ValueAccessFromInPlaceConstructedObject) {
   xyz::indirect<int> a(std::in_place, 42);
   EXPECT_EQ(*a, 42);
+}
+
+TEST(IndirectTest, ValueAccessFromDefaultConstructedObject) {
+  xyz::indirect<int> a;
+  EXPECT_EQ(*a, 0);
 }
 
 TEST(IndirectTest, CopiesAreDistinct) {

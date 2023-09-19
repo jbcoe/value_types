@@ -42,9 +42,14 @@ class A {
   }
 };
 
-TEST(PolymorphicTest, ValueAccess) {
+TEST(PolymorphicTest, ValueAccessFromInPlaceConstructedObject) {
   xyz::polymorphic<A> a(std::in_place_type<A>, 42);
   EXPECT_EQ(*a, 42);
+}
+
+TEST(PolymorphicTest, ValueAccessFromDefaultConstructedObject) {
+  xyz::polymorphic<A> a;
+  EXPECT_EQ(*a, 0);
 }
 
 TEST(PolymorphicTest, CopiesAreDistinct) {
