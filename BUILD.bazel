@@ -1,102 +1,31 @@
 cc_library(
-    name = "copy_and_delete",
-    hdrs = ["copy_and_delete.h"],
-    copts = ["-Iexternal/value_types/"],
-)
-
-cc_library(
     name = "indirect",
     hdrs = ["indirect.h"],
     copts = ["-Iexternal/value_types/"],
-    deps = ["copy_and_delete"],
-)
-
-cc_library(
-    name = "indirect_with_allocators",
-    hdrs = ["indirect_with_allocators.h"],
-    copts = ["-Iexternal/value_types/"],
-)
-
-cc_test(
-    name = "indirect_test",
-    srcs = [
-        "indirect_test.cc",
-    ],
-    copts = ["-Iexternal/value_types/"],
-    deps = [
-        ":indirect",
-        "@catch2//:catch2_main",
-    ],
 )
 
 cc_library(
     name = "polymorphic",
     hdrs = ["polymorphic.h"],
     copts = ["-Iexternal/value_types/"],
-    deps = [
-        "copy_and_delete",
-        "indirect",
-    ],
 )
 
-cc_library(
-    name = "polymorphic_with_allocators",
-    hdrs = ["polymorphic_with_allocators.h"],
-    copts = ["-Iexternal/value_types/"],
+cc_test(
+    name = "indirect_test",
+    size = "small",
+    srcs = ["indirect_test.cc"],
+    deps = [
+        "indirect",
+        "@com_google_googletest//:gtest_main",
+    ],
 )
 
 cc_test(
     name = "polymorphic_test",
-    srcs = [
-        "polymorphic_test.cc",
-    ],
-    copts = ["-Iexternal/value_types/"],
-    deps = [
-        ":polymorphic",
-        "@catch2//:catch2_main",
-    ],
-)
-
-cc_test(
-    name = "indirect_gtest",
     size = "small",
-    srcs = ["indirect_gtest.cc"],
-    defines = ["XYZ_USES_ALLOCATORS=0"],
-    deps = [
-        "indirect",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "indirect_with_allocators_gtest",
-    size = "small",
-    srcs = ["indirect_gtest.cc"],
-    defines = ["XYZ_USES_ALLOCATORS=1"],
-    deps = [
-        "indirect_with_allocators",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "polymorphic_gtest",
-    size = "small",
-    srcs = ["polymorphic_gtest.cc"],
-    defines = ["XYZ_USES_ALLOCATORS=0"],
+    srcs = ["polymorphic_test.cc"],
     deps = [
         "polymorphic",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "polymorphic_with_allocators_gtest",
-    size = "small",
-    srcs = ["polymorphic_gtest.cc"],
-    defines = ["XYZ_USES_ALLOCATORS=1"],
-    deps = [
-        "polymorphic_with_allocators",
         "@com_google_googletest//:gtest_main",
     ],
 )

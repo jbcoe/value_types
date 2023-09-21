@@ -41,36 +41,36 @@ target_compile_features(value_types
         cxx_std_23
 )
 
-add_library(indirect_with_allocators INTERFACE)
-target_include_directories(indirect_with_allocators
+add_library(indirect INTERFACE)
+target_include_directories(indirect
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-target_sources(indirect_with_allocators
+target_sources(indirect
     INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect_with_allocators.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect.h>
 )
 
-target_compile_features(indirect_with_allocators
+target_compile_features(indirect
     INTERFACE
         cxx_std_23
 )
 
-add_library(polymorphic_with_allocators INTERFACE)
-target_include_directories(polymorphic_with_allocators
+add_library(polymorphic INTERFACE)
+target_include_directories(polymorphic
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-target_sources(polymorphic_with_allocators
+target_sources(polymorphic
     INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic_with_allocators.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h>
 )
 
-target_compile_features(polymorphic_with_allocators
+target_compile_features(polymorphic
     INTERFACE
         cxx_std_23
 )
@@ -81,12 +81,6 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
 
     if (${BUILD_TESTING})
         FetchContent_Declare(
-            catch2
-            GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-            GIT_TAG v3.4.0
-        )
-
-        FetchContent_Declare(
           googletest
           URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
         )
@@ -94,14 +88,6 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
         set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
         FetchContent_MakeAvailable(googletest)
 
-        # TODO(Avoid gloablly setting C++ standard) Force C++23 for Catchv2
-        # Fix for: https://stackoverflow.com/questions/66227246/catch2-undefined-reference-to-catchstringmaker
-        set(CMAKE_CXX_STANDARD 23)
-
-        if(NOT catch2_POPULATED)
-            FetchContent_Populate(catch2)
-            add_subdirectory(${catch2_SOURCE_DIR} ${catch2_BINARY_DIR})
-        endif()
         add_library(common_compiler_settings INTERFACE)
 
         target_compile_options(common_compiler_settings
@@ -117,56 +103,31 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
             CXX_STANDARD_REQUIRED YES
             CXX_EXTENSIONS NO
         )
-
-        add_executable(value_types_test "")
-        target_sources(value_types_test
+        
+        add_executable(indirect_test "")
+        target_sources(indirect_test
             PRIVATE
                 indirect_test.cc
+        )
+
+        target_link_libraries(indirect_test
+            PRIVATE
+                indirect
+                GTest::gtest_main
+                common_compiler_settings
+        )
+
+        add_executable(polymorphic_test "")
+        target_sources(polymorphic_test
+            PRIVATE
                 polymorphic_test.cc
         )
 
-        target_link_libraries(value_types_test
+        target_link_libraries(polymorphic_test
             PRIVATE
-                value_types::value_types
-                Catch2::Catch2WithMain
-                common_compiler_settings
-        )
-
-        add_executable(value_types_gtest "")
-        target_sources(value_types_gtest
-            PRIVATE
-                indirect_gtest.cc
-                polymorphic_gtest.cc
-        )
-
-        target_link_libraries(value_types_gtest
-            PRIVATE
-                value_types::value_types
+                polymorphic
                 GTest::gtest_main
                 common_compiler_settings
-        )
-        target_compile_definitions(value_types_gtest 
-            PRIVATE
-                XYZ_USES_ALLOCATORS=0
-        )
-
-        add_executable(value_types_with_allocators_gtest "")
-        target_sources(value_types_with_allocators_gtest
-            PRIVATE
-                indirect_gtest.cc
-                polymorphic_gtest.cc
-        )
-
-        target_link_libraries(value_types_with_allocators_gtest
-            PRIVATE
-                indirect_with_allocators
-                polymorphic_with_allocators
-                GTest::gtest_main
-                common_compiler_settings
-        )
-        target_compile_definitions(value_types_with_allocators_gtest 
-            PRIVATE
-                XYZ_USES_ALLOCATORS=1
         )
 
         if (ENABLE_SANITIZERS)
@@ -183,11 +144,11 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
                     INTERFACE_COMPILE_OPTIONS "${SANITIZER_FLAGS_ASAN}"
                     INTERFACE_LINK_OPTIONS "${SANITIZER_FLAGS_ASAN}"
                 )
-                target_link_libraries(indirect_value_test
+                target_link_libraries(indirect_test
                     PRIVATE
                         asan
                 )
-                target_link_libraries(indirect_value_gtest
+                target_link_libraries(polymorphic_test
                     PRIVATE
                         asan
                 )
@@ -199,11 +160,11 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
                     INTERFACE_COMPILE_OPTIONS "${SANITIZER_FLAGS_UBSAN}"
                     INTERFACE_LINK_OPTIONS "${SANITIZER_FLAGS_UBSAN}"
                 )
-                target_link_libraries(value_types_test
+                target_link_libraries(indirect_test
                     PRIVATE
                         ubsan
                 )
-                target_link_libraries(value_types_gtest
+                target_link_libraries(polymorphic_test
                     PRIVATE
                         ubsan
                 )
@@ -212,20 +173,18 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
 
         enable_testing()
         add_test(
-            NAME value_types_test
-            COMMAND value_types_test
+            NAME indirect_test
+            COMMAND indirect_test
             WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
         add_test(
-            NAME value_types_gtest
-            COMMAND value_types_gtest
+            NAME polymorphic_test
+            COMMAND polymorphic_test
             WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
         list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/contrib)
-        include(Catch)
-        catch_discover_tests(value_types_test)
         include(GoogleTest)
-        gtest_discover_tests(value_types_gtest)
-        gtest_discover_tests(value_types_with_allocators_gtest)
+        gtest_discover_tests(indirect_test)
+        gtest_discover_tests(polymorphic_test)
 
         if (ENABLE_CODE_COVERAGE)
             FetchContent_Declare(
@@ -241,8 +200,8 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
 
             set(ENABLE_COVERAGE ON CACHE BOOL "Enable coverage build." FORCE)
             find_package(codecov)
-            add_coverage(value_types_test)
-            add_coverage(value_types_gtest)
+            add_coverage(indirect_test)
+            add_coverage(polymorphic_test)
             list(APPEND LCOV_REMOVE_PATTERNS "'/usr/*'")
             coverage_evaluate()
         endif()
