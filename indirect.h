@@ -26,7 +26,12 @@ namespace xyz {
 template <class T, class A = std::allocator<T>>
 class indirect {
   T* p_;
+
+#if defined(_MSC_VER)
+  [[msvc::no_unique_address]] A alloc_;
+#else
   [[no_unique_address]] A alloc_;
+#endif
 
   using allocator_traits = std::allocator_traits<A>;
 
