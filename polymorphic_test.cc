@@ -170,8 +170,7 @@ struct TrackingAllocator {
   unsigned* alloc_counter_;
   unsigned* dealloc_counter_;
 
-  [[gnu::noinline]] TrackingAllocator(unsigned* alloc_counter,
-                                 unsigned* dealloc_counter)
+  TrackingAllocator(unsigned* alloc_counter, unsigned* dealloc_counter)
       : alloc_counter_(alloc_counter), dealloc_counter_(dealloc_counter) {}
 
   template <typename U>
