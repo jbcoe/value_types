@@ -19,6 +19,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifndef XYZ_INDIRECT_H
 #define XYZ_INDIRECT_H
+
+#include <cassert>
 #include <memory>
 #include <utility>
 

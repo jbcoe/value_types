@@ -21,6 +21,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef XYZ_POLYMORPHIC_H_
 #define XYZ_POLYMORPHIC_H_
 
+#include <cassert>
 #include <memory>
 #include <utility>
 
