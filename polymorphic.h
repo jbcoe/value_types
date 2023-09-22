@@ -22,6 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define XYZ_POLYMORPHIC_H_
 
 #include <cassert>
+#include <concepts>
 #include <memory>
 #include <utility>
 
@@ -87,7 +88,9 @@ class polymorphic {
   using value_type = T;
   using allocator_type = A;
 
-  polymorphic() {
+  polymorphic()
+    requires std::default_initializable<T>
+  {
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
     using cb_traits = std::allocator_traits<cb_allocator>;
@@ -103,7 +106,11 @@ class polymorphic {
   }
 
   template <class U, class... Ts>
-  polymorphic(std::in_place_type_t<U>, Ts&&... ts) {
+  polymorphic(std::in_place_type_t<U>, Ts&&... ts)
+    requires std::constructible_from<U, Ts&&...> &&
+             std::copy_constructible<U> &&
+             (std::derived_from<U, T> || std::same_as<U, T>)
+  {
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
     using cb_traits = std::allocator_traits<cb_allocator>;
@@ -121,6 +128,9 @@ class polymorphic {
   template <class U, class... Ts>
   polymorphic(std::allocator_arg_t, const A& alloc, std::in_place_type_t<U>,
               Ts&&... ts)
+    requires std::constructible_from<U, Ts&&...> &&
+             std::copy_constructible<U> &&
+             (std::derived_from<U, T> || std::same_as<U, T>)
       : alloc_(alloc) {
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;

@@ -125,18 +125,15 @@ TEST(IndirectTest, Optional) {
   EXPECT_EQ(**a, 42);
 }
 
-#if false  // Indirect does not support == and != yet.
 TEST(IndirectTest, Equality) {
   xyz::indirect<int> a(std::in_place, 42);
   xyz::indirect<int> b(std::in_place, 42);
   xyz::indirect<int> c(std::in_place, 43);
-  EXPECT_EQ(a, a); // Same object.
-  EXPECT_NE(a, b); // Same value.
-  EXPECT_NE(a, c); // Different value.
+  EXPECT_EQ(a, a);  // Same object.
+  EXPECT_EQ(a, b);  // Same value.
+  EXPECT_NE(a, c);  // Different value.
 }
-#endif     // Indirect does not support == and != yet.
 
-#if false  // Indirect does not support >, >=, <, <= yet.
 TEST(IndirectTest, Comparison) {
   xyz::indirect<int> a(std::in_place, 42);
   xyz::indirect<int> b(std::in_place, 42);
@@ -166,7 +163,17 @@ TEST(IndirectTest, Comparison) {
   EXPECT_FALSE(c <= a);
   EXPECT_TRUE(c >= a);
 }
-#endif     // Indirect does not support >, >=, <, <= yet.
+
+TEST(IndirectTest, ThreeWayComparison) {
+  xyz::indirect<int> a(std::in_place, 42);
+  xyz::indirect<int> b(std::in_place, 42);
+  xyz::indirect<int> c(std::in_place, 43);
+  EXPECT_EQ(a <=> a, *a <=> *a);  // Same object.
+  EXPECT_EQ(a <=> b, *a <=> *b);  // Same value.
+  EXPECT_EQ(b <=> a, *b <=> *a);  // Same value.
+  EXPECT_EQ(a <=> c, *a <=> *c);  // Different value.
+  EXPECT_EQ(c <=> a, *c <=> *a);  // Different value.
+}
 
 template <typename T>
 struct TrackingAllocator {
