@@ -364,4 +364,15 @@ TEST(IndirectTest, InteractionWithUnorderedMap) {
   }
 }
 
+TEST(IndirectTest, InteractionWithSizedAllocators)
+{
+  // Admit defeat... gtest does not seem to support STATIC_REQUIRES equivelent
+  // functionality.
+  EXPECT_EQ(sizeof(xyz::indirect<int>), sizeof(int*)); 
+  EXPECT_EQ(
+      sizeof(xyz::indirect<int, TrackingAllocator<int>>),
+      (sizeof(int*)+sizeof(TrackingAllocator<int>)));
+
+}
+
 }  // namespace

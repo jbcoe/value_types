@@ -377,4 +377,9 @@ TEST(PolymorphicTest, InteractionWithUnorderedMap) {
   }
 }
 
+TEST(PolymorphicTest, InteractionWithSizedAllocators) {
+  EXPECT_EQ(sizeof(xyz::polymorphic<int>), sizeof(int*));
+  EXPECT_EQ(sizeof(xyz::polymorphic<int, TrackingAllocator<int>>),
+            (sizeof(int*) + sizeof(TrackingAllocator<int>)));
+}
 }  // namespace
