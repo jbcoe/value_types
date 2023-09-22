@@ -75,7 +75,12 @@ class direct_control_block : public control_block<T, A> {
 template <class T, class A = std::allocator<T>>
 class polymorphic {
   detail::control_block<T, A>* cb_;
+
+#if defined(_MSC_VER)
+  [[msvc::no_unique_address]] A alloc_;
+#else
   [[no_unique_address]] A alloc_;
+#endif
 
  public:
   using value_type = T;
