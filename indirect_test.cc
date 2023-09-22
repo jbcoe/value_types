@@ -18,6 +18,8 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==============================================================================*/
 
+#include "indirect.h"
+
 #include <gtest/gtest.h>
 
 #include <map>
@@ -25,8 +27,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <unordered_map>
 #include <utility>
 #include <vector>
-
-#include "indirect.h"
 
 namespace {
 
@@ -364,15 +364,12 @@ TEST(IndirectTest, InteractionWithUnorderedMap) {
   }
 }
 
-TEST(IndirectTest, InteractionWithSizedAllocators)
-{
+TEST(IndirectTest, InteractionWithSizedAllocators) {
   // Admit defeat... gtest does not seem to support STATIC_REQUIRES equivelent
   // functionality.
-  EXPECT_EQ(sizeof(xyz::indirect<int>), sizeof(int*)); 
-  EXPECT_EQ(
-      sizeof(xyz::indirect<int, TrackingAllocator<int>>),
-      (sizeof(int*)+sizeof(TrackingAllocator<int>)));
-
+  EXPECT_EQ(sizeof(xyz::indirect<int>), sizeof(int*));
+  EXPECT_EQ(sizeof(xyz::indirect<int, TrackingAllocator<int>>),
+            (sizeof(int*) + sizeof(TrackingAllocator<int>)));
 }
 
 }  // namespace
