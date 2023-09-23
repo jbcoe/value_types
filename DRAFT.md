@@ -168,7 +168,7 @@ class indirect {
 
   friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept;
 
-  constexpr bool valueless_after_move() const noexcept { return p_ == nullptr; }
+  constexpr bool valueless_after_move() const noexcept;
 };
 ```
 
@@ -236,7 +236,7 @@ class polymorphic {
 
   friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept;
 
-  constexpr bool valueless_after_move() const noexcept { return p_ == nullptr; }
+  constexpr bool valueless_after_move() const noexcept;
 };
 ```
 
