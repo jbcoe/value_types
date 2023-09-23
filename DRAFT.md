@@ -80,7 +80,7 @@ When a parent object contains a member of type `indirect<T>` or
 `polymorphic<T>`, access to the owned object (of type `T`) through a const
 access path should be `const` qualified.
 
-```cpp
+```c++
 struct A {
     enum class Constness { CONST, NON_CONST };
     Constness foo() { return Constness::NON_CONST; }
@@ -121,9 +121,9 @@ the standard library header `<memory>`.
 
 An _indirect value_ is an object that manages the lifetime of an owned object
 using an allocator.  The owned object (if any) is copied or destroyed using the
-specified allocator when the indirect value is copied or destroyed. An
-indirect value object is _valueless_ if it has no owned object. A indirect value
-may only become valueless after it has been moved from.
+specified allocator when the indirect value is copied or destroyed. An indirect
+value object is _valueless_ if it has no owned object. A indirect value may only
+become valueless after it has been moved from.
 
 The template parameter `T` of `indirect<T>` must be a non-union class type.
 
@@ -131,7 +131,7 @@ The template parameter T of `indirect<T>` may be an incomplete type.
 
 #### X.Z.1 Class template indirect synopsis [indirect.syn]
 
-```cpp
+```c++
 template <class T, class Allocator = std::allocator<T>>
 class indirect {
   T* p_; // exposition only
@@ -146,7 +146,7 @@ class indirect {
   indirect(std::in_place_t, Ts&&... ts);
 
   template <class... Ts>
-  indirect(std::allocator_arg_t, const A& alloc, std::in_place_t, Ts&&... ts);
+  indirect(std::allocator_arg_t, const Allocator& alloc, std::in_place_t, Ts&&... ts);
 
   indirect(const indirect& other);
 
@@ -176,13 +176,154 @@ class indirect {
 
 #### Constructors [indirect.ctor]
 
+```c++
+indirect()
+```
+
+* _Constraints_: `is_default_constructible_v<T>` is true.
+
+* _Effects_: Constructs an indirect owning a default constructed `T` created
+using the specified allocator.
+
+* _Postconditions_: `*this` is not valueless.
+
+```c++
+template <class... Ts>
+indirect(std::in_place_t, Ts&&... ts);
+```
+
+* _Constraints_: `is_constructible_v<T, Ts...>` is true.
+
+* _Effects_: Constructs an indirect owning an instance of `T` created with the
+arguments `Ts` using the specified allocator.
+
+* _Postconditions_: `*this` is not valueless.
+
+```c++
+template <class... Ts>
+indirect(std::allocator_arg_t, const Allocator& alloc, std::in_place_t, Ts&&... ts);
+```
+
+* _Constraints_: `is_constructible_v<T, Ts...>` is true.
+
+* _Preconditions_: `Allocator` meets the _Cpp17Allocator_ requirements.
+
+* _Effects_: Constructs an indirect owning an instance of `T` created with the
+arguments `ts...` using the specified allocator.
+
+* _Postconditions_: `*this` is not valueless.
+
+```c++
+indirect(const indirect& other);
+```
+
+* _Constraints_: `is_copy_constructible_v<T>` is true.
+
+* _Preconditions_: `other` is not valueless.
+
+* _Effects_: Constructs an indirect owning an instance of `T` created with the
+copy constructor of the object owned by `other` using the specified allocator.
+
+* _Postconditions_: `*this` is not valueless.
+
+```c++
+indirect(indirect&& other) noexcept;
+```
+
+* _Preconditions_: `other` is not valueless.
+
+* _Effects_: Constructs an indirect owning the object owned by `other`.
+
+* _Postconditions_: `other` is valueless.
+
+* _Remarks_: This constructor does not require that `is_move_constructible<T>_v`
+  is true.
+
 #### Destructor [indirect.dtor]
+
+```c++
+~indirect();
+```
+
+* _Effects_: If `*this` is not valueless, destroys the owned object with the
+specified allocator.
 
 #### Assignment [indirect.assign]
 
+```c++
+indirect& operator=(const indirect& other) noexcept;
+```
+
+* _Preconditions_: `other` is not valueless.
+
+* _Effects_: If `*this` is not valueless, destroys the owned object with the
+specified allocator. Then, constructs an owned object using the copy constructor
+of the object owned by `other` using the specified allocator.
+
+* _Postconditions_: `*this` is not valueless.
+
+```c++
+indirect& operator=(indirect&& other) noexcept;
+```
+
+* _Preconditions_: `other` is not valueless.
+
+* _Effects_: If `*this` is not valueless, destroys the owned object with the
+  specified allocator. Then takes ownership of the object owned by `other`.
+
+* _Postconditions_: `*this` is not valueless. `other` is valueless.
+
 #### Observers [indirect.observers]
 
+```c++
+constexpr const T& operator*() const noexcept;
+constexpr T& operator*() noexcept;
+```
+
+* _Preconditions_: `*this` is not valueless.
+
+* _Effects_: Returns a reference to the owned object.
+
+* _Remarks_: These functions are constexpr functions.
+
+```c++
+constexpr const T* operator->() const noexcept;
+constexpr T* operator->() noexcept;
+```
+
+* _Preconditions_: `*this` is not valueless.
+
+* _Effects_: Returns a pointer to the owned object.
+
+* _Remarks_: These functions are constexpr functions.
+
+```c++
+constexpr bool valueless_after_move() const noexcept;
+```
+
+* _Returns_: `true` if `*this` is valueless, otherwise `false`.
+
 #### Swap [indirect.swap]
+
+```c++
+constexpr void swap(indirect& other) noexcept;
+```
+
+* _Preconditions_: `*this` is not valueless, `other` is not valueless.
+
+* _Effects_: Swaps the objects owned by `*this` and `other` by swapping pointers.
+
+* _Remarks_: Does not call `swap` on the owned objects directly.
+
+```c++
+friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept;
+```
+
+* _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
+
+* _Effects_: Swaps the objects owned by `lhs` and `rhs` by swapping pointers
+
+* _Remarks_: Does not call `swap` on the owned objects directly.
 
 ### X.Z Class template polymorphic [polymorphic]
 
@@ -190,10 +331,11 @@ class indirect {
 
 A _polymorphic value_ is an object that manages the lifetime of an owned object
 using an allocator. A polymorphic value object may own objects of different
-types at different points in its lifetime. The owned object (if any) is copied or
-destroyed using the specified allocator when the polymorphic value is copied or
-destroyed. A polymorphic value object is _valueless_ if it has no owned object.
-A polymorphic value may only become valueless after it has been moved from.
+types at different points in its lifetime. The owned object (if any) is copied
+or destroyed using the specified allocator when the polymorphic value is copied
+or destroyed. A polymorphic value object is _valueless_ if it has no owned
+object. A polymorphic value may only become valueless after it has been moved
+from.
 
 The template parameter `T` of `polymorphic<T>` must be a non-union class type.
 
@@ -201,7 +343,7 @@ The template parameter `T` of `polymorphic<T>` may be an incomplete type.
 
 #### X.Z.1 Class template polymorphic synopsis [polymorphic.syn]
 
-```cpp
+```c++
 template <class T, class Allocator = std::allocator<T>>
 class polymorphic {
   control_block* control_block_; // exposition only
@@ -246,17 +388,162 @@ class polymorphic {
 
 #### Constructors [polymorphic.ctor]
 
+```c++
+polymorphic()
+```
+
+* _Constraints_: `is_default_constructible_v<T>` is true,
+  `is_copy_constructible_v<T>` is true.
+
+* _Effects_: Constructs an polymorphic owning a default constructed `T` created
+using the specified allocator.
+
+* _Postconditions_: `*this` is not valueless.
+
+```c++
+template <class U, class... Ts>
+polymorphic(std::in_place_type_t<U>, Ts&&... ts);
+```
+
+* _Constraints_: `is_same_v<T, U> || is_base_of_v<T, U>` is true,
+  `is_constructible_v<U, Ts...>` is true, `is_copy_constructible_v<U>` is true.
+
+* _Effects_: Constructs an polymorphic owning an instance of `U` created with
+the arguments `Ts` using the specified allocator.
+
+* _Postconditions_: `*this` is not valueless.
+
+```c++
+template <class U, class... Ts>
+polymorphic(std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
+```
+
+* _Constraints_: `is_same_v<T, U> || is_base_of_v<T, U>` is true,
+  `is_constructible_v<U, Ts...>` is true, `is_copy_constructible_v<U>` is true.
+
+* _Preconditions_: `Allocator` meets the _Cpp17Allocator_ requirements.
+
+* _Effects_: Constructs an polymorphic owning an instance of `U` created with
+the arguments `ts...` using the specified allocator.
+
+* _Postconditions_: `*this` is not valueless.
+
+```c++
+polymorphic(const polymorphic& other);
+```
+
+* _Preconditions_: `other` is not valueless.
+
+* _Effects_: Constructs an polymorphic owning an instance of `T` created with
+the copy constructor of the object owned by `other` using the specified
+allocator.
+
+* _Postconditions_: `*this` is not valueless.
+
+```c++
+polymorphic(polymorphic&& other) noexcept;
+```
+
+* _Preconditions_: `other` is not valueless.
+
+* _Effects_: Constructs a polymorphic that takes ownership of the object owned
+  by `other`.
+
+* _Postconditions_: `other` is valueless.
+
+* _Remarks_: This constructor does not require that `is_move_constructible<T>_v`
+  is true.
+
 #### Destructor [polymorphic.dtor]
+
+```c++
+~polymorphic();
+```
+
+* _Effects_: If `*this` is not valueless, destroys the owned object with the
+specified allocator.
 
 #### Assignment [polymorphic.assign]
 
+```c++
+polymorphic& operator=(const polymorphic& other) noexcept;
+```
+
+* _Preconditions_: `other` is not valueless.
+
+* _Effects_: If `*this` is not valueless, destroys the owned object with the
+specified allocator. Then, constructs an owned object using the (possibly
+derived-type) copy constructor of the object owned by `other` using the
+specified allocator.
+
+* _Postconditions_: `*this` is not valueless.
+
+```c++
+polymorphic& operator=(polymorphic&& other) noexcept;
+```
+
+* _Preconditions_: `other` is not valueless.
+
+* _Effects_: If `*this` is not valueless, destroys the owned object with the
+  specified allocator. Then takes ownership of the object owned by `other`.
+
+* _Postconditions_: `*this` is not valueless. `other` is valueless.
+
 #### Observers [polymorphic.observers]
+
+```c++
+constexpr const T& operator*() const noexcept;
+constexpr T& operator*() noexcept;
+```
+
+* _Preconditions_: `*this` is not valueless.
+
+* _Effects_: Returns a reference to the owned object.
+
+* _Remarks_: These functions are constexpr functions.
+
+```c++
+constexpr const T* operator->() const noexcept;
+constexpr T* operator->() noexcept;
+```
+
+* _Preconditions_: `*this` is not valueless.
+
+* _Effects_: Returns a pointer to the owned object.
+
+* _Remarks_: These functions are constexpr functions.
+
+```c++
+constexpr bool valueless_after_move() const noexcept;
+```
+
+* _Returns_: `true` if `*this` is valueless, otherwise `false`.
 
 #### Swap [polymorphic.swap]
 
+```c++
+constexpr void swap(polymorphic& other) noexcept;
+```
+
+* _Preconditions_: `*this` is not valueless, `other` is not valueless.
+
+* _Effects_: Swaps the objects owned by `*this` and `other` by swapping pointers.
+
+* _Remarks_: Does not call `swap` on the owned objects directly.
+
+```c++
+friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept;
+```
+
+* _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
+
+* _Effects_: Swaps the objects owned by `lhs` and `rhs` by swapping pointers
+
+* _Remarks_: Does not call `swap` on the owned objects directly.
+
 ## Reference implementation
 
-A reference implementation of this proposal is available on GitHub at
+A C++20 reference implementation of this proposal is available on GitHub at
 [https://www.github.com/jbcoe/value_types]
 
 ## Acknowledgements
@@ -271,14 +558,14 @@ suggestions and useful discussion.
 
 ## References
 
-"_A Preliminary Proposal for a Deep-Copying Smart Pointer_", W.E.Brown,
-2012 [http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3339.pdf]
+"_A Preliminary Proposal for a Deep-Copying Smart Pointer_", W.E.Brown, 2012
+[http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3339.pdf]
 
 _A polymorphic value-type for C++_, J.B.Coe, S.Parent 2019
 [https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0201r5.html]
 
-_A Free-Store-Allocated Value Type for C++_, J.B.Coe, A.Peacock
-2022 [https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1950r2.html]
+_A Free-Store-Allocated Value Type for C++_, J.B.Coe, A.Peacock 2022
+[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1950r2.html]
 
 A C++20 reference implementation is available on GitHub
 [https://github.com/jbcoe/value_types]
@@ -371,7 +658,7 @@ We decided that there should be no implicit conversion of a value `T` to an
 `indirect<T>` or `polymorphic<T>`. An implicit conversion would require use of
 the free-store and of memory allocation which is best made explicit by the user.
 
-```cpp
+```c++
 Rectangle r(w, h);
 polymorphic<Shape> s = r; // error
 ```
@@ -379,7 +666,7 @@ polymorphic<Shape> s = r; // error
 To hoist a value into an `indirect` or `polymorphic` the user must use the
 appropriate constructor.
 
-```cpp
+```c++
 Rectangle r(w, h);
 polymorphic<Shape> s(std::in_place_type<Rectangle>, r); // Uses in-place constructor.
 assert(dynamic_cast<Rectangle*>(&*s) != nullptr);
@@ -391,7 +678,7 @@ The older class template `polymorphic_value` had explicit conversions allowing
 construction of a `polymorphic_value<T>` from a `polymorphic_value<U>` where `T`
 was a base class of `U`.
 
-```cpp
+```c++
 polymorphic_value<Quadrilateral> q(std::in_place_type<Rectangle>, w, h);
 polymorphic_value<Shape> s = q; // uses explicit converting constructor.
 assert(dynamic_cast<Rectangle*>(&*s) != nullptr);
@@ -400,7 +687,7 @@ assert(dynamic_cast<Rectangle*>(&*s) != nullptr);
 The following code cannot be written with `polymorphic` as it does not allow
 conversions between derived types:
 
-```cpp
+```c++
 polymorphic<Quadrilateral> q(std::in_place_type<Rectangle>, w, h);
 polymorphic<Shape> s = q; // error
 ```
