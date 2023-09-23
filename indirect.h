@@ -133,6 +133,8 @@ class indirect {
     return p_;
   }
 
+  constexpr bool valueless_after_move() const noexcept { return p_ == nullptr; }
+  
   constexpr void swap(indirect& other) noexcept {
     using std::swap;
     swap(p_, other.p_);
@@ -142,8 +144,6 @@ class indirect {
     using std::swap;
     swap(lhs.p_, rhs.p_);
   }
-
-  constexpr bool valueless_after_move() const noexcept { return p_ == nullptr; }
 
  private:
   void reset() noexcept {
