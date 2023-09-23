@@ -104,9 +104,15 @@ int main() {
 
 ### Value semantics
 
+TODO
+
 ### Unobservable null state and interaction with `std::optional`
 
+TODO
+
 ## Prior work
+
+TODO
 
 ## Impact on the standard
 
@@ -311,7 +317,8 @@ constexpr void swap(indirect& other) noexcept;
 
 * _Preconditions_: `*this` is not valueless, `other` is not valueless.
 
-* _Effects_: Swaps the objects owned by `*this` and `other` by swapping pointers.
+* _Effects_: Swaps the objects owned by `*this` and `other` by swapping
+  pointers.
 
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
@@ -527,7 +534,8 @@ constexpr void swap(polymorphic& other) noexcept;
 
 * _Preconditions_: `*this` is not valueless, `other` is not valueless.
 
-* _Effects_: Swaps the objects owned by `*this` and `other` by swapping pointers.
+* _Effects_: Swaps the objects owned by `*this` and `other` by swapping
+  pointers.
 
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
@@ -570,7 +578,6 @@ _A Free-Store-Allocated Value Type for C++_, J.B.Coe, A.Peacock 2022
 A C++20 reference implementation is available on GitHub
 [https://github.com/jbcoe/value_types]
 
-
 ## Appendix A: Detailed design decisions
 
 We discuss some of the decisions that were made in the design of `indirect` and
@@ -606,7 +613,7 @@ In designing composite classes, `indirect` and `polymorphic` will be used in
 place of pointers which do permit a null state.
 
 We decided that `indirect` and `polymorphic` need a null state for
-implementation but that this should not be observable to the user. 
+implementation but that this should not be observable to the user.
 
 ### Copiers, deleters, pointer constructors and allocator support
 
@@ -699,4 +706,22 @@ member functions will be used.
 There is no motivating use case for explicit conversion between derived types
 outside of tests.
 
-# Small object optimisation for `polymorphic`
+### Small object optimisation for `polymorphic`
+
+`polymorphic` could be designed to make use of a small object optimisation. A
+small object optimisation uses a small buffer to potentially store the owned
+object. This wpould make move construction more complicated as the owned object
+must be moved from one buffer to another potentially invoking allocations if the
+owned object's move constructor allocates memory.
+
+As designed, `polymorphic<T>` does not require that `T` (or constructed classes
+of type `U` derived from `T`) are move constructible or move assignable for
+`polymorphic<T>` to be move constructible or move assignable.
+
+Memory indirection is the point of `indirect`. An `indirect` with a small buffer
+optimisation would be better implmented as just a `T`. `polymorphic` is intended
+to be an `indirect` that supports polymorphism.
+
+Memory indirection is part of the design of `polymorphic`; a value type with a
+small buffer optimisation that did not allocate a control block for the owned
+object would need be a different type.
