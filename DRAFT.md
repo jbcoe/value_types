@@ -132,8 +132,10 @@ The template parameter T of `indirect<T>` may be an incomplete type.
 #### X.Z.1 Class template indirect synopsis [indirect.syn]
 
 ```cpp
-template <class T, class A = std::allocator<T>>
+template <class T, class Allocator = std::allocator<T>>
 class indirect {
+  T* p_; // exposition only
+  Allocator allocator_; // exposition only 
  public:
   using value_type = T;
   using allocator_type = A;
@@ -164,11 +166,11 @@ class indirect {
 
   constexpr T* operator->() noexcept;
 
+  constexpr bool valueless_after_move() const noexcept;
+
   constexpr void swap(indirect& other) noexcept;
 
   friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept;
-
-  constexpr bool valueless_after_move() const noexcept;
 };
 ```
 
@@ -200,8 +202,10 @@ The template parameter `T` of `polymorphic<T>` may be an incomplete type.
 #### X.Z.1 Class template polymorphic synopsis [polymorphic.syn]
 
 ```cpp
-template <class T, class A = std::allocator<T>>
+template <class T, class Allocator = std::allocator<T>>
 class polymorphic {
+  control_block* control_block_; // exposition only
+  Allocator allocator_; // exposition only  
  public:
   using value_type = T;
   using allocator_type = A;
@@ -232,11 +236,11 @@ class polymorphic {
 
   constexpr T* operator->() noexcept;
 
+  constexpr bool valueless_after_move() const noexcept;
+
   constexpr void swap(polymorphic& other) noexcept;
 
   friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept;
-
-  constexpr bool valueless_after_move() const noexcept;
 };
 ```
 
