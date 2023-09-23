@@ -193,18 +193,21 @@ class polymorphic {
     return *cb_->p_;
   }
 
+  constexpr bool valueless_after_move() const noexcept {
+    return cb_ == nullptr;
+  }
+
   constexpr void swap(polymorphic& other) noexcept {
+    assert(other.cb_ != nullptr);
     using std::swap;
     swap(cb_, other.cb_);
   }
 
   friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept {
+    assert(lhs.cb_ != nullptr);
+    assert(rhs.cb_ != nullptr);
     using std::swap;
     swap(lhs.cb_, rhs.cb_);
-  }
-
-  constexpr bool valueless_after_move() const noexcept {
-    return cb_ == nullptr;
   }
 
  private:

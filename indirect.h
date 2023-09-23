@@ -144,12 +144,18 @@ class indirect {
     return p_;
   }
 
+  constexpr bool valueless_after_move() const noexcept { return p_ == nullptr; }
+  
   constexpr void swap(indirect& other) noexcept {
+    assert(p_ != nullptr);
+    assert(other.p_ != nullptr);
     using std::swap;
     swap(p_, other.p_);
   }
 
   friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept {
+    assert(lhs.p_ != nullptr);
+    assert(rhs.p_ != nullptr);
     using std::swap;
     swap(lhs.p_, rhs.p_);
   }
