@@ -409,9 +409,10 @@ TEST(PolymorphicTest, InteractionWithSizedAllocators) {
 TEST(PolymorphicTest, IncompleteTypeSupport) {
   struct A {
     xyz::polymorphic<class Incomplete> incomplete_;
-  
-    A();
+
+    A();  // Can  be defined as `=default` but when I is complete.
+    ~A() = default;
   };
-  std::vector<A> as; // This should compile.
+  std::vector<A> as;  // This should compile.
 }
 }  // namespace
