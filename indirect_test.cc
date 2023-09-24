@@ -364,6 +364,20 @@ struct ThrowsOnConstruction {
   }
 };
 
+struct ThrowsOnCopyConstruction {
+  class Exception : public std::exception {
+    const char* what() const noexcept override {
+      return "ThrowsOnConstruction::Exception";
+    }
+  };
+
+  ThrowsOnCopyConstruction() = default;
+
+  ThrowsOnCopyConstruction(const ThrowsOnCopyConstruction&) {
+    throw Exception();
+  }
+};
+
 TEST(IndirectTest, DefaultConstructorWithExceptions) {
   EXPECT_THROW(xyz::indirect<ThrowsOnConstruction>(),
                ThrowsOnConstruction::Exception);
@@ -372,6 +386,14 @@ TEST(IndirectTest, DefaultConstructorWithExceptions) {
 TEST(IndirectTest, ConstructorWithExceptions) {
   EXPECT_THROW(xyz::indirect<ThrowsOnConstruction>(std::in_place, "unused"),
                ThrowsOnConstruction::Exception);
+}
+
+TEST(IndirectTest, CopyConstructorWithExceptions) {
+  auto create_copy = []() {
+    auto a = xyz::indirect<ThrowsOnCopyConstruction>(std::in_place);
+    auto aa = a;
+  };
+  EXPECT_THROW(create_copy(), ThrowsOnCopyConstruction::Exception);
 }
 
 TEST(IndirectTest, ConstructorWithExceptionsTrackingAllocations) {
@@ -448,5 +470,17 @@ TEST(IndirectTest, InteractionWithPMRAllocators) {
   values.push_back(std::move(a));
   EXPECT_EQ(*values[0], 42);
 }
-#endif // (__cpp_lib_memory_resource >= 201603L)
+
+TEST(IndirectTest, InteractionWithPMRAllocatorsWhenCopyThrows) {
+  std::array<std::byte, 1024> buffer;
+  std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
+  std::pmr::polymorphic_allocator<ThrowsOnCopyConstruction> pa{&mbr};
+  using IndirectType =
+      xyz::indirect<ThrowsOnCopyConstruction,
+                    std::pmr::polymorphic_allocator<ThrowsOnCopyConstruction>>;
+  IndirectType a(std::allocator_arg, pa, std::in_place);
+  std::pmr::vector<IndirectType> values{pa};
+  EXPECT_THROW(values.push_back(a), ThrowsOnCopyConstruction::Exception);
+}
+#endif  // (__cpp_lib_memory_resource >= 201603L)
 }  // namespace

@@ -316,17 +316,6 @@ struct ThrowsOnConstruction {
   }
 };
 
-TEST(PolymorphicTest, DefaultConstructorWithExceptions) {
-  EXPECT_THROW(xyz::polymorphic<ThrowsOnConstruction>(),
-               ThrowsOnConstruction::Exception);
-}
-
-TEST(PolymorphicTest, ConstructorWithExceptions) {
-  EXPECT_THROW(xyz::polymorphic<ThrowsOnConstruction>(
-                   std::in_place_type<ThrowsOnConstruction>, "unused"),
-               ThrowsOnConstruction::Exception);
-}
-
 struct ThrowsOnCopyConstruction {
   class Exception : public std::exception {
     const char* what() const noexcept override {
@@ -340,6 +329,17 @@ struct ThrowsOnCopyConstruction {
     throw Exception();
   }
 };
+
+TEST(PolymorphicTest, DefaultConstructorWithExceptions) {
+  EXPECT_THROW(xyz::polymorphic<ThrowsOnConstruction>(),
+               ThrowsOnConstruction::Exception);
+}
+
+TEST(PolymorphicTest, ConstructorWithExceptions) {
+  EXPECT_THROW(xyz::polymorphic<ThrowsOnConstruction>(
+                   std::in_place_type<ThrowsOnConstruction>, "unused"),
+               ThrowsOnConstruction::Exception);
+}
 
 TEST(PolymorphicTest, CopyConstructorWithExceptions) {
   auto create_copy = []() {
@@ -415,14 +415,27 @@ TEST(PolymorphicTest, InteractionWithPMRAllocators) {
   std::array<std::byte, 1024> buffer;
   std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
   std::pmr::polymorphic_allocator<Base> pa{&mbr};
-  using PolymorphicBase = xyz::polymorphic<Base, std::pmr::polymorphic_allocator<Base>>;
-  PolymorphicBase a(
-      std::allocator_arg, pa, std::in_place_type<Derived>, 42);
+  using PolymorphicBase =
+      xyz::polymorphic<Base, std::pmr::polymorphic_allocator<Base>>;
+  PolymorphicBase a(std::allocator_arg, pa, std::in_place_type<Derived>, 42);
   std::pmr::vector<PolymorphicBase> values{pa};
   values.push_back(a);
   values.push_back(std::move(a));
   EXPECT_EQ(values[0]->value(), 42);
 }
-#endif // (__cpp_lib_memory_resource >= 201603L)
+
+TEST(PolymorphicTest, InteractionWithPMRAllocatorsWhenCopyThrows) {
+  std::array<std::byte, 1024> buffer;
+  std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
+  std::pmr::polymorphic_allocator<ThrowsOnCopyConstruction> pa{&mbr};
+  using PolymorphicType = xyz::polymorphic<
+      ThrowsOnCopyConstruction,
+      std::pmr::polymorphic_allocator<ThrowsOnCopyConstruction>>;
+  PolymorphicType a(std::allocator_arg, pa,
+                    std::in_place_type<ThrowsOnCopyConstruction>);
+  std::pmr::vector<PolymorphicType> values{pa};
+  EXPECT_THROW(values.push_back(a), ThrowsOnCopyConstruction::Exception);
+}
+#endif  // (__cpp_lib_memory_resource >= 201603L)
 
 }  // namespace
