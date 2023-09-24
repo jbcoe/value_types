@@ -192,6 +192,33 @@ class indirect {
   constexpr void swap(indirect& other) noexcept;
 
   friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept;
+
+  template <class U, class AA>
+  friend constexpr bool operator==(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+
+  template <class U, class AA>
+  friend constexpr bool operator!=(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+
+  template <class U, class AA>
+  friend constexpr auto operator<=>(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+
+  template <class U>
+  friend constexpr bool operator==(const indirect<T, A>& lhs, const U& rhs);
+
+  template <class U>
+  friend constexpr bool operator==(const U& lhs, const indirect<T, A>& rhs);
+
+  template <class U>
+  friend constexpr bool operator!=(const indirect<T, A>& lhs, const U& rhs);
+
+  template <class U>
+  friend constexpr bool operator!=(const U& lhs, const indirect<T, A>& rhs);
+
+  template <class U>
+  friend constexpr auto operator<=>(const indirect<T, A>& lhs, const U& rhs);
+
+  template <class U>
+  friend constexpr auto operator<=>(const U& lhs, const indirect<T, A>& rhs);
 };
 ```
 
@@ -338,7 +365,7 @@ constexpr void swap(indirect& other) noexcept;
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
 ```c++
-friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept;
+constexpr void swap(indirect& lhs, indirect& rhs) noexcept;
 ```
 
 * _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
@@ -346,6 +373,118 @@ friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept;
 * _Effects_: Swaps the objects owned by `lhs` and `rhs` by swapping pointers
 
 * _Remarks_: Does not call `swap` on the owned objects directly.
+
+#### Relational operators [indirect.rel]
+
+```c++
+template <class U, class AA>
+constexpr bool operator==(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+```
+
+* _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
+
+* _Effects_: returns  `*lhs == *rhs`.
+
+* _Remarks_: Specializations of this function template for which `*lhs == *rhs`
+  is a core constant expression are constexpr functions.
+
+```c++
+template <class U, class AA>
+constexpr bool operator!=(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+```
+
+* _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
+
+* _Effects_: returns  `*lhs != *rhs`.
+
+* _Remarks_: Specializations of this function template for which `*lhs != *rhs`
+  is a core constant expression are constexpr functions.
+
+```c++
+template <class U, class AA>
+constexpr auto operator<=>(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+```
+
+* _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
+
+* _Effects_: returns  `*lhs <=> *rhs`.
+
+* _Remarks_: Specializations of this function template for which `*lhs <=> *rhs`
+  is a core constant expression are constexpr functions.
+
+#### Comparison with T [indirect.comp.with.t]
+
+```c++
+template <class T, class A, class U>
+constexpr bool operator==(const indirect<T, A>& lhs, const U& rhs);
+```
+
+* _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
+
+* _Effects_: returns  `*lhs == *rhs`.
+
+* _Remarks_: Specializations of this function template for which `*lhs == *rhs`
+  is a core constant expression are constexpr functions.
+
+```c++
+template <class T, class A, class U>
+constexpr bool operator==(const U& lhs, const indirect<T, A>& rhs);
+```
+
+* _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
+
+* _Effects_: returns  `*lhs == *rhs`.
+
+* _Remarks_: Specializations of this function template for which `*lhs == *rhs`
+  is a core constant expression are constexpr functions.
+
+```c++
+template <class T, class A, class U>
+constexpr bool operator!=(const indirect<T, A>& lhs, const U& rhs)
+```
+
+* _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
+
+* _Effects_: returns  `*lhs != *rhs`.
+
+* _Remarks_: Specializations of this function template for which `*lhs != *rhs`
+  is a core constant expression are constexpr functions.
+
+```c++
+template <class T, class A, class U>
+constexpr bool operator!=(const U& lhs, const indirect<T, A>& rhs);
+```
+
+* _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
+
+* _Effects_: returns  `*lhs != *rhs`.
+
+* _Remarks_: Specializations of this function template for which `*lhs != *rhs`
+  is a core constant expression are constexpr functions.
+
+```c++
+template <class T, class A, class U>
+constexpr auto operator<=>(const indirect<T, A>& lhs, const U& rhs);
+```
+
+* _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
+
+* _Effects_: returns  `*lhs <=> *rhs`.
+
+* _Remarks_: Specializations of this function template for which `*lhs <=> *rhs`
+  is a core constant expression are constexpr functions.
+
+```c++
+template <class T, class A, class U>
+constexpr auto operator<=>(const U& lhs, const indirect<T, A>& rhs);
+```
+
+* _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
+
+* _Effects_: returns  `*lhs <=> *rhs`.
+
+* _Remarks_: Specializations of this function template for which `*lhs <=> *rhs`
+  is a core constant expression are constexpr functions.
 
 ### X.Z Class template polymorphic [polymorphic]
 
