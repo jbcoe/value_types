@@ -160,8 +160,6 @@ class indirect {
     swap(lhs.p_, rhs.p_);
   }
 
-  constexpr bool valueless_after_move() const noexcept { return p_ == nullptr; }
-
   friend bool operator==(const indirect& lhs, const indirect& rhs) noexcept
     requires std::equality_comparable<T>
   {
