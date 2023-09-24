@@ -267,7 +267,7 @@ concept is_hashable = requires(T t) { std::hash<T>{}(t); };
 }  // namespace xyz
 
 template <class T, class Alloc>
-struct std::uses_allocator<xyz::indirect<T>, Alloc> : true_type {};
+struct std::uses_allocator<xyz::indirect<T, Alloc>, Alloc> : true_type {};
 
 template <class T>
   requires xyz::is_hashable<T>

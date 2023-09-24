@@ -232,6 +232,6 @@ class polymorphic {
 }  // namespace xyz
 
 template <class T, class Alloc>
-struct std::uses_allocator<xyz::polymorphic<T>, Alloc> : true_type {};
+struct std::uses_allocator<xyz::polymorphic<T, Alloc>, Alloc> : true_type {};
 
 #endif  // XYZ_POLYMORPHIC_H_
