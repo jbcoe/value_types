@@ -171,7 +171,11 @@ class indirect {
 
   indirect(const indirect& other);
 
+  indirect(const indirect& other, const Allocator& alloc);
+
   indirect(indirect&& other) noexcept;
+  
+  indirect(indirect&& other, const Allocator& alloc) noexcept;
 
   ~indirect();
 
@@ -248,10 +252,38 @@ copy constructor of the object owned by `other` using the specified allocator.
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
+indirect(const indirect& other, const Allocator& alloc);
+```
+
+* _Constraints_: `is_copy_constructible_v<T>` is true.
+
+* _Preconditions_: `other` is not valueless and `Allocator` meets the
+  _Cpp17Allocator_ requirements.
+
+* _Effects_: Constructs an indirect owning an instance of `T` created with the
+copy constructor of the object owned by `other` using the specified allocator.
+
+* _Postconditions_: `*this` is not valueless.
+
+```c++
 indirect(indirect&& other) noexcept;
 ```
 
 * _Preconditions_: `other` is not valueless.
+
+* _Effects_: Constructs an indirect owning the object owned by `other`.
+
+* _Postconditions_: `other` is valueless.
+
+* _Remarks_: This constructor does not require that `is_move_constructible<T>_v`
+  is true.
+
+```c++
+indirect(indirect&& other, const Allocator& alloc) noexcept;
+```
+
+* _Preconditions_: `other` is not valueless and `Allocator` meets the
+  _Cpp17Allocator_ requirements.
 
 * _Effects_: Constructs an indirect owning the object owned by `other`.
 
@@ -372,7 +404,7 @@ class polymorphic {
   Allocator allocator_; // exposition only  
  public:
   using value_type = T;
-  using allocator_type = A;
+  using allocator_type = Allocator;
 
   polymorphic();
 
@@ -380,11 +412,15 @@ class polymorphic {
   polymorphic(std::in_place_type_t<U>, Ts&&... ts);
 
   template <class U, class... Ts>
-  polymorphic(std::allocator_arg_t, const A& alloc, std::in_place_type_t<U>, Ts&&... ts);
+  polymorphic(std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
 
   polymorphic(const polymorphic& other);
+  
+  polymorphic(const polymorphic& other, const Allocator& alloc);
 
   polymorphic(polymorphic&& other) noexcept;
+  
+  polymorphic(polymorphic&& other, const Allocator& alloc) noexcept;
 
   ~polymorphic();
 
@@ -463,10 +499,38 @@ allocator.
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
+polymorphic(const polymorphic& other, const Allocator& alloc);
+```
+
+* _Preconditions_: `other` is not valueless and `Allocator` meets the
+  _Cpp17Allocator_ requirements.
+
+* _Effects_: Constructs an polymorphic owning an instance of `T` created with
+the copy constructor of the object owned by `other` using the specified
+allocator.
+
+* _Postconditions_: `*this` is not valueless.
+
+```c++
 polymorphic(polymorphic&& other) noexcept;
 ```
 
 * _Preconditions_: `other` is not valueless.
+
+* _Effects_: Constructs a polymorphic that takes ownership of the object owned
+  by `other`.
+
+* _Postconditions_: `other` is valueless.
+
+* _Remarks_: This constructor does not require that `is_move_constructible<T>_v`
+  is true.
+
+```c++
+polymorphic(polymorphic&& other, const Allocator& alloc) noexcept;
+```
+
+* _Preconditions_: `other` is not valueless and `Allocator` meets the
+  _Cpp17Allocator_ requirements.
 
 * _Effects_: Constructs a polymorphic that takes ownership of the object owned
   by `other`.
