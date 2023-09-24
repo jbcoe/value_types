@@ -423,6 +423,6 @@ TEST(PolymorphicTest, InteractionWithPMRAllocators) {
   values.push_back(std::move(a));
   EXPECT_EQ(values[0]->value(), 42);
 }
-#endif
+#endif // (__cpp_lib_memory_resource >= 201603L)
 
 }  // namespace

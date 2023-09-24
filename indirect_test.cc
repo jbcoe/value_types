@@ -436,7 +436,7 @@ TEST(IndirectTest, InteractionWithSizedAllocators) {
             (sizeof(int*) + sizeof(TrackingAllocator<int>)));
 }
 
-#if (__cpp_lib_memory_resource >= 202207L)
+#if (__cpp_lib_memory_resource >= 201603L)
 TEST(IndirectTest, InteractionWithPMRAllocators)
 {
   std::array<std::byte, 1024> buffer;
@@ -449,5 +449,5 @@ TEST(IndirectTest, InteractionWithPMRAllocators)
   values.push_back(std::move(a));
   EXPECT_EQ(values[0]->value(), 42);
 }
-#endif
+#endif // (__cpp_lib_memory_resource >= 201603L)
 }  // namespace
