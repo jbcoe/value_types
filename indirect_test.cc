@@ -24,9 +24,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <array>
 #include <map>
+#if __has_include(<memory_resource>)
+#include <memory_resource>
+#endif  // #if __has_include(<memory_resource>)
 #include <optional>
 #include <unordered_map>
-#include <memory_resource>
 #include <utility>
 #include <vector>
 
