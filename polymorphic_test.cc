@@ -411,7 +411,7 @@ TEST(PolymorphicTest, InteractionWithSizedAllocators) {
 }
 
 #if (__cpp_lib_memory_resource >= 201603L)
-TEST(PolymorphicTest, InterationWithPMRAllocators) {
+TEST(PolymorphicTest, InteractionWithPMRAllocators) {
   std::array<std::byte, 1024> buffer;
   std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
   std::pmr::polymorphic_allocator<Base> pa{&mbr};

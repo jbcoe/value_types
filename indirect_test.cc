@@ -437,7 +437,7 @@ TEST(IndirectTest, InteractionWithSizedAllocators) {
 }
 
 #if (__cpp_lib_memory_resource >= 202207L)
-TEST(IndirectTest, InterationWithPMRAllocators)
+TEST(IndirectTest, InteractionWithPMRAllocators)
 {
   std::array<std::byte, 1024> buffer;
   std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
