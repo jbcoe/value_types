@@ -170,6 +170,81 @@ class indirect {
     swap(lhs.p_, rhs.p_);
   }
 
+  template <class U, class AA>
+  friend bool operator==(const indirect<T, A>& lhs, const indirect<U, AA>& rhs)
+    requires std::equality_comparable_with<T, U>
+  {
+    assert(!lhs.valueless_after_move());
+    assert(!rhs.valueless_after_move());
+    return *lhs == *rhs;
+  }
+
+  template <class U, class AA>
+  friend bool operator!=(const indirect<T, A>& lhs, const indirect<U, AA>& rhs)
+    requires std::equality_comparable_with<T, U>
+  {
+    assert(!lhs.valueless_after_move());
+    assert(!rhs.valueless_after_move());
+    return *lhs != *rhs;
+  }
+
+  template <class U, class AA>
+  friend auto operator<=>(const indirect<T, A>& lhs, const indirect<U, AA>& rhs)
+    requires std::three_way_comparable_with<T, U>
+  {
+    assert(!lhs.valueless_after_move());
+    assert(!rhs.valueless_after_move());
+    return *lhs <=> *rhs;
+  }
+
+  template <class U>
+  friend bool operator==(const indirect<T, A>& lhs, const U& rhs)
+    requires(!is_indirect_v<U>)
+  {
+    assert(!lhs.valueless_after_move());
+    return *lhs == rhs;
+  }
+
+  template <class U>
+  friend bool operator==(const U& lhs, const indirect<T, A>& rhs)
+    requires(!is_indirect_v<U>)
+  {
+    assert(!rhs.valueless_after_move());
+    return lhs == *rhs;
+  }
+
+  template <class U>
+  friend bool operator!=(const indirect<T, A>& lhs, const U& rhs)
+    requires(!is_indirect_v<U>)
+  {
+    assert(!lhs.valueless_after_move());
+    return *lhs != rhs;
+  }
+
+  template <class U>
+  friend bool operator!=(const U& lhs, const indirect<T, A>& rhs)
+    requires(!is_indirect_v<U>)
+  {
+    assert(!rhs.valueless_after_move());
+    return lhs != *rhs;
+  }
+
+  template <class U>
+  friend auto operator<=>(const indirect<T, A>& lhs, const U& rhs)
+    requires(!is_indirect_v<U>)
+  {
+    assert(!lhs.valueless_after_move());
+    return *lhs <=> rhs;
+  }
+
+  template <class U>
+  friend auto operator<=>(const U& lhs, const indirect<T, A>& rhs)
+    requires(!is_indirect_v<U>)
+  {
+    assert(!rhs.valueless_after_move());
+    return lhs <=> *rhs;
+  }
+
  private:
   void reset() noexcept {
     if (p_ == nullptr) return;
@@ -178,81 +253,6 @@ class indirect {
     p_ = nullptr;
   }
 };
-
-template <class T, class A, class U, class AA>
-bool operator==(const indirect<T, A>& lhs, const indirect<U, AA>& rhs)
-  requires std::equality_comparable_with<T, U>
-{
-  assert(!lhs.valueless_after_move());
-  assert(!rhs.valueless_after_move());
-  return *lhs == *rhs;
-}
-
-template <class T, class A, class U, class AA>
-bool operator!=(const indirect<T, A>& lhs, const indirect<U, AA>& rhs)
-  requires std::equality_comparable_with<T, U>
-{
-  assert(!lhs.valueless_after_move());
-  assert(!rhs.valueless_after_move());
-  return *lhs != *rhs;
-}
-
-template <class T, class A, class U, class AA>
-auto operator<=>(const indirect<T, A>& lhs, const indirect<U, AA>& rhs)
-  requires std::three_way_comparable_with<T, U>
-{
-  assert(!lhs.valueless_after_move());
-  assert(!rhs.valueless_after_move());
-  return *lhs <=> *rhs;
-}
-
-template <class T, class A, class U>
-bool operator==(const indirect<T, A>& lhs, const U& rhs)
-  requires(!is_indirect_v<U>)
-{
-  assert(!lhs.valueless_after_move());
-  return *lhs == rhs;
-}
-
-template <class T, class A, class U>
-bool operator==(const U& lhs, const indirect<T, A>& rhs)
-  requires(!is_indirect_v<U>)
-{
-  assert(!rhs.valueless_after_move());
-  return lhs == *rhs;
-}
-
-template <class T, class A, class U>
-bool operator!=(const indirect<T, A>& lhs, const U& rhs)
-  requires(!is_indirect_v<U>)
-{
-  assert(!lhs.valueless_after_move());
-  return *lhs != rhs;
-}
-
-template <class T, class A, class U>
-bool operator!=(const U& lhs, const indirect<T, A>& rhs)
-  requires(!is_indirect_v<U>)
-{
-  assert(!rhs.valueless_after_move());
-  return lhs != *rhs;
-}
-
-template <class T, class A, class U>
-auto operator<=>(const indirect<T, A>& lhs, const U& rhs)
-  requires(!is_indirect_v<U>)
-{
-  assert(!lhs.valueless_after_move());
-  return *lhs <=> rhs;
-}
-
-template <class T, class A, class U>
-auto operator<=>(const U& lhs, const indirect<T, A>& rhs)
-  requires(!is_indirect_v<U>)
-{
-  assert(!rhs.valueless_after_move());
-  return lhs <=> *rhs;
-}
 
 template <class T>
 concept is_hashable = requires(T t) { std::hash<T>{}(t); };
