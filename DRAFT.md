@@ -212,7 +212,7 @@ The template parameter `T` of `indirect<T>` must be a non-union class type.
 
 The template parameter T of `indirect<T>` may be an incomplete type.
 
-#### X.Z.1 Class template indirect synopsis [indirect.syn]
+#### X.Y.2 Class template indirect synopsis [indirect.syn]
 
 ```c++
 template <class T, class Allocator = std::allocator<T>>
@@ -291,7 +291,7 @@ template <class T, class Alloc>
 struct std::uses_allocator<indirect<T, Alloc>, Alloc> : true_type {};
 ```
 
-#### Constructors [indirect.ctor]
+#### X.Y.3 Constructors [indirect.ctor]
 
 ```c++
 indirect()
@@ -389,7 +389,7 @@ indirect(indirect&& other, const Allocator& alloc) noexcept;
 * _Remarks_: This constructor does not require that `is_move_constructible<T>_v`
   is true.
 
-#### Destructor [indirect.dtor]
+#### X.Y.4 Destructor [indirect.dtor]
 
 ```c++
 ~indirect();
@@ -398,7 +398,7 @@ indirect(indirect&& other, const Allocator& alloc) noexcept;
 * _Effects_: If `*this` is not valueless, destroys the owned object with the
 specified allocator.
 
-#### Assignment [indirect.assign]
+#### X.Y.5 Assignment [indirect.assign]
 
 ```c++
 indirect& operator=(const indirect& other) noexcept;
@@ -423,7 +423,7 @@ indirect& operator=(indirect&& other) noexcept;
 
 * _Postconditions_: `*this` is not valueless. `other` is valueless.
 
-#### Observers [indirect.observers]
+#### X.Y.6 Observers [indirect.observers]
 
 ```c++
 constexpr const T& operator*() const noexcept;
@@ -453,7 +453,7 @@ constexpr bool valueless_after_move() const noexcept;
 
 * _Returns_: `true` if `*this` is valueless, otherwise `false`.
 
-#### Swap [indirect.swap]
+#### X.Y.7 Swap [indirect.swap]
 
 ```c++
 constexpr void swap(indirect& other) noexcept;
@@ -476,7 +476,7 @@ constexpr void swap(indirect& lhs, indirect& rhs) noexcept;
 
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
-#### Relational operators [indirect.rel]
+#### X.Y.8 Relational operators [indirect.rel]
 
 ```c++
 template <class U, class AA>
@@ -514,7 +514,7 @@ constexpr auto operator<=>(const indirect<T, A>& lhs, const indirect<U, AA>& rhs
 * _Remarks_: Specializations of this function template for which `*lhs <=> *rhs`
   is a core constant expression are constexpr functions.
 
-#### Comparison with T [indirect.comp.with.t]
+#### X.Y.9 Comparison with T [indirect.comp.with.t]
 
 ```c++
 template <class T, class A, class U>
@@ -618,7 +618,7 @@ The template parameter `T` of `polymorphic<T>` must be a non-union class type.
 
 The template parameter `T` of `polymorphic<T>` may be an incomplete type.
 
-#### X.Z.1 Class template polymorphic synopsis [polymorphic.syn]
+#### X.Z.2 Class template polymorphic synopsis [polymorphic.syn]
 
 ```c++
 template <class T, class Allocator = std::allocator<T>>
@@ -670,7 +670,7 @@ template <class T, class Alloc>
 struct std::uses_allocator<polymorphic<T, Alloc>, Alloc> : true_type {};
 ```
 
-#### Constructors [polymorphic.ctor]
+#### X.Z.3 Constructors [polymorphic.ctor]
 
 ```c++
 polymorphic()
@@ -766,7 +766,7 @@ polymorphic(polymorphic&& other, const Allocator& alloc) noexcept;
 * _Remarks_: This constructor does not require that `is_move_constructible<T>_v`
   is true.
 
-#### Destructor [polymorphic.dtor]
+#### X.Z.4 Destructor [polymorphic.dtor]
 
 ```c++
 ~polymorphic();
@@ -775,7 +775,7 @@ polymorphic(polymorphic&& other, const Allocator& alloc) noexcept;
 * _Effects_: If `*this` is not valueless, destroys the owned object with the
 specified allocator.
 
-#### Assignment [polymorphic.assign]
+#### X.Z.5 Assignment [polymorphic.assign]
 
 ```c++
 polymorphic& operator=(const polymorphic& other) noexcept;
@@ -801,7 +801,7 @@ polymorphic& operator=(polymorphic&& other) noexcept;
 
 * _Postconditions_: `*this` is not valueless. `other` is valueless.
 
-#### Observers [polymorphic.observers]
+#### X.Z.6 Observers [polymorphic.observers]
 
 ```c++
 constexpr const T& operator*() const noexcept;
@@ -831,7 +831,7 @@ constexpr bool valueless_after_move() const noexcept;
 
 * _Returns_: `true` if `*this` is valueless, otherwise `false`.
 
-#### Swap [polymorphic.swap]
+#### X.Z.7 Swap [polymorphic.swap]
 
 ```c++
 constexpr void swap(polymorphic& other) noexcept;
@@ -1024,19 +1024,20 @@ outside of tests.
 ### Small object optimisation for `polymorphic`
 
 `polymorphic` could be designed to make use of a small object optimisation. A
-small object optimisation uses a small buffer to potentially store the owned
-object. This wpould make move construction more complicated as the owned object
-must be moved from one buffer to another potentially invoking allocations if the
-owned object's move constructor allocates memory.
+small object optimisation uses a buffer to potentially store the owned object
+and avoid allocating memory. This would make move construction more complicated
+as the owned object must be moved from one buffer to another potentially
+invoking allocations if the owned object's move constructor allocates memory.
 
 As designed, `polymorphic<T>` does not require that `T` (or constructed classes
 of type `U` derived from `T`) are move constructible or move assignable for
 `polymorphic<T>` to be move constructible or move assignable.
 
-Memory indirection is the point of `indirect`. An `indirect` with a small buffer
-optimisation would be better implmented as just a `T`. `polymorphic` is intended
-to be an `indirect` that supports polymorphism.
+Memory indirection is the sole point of `indirect`. An `indirect` with a small
+buffer optimisation would be better implemented as just a `T`. `polymorphic` is
+intended to be an `indirect` that supports polymorphism.
 
-Memory indirection is part of the design of `polymorphic`; a value type with a
-small buffer optimisation that did not allocate a control block for the owned
-object would need be a different type.
+A polymorphic value type with a small buffer optimisation that did not allocate
+a control block for the owned object would need be a different type. There may
+be a case for the addition of `small_polymorphic<T, N>` akin to
+`llvm::SmallVector<T, N>` but we are not proposing its addition here.
