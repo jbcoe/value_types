@@ -381,6 +381,7 @@ TEST(IndirectTest, InteractionWithSizedAllocators) {
             (sizeof(int*) + sizeof(TrackingAllocator<int>)));
 }
 
+#if (__cpp_lib_memory_resource >= 202207L)
 TEST(IndirectTest, InterationWithPMRAllocators)
 {
   std::array<std::byte, 1024> buffer;
@@ -390,5 +391,5 @@ TEST(IndirectTest, InterationWithPMRAllocators)
   xyz::indirect<int, std::pmr::polymorphic_allocator<int>> a(std::allocator_arg, pa, std::in_place, 42);
   EXPECT_EQ(*a, 42);
 }
-
+#endif
 }  // namespace

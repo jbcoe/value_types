@@ -24,8 +24,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <array>
 #include <map>
-#include <optional>
 #include <memory_resource>
+#include <optional>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -408,6 +408,7 @@ TEST(PolymorphicTest, InteractionWithSizedAllocators) {
             (sizeof(int*) + sizeof(TrackingAllocator<int>)));
 }
 
+#if (__cpp_lib_memory_resource >= 201603L)
 TEST(PolymorphicTest, InterationWithPMRAllocators) {
   std::array<std::byte, 1024> buffer;
   std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
@@ -417,5 +418,6 @@ TEST(PolymorphicTest, InterationWithPMRAllocators) {
       std::allocator_arg, pa, std::in_place_type<Derived>, 42);
   EXPECT_EQ(a->value(), 42);
 }
+#endif
 
 }  // namespace
