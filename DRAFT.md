@@ -1,4 +1,4 @@
-# Value types for composite class design
+# Vocabulary Types for Composite Class Design
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
@@ -43,7 +43,22 @@ not be considered in isolation.
 
 ## Motivation
 
-TODO(jbcoe): Composite class design with and without polymorphism.
+C++ lets associated data and functions that act upon that data be grouped
+together into a record type: a struct or a class. Classes (or structs, we stick
+with classes for brevity) can contain instances of other classes as members.
+This allows us to build up complex data structures from simple building blocks.
+
+The standard library has many class template types that are useful in building
+composite classes. Compiler generated special member functions work with these
+standard library types to provide constructors, destructors, copy and move
+without the need for user to write code.
+
+The vocabulary of types useful for defining composite classes is not limited to,
+but includes: `std::array`, `std::vector`, `std::map`, `std::unordered_map`,
+`std::string`, `std::optional`, `std::variant`. All of these types are value
+types: the data they own is copied when the type is copied; the data is
+destroyed when the type is destroyed; the data is const when accessed through a
+const-access-path.
 
 ## Design requirements
 
