@@ -233,7 +233,11 @@ class indirect {
 
   indirect(const indirect& other);
 
+  indirect(const indirect& other, const Allocator& alloc);
+
   indirect(indirect&& other) noexcept;
+  
+  indirect(indirect&& other, const Allocator& alloc) noexcept;
 
   ~indirect();
 
@@ -282,6 +286,9 @@ class indirect {
   template <class U>
   friend constexpr auto operator<=>(const U& lhs, const indirect<T, A>& rhs);
 };
+
+template <class T, class Alloc>
+struct std::uses_allocator<indirect<T, Alloc>, Alloc> : true_type {};
 ```
 
 #### X.Y.3 Constructors [indirect.ctor]
@@ -337,12 +344,45 @@ copy constructor of the object owned by `other` using the specified allocator.
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
+indirect(const indirect& other, const Allocator& alloc);
+```
+
+* _Constraints_: `is_copy_constructible_v<T>` is true and 
+  uses_allocator<T, Allocator> is true;.
+
+* _Preconditions_: `other` is not valueless and `Allocator` meets the
+  _Cpp17Allocator_ requirements.
+
+* _Effects_: Equivalent to the preceding constructors except that the allocator is
+  initialized with alloc.
+
+* _Postconditions_: `*this` is not valueless.
+
+```c++
 indirect(indirect&& other) noexcept;
 ```
 
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: Constructs an indirect owning the object owned by `other`.
+
+* _Postconditions_: `other` is valueless.
+
+* _Remarks_: This constructor does not require that `is_move_constructible<T>_v`
+  is true.
+
+```c++
+indirect(indirect&& other, const Allocator& alloc) noexcept;
+```
+
+* _Constraints_: `is_copy_constructible_v<T>` is true and 
+  uses_allocator<T, Allocator> is true;.
+
+* _Preconditions_: `other` is not valueless and `Allocator` meets the
+  _Cpp17Allocator_ requirements.
+
+* _Effects_: Equivalent to the preceding constructors except that the allocator is
+  initialized with alloc.
 
 * _Postconditions_: `other` is valueless.
 
@@ -548,6 +588,20 @@ constexpr auto operator<=>(const U& lhs, const indirect<T, A>& rhs);
 * _Remarks_: Specializations of this function template for which `*lhs <=> *rhs`
   is a core constant expression are constexpr functions.
 
+```c++
+template <class T, class Alloc>
+struct std::uses_allocator<xyz::polymorphic<T>, Alloc> : true_type {};
+```
+
+#### Allocator related traits
+
+TODO: Copied from https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2047r3.html but I'm unsure why this recusively inherits from its self?
+
+```c++
+template<class T, class Allocator>
+struct uses_allocator<T, Allocator> : uses_allocator<T, Allocator> { };
+```
+
 ### X.Z Class template polymorphic [polymorphic]
 
 #### X.Z.1 Class template polymorphic general [polymorphic.general]
@@ -573,7 +627,7 @@ class polymorphic {
   Allocator allocator_; // exposition only  
  public:
   using value_type = T;
-  using allocator_type = A;
+  using allocator_type = Allocator;
 
   polymorphic();
 
@@ -581,11 +635,15 @@ class polymorphic {
   polymorphic(std::in_place_type_t<U>, Ts&&... ts);
 
   template <class U, class... Ts>
-  polymorphic(std::allocator_arg_t, const A& alloc, std::in_place_type_t<U>, Ts&&... ts);
+  polymorphic(std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
 
   polymorphic(const polymorphic& other);
+  
+  polymorphic(const polymorphic& other, const Allocator& alloc);
 
   polymorphic(polymorphic&& other) noexcept;
+  
+  polymorphic(polymorphic&& other, const Allocator& alloc) noexcept;
 
   ~polymorphic();
 
@@ -607,6 +665,9 @@ class polymorphic {
 
   friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept;
 };
+
+template <class T, class Alloc>
+struct std::uses_allocator<polymorphic<T, Alloc>, Alloc> : true_type {};
 ```
 
 #### X.Z.3 Constructors [polymorphic.ctor]
@@ -664,10 +725,38 @@ allocator.
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
+polymorphic(const polymorphic& other, const Allocator& alloc);
+```
+
+* _Preconditions_: `other` is not valueless and `Allocator` meets the
+  _Cpp17Allocator_ requirements.
+
+* _Effects_: Constructs an polymorphic owning an instance of `T` created with
+the copy constructor of the object owned by `other` using the specified
+allocator.
+
+* _Postconditions_: `*this` is not valueless.
+
+```c++
 polymorphic(polymorphic&& other) noexcept;
 ```
 
 * _Preconditions_: `other` is not valueless.
+
+* _Effects_: Constructs a polymorphic that takes ownership of the object owned
+  by `other`.
+
+* _Postconditions_: `other` is valueless.
+
+* _Remarks_: This constructor does not require that `is_move_constructible<T>_v`
+  is true.
+
+```c++
+polymorphic(polymorphic&& other, const Allocator& alloc) noexcept;
+```
+
+* _Preconditions_: `other` is not valueless and `Allocator` meets the
+  _Cpp17Allocator_ requirements.
 
 * _Effects_: Constructs a polymorphic that takes ownership of the object owned
   by `other`.
@@ -764,6 +853,16 @@ friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept;
 * _Effects_: Swaps the objects owned by `lhs` and `rhs` by swapping pointers
 
 * _Remarks_: Does not call `swap` on the owned objects directly.
+
+
+#### Allocator related traits
+
+TODO: Copied from https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2047r3.html but I'm unsure why this recusively inherits from its self?
+
+```c++
+template<class T, class Allocator>
+struct uses_allocator<T, Allocator> : uses_allocator<T, Allocator> { };
+```
 
 ## Reference implementation
 

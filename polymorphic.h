@@ -151,7 +151,17 @@ class polymorphic {
     cb_ = other.cb_->clone(alloc_);
   }
 
+  polymorphic(const polymorphic& other, const A& alloc) : alloc_(alloc) {
+    assert(other.cb_ != nullptr);
+    cb_ = other.cb_->clone(alloc_);
+  }
+
   polymorphic(polymorphic&& other) noexcept : alloc_(std::move(other.alloc_)) {
+    assert(other.cb_ != nullptr);
+    cb_ = std::exchange(other.cb_, nullptr);
+  }
+
+  polymorphic(polymorphic&& other, const A& alloc) noexcept : alloc_(alloc){
     assert(other.cb_ != nullptr);
     cb_ = std::exchange(other.cb_, nullptr);
   }
@@ -220,5 +230,8 @@ class polymorphic {
 };
 
 }  // namespace xyz
+
+template <class T, class Alloc>
+struct std::uses_allocator<xyz::polymorphic<T, Alloc>, Alloc> : true_type {};
 
 #endif  // XYZ_POLYMORPHIC_H_

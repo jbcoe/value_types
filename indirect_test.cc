@@ -22,7 +22,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <gtest/gtest.h>
 
+#include <array>
 #include <map>
+#if __has_include(<memory_resource>)
+#include <memory_resource>
+#endif  // #if __has_include(<memory_resource>)
 #include <optional>
 #include <unordered_map>
 #include <utility>
@@ -432,4 +436,17 @@ TEST(IndirectTest, InteractionWithSizedAllocators) {
             (sizeof(int*) + sizeof(TrackingAllocator<int>)));
 }
 
+#if (__cpp_lib_memory_resource >= 201603L)
+TEST(IndirectTest, InteractionWithPMRAllocators) {
+  std::array<std::byte, 1024> buffer;
+  std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
+  std::pmr::polymorphic_allocator<int> pa{&mbr};
+  using IndirectInt = xyz::indirect<int, std::pmr::polymorphic_allocator<int>>;
+  IndirectInt a(std::allocator_arg, pa, std::in_place, 42);
+  std::pmr::vector<IndirectInt> values{pa};
+  values.push_back(a);
+  values.push_back(std::move(a));
+  EXPECT_EQ(*values[0], 42);
+}
+#endif // (__cpp_lib_memory_resource >= 201603L)
 }  // namespace

@@ -108,8 +108,29 @@ class indirect {
     }
   }
 
+  indirect(const indirect& other, const A& alloc)
+    requires std::copy_constructible<T>
+      : alloc_(alloc) {
+    assert(other.p_ != nullptr);
+    T* mem = allocator_traits::allocate(alloc_, 1);
+    try {
+      allocator_traits::construct(alloc_, mem, *other);
+      p_ = mem;
+    } catch (...) {
+      allocator_traits::deallocate(alloc_, mem, 1);
+      throw;
+    }
+  }
+
   indirect(indirect&& other) noexcept
       : p_(nullptr), alloc_(std::move(other.alloc_)) {
+    assert(other.p_ != nullptr);
+    using std::swap;
+    swap(p_, other.p_);
+  }
+
+  indirect(indirect&& other, const A& alloc) noexcept
+      : p_(nullptr), alloc_(alloc) {
     assert(other.p_ != nullptr);
     using std::swap;
     swap(p_, other.p_);
@@ -258,6 +279,9 @@ template <class T>
 concept is_hashable = requires(T t) { std::hash<T>{}(t); };
 
 }  // namespace xyz
+
+template <class T, class Alloc>
+struct std::uses_allocator<xyz::indirect<T, Alloc>, Alloc> : true_type {};
 
 template <class T>
   requires xyz::is_hashable<T>
