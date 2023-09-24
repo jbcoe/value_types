@@ -8,7 +8,31 @@ on:
 
 jobs:
   build:
+    name: ${{ matrix.settings.name }}
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        settings:
+          - {
+              name: "debug",
+              flags: "-c dbg",
+          }
+          - {
+              name: "optimized",
+              flags: "-c opt",
+          }
+          - {
+              name: "address sanitizer",
+              flags: "--config=asan",
+          }
+          - {
+              name: "undefined behaviour sanitizer",
+              flags: "--config=ubsan",
+          }
+          - {
+              name: "thread sanitizer",
+              flags: "--config=tsan",
+          }
     steps:
       - uses: actions/checkout@v3
       - uses: bazelbuild/setup-bazelisk@v2
@@ -17,4 +41,4 @@ jobs:
         with:
           path: "~/.cache/bazel"
           key: bazel
-      - run: bazel test --action_env=BAZEL_CXXOPTS="-std=c++20" //...
+      - run: bazel test --action_env=BAZEL_CXXOPTS="-std=c++20" ${{matrix.settings.flags}} //...
