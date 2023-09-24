@@ -188,8 +188,8 @@ moveable.
 This proposal is a continuation of the work started in [P0201] and [P1950].
 
 There was previous work on a cloned pointer type [N3339] which met with
-opposition becuse of the mixing of value and pointer semantics. We feel that the
-pure value-semantics of `indirect` and `polymorphic` address these concerns.
+opposition because of the mixing of value and pointer semantics. We feel that the
+unambiguous value-semantics of `indirect` and `polymorphic` address these concerns.
 
 ## Impact on the standard
 
@@ -845,7 +845,7 @@ constexpr void swap(polymorphic& other) noexcept;
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
 ```c++
-friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept;
+constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept;
 ```
 
 * _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
@@ -918,18 +918,6 @@ pointer as the discriminant would need to be stored.
 
 In the name of minimal size and efficency we opted to use two class templates.
 
-### No observable null state
-
-As an implementation detail, a null state is powerful as it allows move and swap
-to be cheaply implemented without requiring memory allocation or for the owned
-object to be moveable or swappable.
-
-In designing composite classes, `indirect` and `polymorphic` will be used in
-place of pointers which do permit a null state.
-
-We decided that `indirect` and `polymorphic` need a null state for
-implementation but that this should not be observable to the user.
-
 ### Copiers, deleters, pointer constructors and allocator support
 
 Both `indirect_value` and `polymorphic_value` have constructors that take a
@@ -962,10 +950,10 @@ the standard if required.
 
 ### Comparisons and hashing
 
-We supported comparisons and hashing for `indirect` but not `polymorphic`.
+We support comparisons and hashing for `indirect` but not `polymorphic`.
 
 In the case where the owned object `T` is hashable or comparable, `indirect<T>`
-is hashable or comparable too by forwarding the hash or comparison to the owned
+is hashable or comparable by forwarding the hash or comparison to the owned
 object.
 
 Comparing and hashing polymorphic types is not a uniquely solved problem, though
@@ -990,7 +978,7 @@ appropriate constructor.
 
 ```c++
 Rectangle r(w, h);
-polymorphic<Shape> s(std::in_place_type<Rectangle>, r); // Uses in-place constructor.
+polymorphic<Shape> s(std::in_place_type<Rectangle>, r);
 assert(dynamic_cast<Rectangle*>(&*s) != nullptr);
 ```
 
@@ -1002,11 +990,11 @@ was a base class of `U`.
 
 ```c++
 polymorphic_value<Quadrilateral> q(std::in_place_type<Rectangle>, w, h);
-polymorphic_value<Shape> s = q; // uses explicit converting constructor.
+polymorphic_value<Shape> s = q;
 assert(dynamic_cast<Rectangle*>(&*s) != nullptr);
 ```
 
-The following code cannot be written with `polymorphic` as it does not allow
+Similar code cannot be written with `polymorphic` as it does not allow
 conversions between derived types:
 
 ```c++
@@ -1020,6 +1008,8 @@ member functions will be used.
 
 There is no motivating use case for explicit conversion between derived types
 outside of tests.
+
+A converting constructor could be added in a future version of the C++ standard.
 
 ### Small object optimisation for `polymorphic`
 
@@ -1038,6 +1028,8 @@ buffer optimisation would be better implemented as just a `T`. `polymorphic` is
 intended to be an `indirect` that supports polymorphism.
 
 A polymorphic value type with a small buffer optimisation that did not allocate
-a control block for the owned object would need be a different type. There may
-be a case for the addition of `small_polymorphic<T, N>` akin to
-`llvm::SmallVector<T, N>` but we are not proposing its addition here.
+a control block for the owned object would need be a different type, it is not
+possible to add a small object optimisation to `polymorphic` without making 
+breaking changes. There may be a case for the addition of 
+`small_polymorphic<T, N>` akin to `llvm::SmallVector<T, N>` but we are not 
+proposing its addition here.
