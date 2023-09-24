@@ -141,7 +141,7 @@ TEST(IndirectTest, Equality) {
 TEST(IndirectTest, Comparison) {
   xyz::indirect<int> a(std::in_place, 42);
   xyz::indirect<int> b(std::in_place, 42);
-  xyz::indirect<int> c(std::in_place, 43);
+  xyz::indirect<int> c(std::in_place, 101);
   EXPECT_FALSE(a < a);
   EXPECT_FALSE(a > a);
   EXPECT_TRUE(a <= a);
@@ -168,15 +168,68 @@ TEST(IndirectTest, Comparison) {
   EXPECT_TRUE(c >= a);
 }
 
-TEST(IndirectTest, ThreeWayComparison) {
-  xyz::indirect<int> a(std::in_place, 42);
-  xyz::indirect<int> b(std::in_place, 42);
-  xyz::indirect<int> c(std::in_place, 43);
-  EXPECT_EQ(a <=> a, *a <=> *a);  // Same object.
-  EXPECT_EQ(a <=> b, *a <=> *b);  // Same value.
-  EXPECT_EQ(b <=> a, *b <=> *a);  // Same value.
-  EXPECT_EQ(a <=> c, *a <=> *c);  // Different value.
-  EXPECT_EQ(c <=> a, *c <=> *a);  // Different value.
+TEST(IndirectTest, ComparisonWithU) {
+  EXPECT_EQ(xyz::indirect<int>(std::in_place, 42), 42);
+  EXPECT_EQ(42, xyz::indirect<int>(std::in_place, 42));
+
+  EXPECT_NE(xyz::indirect<int>(std::in_place, 42), 101);
+  EXPECT_NE(101, xyz::indirect<int>(std::in_place, 42));
+
+  EXPECT_GT(xyz::indirect<int>(std::in_place, 101), 42);
+  EXPECT_GT(101, xyz::indirect<int>(std::in_place, 42));
+
+  EXPECT_GE(xyz::indirect<int>(std::in_place, 42), 42);
+  EXPECT_GE(42, xyz::indirect<int>(std::in_place, 42));
+  EXPECT_GE(xyz::indirect<int>(std::in_place, 101), 42);
+  EXPECT_GE(101, xyz::indirect<int>(std::in_place, 42));
+
+  EXPECT_LT(xyz::indirect<int>(std::in_place, 42), 101);
+  EXPECT_LT(42, xyz::indirect<int>(std::in_place, 101));
+
+  EXPECT_LE(xyz::indirect<int>(std::in_place, 42), 42);
+  EXPECT_LE(42, xyz::indirect<int>(std::in_place, 42));
+  EXPECT_LE(xyz::indirect<int>(std::in_place, 42), 101);
+  EXPECT_LE(42, xyz::indirect<int>(std::in_place, 101));
+}
+
+TEST(IndirectTest, ComparisonWithIndirectU) {
+  EXPECT_EQ(xyz::indirect<int>(std::in_place, 42),
+            xyz::indirect<double>(std::in_place, 42));
+  EXPECT_EQ(xyz::indirect<double>(std::in_place, 42),
+            xyz::indirect<int>(std::in_place, 42));
+
+  EXPECT_NE(xyz::indirect<int>(std::in_place, 42),
+            xyz::indirect<double>(std::in_place, 101));
+  EXPECT_NE(xyz::indirect<double>(std::in_place, 101),
+            xyz::indirect<int>(std::in_place, 42));
+
+  EXPECT_GT(xyz::indirect<int>(std::in_place, 101),
+            xyz::indirect<double>(std::in_place, 42));
+  EXPECT_GT(xyz::indirect<double>(std::in_place, 101),
+            xyz::indirect<int>(std::in_place, 42));
+
+  EXPECT_GE(xyz::indirect<int>(std::in_place, 42),
+            xyz::indirect<double>(std::in_place, 42));
+  EXPECT_GE(xyz::indirect<double>(std::in_place, 42),
+            xyz::indirect<int>(std::in_place, 42));
+  EXPECT_GE(xyz::indirect<int>(std::in_place, 101),
+            xyz::indirect<double>(std::in_place, 42));
+  EXPECT_GE(xyz::indirect<double>(std::in_place, 101),
+            xyz::indirect<int>(std::in_place, 42));
+
+  EXPECT_LT(xyz::indirect<int>(std::in_place, 42),
+            xyz::indirect<double>(std::in_place, 101));
+  EXPECT_LT(xyz::indirect<double>(std::in_place, 42),
+            xyz::indirect<int>(std::in_place, 101));
+
+  EXPECT_LE(xyz::indirect<int>(std::in_place, 42),
+            xyz::indirect<double>(std::in_place, 42));
+  EXPECT_LE(xyz::indirect<double>(std::in_place, 42),
+            xyz::indirect<int>(std::in_place, 42));
+  EXPECT_LE(xyz::indirect<int>(std::in_place, 42),
+            xyz::indirect<double>(std::in_place, 101));
+  EXPECT_LE(xyz::indirect<double>(std::in_place, 42),
+            xyz::indirect<int>(std::in_place, 101));
 }
 
 template <typename T>
