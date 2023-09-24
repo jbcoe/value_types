@@ -21,6 +21,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define XYZ_INDIRECT_H
 
 #include <cassert>
+#include <compare>
+#include <concepts>
 #include <memory>
 #include <utility>
 
@@ -41,7 +43,9 @@ class indirect {
   using value_type = T;
   using allocator_type = A;
 
-  indirect() {
+  indirect()
+    requires std::default_initializable<T>
+  {
     T* mem = allocator_traits::allocate(alloc_, 1);
     try {
       allocator_traits::construct(alloc_, mem);
@@ -53,7 +57,9 @@ class indirect {
   }
 
   template <class... Ts>
-  indirect(std::in_place_t, Ts&&... ts) {
+  indirect(std::in_place_t, Ts&&... ts)
+    requires std::constructible_from<T, Ts&&...>
+  {
     T* mem = allocator_traits::allocate(alloc_, 1);
     try {
       allocator_traits::construct(alloc_, mem, std::forward<Ts>(ts)...);
@@ -66,6 +72,7 @@ class indirect {
 
   template <class... Ts>
   indirect(std::allocator_arg_t, const A& alloc, std::in_place_t, Ts&&... ts)
+    requires std::constructible_from<T, Ts&&...>
       : alloc_(alloc) {
     T* mem = allocator_traits::allocate(alloc_, 1);
     try {
@@ -77,7 +84,9 @@ class indirect {
     }
   }
 
-  indirect(const indirect& other) : alloc_(other.alloc_) {
+  indirect(const indirect& other)
+    requires std::copy_constructible<T>
+      : alloc_(other.alloc_) {
     assert(other.p_ != nullptr);
     T* mem = allocator_traits::allocate(alloc_, 1);
     try {
@@ -98,7 +107,9 @@ class indirect {
 
   ~indirect() { reset(); }
 
-  indirect& operator=(const indirect& other) {
+  indirect& operator=(const indirect& other)
+    requires std::copy_constructible<T>
+  {
     assert(other.p_ != nullptr);
     indirect tmp(other);
     swap(tmp);
@@ -149,6 +160,30 @@ class indirect {
     swap(lhs.p_, rhs.p_);
   }
 
+  friend bool operator==(const indirect& lhs, const indirect& rhs) noexcept
+    requires std::equality_comparable<T>
+  {
+    assert(lhs.p_ != nullptr);
+    assert(rhs.p_ != nullptr);
+    return *lhs == *rhs;
+  }
+
+  friend bool operator!=(const indirect& lhs, const indirect& rhs) noexcept
+    requires std::equality_comparable<T>
+  {
+    assert(lhs.p_ != nullptr);
+    assert(rhs.p_ != nullptr);
+    return *lhs != *rhs;
+  }
+
+  friend auto operator<=>(const indirect& lhs, const indirect& rhs)
+    requires std::three_way_comparable<T>
+  {
+    assert(lhs.p_ != nullptr);
+    assert(rhs.p_ != nullptr);
+    return *lhs <=> *rhs;
+  }
+
  private:
   void reset() noexcept {
     if (p_ == nullptr) return;
@@ -157,9 +192,14 @@ class indirect {
     p_ = nullptr;
   }
 };
+
+template <class T>
+concept is_hashable = requires(T t) { std::hash<T>{}(t); };
+
 }  // namespace xyz
 
 template <class T>
+  requires xyz::is_hashable<T>
 struct std::hash<xyz::indirect<T>> {
   constexpr std::size_t operator()(const xyz::indirect<T>& key) const {
     return std::hash<typename xyz::indirect<T>::value_type>{}(*key);
