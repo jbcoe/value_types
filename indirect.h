@@ -43,7 +43,7 @@ class indirect {
   using value_type = T;
   using allocator_type = A;
 
-  indirect()
+  constexpr indirect()
     requires std::default_initializable<T>
   {
     T* mem = allocator_traits::allocate(alloc_, 1);
@@ -57,7 +57,7 @@ class indirect {
   }
 
   template <class... Ts>
-  indirect(std::in_place_t, Ts&&... ts)
+  constexpr indirect(std::in_place_t, Ts&&... ts)
     requires std::constructible_from<T, Ts&&...>
   {
     T* mem = allocator_traits::allocate(alloc_, 1);
@@ -71,7 +71,8 @@ class indirect {
   }
 
   template <class... Ts>
-  indirect(std::allocator_arg_t, const A& alloc, std::in_place_t, Ts&&... ts)
+  constexpr indirect(std::allocator_arg_t, const A& alloc, std::in_place_t,
+                    Ts&&... ts)
     requires std::constructible_from<T, Ts&&...>
       : alloc_(alloc) {
     T* mem = allocator_traits::allocate(alloc_, 1);
@@ -84,7 +85,7 @@ class indirect {
     }
   }
 
-  indirect(const indirect& other)
+  constexpr indirect(const indirect& other)
     requires std::copy_constructible<T>
       : alloc_(other.alloc_) {
     assert(other.p_ != nullptr);
@@ -98,16 +99,16 @@ class indirect {
     }
   }
 
-  indirect(indirect&& other) noexcept
+  constexpr indirect(indirect&& other) noexcept
       : p_(nullptr), alloc_(std::move(other.alloc_)) {
     assert(other.p_ != nullptr);
     using std::swap;
     swap(p_, other.p_);
   }
 
-  ~indirect() { reset(); }
+  constexpr ~indirect() { reset(); }
 
-  indirect& operator=(const indirect& other)
+  constexpr indirect& operator=(const indirect& other)
     requires std::copy_constructible<T>
   {
     assert(other.p_ != nullptr);
@@ -116,7 +117,7 @@ class indirect {
     return *this;
   }
 
-  indirect& operator=(indirect&& other) noexcept {
+  constexpr indirect& operator=(indirect&& other) noexcept {
     assert(other.p_ != nullptr);
     reset();
     alloc_ = std::move(other.alloc_);
@@ -160,7 +161,8 @@ class indirect {
     swap(lhs.p_, rhs.p_);
   }
 
-  friend bool operator==(const indirect& lhs, const indirect& rhs) noexcept
+  friend constexpr bool operator==(const indirect& lhs,
+                                  const indirect& rhs) noexcept
     requires std::equality_comparable<T>
   {
     assert(lhs.p_ != nullptr);
@@ -168,7 +170,8 @@ class indirect {
     return *lhs == *rhs;
   }
 
-  friend bool operator!=(const indirect& lhs, const indirect& rhs) noexcept
+  friend constexpr bool operator!=(const indirect& lhs,
+                                  const indirect& rhs) noexcept
     requires std::equality_comparable<T>
   {
     assert(lhs.p_ != nullptr);
@@ -176,7 +179,7 @@ class indirect {
     return *lhs != *rhs;
   }
 
-  friend auto operator<=>(const indirect& lhs, const indirect& rhs)
+  friend constexpr auto operator<=>(const indirect& lhs, const indirect& rhs)
     requires std::three_way_comparable<T>
   {
     assert(lhs.p_ != nullptr);
@@ -185,7 +188,7 @@ class indirect {
   }
 
  private:
-  void reset() noexcept {
+  constexpr void reset() noexcept {
     if (p_ == nullptr) return;
     allocator_traits::destroy(alloc_, p_);
     allocator_traits::deallocate(alloc_, p_, 1);

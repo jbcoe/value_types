@@ -146,23 +146,23 @@ class indirect {
   using value_type = T;
   using allocator_type = A;
 
-  indirect();
+  constexpr indirect();
 
   template <class... Ts>
-  indirect(std::in_place_t, Ts&&... ts);
+  constexpr indirect(std::in_place_t, Ts&&... ts);
 
   template <class... Ts>
-  indirect(std::allocator_arg_t, const Allocator& alloc, std::in_place_t, Ts&&... ts);
+  constexpr indirect(std::allocator_arg_t, const Allocator& alloc, std::in_place_t, Ts&&... ts);
 
-  indirect(const indirect& other);
+  constexpr indirect(const indirect& other);
 
-  indirect(indirect&& other) noexcept;
+  constexpr indirect(indirect&& other) noexcept;
 
-  ~indirect();
+  constexpr ~indirect();
 
-  indirect& operator=(const indirect& other);
+  constexpr indirect& operator=(const indirect& other);
 
-  indirect& operator=(indirect&& other) noexcept;
+  constexpr indirect& operator=(indirect&& other) noexcept;
 
   constexpr const T& operator*() const noexcept;
 
@@ -183,7 +183,7 @@ class indirect {
 #### Constructors [indirect.ctor]
 
 ```c++
-indirect()
+constexpr indirect()
 ```
 
 * _Constraints_: `is_default_constructible_v<T>` is true.
@@ -195,7 +195,7 @@ using the specified allocator.
 
 ```c++
 template <class... Ts>
-indirect(std::in_place_t, Ts&&... ts);
+constexpr indirect(std::in_place_t, Ts&&... ts);
 ```
 
 * _Constraints_: `is_constructible_v<T, Ts...>` is true.
@@ -207,7 +207,7 @@ arguments `Ts` using the specified allocator.
 
 ```c++
 template <class... Ts>
-indirect(std::allocator_arg_t, const Allocator& alloc, std::in_place_t, Ts&&... ts);
+constexpr indirect(std::allocator_arg_t, const Allocator& alloc, std::in_place_t, Ts&&... ts);
 ```
 
 * _Constraints_: `is_constructible_v<T, Ts...>` is true.
@@ -220,7 +220,7 @@ arguments `ts...` using the specified allocator.
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-indirect(const indirect& other);
+constexpr indirect(const indirect& other);
 ```
 
 * _Constraints_: `is_copy_constructible_v<T>` is true.
@@ -233,7 +233,7 @@ copy constructor of the object owned by `other` using the specified allocator.
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-indirect(indirect&& other) noexcept;
+constexpr indirect(indirect&& other) noexcept;
 ```
 
 * _Preconditions_: `other` is not valueless.
@@ -248,7 +248,7 @@ indirect(indirect&& other) noexcept;
 #### Destructor [indirect.dtor]
 
 ```c++
-~indirect();
+constexpr ~indirect();
 ```
 
 * _Effects_: If `*this` is not valueless, destroys the owned object with the
@@ -257,7 +257,7 @@ specified allocator.
 #### Assignment [indirect.assign]
 
 ```c++
-indirect& operator=(const indirect& other) noexcept;
+constexpr indirect& operator=(const indirect& other) noexcept;
 ```
 
 * _Preconditions_: `other` is not valueless.
@@ -269,7 +269,7 @@ of the object owned by `other` using the specified allocator.
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-indirect& operator=(indirect&& other) noexcept;
+constexpr indirect& operator=(indirect&& other) noexcept;
 ```
 
 * _Preconditions_: `other` is not valueless.
@@ -359,23 +359,23 @@ class polymorphic {
   using value_type = T;
   using allocator_type = A;
 
-  polymorphic();
+  constexpr polymorphic();
 
   template <class U, class... Ts>
-  polymorphic(std::in_place_type_t<U>, Ts&&... ts);
+  constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts);
 
   template <class U, class... Ts>
-  polymorphic(std::allocator_arg_t, const A& alloc, std::in_place_type_t<U>, Ts&&... ts);
+  constexpr polymorphic(std::allocator_arg_t, const A& alloc, std::in_place_type_t<U>, Ts&&... ts);
 
-  polymorphic(const polymorphic& other);
+  constexpr polymorphic(const polymorphic& other);
 
-  polymorphic(polymorphic&& other) noexcept;
+  constexpr polymorphic(polymorphic&& other) noexcept;
 
-  ~polymorphic();
+  constexpr ~polymorphic();
 
-  polymorphic& operator=(const polymorphic& other);
+  constexpr polymorphic& operator=(const polymorphic& other);
 
-  polymorphic& operator=(polymorphic&& other) noexcept;
+  constexpr polymorphic& operator=(polymorphic&& other) noexcept;
 
   constexpr const T& operator*() const noexcept;
 
@@ -396,7 +396,7 @@ class polymorphic {
 #### Constructors [polymorphic.ctor]
 
 ```c++
-polymorphic()
+constexpr polymorphic()
 ```
 
 * _Constraints_: `is_default_constructible_v<T>` is true,
@@ -409,7 +409,7 @@ using the specified allocator.
 
 ```c++
 template <class U, class... Ts>
-polymorphic(std::in_place_type_t<U>, Ts&&... ts);
+constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts);
 ```
 
 * _Constraints_: `is_same_v<T, U> || is_base_of_v<T, U>` is true,
@@ -422,7 +422,7 @@ the arguments `Ts` using the specified allocator.
 
 ```c++
 template <class U, class... Ts>
-polymorphic(std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
+constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
 ```
 
 * _Constraints_: `is_same_v<T, U> || is_base_of_v<T, U>` is true,
@@ -436,7 +436,7 @@ the arguments `ts...` using the specified allocator.
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-polymorphic(const polymorphic& other);
+constexpr polymorphic(const polymorphic& other);
 ```
 
 * _Preconditions_: `other` is not valueless.
@@ -448,7 +448,7 @@ allocator.
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-polymorphic(polymorphic&& other) noexcept;
+constexpr polymorphic(polymorphic&& other) noexcept;
 ```
 
 * _Preconditions_: `other` is not valueless.
@@ -464,7 +464,7 @@ polymorphic(polymorphic&& other) noexcept;
 #### Destructor [polymorphic.dtor]
 
 ```c++
-~polymorphic();
+constexpr ~polymorphic();
 ```
 
 * _Effects_: If `*this` is not valueless, destroys the owned object with the
@@ -473,7 +473,7 @@ specified allocator.
 #### Assignment [polymorphic.assign]
 
 ```c++
-polymorphic& operator=(const polymorphic& other) noexcept;
+constexpr polymorphic& operator=(const polymorphic& other) noexcept;
 ```
 
 * _Preconditions_: `other` is not valueless.
@@ -486,7 +486,7 @@ specified allocator.
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-polymorphic& operator=(polymorphic&& other) noexcept;
+constexpr polymorphic& operator=(polymorphic&& other) noexcept;
 ```
 
 * _Preconditions_: `other` is not valueless.
