@@ -60,6 +60,8 @@ types: the data they own is copied when the type is copied; the data is
 destroyed when the type is destroyed; the data is const when accessed through a
 const-access-path.
 
+TODO: Discuss limitations of existing types.
+
 ## Design requirements
 
 We review the fundamental design requirements of `indirect` and `polymorphic`
@@ -119,15 +121,49 @@ int main() {
 
 ### Value semantics
 
-TODO
+Both `indirect` and `polymorphic` are value-types whose owned object is
+free-store-allocated (or some other memory-resource controlled by the specified
+allocator).
+
+When a value type is copied it gives rise to two independent objects that can be
+modified separately.
+
+The owned object is part of the logical state of `indirect` and `polymorphic`.
+Operations on a const-qualified object do not make changes to the object's
+logical state nor to the logical state of other object.
+
+`indirect<T>` and `polymporphic<T>` are default constructible in cases where `T`
+is default constructible. Moving a value type onto the free-store should not add
+or remove the ability to be default constructed.
+
+Pairwise-comparison operators, which are defined only for `indirect`, compare
+the owned objects where the owned objects can be compared.
+
+The hash operation, which is defined only for `indirect`, hashes the owned
+object where the owned object can be hashed.
 
 ### Unobservable null state and interaction with `std::optional`
 
-TODO
+Both `indirect` and `polymorphic` have a null state which is used to implement
+move. The null state is not intended to be observable to the user, there is no
+`operator bool` or `has_value` member function. Accessing the value of a
+`indirect` or `polymorphic` after it has been moved from is erroneous behaviour.
+We provide a `valueless_after_move` member function to allow explicit checks for
+the valueless state in cases where it cannot be verified statically.
+
+Without a null state, moving `indirect` or `polymorphic` would require
+allocation and moving from the owned object. This would be expensive and would
+require the owned object to be moveable. The existance of a null state allows
+move to be implemented cheaply without requiring the owned object to be
+moveable.
 
 ## Prior work
 
-TODO
+This proposal is a continuation of the work started in [P0201] and [P1950].
+
+There was previous work on a cloned pointer type [N3339] which met with
+opposition becuse of the mixing of value and pointer semantics. We feel that the
+pure value-semantics of `indirect` and `polymorphic` address these concerns.
 
 ## Impact on the standard
 
