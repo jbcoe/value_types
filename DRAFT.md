@@ -288,7 +288,7 @@ class indirect {
 };
 
 template <class T, class Alloc>
-struct std::uses_allocator<indirect<T>, Alloc> : true_type {};
+struct std::uses_allocator<indirect<T, Alloc>, Alloc> : true_type {};
 ```
 
 #### Constructors [indirect.ctor]
@@ -667,7 +667,7 @@ class polymorphic {
 };
 
 template <class T, class Alloc>
-struct std::uses_allocator<polymorphic<T>, Alloc> : true_type {};
+struct std::uses_allocator<polymorphic<T, Alloc>, Alloc> : true_type {};
 ```
 
 #### Constructors [polymorphic.ctor]
