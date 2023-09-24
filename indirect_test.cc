@@ -389,9 +389,12 @@ TEST(IndirectTest, InterationWithPMRAllocators)
   std::array<std::byte, 1024> buffer;
   std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
   std::pmr::polymorphic_allocator<int> pa{&mbr};
-  std::pmr::vector<int> values{pa};
-  xyz::indirect<int, std::pmr::polymorphic_allocator<int>> a(std::allocator_arg, pa, std::in_place, 42);
-  EXPECT_EQ(*a, 42);
+  using IndirectInt = xyz::indirect<int, std::pmr::polymorphic_allocator<int>>;
+  IndirectInt a(std::allocator_arg, pa, std::in_place, 42);
+  std::pmr::vector<IndirectInt> values{pa};
+  values.push_back(a);
+  values.push_back(std::move(a));
+  EXPECT_EQ(values[0]->value(), 42);
 }
 #endif
 }  // namespace

@@ -105,6 +105,13 @@ class indirect {
     swap(p_, other.p_);
   }
 
+  indirect(indirect&& other, const A& alloc) noexcept
+      : p_(nullptr), alloc_(alloc) {
+    assert(other.p_ != nullptr);
+    using std::swap;
+    swap(p_, other.p_);
+  }
+
   ~indirect() { reset(); }
 
   indirect& operator=(const indirect& other)
@@ -197,6 +204,9 @@ template <class T>
 concept is_hashable = requires(T t) { std::hash<T>{}(t); };
 
 }  // namespace xyz
+
+template <class T, class Alloc>
+struct std::uses_allocator<xyz::indirect<T>, Alloc> : true_type {};
 
 template <class T>
   requires xyz::is_hashable<T>
