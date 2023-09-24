@@ -108,6 +108,20 @@ class indirect {
     }
   }
 
+  indirect(const indirect& other, const A& alloc)
+    requires std::copy_constructible<T>
+      : alloc_(alloc) {
+    assert(other.p_ != nullptr);
+    T* mem = allocator_traits::allocate(alloc_, 1);
+    try {
+      allocator_traits::construct(alloc_, mem, *other);
+      p_ = mem;
+    } catch (...) {
+      allocator_traits::deallocate(alloc_, mem, 1);
+      throw;
+    }
+  }
+
   indirect(indirect&& other) noexcept
       : p_(nullptr), alloc_(std::move(other.alloc_)) {
     assert(other.p_ != nullptr);

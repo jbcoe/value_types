@@ -437,8 +437,7 @@ TEST(IndirectTest, InteractionWithSizedAllocators) {
 }
 
 #if (__cpp_lib_memory_resource >= 201603L)
-TEST(IndirectTest, InteractionWithPMRAllocators)
-{
+TEST(IndirectTest, InteractionWithPMRAllocators) {
   std::array<std::byte, 1024> buffer;
   std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
   std::pmr::polymorphic_allocator<int> pa{&mbr};
@@ -447,7 +446,7 @@ TEST(IndirectTest, InteractionWithPMRAllocators)
   std::pmr::vector<IndirectInt> values{pa};
   values.push_back(a);
   values.push_back(std::move(a));
-  EXPECT_EQ(values[0]->value(), 42);
+  EXPECT_EQ(*values[0], 42);
 }
 #endif // (__cpp_lib_memory_resource >= 201603L)
 }  // namespace
