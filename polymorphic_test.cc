@@ -22,8 +22,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <gtest/gtest.h>
 
+#include <array>
 #include <map>
 #include <optional>
+#include <memory_resource>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -405,4 +407,15 @@ TEST(PolymorphicTest, InteractionWithSizedAllocators) {
   EXPECT_EQ(sizeof(xyz::polymorphic<int, TrackingAllocator<int>>),
             (sizeof(int*) + sizeof(TrackingAllocator<int>)));
 }
+
+TEST(PolymorphicTest, InterationWithPMRAllocators) {
+  std::array<std::byte, 1024> buffer;
+  std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
+  std::pmr::polymorphic_allocator<Base> pa{&mbr};
+  std::pmr::vector<Base> values{pa};
+  xyz::polymorphic<Base, std::pmr::polymorphic_allocator<Base>> a(
+      std::allocator_arg, pa, std::in_place_type<Derived>, 42);
+  EXPECT_EQ(a->value(), 42);
+}
+
 }  // namespace

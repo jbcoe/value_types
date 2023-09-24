@@ -22,9 +22,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <gtest/gtest.h>
 
+#include <array>
 #include <map>
 #include <optional>
 #include <unordered_map>
+#include <memory_resource>
 #include <utility>
 #include <vector>
 
@@ -377,6 +379,16 @@ TEST(IndirectTest, InteractionWithSizedAllocators) {
   EXPECT_EQ(sizeof(xyz::indirect<int>), sizeof(int*));
   EXPECT_EQ(sizeof(xyz::indirect<int, TrackingAllocator<int>>),
             (sizeof(int*) + sizeof(TrackingAllocator<int>)));
+}
+
+TEST(IndirectTest, InterationWithPMRAllocators)
+{
+  std::array<std::byte, 1024> buffer;
+  std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
+  std::pmr::polymorphic_allocator<int> pa{&mbr};
+  std::pmr::vector<int> values{pa};
+  xyz::indirect<int, std::pmr::polymorphic_allocator<int>> a(std::allocator_arg, pa, std::in_place, 42);
+  EXPECT_EQ(*a, 42);
 }
 
 }  // namespace
