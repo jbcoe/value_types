@@ -405,4 +405,13 @@ TEST(PolymorphicTest, InteractionWithSizedAllocators) {
   EXPECT_EQ(sizeof(xyz::polymorphic<int, TrackingAllocator<int>>),
             (sizeof(int*) + sizeof(TrackingAllocator<int>)));
 }
+
+TEST(PolymorphicTest, IncompleteTypeSupport) {
+  struct A {
+    xyz::polymorphic<class Incomplete> incomplete_;
+  
+    A();
+  };
+  std::vector<A> as; // This should compile.
+}
 }  // namespace

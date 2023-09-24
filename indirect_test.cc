@@ -379,4 +379,14 @@ TEST(IndirectTest, InteractionWithSizedAllocators) {
             (sizeof(int*) + sizeof(TrackingAllocator<int>)));
 }
 
+TEST(IndirectTest, IncompleteTypeSupport) {
+  struct A {
+    xyz::indirect<class I> incomplete_;
+
+    A();   // Can  be defined as `=default` but when I is complete.
+    ~A();  // Can be defined as `=default` but when I is complete.
+  };
+  std::vector<A> as;  // This should compile.
+}
+
 }  // namespace
