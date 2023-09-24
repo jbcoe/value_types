@@ -145,7 +145,7 @@ class indirect {
   }
 
   constexpr bool valueless_after_move() const noexcept { return p_ == nullptr; }
-  
+
   constexpr void swap(indirect& other) noexcept {
     assert(p_ != nullptr);
     assert(other.p_ != nullptr);
@@ -160,7 +160,7 @@ class indirect {
     swap(lhs.p_, rhs.p_);
   }
 
-  friend bool operator==(const indirect& lhs, const indirect& rhs) noexcept
+  friend bool operator==(const indirect& lhs, const indirect& rhs)
     requires std::equality_comparable<T>
   {
     assert(lhs.p_ != nullptr);
@@ -168,7 +168,7 @@ class indirect {
     return *lhs == *rhs;
   }
 
-  friend bool operator!=(const indirect& lhs, const indirect& rhs) noexcept
+  friend bool operator!=(const indirect& lhs, const indirect& rhs)
     requires std::equality_comparable<T>
   {
     assert(lhs.p_ != nullptr);
@@ -182,6 +182,42 @@ class indirect {
     assert(lhs.p_ != nullptr);
     assert(rhs.p_ != nullptr);
     return *lhs <=> *rhs;
+  }
+
+  template <class U>
+  friend bool operator==(const indirect& lhs, const U& rhs) {
+    assert(lhs.p_ != nullptr);
+    return *lhs == rhs;
+  }
+
+  template <class U>
+  friend bool operator==(const U& lhs, const indirect& rhs) {
+    assert(rhs.p_ != nullptr);
+    return lhs == *rhs;
+  }
+
+  template <class U>
+  friend bool operator!=(const indirect& lhs, const U& rhs) {
+    assert(lhs.p_ != nullptr);
+    return *lhs != rhs;
+  }
+
+  template <class U>
+  friend bool operator!=(const U& lhs, const indirect& rhs) {
+    assert(rhs.p_ != nullptr);
+    return lhs != *rhs;
+  }
+
+  template <class U>
+  friend auto operator<=>(const indirect& lhs, const U& rhs) {
+    assert(lhs.p_ != nullptr);
+    return *lhs <=> rhs;
+  }
+
+  template <class U>
+  friend auto operator<=>(const U& lhs, const indirect& rhs) {
+    assert(rhs.p_ != nullptr);
+    return lhs <=> *rhs;
   }
 
  private:
