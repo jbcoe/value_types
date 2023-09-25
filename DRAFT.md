@@ -226,7 +226,7 @@ class indirect {
   indirect();
 
   template <class... Ts>
-  indirect(std::in_place_t, Ts&&... ts);
+  explicit indirect(std::in_place_t, Ts&&... ts);
 
   template <class... Ts>
   indirect(std::allocator_arg_t, const Allocator& alloc, std::in_place_t, Ts&&... ts);
@@ -306,7 +306,7 @@ using the specified allocator.
 
 ```c++
 template <class... Ts>
-indirect(std::in_place_t, Ts&&... ts);
+explicit indirect(std::in_place_t, Ts&&... ts);
 ```
 
 * _Constraints_: `is_constructible_v<T, Ts...>` is true.
@@ -632,7 +632,7 @@ class polymorphic {
   polymorphic();
 
   template <class U, class... Ts>
-  polymorphic(std::in_place_type_t<U>, Ts&&... ts);
+  explicit polymorphic(std::in_place_type_t<U>, Ts&&... ts);
 
   template <class U, class... Ts>
   polymorphic(std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
@@ -686,7 +686,7 @@ polymorphic()
 
 ```c++
 template <class U, class... Ts>
-polymorphic(std::in_place_type_t<U>, Ts&&... ts);
+explicit polymorphic(std::in_place_type_t<U>, Ts&&... ts);
 ```
 
 * _Constraints_: `is_base_of_v<T, U>` is true,
