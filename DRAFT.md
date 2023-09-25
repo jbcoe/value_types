@@ -233,11 +233,11 @@ class indirect {
 
   indirect(const indirect& other);
 
-  indirect(const indirect& other, const Allocator& alloc);
+  indirect(const indirect& other, std::allocator_arg_t, const Allocator& alloc);
 
   indirect(indirect&& other) noexcept;
   
-  indirect(indirect&& other, const Allocator& alloc) noexcept;
+  indirect(indirect&& other, std::allocator_arg_t, const Allocator& alloc) noexcept;
 
   ~indirect();
 
@@ -344,7 +344,7 @@ copy constructor of the object owned by `other` using the specified allocator.
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-indirect(const indirect& other, const Allocator& alloc);
+indirect(const indirect& other, std::allocator_arg_t, const Allocator& alloc);
 ```
 
 * _Constraints_: `is_copy_constructible_v<T>` is true and 
@@ -372,7 +372,7 @@ indirect(indirect&& other) noexcept;
   is true.
 
 ```c++
-indirect(indirect&& other, const Allocator& alloc) noexcept;
+indirect(indirect&& other, std::allocator_arg_t, const Allocator& alloc) noexcept;
 ```
 
 * _Constraints_: `is_copy_constructible_v<T>` is true and 
@@ -639,11 +639,11 @@ class polymorphic {
 
   polymorphic(const polymorphic& other);
   
-  polymorphic(const polymorphic& other, const Allocator& alloc);
+  polymorphic(const polymorphic& other, std::allocator_arg_t, const Allocator& alloc);
 
   polymorphic(polymorphic&& other) noexcept;
   
-  polymorphic(polymorphic&& other, const Allocator& alloc) noexcept;
+  polymorphic(polymorphic&& other, std::allocator_arg_t, const Allocator& alloc) noexcept;
 
   ~polymorphic();
 
@@ -725,7 +725,7 @@ allocator.
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-polymorphic(const polymorphic& other, const Allocator& alloc);
+polymorphic(const polymorphic& other, std::allocator_arg_t, const Allocator& alloc);
 ```
 
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
@@ -752,7 +752,7 @@ polymorphic(polymorphic&& other) noexcept;
   is true.
 
 ```c++
-polymorphic(polymorphic&& other, const Allocator& alloc) noexcept;
+polymorphic(polymorphic&& other, std::allocator_arg_t, const Allocator& alloc) noexcept;
 ```
 
 * _Preconditions_: `other` is not valueless and `Allocator` meets the

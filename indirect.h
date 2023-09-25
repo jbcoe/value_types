@@ -108,7 +108,7 @@ class indirect {
     }
   }
 
-  indirect(const indirect& other, const A& alloc)
+  indirect(const indirect& other, std::allocator_arg_t, const A& alloc)
     requires std::copy_constructible<T>
       : alloc_(alloc) {
     assert(other.p_ != nullptr);
@@ -129,7 +129,7 @@ class indirect {
     swap(p_, other.p_);
   }
 
-  indirect(indirect&& other, const A& alloc) noexcept
+  indirect(indirect&& other, std::allocator_arg_t, const A& alloc) noexcept
       : p_(nullptr), alloc_(alloc) {
     assert(other.p_ != nullptr);
     using std::swap;
