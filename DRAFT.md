@@ -140,8 +140,8 @@ class Composite {
 int main() {
     Composite c;
     assert(c.foo() == A::Constness::NON_CONST);
-    assert(c.bar() == A::Constness::NON_CONST);
     const Composite& cc = c;
+    assert(c.foo() == A::Constness::CONST);
 }
 ```
 
@@ -521,9 +521,9 @@ template <class T, class A, class U>
 constexpr bool operator==(const indirect<T, A>& lhs, const U& rhs);
 ```
 
-* _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
+* _Preconditions_: `lhs` is not valueless.
 
-* _Effects_: returns  `*lhs == *rhs`.
+* _Effects_: returns  `*lhs == rhs`.
 
 * _Remarks_: Specializations of this function template for which `*lhs == *rhs`
   is a core constant expression are constexpr functions.
@@ -533,9 +533,9 @@ template <class T, class A, class U>
 constexpr bool operator==(const U& lhs, const indirect<T, A>& rhs);
 ```
 
-* _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
+* _Preconditions_: `rhs` is not valueless.
 
-* _Effects_: returns  `*lhs == *rhs`.
+* _Effects_: returns  `lhs == *rhs`.
 
 * _Remarks_: Specializations of this function template for which `*lhs == *rhs`
   is a core constant expression are constexpr functions.
@@ -545,9 +545,9 @@ template <class T, class A, class U>
 constexpr bool operator!=(const indirect<T, A>& lhs, const U& rhs)
 ```
 
-* _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
+* _Preconditions_: `lhs` is not valueless.
 
-* _Effects_: returns  `*lhs != *rhs`.
+* _Effects_: returns  `*lhs != rhs`.
 
 * _Remarks_: Specializations of this function template for which `*lhs != *rhs`
   is a core constant expression are constexpr functions.
@@ -557,9 +557,9 @@ template <class T, class A, class U>
 constexpr bool operator!=(const U& lhs, const indirect<T, A>& rhs);
 ```
 
-* _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
+* _Preconditions_: `rhs` is not valueless.
 
-* _Effects_: returns  `*lhs != *rhs`.
+* _Effects_: returns  `lhs != *rhs`.
 
 * _Remarks_: Specializations of this function template for which `*lhs != *rhs`
   is a core constant expression are constexpr functions.
@@ -569,9 +569,9 @@ template <class T, class A, class U>
 constexpr auto operator<=>(const indirect<T, A>& lhs, const U& rhs);
 ```
 
-* _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
+* _Preconditions_: `lhs` is not valueless.
 
-* _Effects_: returns  `*lhs <=> *rhs`.
+* _Effects_: returns  `*lhs <=> rhs`.
 
 * _Remarks_: Specializations of this function template for which `*lhs <=> *rhs`
   is a core constant expression are constexpr functions.
@@ -581,9 +581,9 @@ template <class T, class A, class U>
 constexpr auto operator<=>(const U& lhs, const indirect<T, A>& rhs);
 ```
 
-* _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
+* _Preconditions_: `rhs` is not valueless.
 
-* _Effects_: returns  `*lhs <=> *rhs`.
+* _Effects_: returns  `lhs <=> *rhs`.
 
 * _Remarks_: Specializations of this function template for which `*lhs <=> *rhs`
   is a core constant expression are constexpr functions.
