@@ -141,7 +141,7 @@ int main() {
     Composite c;
     assert(c.foo() == A::Constness::NON_CONST);
     const Composite& cc = c;
-    assert(c.foo() == A::Constness::CONST);
+    assert(cc.foo() == A::Constness::CONST);
 }
 ```
 
@@ -208,8 +208,6 @@ specified allocator when the indirect value is copied or destroyed. An indirect
 value object is _valueless_ if it has no owned object. A indirect value may only
 become valueless after it has been moved from.
 
-The template parameter `T` of `indirect<T>` must be a non-union class type.
-
 The template parameter T of `indirect<T>` may be an incomplete type.
 
 #### X.Y.2 Class template indirect synopsis [indirect.syn]
@@ -233,11 +231,11 @@ class indirect {
 
   indirect(const indirect& other);
 
-  indirect(const indirect& other, std::allocator_arg_t, const Allocator& alloc);
+  indirect(std::allocator_arg_t, const Allocator& alloc, const indirect& other);
 
   indirect(indirect&& other) noexcept;
   
-  indirect(indirect&& other, std::allocator_arg_t, const Allocator& alloc) noexcept;
+  indirect(std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcept;
 
   ~indirect();
 
@@ -344,7 +342,7 @@ copy constructor of the object owned by `other` using the specified allocator.
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-indirect(const indirect& other, std::allocator_arg_t, const Allocator& alloc);
+indirect(std::allocator_arg_t, const Allocator& alloc, const indirect& other);
 ```
 
 * _Constraints_: `is_copy_constructible_v<T>` is true and 
@@ -372,7 +370,7 @@ indirect(indirect&& other) noexcept;
   is true.
 
 ```c++
-indirect(indirect&& other, std::allocator_arg_t, const Allocator& alloc) noexcept;
+indirect(std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcept;
 ```
 
 * _Constraints_: `is_copy_constructible_v<T>` is true and 
@@ -639,11 +637,11 @@ class polymorphic {
 
   polymorphic(const polymorphic& other);
   
-  polymorphic(const polymorphic& other, std::allocator_arg_t, const Allocator& alloc);
+  polymorphic(std::allocator_arg_t, const Allocator& alloc, const polymorphic& other);
 
   polymorphic(polymorphic&& other) noexcept;
   
-  polymorphic(polymorphic&& other, std::allocator_arg_t, const Allocator& alloc) noexcept;
+  polymorphic(std::allocator_arg_t, const Allocator& alloc, polymorphic&& other) noexcept;
 
   ~polymorphic();
 
@@ -725,7 +723,7 @@ allocator.
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-polymorphic(const polymorphic& other, std::allocator_arg_t, const Allocator& alloc);
+polymorphic(std::allocator_arg_t, const Allocator& alloc, const polymorphic& other);
 ```
 
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
@@ -752,7 +750,7 @@ polymorphic(polymorphic&& other) noexcept;
   is true.
 
 ```c++
-polymorphic(polymorphic&& other, std::allocator_arg_t, const Allocator& alloc) noexcept;
+polymorphic(std::allocator_arg_t, const Allocator& alloc, polymorphic&& other) noexcept;
 ```
 
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
