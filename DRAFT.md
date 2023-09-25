@@ -183,6 +183,20 @@ require the owned object to be moveable. The existence of a null state allows
 move to be implemented cheaply without requiring the owned object to be
 moveable.
 
+Where a nullable `indirect` or `polymorphic` is required using `std::optional`
+is recommended. This may be commonplace as `indirect` and `polymorphic` may be
+used in composite classes where smart pointers are currently used to
+(mis)represent component objects. Putting `T` onto the free-store should not
+make it nullable, nullability must be explicitly opted-into by using
+`std::optional<indirect<T>>` or `std::optional<polymorphic<T>>`.
+
+Access to an `optional<indirect<T>>` or `optional<polymorphic<T>>` requires
+double indirection: either `(*v)->some_member` or `(**v)`.
+
+Note: As the null state of `indirect` and `polymorphic` is not observable, and
+access to a moved from object is erroneous, `std::optional` can be specialized
+by implementers to exchange pointers on move construction and assignment.
+
 ## Prior work
 
 This proposal is a continuation of the work started in [P0201] and [P1950].
