@@ -67,7 +67,7 @@ class indirect {
   }
 
   template <class... Ts>
-  indirect(std::in_place_t, Ts&&... ts)
+  explicit indirect(std::in_place_t, Ts&&... ts)
     requires std::constructible_from<T, Ts&&...>
   {
     T* mem = allocator_traits::allocate(alloc_, 1);
@@ -108,7 +108,7 @@ class indirect {
     }
   }
 
-  indirect(const indirect& other, const A& alloc)
+  indirect(std::allocator_arg_t, const A& alloc, const indirect& other)
     requires std::copy_constructible<T>
       : alloc_(alloc) {
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
@@ -129,7 +129,7 @@ class indirect {
     swap(p_, other.p_);
   }
 
-  indirect(indirect&& other, const A& alloc) noexcept
+  indirect(std::allocator_arg_t, const A& alloc, indirect&& other) noexcept
       : p_(nullptr), alloc_(alloc) {
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     using std::swap;

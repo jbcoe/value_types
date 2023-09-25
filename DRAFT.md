@@ -82,7 +82,7 @@ components.
 
 Note: Including a `polymorphic` component in a composite class means that
 virtual dispatch will be used in copying the `polymorphic` member. Where a
-composite class contains a polymorphic member from a know set of types, prefer
+composite class contains a polymorphic member from a known set of types, prefer
 `std::variant` or `indirect<std::variant>` if indirect storage is required.
 Where a composite class contains a polymorphic member and does not need to be
 copyable or assignable, prefer `indirect<T>` where `T`'s copy constructor and
@@ -158,7 +158,7 @@ The owned object is part of the logical state of `indirect` and `polymorphic`.
 Operations on a const-qualified object do not make changes to the object's
 logical state nor to the logical state of other object.
 
-`indirect<T>` and `polymporphic<T>` are default constructible in cases where `T`
+`indirect<T>` and `polymorphic<T>` are default constructible in cases where `T`
 is default constructible. Moving a value type onto the free-store should not add
 or remove the ability to be default constructed.
 
@@ -179,7 +179,7 @@ the valueless state in cases where it cannot be verified statically.
 
 Without a null state, moving `indirect` or `polymorphic` would require
 allocation and moving from the owned object. This would be expensive and would
-require the owned object to be moveable. The existance of a null state allows
+require the owned object to be moveable. The existence of a null state allows
 move to be implemented cheaply without requiring the owned object to be
 moveable.
 
@@ -205,12 +205,12 @@ the standard library header `<memory>`.
 An _indirect value_ is an object that manages the lifetime of an owned object
 using an allocator.  The owned object (if any) is copied or destroyed using the
 specified allocator when the indirect value is copied or destroyed. An indirect
-value object is _valueless_ if it has no owned object. A indirect value may only
+value object is _valueless_ if it has no owned object. An indirect value may only
 become valueless after it has been moved from.
 
-The template parameter `T` of `indirect<T>` must be a non-union class type.
+The template parameter `T` of `indirect` must be a non-union class type.
 
-The template parameter T of `indirect<T>` may be an incomplete type.
+The template parameter `T` of `indirect` may be an incomplete type.
 
 #### X.Y.2 Class template indirect synopsis [indirect.syn]
 
@@ -221,23 +221,23 @@ class indirect {
   Allocator allocator_; // exposition only 
  public:
   using value_type = T;
-  using allocator_type = A;
+  using allocator_type = Allocator;
 
   indirect();
 
   template <class... Ts>
-  indirect(std::in_place_t, Ts&&... ts);
+  explicit indirect(std::in_place_t, Ts&&... ts);
 
   template <class... Ts>
   indirect(std::allocator_arg_t, const Allocator& alloc, std::in_place_t, Ts&&... ts);
 
   indirect(const indirect& other);
 
-  indirect(const indirect& other, const Allocator& alloc);
+  indirect(std::allocator_arg_t, const Allocator& alloc, const indirect& other);
 
   indirect(indirect&& other) noexcept;
   
-  indirect(indirect&& other, const Allocator& alloc) noexcept;
+  indirect(std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcept;
 
   ~indirect();
 
@@ -306,7 +306,7 @@ using the specified allocator.
 
 ```c++
 template <class... Ts>
-indirect(std::in_place_t, Ts&&... ts);
+explicit indirect(std::in_place_t, Ts&&... ts);
 ```
 
 * _Constraints_: `is_constructible_v<T, Ts...>` is true.
@@ -344,11 +344,11 @@ copy constructor of the object owned by `other` using the specified allocator.
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-indirect(const indirect& other, const Allocator& alloc);
+indirect(std::allocator_arg_t, const Allocator& alloc, const indirect& other);
 ```
 
-* _Constraints_: `is_copy_constructible_v<T>` is true and 
-  uses_allocator<T, Allocator> is true;.
+* _Constraints_: `is_copy_constructible_v<T>` is true and
+  `uses_allocator<T, Allocator>`` is true.
 
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
   _Cpp17Allocator_ requirements.
@@ -368,11 +368,11 @@ indirect(indirect&& other) noexcept;
 
 * _Postconditions_: `other` is valueless.
 
-* _Remarks_: This constructor does not require that `is_move_constructible<T>_v`
+* _Remarks_: This constructor does not require that `is_move_constructible_v<T>`
   is true.
 
 ```c++
-indirect(indirect&& other, const Allocator& alloc) noexcept;
+indirect(std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcept;
 ```
 
 * _Constraints_: `is_copy_constructible_v<T>` is true and 
@@ -386,7 +386,7 @@ indirect(indirect&& other, const Allocator& alloc) noexcept;
 
 * _Postconditions_: `other` is valueless.
 
-* _Remarks_: This constructor does not require that `is_move_constructible<T>_v`
+* _Remarks_: This constructor does not require that `is_move_constructible_v<T>`
   is true.
 
 #### X.Y.4 Destructor [indirect.dtor]
@@ -401,7 +401,7 @@ specified allocator.
 #### X.Y.5 Assignment [indirect.assign]
 
 ```c++
-indirect& operator=(const indirect& other) noexcept;
+indirect& operator=(const indirect& other);
 ```
 
 * _Preconditions_: `other` is not valueless.
@@ -614,9 +614,9 @@ or destroyed. A polymorphic value object is _valueless_ if it has no owned
 object. A polymorphic value may only become valueless after it has been moved
 from.
 
-The template parameter `T` of `polymorphic<T>` must be a non-union class type.
+The template parameter `T` of `polymorphic` must be a non-union class type.
 
-The template parameter `T` of `polymorphic<T>` may be an incomplete type.
+The template parameter `T` of `polymorphic` may be an incomplete type.
 
 #### X.Z.2 Class template polymorphic synopsis [polymorphic.syn]
 
@@ -632,18 +632,18 @@ class polymorphic {
   polymorphic();
 
   template <class U, class... Ts>
-  polymorphic(std::in_place_type_t<U>, Ts&&... ts);
+  explicit polymorphic(std::in_place_type_t<U>, Ts&&... ts);
 
   template <class U, class... Ts>
   polymorphic(std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
 
   polymorphic(const polymorphic& other);
   
-  polymorphic(const polymorphic& other, const Allocator& alloc);
+  polymorphic(std::allocator_arg_t, const Allocator& alloc, const polymorphic& other);
 
   polymorphic(polymorphic&& other) noexcept;
   
-  polymorphic(polymorphic&& other, const Allocator& alloc) noexcept;
+  polymorphic(std::allocator_arg_t, const Allocator& alloc, polymorphic&& other) noexcept;
 
   ~polymorphic();
 
@@ -679,21 +679,21 @@ polymorphic()
 * _Constraints_: `is_default_constructible_v<T>` is true,
   `is_copy_constructible_v<T>` is true.
 
-* _Effects_: Constructs an polymorphic owning a default constructed `T` created
-using the specified allocator.
+* _Effects_: Constructs a polymorphic owning a default constructed `T` created
+  using the specified allocator.
 
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
 template <class U, class... Ts>
-polymorphic(std::in_place_type_t<U>, Ts&&... ts);
+explicit polymorphic(std::in_place_type_t<U>, Ts&&... ts);
 ```
 
-* _Constraints_: `is_same_v<T, U> || is_base_of_v<T, U>` is true,
+* _Constraints_: `is_base_of_v<T, U>` is true,
   `is_constructible_v<U, Ts...>` is true, `is_copy_constructible_v<U>` is true.
 
-* _Effects_: Constructs an polymorphic owning an instance of `U` created with
-the arguments `Ts` using the specified allocator.
+* _Effects_: Constructs a polymorphic owning an instance of `U` created with
+  the arguments `Ts` using the specified allocator.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -702,13 +702,13 @@ template <class U, class... Ts>
 polymorphic(std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
 ```
 
-* _Constraints_: `is_same_v<T, U> || is_base_of_v<T, U>` is true,
+* _Constraints_: `is_base_of_v<T, U>` is true,
   `is_constructible_v<U, Ts...>` is true, `is_copy_constructible_v<U>` is true.
 
 * _Preconditions_: `Allocator` meets the _Cpp17Allocator_ requirements.
 
-* _Effects_: Constructs an polymorphic owning an instance of `U` created with
-the arguments `ts...` using the specified allocator.
+* _Effects_: Constructs a polymorphic owning an instance of `U` created with
+  the arguments `ts...` using the specified allocator.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -718,20 +718,20 @@ polymorphic(const polymorphic& other);
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: Constructs an polymorphic owning an instance of `T` created with
+* _Effects_: Constructs a polymorphic owning an instance of `T` created with
 the copy constructor of the object owned by `other` using the specified
 allocator.
 
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-polymorphic(const polymorphic& other, const Allocator& alloc);
+polymorphic(std::allocator_arg_t, const Allocator& alloc, const polymorphic& other);
 ```
 
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
   _Cpp17Allocator_ requirements.
 
-* _Effects_: Constructs an polymorphic owning an instance of `T` created with
+* _Effects_: Constructs a polymorphic owning an instance of `T` created with
 the copy constructor of the object owned by `other` using the specified
 allocator.
 
@@ -748,11 +748,11 @@ polymorphic(polymorphic&& other) noexcept;
 
 * _Postconditions_: `other` is valueless.
 
-* _Remarks_: This constructor does not require that `is_move_constructible<T>_v`
+* _Remarks_: This constructor does not require that `is_move_constructible_v<T>`
   is true.
 
 ```c++
-polymorphic(polymorphic&& other, const Allocator& alloc) noexcept;
+polymorphic(std::allocator_arg_t, const Allocator& alloc, polymorphic&& other) noexcept;
 ```
 
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
@@ -763,7 +763,7 @@ polymorphic(polymorphic&& other, const Allocator& alloc) noexcept;
 
 * _Postconditions_: `other` is valueless.
 
-* _Remarks_: This constructor does not require that `is_move_constructible<T>_v`
+* _Remarks_: This constructor does not require that `is_move_constructible_v<T>`
   is true.
 
 #### X.Z.4 Destructor [polymorphic.dtor]
@@ -778,7 +778,7 @@ specified allocator.
 #### X.Z.5 Assignment [polymorphic.assign]
 
 ```c++
-polymorphic& operator=(const polymorphic& other) noexcept;
+polymorphic& operator=(const polymorphic& other);
 ```
 
 * _Preconditions_: `other` is not valueless.
@@ -857,7 +857,7 @@ constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept;
 
 #### Allocator related traits
 
-TODO: Copied from https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2047r3.html but I'm unsure why this recusively inherits from its self?
+TODO: Copied from https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2047r3.html but I'm unsure why this recursively inherits from its self?
 
 ```c++
 template<class T, class Allocator>
@@ -867,7 +867,7 @@ struct uses_allocator<T, Allocator> : uses_allocator<T, Allocator> { };
 ## Reference implementation
 
 A C++20 reference implementation of this proposal is available on GitHub at
-[https://www.github.com/jbcoe/value_types]
+[https://www.github.com/jbcoe/value_types].
 
 ## Acknowledgements
 
@@ -916,7 +916,7 @@ constructor to be implemented efficiently in the case where the owned type and
 template type match. This would increase the object size beyond that of a single
 pointer as the discriminant would need to be stored.
 
-In the name of minimal size and efficency we opted to use two class templates.
+In the name of minimal size and efficiency we opted to use two class templates.
 
 ### Copiers, deleters, pointer constructors and allocator support
 
@@ -924,12 +924,12 @@ Both `indirect_value` and `polymorphic_value` have constructors that take a
 pointer along with a copier and deleter. The copier and deleter can be used to
 specify how the object should be copied and deleted. The existence of a pointer
 constructor introduces significant sharp-edges into the design of
-`polymorphic_value` allowing the possibiliy o object slicing on copy when the
+`polymorphic_value` allowing the possibility of object slicing on copy when the
 dynamic and static types of a derived-type pointer do not match.
 
 We decied to remove the copier, deleter and pointer constructor in favour of
 adding allocator support. Composite class design with `indirect` and
-`polymorphic` does not need a pointer constructor and adding excluding a
+`polymorphic` does not need a pointer constructor, excluding a
 pointer-constructor now does not prevent us from adding one in a later revision
 of the standard. Allocator support, we were advised, needs to be there from the
 beginning and cannot be added retrospectively. As `indirect` and `polymorphic`

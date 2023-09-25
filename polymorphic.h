@@ -106,7 +106,7 @@ class polymorphic {
   }
 
   template <class U, class... Ts>
-  polymorphic(std::in_place_type_t<U>, Ts&&... ts)
+  explicit polymorphic(std::in_place_type_t<U>, Ts&&... ts)
     requires std::constructible_from<U, Ts&&...> &&
              std::copy_constructible<U> &&
              (std::derived_from<U, T> || std::same_as<U, T>)
@@ -151,7 +151,7 @@ class polymorphic {
     cb_ = other.cb_->clone(alloc_);
   }
 
-  polymorphic(const polymorphic& other, const A& alloc) : alloc_(alloc) {
+  polymorphic(std::allocator_arg_t, const A& alloc, const polymorphic& other) : alloc_(alloc) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = other.cb_->clone(alloc_);
   }
@@ -161,7 +161,7 @@ class polymorphic {
     cb_ = std::exchange(other.cb_, nullptr);
   }
 
-  polymorphic(polymorphic&& other, const A& alloc) noexcept : alloc_(alloc){
+  polymorphic(std::allocator_arg_t, const A& alloc, polymorphic&& other) noexcept : alloc_(alloc){
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = std::exchange(other.cb_, nullptr);
   }
