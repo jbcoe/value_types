@@ -67,7 +67,7 @@ class indirect {
   }
 
   template <class... Ts>
-  indirect(std::in_place_t, Ts&&... ts)
+  explicit indirect(std::in_place_t, Ts&&... ts)
     requires std::constructible_from<T, Ts&&...>
   {
     T* mem = allocator_traits::allocate(alloc_, 1);
