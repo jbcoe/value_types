@@ -141,7 +141,7 @@ int main() {
     Composite c;
     assert(c.foo() == A::Constness::NON_CONST);
     const Composite& cc = c;
-    assert(cc.foo() == A::Constness::CONST);
+    assert(c.foo() == A::Constness::CONST);
 }
 ```
 
@@ -207,6 +207,8 @@ using an allocator.  The owned object (if any) is copied or destroyed using the
 specified allocator when the indirect value is copied or destroyed. An indirect
 value object is _valueless_ if it has no owned object. An indirect value may only
 become valueless after it has been moved from.
+
+The template parameter `T` of `indirect` must be a non-union class type.
 
 The template parameter `T` of `indirect` may be an incomplete type.
 
