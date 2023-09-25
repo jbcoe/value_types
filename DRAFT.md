@@ -78,15 +78,18 @@ We propose two new additions to the standard library to represent indirectly
 stored values: `indirect` and `polymorphic`; they represent free-store allocated
 objects with value-semantics. `polymorphic<T>` can own any object of a type
 publicly derived from `T` allowing composite classes to contain polymorphic
-components.
+components. We need two classes to avoid the cost of virtual dispatch (calling
+the copy constructor of a potentially derived-type object) when copying of
+polymorphic objects is not needed.
 
 Note: Including a `polymorphic` component in a composite class means that
 virtual dispatch will be used in copying the `polymorphic` member. Where a
 composite class contains a polymorphic member from a known set of types, prefer
 `std::variant` or `indirect<std::variant>` if indirect storage is required.
-Where a composite class contains a polymorphic member and does not need to be
-copyable or assignable, prefer `indirect<T>` where `T`'s copy constructor and
-copy assignment operators are non-public or deleted.
+Where a composite class contains an open-set polymorphic member and does not
+need to be copyable or assignable, prefer `indirect<T>` where `T`'s destructor
+is public and virtual and its copy constructor and copy assignment operators are
+non-public or deleted.
 
 ## Design requirements
 
@@ -114,8 +117,10 @@ supported by the owned object type `T`.
 ### Deep copies
 
 Copies of `indirect<T>` and `polymorphic<T>` should own copies of the owned
-object. In the case of `polymorphic<T>` this means that the copy should own a
-copy of a potentially derived type object.
+object created with the copy constructor of the owned object. In the case of
+`polymorphic<T>` this means that the copy should own a copy of a potentially
+derived type object created with the copy constructor of the derived type
+object.
 
 ### `const` propagation
 
@@ -163,7 +168,8 @@ is default constructible. Moving a value type onto the free-store should not add
 or remove the ability to be default constructed.
 
 Pairwise-comparison operators, which are defined only for `indirect`, compare
-the owned objects where the owned objects can be compared.
+the owned objects where the owned objects can be compared: where `T` is ordered,
+`indirect<T>` is also ordered.
 
 The hash operation, which is defined only for `indirect`, hashes the owned
 object where the owned object can be hashed.
@@ -182,6 +188,36 @@ allocation and moving from the owned object. This would be expensive and would
 require the owned object to be moveable. The existence of a null state allows
 move to be implemented cheaply without requiring the owned object to be
 moveable.
+
+### Design for polymorphic types
+
+To be used as a base class with `polymorphic` a type `PolymorphicInterface` does
+not need a virtual destructor. The same mechanism that is used to call the copy
+constructor of a potentially derived-type object will be used to call the
+destructor.
+
+To allow compiler generation of special member functions of an abstract
+interface type `I` in conjunction with `polymorphic`, `PolymorphicInterface`
+needs at least a non-virtual protected destructor and a protected copy
+constructor. `PolymorphicInterface` does not need to be assignable, move
+constructible or move assignable for `polymorphic<I>` to be assignable, move
+constructible or move assignable.
+
+```c++
+class PolymorphicInterface {
+  protected:
+    PolymorphicInterface(const PolymorphicInterface&) = default;
+    ~PolymorphicInterface() = default;
+  public:
+   // virtual functions
+};
+```
+
+For an interface type with a public, virtual copy constructor, users would
+potentially pay the cost of virtual dispatch twice when deleting
+`polymorphic<I>` objects containing derived-type objects.
+
+All derived-types owned by a `polymorphic` must be publicly copy constructible.
 
 ## Prior work
 
