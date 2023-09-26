@@ -481,5 +481,16 @@ TEST(IndirectTest, InteractionWithPMRAllocatorsWhenCopyThrows) {
   std::pmr::vector<IndirectType> values{pa};
   EXPECT_THROW(values.push_back(a), ThrowsOnCopyConstruction::Exception);
 }
+
+TEST(IndirectTest, HashCustomAllocator) {
+  std::array<std::byte, 1024> buffer;
+  std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
+  std::pmr::polymorphic_allocator<ThrowsOnCopyConstruction> pa{&mbr};
+  using IndirectType =
+      xyz::indirect<int, std::pmr::polymorphic_allocator<int>>;
+  IndirectType a(std::allocator_arg, pa, std::in_place, 42);
+  EXPECT_EQ(std::hash<IndirectType>()(a),
+      std::hash<int>()(*a));
+}
 #endif  // (__cpp_lib_memory_resource >= 201603L)
 }  // namespace
