@@ -485,7 +485,7 @@ TEST(IndirectTest, InteractionWithPMRAllocatorsWhenCopyThrows) {
 TEST(IndirectTest, HashCustomAllocator) {
   std::array<std::byte, 1024> buffer;
   std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
-  std::pmr::polymorphic_allocator<ThrowsOnCopyConstruction> pa{&mbr};
+  std::pmr::polymorphic_allocator<int> pa{&mbr};
   using IndirectType =
       xyz::indirect<int, std::pmr::polymorphic_allocator<int>>;
   IndirectType a(std::allocator_arg, pa, std::in_place, 42);
