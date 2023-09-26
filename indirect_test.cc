@@ -22,7 +22,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <gtest/gtest.h>
 
+#include <array>
 #include <map>
+#if __has_include(<memory_resource>)
+#include <memory_resource>
+#endif  // #if __has_include(<memory_resource>)
 #include <optional>
 #include <unordered_map>
 #include <utility>
@@ -137,7 +141,7 @@ TEST(IndirectTest, Equality) {
 TEST(IndirectTest, Comparison) {
   xyz::indirect<int> a(std::in_place, 42);
   xyz::indirect<int> b(std::in_place, 42);
-  xyz::indirect<int> c(std::in_place, 43);
+  xyz::indirect<int> c(std::in_place, 101);
   EXPECT_FALSE(a < a);
   EXPECT_FALSE(a > a);
   EXPECT_TRUE(a <= a);
@@ -164,15 +168,68 @@ TEST(IndirectTest, Comparison) {
   EXPECT_TRUE(c >= a);
 }
 
-TEST(IndirectTest, ThreeWayComparison) {
-  xyz::indirect<int> a(std::in_place, 42);
-  xyz::indirect<int> b(std::in_place, 42);
-  xyz::indirect<int> c(std::in_place, 43);
-  EXPECT_EQ(a <=> a, *a <=> *a);  // Same object.
-  EXPECT_EQ(a <=> b, *a <=> *b);  // Same value.
-  EXPECT_EQ(b <=> a, *b <=> *a);  // Same value.
-  EXPECT_EQ(a <=> c, *a <=> *c);  // Different value.
-  EXPECT_EQ(c <=> a, *c <=> *a);  // Different value.
+TEST(IndirectTest, ComparisonWithU) {
+  EXPECT_EQ(xyz::indirect<int>(std::in_place, 42), 42);
+  EXPECT_EQ(42, xyz::indirect<int>(std::in_place, 42));
+
+  EXPECT_NE(xyz::indirect<int>(std::in_place, 42), 101);
+  EXPECT_NE(101, xyz::indirect<int>(std::in_place, 42));
+
+  EXPECT_GT(xyz::indirect<int>(std::in_place, 101), 42);
+  EXPECT_GT(101, xyz::indirect<int>(std::in_place, 42));
+
+  EXPECT_GE(xyz::indirect<int>(std::in_place, 42), 42);
+  EXPECT_GE(42, xyz::indirect<int>(std::in_place, 42));
+  EXPECT_GE(xyz::indirect<int>(std::in_place, 101), 42);
+  EXPECT_GE(101, xyz::indirect<int>(std::in_place, 42));
+
+  EXPECT_LT(xyz::indirect<int>(std::in_place, 42), 101);
+  EXPECT_LT(42, xyz::indirect<int>(std::in_place, 101));
+
+  EXPECT_LE(xyz::indirect<int>(std::in_place, 42), 42);
+  EXPECT_LE(42, xyz::indirect<int>(std::in_place, 42));
+  EXPECT_LE(xyz::indirect<int>(std::in_place, 42), 101);
+  EXPECT_LE(42, xyz::indirect<int>(std::in_place, 101));
+}
+
+TEST(IndirectTest, ComparisonWithIndirectU) {
+  EXPECT_EQ(xyz::indirect<int>(std::in_place, 42),
+            xyz::indirect<double>(std::in_place, 42));
+  EXPECT_EQ(xyz::indirect<double>(std::in_place, 42),
+            xyz::indirect<int>(std::in_place, 42));
+
+  EXPECT_NE(xyz::indirect<int>(std::in_place, 42),
+            xyz::indirect<double>(std::in_place, 101));
+  EXPECT_NE(xyz::indirect<double>(std::in_place, 101),
+            xyz::indirect<int>(std::in_place, 42));
+
+  EXPECT_GT(xyz::indirect<int>(std::in_place, 101),
+            xyz::indirect<double>(std::in_place, 42));
+  EXPECT_GT(xyz::indirect<double>(std::in_place, 101),
+            xyz::indirect<int>(std::in_place, 42));
+
+  EXPECT_GE(xyz::indirect<int>(std::in_place, 42),
+            xyz::indirect<double>(std::in_place, 42));
+  EXPECT_GE(xyz::indirect<double>(std::in_place, 42),
+            xyz::indirect<int>(std::in_place, 42));
+  EXPECT_GE(xyz::indirect<int>(std::in_place, 101),
+            xyz::indirect<double>(std::in_place, 42));
+  EXPECT_GE(xyz::indirect<double>(std::in_place, 101),
+            xyz::indirect<int>(std::in_place, 42));
+
+  EXPECT_LT(xyz::indirect<int>(std::in_place, 42),
+            xyz::indirect<double>(std::in_place, 101));
+  EXPECT_LT(xyz::indirect<double>(std::in_place, 42),
+            xyz::indirect<int>(std::in_place, 101));
+
+  EXPECT_LE(xyz::indirect<int>(std::in_place, 42),
+            xyz::indirect<double>(std::in_place, 42));
+  EXPECT_LE(xyz::indirect<double>(std::in_place, 42),
+            xyz::indirect<int>(std::in_place, 42));
+  EXPECT_LE(xyz::indirect<int>(std::in_place, 42),
+            xyz::indirect<double>(std::in_place, 101));
+  EXPECT_LE(xyz::indirect<double>(std::in_place, 42),
+            xyz::indirect<int>(std::in_place, 101));
 }
 
 template <typename T>
@@ -307,6 +364,19 @@ struct ThrowsOnConstruction {
   }
 };
 
+struct ThrowsOnCopyConstruction {
+  class Exception : public std::runtime_error {
+   public: 
+    Exception() : std::runtime_error("ThrowsOnConstruction::Exception"){}
+  };
+
+  ThrowsOnCopyConstruction() = default;
+
+  ThrowsOnCopyConstruction(const ThrowsOnCopyConstruction&) {
+    throw Exception();
+  }
+};
+
 TEST(IndirectTest, DefaultConstructorWithExceptions) {
   EXPECT_THROW(xyz::indirect<ThrowsOnConstruction>(),
                ThrowsOnConstruction::Exception);
@@ -315,6 +385,14 @@ TEST(IndirectTest, DefaultConstructorWithExceptions) {
 TEST(IndirectTest, ConstructorWithExceptions) {
   EXPECT_THROW(xyz::indirect<ThrowsOnConstruction>(std::in_place, "unused"),
                ThrowsOnConstruction::Exception);
+}
+
+TEST(IndirectTest, CopyConstructorWithExceptions) {
+  auto create_copy = []() {
+    auto a = xyz::indirect<ThrowsOnCopyConstruction>(std::in_place);
+    auto aa = a;
+  };
+  EXPECT_THROW(create_copy(), ThrowsOnCopyConstruction::Exception);
 }
 
 TEST(IndirectTest, ConstructorWithExceptionsTrackingAllocations) {
@@ -379,4 +457,29 @@ TEST(IndirectTest, InteractionWithSizedAllocators) {
             (sizeof(int*) + sizeof(TrackingAllocator<int>)));
 }
 
+#if (__cpp_lib_memory_resource >= 201603L)
+TEST(IndirectTest, InteractionWithPMRAllocators) {
+  std::array<std::byte, 1024> buffer;
+  std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
+  std::pmr::polymorphic_allocator<int> pa{&mbr};
+  using IndirectInt = xyz::indirect<int, std::pmr::polymorphic_allocator<int>>;
+  IndirectInt a(std::allocator_arg, pa, std::in_place, 42);
+  std::pmr::vector<IndirectInt> values{pa};
+  values.push_back(a);
+  values.push_back(std::move(a));
+  EXPECT_EQ(*values[0], 42);
+}
+
+TEST(IndirectTest, InteractionWithPMRAllocatorsWhenCopyThrows) {
+  std::array<std::byte, 1024> buffer;
+  std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
+  std::pmr::polymorphic_allocator<ThrowsOnCopyConstruction> pa{&mbr};
+  using IndirectType =
+      xyz::indirect<ThrowsOnCopyConstruction,
+                    std::pmr::polymorphic_allocator<ThrowsOnCopyConstruction>>;
+  IndirectType a(std::allocator_arg, pa, std::in_place);
+  std::pmr::vector<IndirectType> values{pa};
+  EXPECT_THROW(values.push_back(a), ThrowsOnCopyConstruction::Exception);
+}
+#endif  // (__cpp_lib_memory_resource >= 201603L)
 }  // namespace
