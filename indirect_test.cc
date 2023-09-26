@@ -365,10 +365,9 @@ struct ThrowsOnConstruction {
 };
 
 struct ThrowsOnCopyConstruction {
-  class Exception : public std::exception {
-    const char* what() const noexcept override {
-      return "ThrowsOnConstruction::Exception";
-    }
+  class Exception : public std::runtime_error {
+   public: 
+    Exception() : std::runtime_error("ThrowsOnConstruction::Exception"){}
   };
 
   ThrowsOnCopyConstruction() = default;
