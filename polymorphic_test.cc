@@ -404,9 +404,9 @@ TEST(PolymorphicTest, InteractionWithUnorderedMap) {
 }
 
 TEST(PolymorphicTest, InteractionWithSizedAllocators) {
-  EXPECT_EQ(sizeof(xyz::polymorphic<int>), sizeof(int*));
+  EXPECT_EQ(sizeof(xyz::polymorphic<int>), sizeof(int*) * 2);
   EXPECT_EQ(sizeof(xyz::polymorphic<int, TrackingAllocator<int>>),
-            (sizeof(int*) + sizeof(TrackingAllocator<int>)));
+            (sizeof(int*) * 2 + sizeof(TrackingAllocator<int>)));
 }
 
 #if (__cpp_lib_memory_resource >= 201603L)
@@ -436,5 +436,40 @@ TEST(PolymorphicTest, InteractionWithPMRAllocatorsWhenCopyThrows) {
   EXPECT_THROW(values.push_back(a), ThrowsOnCopyConstruction::Exception);
 }
 #endif  // (__cpp_lib_memory_resource >= 201603L)
+
+//// This is a compilability test showing that you can compile a class containing a polymorphic to a forward declared class and still
+//// copy and destroy it without having seen the definition. What you can't do, just as for indirect, is to construct the polymorphic 
+//// without having seen its definition (obviously).
+
+ // This T type is only forward declared now
+struct ForwardDeclared;
+
+// Some header file which only sees the forward declaration
+class UsingForwardDeclared {
+public:
+  UsingForwardDeclared();
+
+  xyz::polymorphic<ForwardDeclared> m_member;
+};
+
+// Some C++ file which includes file above
+void testfun() {
+  UsingForwardDeclared a = UsingForwardDeclared();
+  UsingForwardDeclared b = a;
+}
+
+// The header file that defines ForwardDeclared.
+struct ForwardDeclared {};
+
+struct FDerived : public ForwardDeclared {
+  FDerived() = default;
+};
+
+FDerived d;
+
+// The C++ file that defines the UsingForwardDeclared methods after including the definition of FDerived in its header file.
+UsingForwardDeclared::UsingForwardDeclared()
+    : m_member(std::in_place_type<FDerived>) {}
+
 
 }  // namespace
