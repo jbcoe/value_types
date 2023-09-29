@@ -95,6 +95,23 @@ indirect storage is required.
 
 ### `const` propagation
 
+When composite objects contain `pointer`, `unique_ptr` or `shared_ptr` members
+they allow non-const access to ther respective pointees when accessed through a
+const access path. This prevents the compiler from eliminating a source of
+const-correctness bugs and makes it difficult to reason about the
+const-correctness of a composite object.
+
+Accessors of unique and shared pointers do not have const and non-const
+overloads:
+
+```c++
+T* unique_ptr<T>::operator->() const;
+T& unique_ptr<T>::operator*() const;
+
+T* shared_ptr<T>::operator->() const;
+T& shared_ptr<T>::operator*() const;
+```
+
 When a parent object contains a member of type `indirect<T>` or
 `polymorphic<T>`, access to the owned object (of type `T`) through a const
 access path should be `const` qualified.
@@ -117,7 +134,7 @@ int main() {
     Composite c;
     assert(c.foo() == A::Constness::NON_CONST);
     const Composite& cc = c;
-    assert(c.foo() == A::Constness::CONST);
+    assert(cc.foo() == A::Constness::CONST);
 }
 ```
 
