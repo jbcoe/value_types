@@ -40,7 +40,7 @@ and `polymorphic_value` can be found at
   C++](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1950r2.html)
 
 Design of these two types is so deeply coupled that future work will proceed in
-a new paper (to be drafted).
+[an updated paper](DRAFT.md).
 
 ## Use
 The `indirect` and `polymorphic` class templates are header-only. To use them,
