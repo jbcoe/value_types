@@ -252,11 +252,9 @@ the standard library header `<memory>`.
 
 #### X.Y.1 Class template indirect general [indirect.general]
 
-An _indirect value_ is an object that manages the lifetime of an owned object
-using an allocator.  The owned object (if any) is copied or destroyed using the
-specified allocator when the indirect value is copied or destroyed. An indirect
-value object is _valueless_ if it has no owned object. An indirect value may only
-become valueless after it has been moved from.
+An _indirect value_ is an object that manages the lifetime of an owned object.
+An indirect value object is _valueless_ if it has no owned object. An indirect
+value may only become valueless after it has been moved from.
 
 The template parameter `T` of `indirect` must be a non-union class type.
 
@@ -350,7 +348,7 @@ indirect()
 * _Constraints_: `is_default_constructible_v<T>` is true.
 
 * _Effects_: Constructs an indirect owning a default constructed `T` created
-using the specified allocator.
+  using the specified allocator.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -362,7 +360,7 @@ explicit indirect(std::in_place_t, Ts&&... ts);
 * _Constraints_: `is_constructible_v<T, Ts...>` is true.
 
 * _Effects_: Constructs an indirect owning an instance of `T` created with the
-arguments `Ts` using the specified allocator.
+  arguments `Ts` using the specified allocator.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -375,8 +373,8 @@ indirect(std::allocator_arg_t, const Allocator& alloc, std::in_place_t, Ts&&... 
 
 * _Preconditions_: `Allocator` meets the _Cpp17Allocator_ requirements.
 
-* _Effects_: Constructs an indirect owning an instance of `T` created with the
-arguments `ts...` using the specified allocator.
+* _Effects_: Equivalent to the preceding constructor except that the allocator
+  is initialized with alloc.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -389,7 +387,7 @@ indirect(const indirect& other);
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: Constructs an indirect owning an instance of `T` created with the
-copy constructor of the object owned by `other` using the specified allocator.
+  copy constructor of the object owned by `other` using the specified allocator.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -397,13 +395,13 @@ copy constructor of the object owned by `other` using the specified allocator.
 indirect(std::allocator_arg_t, const Allocator& alloc, const indirect& other);
 ```
 
-* _Constraints_: `is_copy_constructible_v<T>` is true and
-  `uses_allocator<T, Allocator>`` is true.
+* _Constraints_: `is_copy_constructible_v<T>` is true and `uses_allocator<T,
+  Allocator>` is true.
 
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
   _Cpp17Allocator_ requirements.
 
-* _Effects_: Equivalent to the preceding constructors except that the allocator is
+* _Effects_: Equivalent to the preceding constructor except that the allocator is
   initialized with alloc.
 
 * _Postconditions_: `*this` is not valueless.
@@ -425,8 +423,8 @@ indirect(indirect&& other) noexcept;
 indirect(std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcept;
 ```
 
-* _Constraints_: `is_copy_constructible_v<T>` is true and 
-  uses_allocator<T, Allocator> is true;.
+* _Constraints_: `is_copy_constructible_v<T>` is true and `uses_allocator<T,
+  Allocator>` is true.
 
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
   _Cpp17Allocator_ requirements.
@@ -445,8 +443,7 @@ indirect(std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcep
 ~indirect();
 ```
 
-* _Effects_: If `*this` is not valueless, destroys the owned object with the
-specified allocator.
+* _Effects_: If `*this` is not valueless, destroys the owned object.
 
 #### X.Y.5 Assignment [indirect.assign]
 
@@ -456,9 +453,9 @@ indirect& operator=(const indirect& other);
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: If `*this` is not valueless, destroys the owned object with the
-specified allocator. Then, constructs an owned object using the copy constructor
-of the object owned by `other` using the specified allocator.
+* _Effects_: If `*this` is not valueless, destroys the owned object. Then,
+  constructs an owned object using the copy constructor of the object owned by
+  `other` using the specified allocator.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -468,8 +465,8 @@ indirect& operator=(indirect&& other) noexcept;
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: If `*this` is not valueless, destroys the owned object with the
-  specified allocator. Then takes ownership of the object owned by `other`.
+* _Effects_: If `*this` is not valueless, destroys the owned object.
+  Then takes ownership of the object owned by `other`.
 
 * _Postconditions_: `*this` is not valueless. `other` is valueless.
 
@@ -638,31 +635,24 @@ constexpr auto operator<=>(const U& lhs, const indirect<T, A>& rhs);
 * _Remarks_: Specializations of this function template for which `*lhs <=> *rhs`
   is a core constant expression are constexpr functions.
 
-```c++
-template <class T, class Alloc>
-struct std::uses_allocator<xyz::polymorphic<T>, Alloc> : true_type {};
-```
-
 #### Allocator related traits
 
-TODO: Copied from https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2047r3.html but I'm unsure why this recusively inherits from its self?
-
 ```c++
-template<class T, class Allocator>
-struct uses_allocator<T, Allocator> : uses_allocator<T, Allocator> { };
+template <class T, class Alloc>
+struct std::uses_allocator<xyz::indirect<T>, Alloc> : true_type {};
 ```
+
+* _Preconditions_: Alloc meets the _Cpp17Allocator_ requirements.
 
 ### X.Z Class template polymorphic [polymorphic]
 
 #### X.Z.1 Class template polymorphic general [polymorphic.general]
 
-A _polymorphic value_ is an object that manages the lifetime of an owned object
-using an allocator. A polymorphic value object may own objects of different
-types at different points in its lifetime. The owned object (if any) is copied
-or destroyed using the specified allocator when the polymorphic value is copied
-or destroyed. A polymorphic value object is _valueless_ if it has no owned
-object. A polymorphic value may only become valueless after it has been moved
-from.
+A _polymorphic value_ is an object that manages the lifetime of an owned object.
+A polymorphic value object may own objects of different types at different
+points in its lifetime. A polymorphic value object is _valueless_ if it has no
+owned object. A polymorphic value may only become valueless after it has been
+moved from.
 
 The template parameter `T` of `polymorphic` must be a non-union class type.
 
@@ -752,13 +742,13 @@ template <class U, class... Ts>
 polymorphic(std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
 ```
 
-* _Constraints_: `is_base_of_v<T, U>` is true,
-  `is_constructible_v<U, Ts...>` is true, `is_copy_constructible_v<U>` is true.
+* _Constraints_: `is_base_of_v<T, U>` is true, `is_constructible_v<U, Ts...>` is
+  true, `is_copy_constructible_v<U>` is true.
 
 * _Preconditions_: `Allocator` meets the _Cpp17Allocator_ requirements.
 
-* _Effects_: Constructs a polymorphic owning an instance of `U` created with
-  the arguments `ts...` using the specified allocator.
+* _Effects_: Equivalent to the preceding constructor except that the allocator is
+  initialized with alloc.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -769,8 +759,8 @@ polymorphic(const polymorphic& other);
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: Constructs a polymorphic owning an instance of `T` created with
-the copy constructor of the object owned by `other` using the specified
-allocator.
+  the copy constructor of the object owned by `other` using the specified
+  allocator.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -781,9 +771,8 @@ polymorphic(std::allocator_arg_t, const Allocator& alloc, const polymorphic& oth
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
   _Cpp17Allocator_ requirements.
 
-* _Effects_: Constructs a polymorphic owning an instance of `T` created with
-the copy constructor of the object owned by `other` using the specified
-allocator.
+* _Effects_: Equivalent to the preceding constructor except that the allocator is
+  initialized with alloc.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -808,8 +797,8 @@ polymorphic(std::allocator_arg_t, const Allocator& alloc, polymorphic&& other) n
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
   _Cpp17Allocator_ requirements.
 
-* _Effects_: Constructs a polymorphic that takes ownership of the object owned
-  by `other`.
+* _Effects_: Equivalent to the preceding constructor except that the allocator is
+  initialized with alloc.
 
 * _Postconditions_: `other` is valueless.
 
@@ -822,8 +811,7 @@ polymorphic(std::allocator_arg_t, const Allocator& alloc, polymorphic&& other) n
 ~polymorphic();
 ```
 
-* _Effects_: If `*this` is not valueless, destroys the owned object with the
-specified allocator.
+* _Effects_: If `*this` is not valueless, destroys the owned object.
 
 #### X.Z.5 Assignment [polymorphic.assign]
 
@@ -833,10 +821,9 @@ polymorphic& operator=(const polymorphic& other);
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: If `*this` is not valueless, destroys the owned object with the
-specified allocator. Then, constructs an owned object using the (possibly
-derived-type) copy constructor of the object owned by `other` using the
-specified allocator.
+* _Effects_: If `*this` is not valueless, destroys the owned object. Then,
+  constructs an owned object using the (possibly derived-type) copy constructor
+  of the object owned by `other` using the specified allocator.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -846,8 +833,8 @@ polymorphic& operator=(polymorphic&& other) noexcept;
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: If `*this` is not valueless, destroys the owned object with the
-  specified allocator. Then takes ownership of the object owned by `other`.
+* _Effects_: If `*this` is not valueless, destroys the owned object.
+  Then takes ownership of the object owned by `other`.
 
 * _Postconditions_: `*this` is not valueless. `other` is valueless.
 
@@ -900,19 +887,18 @@ constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept;
 
 * _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
 
-* _Effects_: Swaps the objects owned by `lhs` and `rhs` by swapping pointers
+* _Effects_: Swaps the objects owned by `lhs` and `rhs` by swapping pointers.
 
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
-
-#### Allocator related traits
-
-TODO: Copied from https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2047r3.html but I'm unsure why this recursively inherits from its self?
+#### X.Z.8 Allocator related traits [polymorphic.traits]
 
 ```c++
-template<class T, class Allocator>
-struct uses_allocator<T, Allocator> : uses_allocator<T, Allocator> { };
+template <class T, class Alloc>
+struct std::uses_allocator<xyz::polymorphic<T>, Alloc> : true_type {};
 ```
+
+* _Preconditions_: Alloc meets the _Cpp17Allocator_ requirements.
 
 ## Reference implementation
 
