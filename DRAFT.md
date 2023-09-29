@@ -43,53 +43,18 @@ not be considered in isolation.
 
 ## Motivation
 
-C++ lets associated data and functions that act upon that data be grouped
-together into a record type: a struct or a class. Classes (or structs, we stick
-with classes for brevity) can contain instances of other classes as members.
-This allows us to build up complex data structures from simple building blocks.
-
-The standard library has many class template types that are useful in building
-composite classes. Compiler generated special member functions work with these
-standard library types to provide constructors, destructors, copy and move
-without the need for user to write code.
-
-The vocabulary of types useful for defining composite classes is not limited to,
-but includes: `std::array`, `std::vector`, `std::map`, `std::unordered_map`,
-`std::string`, `std::optional`, `std::variant`. All of these types are value
-types: the data they own is copied when the type is copied; the data is
-destroyed when the type is destroyed; the data is const when accessed through a
-const-access-path.
-
-The standard library offers no vocabulary type for a free-store-allocated object
+The standard library has no vocabulary type for a free-store-allocated object
 with value semantics. When designing a composite class we may need an object to
 be stored indirectly to support incomplete types, reduce object size or support
 open-set polymorphism.
-
-The standard library offers a number of smart pointer types that can be used to
-manage the lifetime of an object allocated on the free-store. These types are
-not sufficient for general composite class design as they do not have value
-semantics. Classes with smart pointers used to represent values will require
-(correct) special member functions to be written by the user. Classes with smart
-pointers used to represent values will require manual verification of
-const-correctness: smart pointers accessed through a const access path will not
-propagate constness to the owned object.
 
 We propose two new additions to the standard library to represent indirectly
 stored values: `indirect` and `polymorphic`; they represent free-store allocated
 objects with value-semantics. `polymorphic<T>` can own any object of a type
 publicly derived from `T` allowing composite classes to contain polymorphic
-components. We need two classes to avoid the cost of virtual dispatch (calling
-the copy constructor of a potentially derived-type object) when copying of
-polymorphic objects is not needed.
-
-Note: Including a `polymorphic` component in a composite class means that
-virtual dispatch will be used in copying the `polymorphic` member. Where a
-composite class contains a polymorphic member from a known set of types, prefer
-`std::variant` or `indirect<std::variant>` if indirect storage is required.
-Where a composite class contains an open-set polymorphic member and does not
-need to be copyable or assignable, prefer `indirect<T>` where `T`'s destructor
-is public and virtual and its copy constructor and copy assignment operators are
-non-public or deleted.
+components. We require the addition of two classes to avoid the cost of virtual
+dispatch (calling the copy constructor of a potentially derived-type object
+through type-erasure) when copying of polymorphic objects is not needed.
 
 ## Design requirements
 
@@ -121,6 +86,12 @@ object created with the copy constructor of the owned object. In the case of
 `polymorphic<T>` this means that the copy should own a copy of a potentially
 derived type object created with the copy constructor of the derived type
 object.
+
+Note: Including a `polymorphic` component in a composite class means that
+virtual dispatch will be used (through type-erasure) in copying the
+`polymorphic` member. Where a composite class contains a polymorphic member from
+a known set of types, prefer `std::variant` or `indirect<std::variant>` if
+indirect storage is required.
 
 ### `const` propagation
 
