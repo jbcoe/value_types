@@ -199,6 +199,12 @@ struct TrackingAllocator {
     std::allocator<T> default_allocator{};
     default_allocator.deallocate(p, n);
   }
+
+  friend bool operator==(const TrackingAllocator& lhs,
+                         const TrackingAllocator& rhs) noexcept {
+    return lhs.alloc_counter_ == rhs.alloc_counter_ &&
+           lhs.dealloc_counter_ == rhs.dealloc_counter_;
+  }
 };
 
 TEST(PolymorphicTest, CountAllocationsForInPlaceConstruction) {
