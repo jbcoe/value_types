@@ -29,3 +29,12 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+cc_binary(
+    name = "polymorphic_benchmark",
+    srcs = ["polymorphic_benchmark.cc"],
+    deps = [
+        ":polymorphic",
+        "@com_google_benchmark//:benchmark_main",
+    ],
+)
