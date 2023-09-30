@@ -262,6 +262,12 @@ struct TrackingAllocator {
     std::allocator<T> default_allocator{};
     default_allocator.deallocate(p, n);
   }
+
+  friend bool operator==(const TrackingAllocator& lhs,
+                         const TrackingAllocator& rhs) noexcept {
+    return lhs.alloc_counter_ == rhs.alloc_counter_ &&
+           lhs.dealloc_counter_ == rhs.dealloc_counter_;
+  }
 };
 
 TEST(IndirectTest, CountAllocationsForInPlaceConstruction) {
@@ -366,8 +372,8 @@ struct ThrowsOnConstruction {
 
 struct ThrowsOnCopyConstruction {
   class Exception : public std::runtime_error {
-   public: 
-    Exception() : std::runtime_error("ThrowsOnConstruction::Exception"){}
+   public:
+    Exception() : std::runtime_error("ThrowsOnConstruction::Exception") {}
   };
 
   ThrowsOnCopyConstruction() = default;
@@ -486,11 +492,9 @@ TEST(IndirectTest, HashCustomAllocator) {
   std::array<std::byte, 1024> buffer;
   std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
   std::pmr::polymorphic_allocator<int> pa{&mbr};
-  using IndirectType =
-      xyz::indirect<int, std::pmr::polymorphic_allocator<int>>;
+  using IndirectType = xyz::indirect<int, std::pmr::polymorphic_allocator<int>>;
   IndirectType a(std::allocator_arg, pa, std::in_place, 42);
-  EXPECT_EQ(std::hash<IndirectType>()(a),
-      std::hash<int>()(*a));
+  EXPECT_EQ(std::hash<IndirectType>()(a), std::hash<int>()(*a));
 }
 #endif  // (__cpp_lib_memory_resource >= 201603L)
 }  // namespace

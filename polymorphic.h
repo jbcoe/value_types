@@ -176,14 +176,14 @@ class polymorphic {
   ~polymorphic() { reset(); }
 
   polymorphic& operator=(const polymorphic& other) {
+    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     if (this != &other) {
       if constexpr (allocator_traits::propagate_on_container_copy_assignment::
                         value) {
-        allocator_type alloc = other.alloc_;
-        polymorphic tmp(std::allocator_arg, alloc, other);
+        alloc_ = other.alloc_;
+        polymorphic tmp(std::allocator_arg, alloc_, other);
         swap(tmp);
       } else {
-        assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
         polymorphic tmp(other);
         swap(tmp);
       }
