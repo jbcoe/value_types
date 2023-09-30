@@ -241,6 +241,8 @@ public:
     return p_ == nullptr;
   }
 
+  constexpr allocator_type get_allocator() const noexcept { return alloc_; }
+
   constexpr void swap(polymorphic& other) noexcept {
     // NOTE: I don't think these asserts should be here. Even if one is valueless it should be swappable
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
