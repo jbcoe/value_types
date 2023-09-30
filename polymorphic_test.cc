@@ -207,6 +207,22 @@ struct TrackingAllocator {
   }
 };
 
+TEST(PolymorphicTest, GetAllocator) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+
+  xyz::polymorphic<A, TrackingAllocator<A>> a(
+      std::allocator_arg,
+      TrackingAllocator<A>(&alloc_counter, &dealloc_counter),
+      std::in_place_type<A>, 42);
+  EXPECT_EQ(alloc_counter, 1);
+  EXPECT_EQ(dealloc_counter, 0);
+
+  auto tracking_allocator = a.get_allocator();
+  EXPECT_EQ(alloc_counter, *tracking_allocator.alloc_counter_);
+  EXPECT_EQ(dealloc_counter, *tracking_allocator.dealloc_counter_);
+}
+
 TEST(PolymorphicTest, CountAllocationsForInPlaceConstruction) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;

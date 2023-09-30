@@ -270,6 +270,23 @@ struct TrackingAllocator {
   }
 };
 
+TEST(IndirectTest, GetAllocator) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  TrackingAllocator<int> allocator(&alloc_counter, &dealloc_counter);
+
+  xyz::indirect<int, TrackingAllocator<int>> a(
+      std::allocator_arg,
+      allocator,
+      std::in_place, 42);
+  EXPECT_EQ(alloc_counter, 1);
+  EXPECT_EQ(dealloc_counter, 0);
+
+  auto tracking_allocator = a.get_allocator();
+  EXPECT_EQ(alloc_counter, *tracking_allocator.alloc_counter_);
+  EXPECT_EQ(dealloc_counter, *tracking_allocator.dealloc_counter_);
+}
+
 TEST(IndirectTest, CountAllocationsForInPlaceConstruction) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
