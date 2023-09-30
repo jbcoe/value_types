@@ -4,6 +4,16 @@
 #include "indirect.h"
 
 namespace {
+struct ConstexprHashable {};
+}  // namespace
+template <>
+struct std::hash<ConstexprHashable> {
+  constexpr std::size_t operator()(const ConstexprHashable& key) const {
+    return 0;
+  }
+};
+
+namespace {
 
 consteval bool indirect_default_construction() {
   auto i = xyz::indirect<int>{};
@@ -103,7 +113,7 @@ consteval bool indirect_swap() {
   auto i = xyz::indirect<int>(std::in_place, 42);
   auto ii = xyz::indirect<int>(std::in_place, 101);
   using std::swap;
-  swap(i,ii);
+  swap(i, ii);
   return *i == 101 && *ii == 42;
 }
 static_assert(indirect_swap(), "constexpr function call failed");
@@ -121,7 +131,8 @@ consteval bool indirect_valueless_after_move() {
   auto ii = std::move(i);
   return i.valueless_after_move() && !ii.valueless_after_move();
 }
-static_assert(indirect_valueless_after_move(), "constexpr function call failed");
+static_assert(indirect_valueless_after_move(),
+              "constexpr function call failed");
 
 consteval bool indirect_equality() {
   auto i = xyz::indirect<int>(std::in_place, 42);
@@ -150,8 +161,7 @@ consteval bool indirect_and_value_equality() {
   int ii = 42;
   return (i == ii) && (ii == i);
 }
-static_assert(indirect_and_value_equality(),
-              "constexpr function call failed");
+static_assert(indirect_and_value_equality(), "constexpr function call failed");
 
 consteval bool indirect_and_value_inequality() {
   auto i = xyz::indirect<int>(std::in_place, 42);
@@ -169,4 +179,12 @@ consteval bool indirect_and_value_three_way_comparison() {
 
 static_assert(indirect_and_value_three_way_comparison(),
               "constexpr function call failed");
+
+consteval bool indirect_hash() {
+  auto i = xyz::indirect<ConstexprHashable>();
+  std::hash<xyz::indirect<ConstexprHashable>> h;
+  return h(i) == 0;
+}
+static_assert(indirect_hash(), "constexpr function call failed");
+
 }  // namespace
