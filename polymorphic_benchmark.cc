@@ -3,13 +3,16 @@
 #include <array>
 #include <iostream>
 #include <numeric>
+#include <optional>
 #include <vector>
 
 #include "polymorphic.h"
 
 namespace {
+
 constexpr size_t LARGE_VECTOR_SIZE = 1 << 20;
 constexpr size_t LARGE_ARRAY_SIZE = 1 << 10;
+
 class Base {
  public:
   virtual ~Base() = default;
@@ -284,7 +287,6 @@ static void PolymorphicVectorAccumulate(benchmark::State& state) {
 }
 
 }  // namespace
-
 
 BENCHMARK(RawPtrClone);
 BENCHMARK(UniquePtrClone);
