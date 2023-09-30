@@ -242,7 +242,9 @@ the standard library header `<memory>`.
 
 An _indirect value_ is an object that manages the lifetime of an owned object.
 An indirect value object is _valueless_ if it has no owned object. An indirect
-value may only become valueless after it has been moved from.
+value may only become valueless after it has been moved from. Every object of
+type `indirect<T, Allocator>` uses an object of type `Allocator` to allocate and
+free storage for the owned `T` object as needed.
 
 The template parameter `T` of `indirect` must be a non-union class type.
 
@@ -335,8 +337,7 @@ indirect()
 
 * _Constraints_: `is_default_constructible_v<T>` is true.
 
-* _Effects_: Constructs an indirect owning a default constructed `T` created
-  using the specified allocator.
+* _Effects_: Constructs an indirect owning a default constructed `T`.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -348,7 +349,7 @@ explicit indirect(std::in_place_t, Ts&&... ts);
 * _Constraints_: `is_constructible_v<T, Ts...>` is true.
 
 * _Effects_: Constructs an indirect owning an instance of `T` created with the
-  arguments `Ts` using the specified allocator.
+  arguments `Ts`.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -375,7 +376,7 @@ indirect(const indirect& other);
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: Constructs an indirect owning an instance of `T` created with the
-  copy constructor of the object owned by `other` using the specified allocator.
+  copy constructor of the object owned by `other`.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -443,7 +444,7 @@ indirect& operator=(const indirect& other);
 
 * _Effects_: If `*this` is not valueless, destroys the owned object. Then,
   constructs an owned object using the copy constructor of the object owned by
-  `other` using the specified allocator.
+  `other`.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -496,8 +497,7 @@ constexpr void swap(indirect& other) noexcept;
 
 * _Preconditions_: `*this` is not valueless, `other` is not valueless.
 
-* _Effects_: Swaps the objects owned by `*this` and `other` by swapping
-  pointers.
+* _Effects_: Swaps the objects owned by `*this` and `other`.
 
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
@@ -507,7 +507,7 @@ constexpr void swap(indirect& lhs, indirect& rhs) noexcept;
 
 * _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
 
-* _Effects_: Swaps the objects owned by `lhs` and `rhs` by swapping pointers
+* _Effects_: Swaps the objects owned by `lhs` and `rhs`.
 
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
@@ -640,7 +640,8 @@ A _polymorphic value_ is an object that manages the lifetime of an owned object.
 A polymorphic value object may own objects of different types at different
 points in its lifetime. A polymorphic value object is _valueless_ if it has no
 owned object. A polymorphic value may only become valueless after it has been
-moved from.
+moved from. Every object of type `polymorphic<T, Allocator>` uses an object of
+type `Allocator` to allocate and free storage for the owned object as needed.
 
 The template parameter `T` of `polymorphic` must be a non-union class type.
 
@@ -707,8 +708,7 @@ polymorphic()
 * _Constraints_: `is_default_constructible_v<T>` is true,
   `is_copy_constructible_v<T>` is true.
 
-* _Effects_: Constructs a polymorphic owning a default constructed `T` created
-  using the specified allocator.
+* _Effects_: Constructs a polymorphic owning a default constructed `T`.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -721,7 +721,7 @@ explicit polymorphic(std::in_place_type_t<U>, Ts&&... ts);
   `is_constructible_v<U, Ts...>` is true, `is_copy_constructible_v<U>` is true.
 
 * _Effects_: Constructs a polymorphic owning an instance of `U` created with
-  the arguments `Ts` using the specified allocator.
+  the arguments `Ts`.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -747,8 +747,7 @@ polymorphic(const polymorphic& other);
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: Constructs a polymorphic owning an instance of `T` created with
-  the copy constructor of the object owned by `other` using the specified
-  allocator.
+  the copy constructor of the object owned by `other`.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -811,7 +810,7 @@ polymorphic& operator=(const polymorphic& other);
 
 * _Effects_: If `*this` is not valueless, destroys the owned object. Then,
   constructs an owned object using the (possibly derived-type) copy constructor
-  of the object owned by `other` using the specified allocator.
+  of the object owned by `other`.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -864,8 +863,7 @@ constexpr void swap(polymorphic& other) noexcept;
 
 * _Preconditions_: `*this` is not valueless, `other` is not valueless.
 
-* _Effects_: Swaps the objects owned by `*this` and `other` by swapping
-  pointers.
+* _Effects_: Swaps the objects owned by `*this` and `other`.
 
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
@@ -875,9 +873,7 @@ constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept;
 
 * _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
 
-* _Effects_: Swaps the objects owned by `lhs` and `rhs` by swapping pointers.
-
-* _Remarks_: Does not call `swap` on the owned objects directly.
+* _Effects_: Swaps the objects owned by `lhs` and `rhs`.
 
 #### X.Z.8 Allocator related traits [polymorphic.traits]
 
