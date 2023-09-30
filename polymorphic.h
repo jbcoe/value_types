@@ -42,6 +42,8 @@ class direct_control_block : public control_block<T, A> {
   U u_;
 
  public:
+  constexpr ~direct_control_block() override = default;
+
   template <class... Ts>
   constexpr direct_control_block(Ts&&... ts) : u_(std::forward<Ts>(ts)...) {
     control_block<T, A>::p_ = &u_;
