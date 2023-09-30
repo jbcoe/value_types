@@ -175,6 +175,8 @@ class indirect {
 
   constexpr bool valueless_after_move() const noexcept { return p_ == nullptr; }
 
+  constexpr allocator_type get_allocator() const noexcept { return alloc_; }
+
   constexpr void swap(indirect& other) noexcept {
     assert(p_ != nullptr);        // LCOV_EXCL_LINE
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE

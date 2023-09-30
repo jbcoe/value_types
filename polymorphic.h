@@ -207,6 +207,8 @@ class polymorphic {
     return cb_ == nullptr;
   }
 
+  constexpr allocator_type get_allocator() const noexcept { return alloc_; }
+
   constexpr void swap(polymorphic& other) noexcept {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     std::swap(cb_, other.cb_);

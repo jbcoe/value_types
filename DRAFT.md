@@ -293,6 +293,8 @@ class indirect {
 
   constexpr bool valueless_after_move() const noexcept;
 
+  constexpr allocator_type get_allocator() const noexcept;
+
   constexpr void swap(indirect& other) noexcept;
 
   friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept;
@@ -488,6 +490,14 @@ constexpr bool valueless_after_move() const noexcept;
 ```
 
 * _Returns_: `true` if `*this` is valueless, otherwise `false`.
+
+```c++
+constexpr allocator_type get_allocator() const noexcept;
+```
+
+* _Returns_: A copy of the Allocator object used to construct the owned object
+  or, if that allocator has been replaced, a copy of the most recent
+  replacement.
 
 #### X.Y.7 Swap [indirect.swap]
 
@@ -690,6 +700,8 @@ class polymorphic {
 
   constexpr bool valueless_after_move() const noexcept;
 
+  constexpr allocator_type get_allocator() const noexcept;
+
   constexpr void swap(polymorphic& other) noexcept;
 
   friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept;
@@ -855,6 +867,14 @@ constexpr bool valueless_after_move() const noexcept;
 
 * _Returns_: `true` if `*this` is valueless, otherwise `false`.
 
+```c++
+constexpr allocator_type get_allocator() const noexcept;
+```
+
+* _Returns_: A copy of the Allocator object used to construct the owned object
+  or, if that allocator has been replaced, a copy of the most recent
+  replacement.
+  
 #### X.Z.7 Swap [polymorphic.swap]
 
 ```c++
