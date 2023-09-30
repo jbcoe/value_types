@@ -671,24 +671,24 @@ class polymorphic {
   polymorphic();
 
   template <class U, class... Ts>
-  explicit polymorphic(std::in_place_type_t<U>, Ts&&... ts);
+  explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts);
 
   template <class U, class... Ts>
-  polymorphic(std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
+  constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
 
-  polymorphic(const polymorphic& other);
+  constexpr polymorphic(const polymorphic& other);
   
-  polymorphic(std::allocator_arg_t, const Allocator& alloc, const polymorphic& other);
+  constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc, const polymorphic& other);
 
-  polymorphic(polymorphic&& other) noexcept;
+  constexpr polymorphic(polymorphic&& other) noexcept;
   
-  polymorphic(std::allocator_arg_t, const Allocator& alloc, polymorphic&& other) noexcept;
+  constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc, polymorphic&& other) noexcept;
 
-  ~polymorphic();
+  constexpr ~polymorphic();
 
-  polymorphic& operator=(const polymorphic& other);
+  constexpr polymorphic& operator=(const polymorphic& other);
 
-  polymorphic& operator=(polymorphic&& other) noexcept;
+  constexpr polymorphic& operator=(polymorphic&& other) noexcept;
 
   constexpr const T& operator*() const noexcept;
 

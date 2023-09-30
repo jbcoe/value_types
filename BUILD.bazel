@@ -46,3 +46,18 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "polymorphic_consteval",
+    srcs = ["polymorphic_consteval.cc"],
+    deps = [
+        "polymorphic",
+    ],
+)
+
+build_test(
+    name = "polymorphic_consteval_build_test",
+    targets = [
+        "polymorphic_consteval",
+    ],
+)
