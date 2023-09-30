@@ -151,7 +151,8 @@ class polymorphic {
     cb_ = other.cb_->clone(alloc_);
   }
 
-  polymorphic(std::allocator_arg_t, const A& alloc, const polymorphic& other) : alloc_(alloc) {
+  polymorphic(std::allocator_arg_t, const A& alloc, const polymorphic& other)
+      : alloc_(alloc) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = other.cb_->clone(alloc_);
   }
@@ -161,7 +162,9 @@ class polymorphic {
     cb_ = std::exchange(other.cb_, nullptr);
   }
 
-  polymorphic(std::allocator_arg_t, const A& alloc, polymorphic&& other) noexcept : alloc_(alloc){
+  polymorphic(std::allocator_arg_t, const A& alloc,
+              polymorphic&& other) noexcept
+      : alloc_(alloc) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = std::exchange(other.cb_, nullptr);
   }
