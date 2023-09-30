@@ -198,6 +198,16 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
                 list(APPEND CMAKE_MODULE_PATH ${codecoverage_SOURCE_DIR}/cmake)
             endif()
 
+            target_compile_options(indirect_test
+                PRIVATE
+                    -fno-inline # Turn off inlining as it messes with code coverage.
+            )
+            
+            target_compile_options(polymorphic_test
+                PRIVATE
+                    -fno-inline # Turn off inlining as it messes with code coverage.
+            )
+
             set(ENABLE_COVERAGE ON CACHE BOOL "Enable coverage build." FORCE)
             find_package(codecov)
             add_coverage(indirect_test)
