@@ -1,3 +1,5 @@
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
+
 cc_library(
     name = "indirect",
     hdrs = ["indirect.h"],
@@ -17,6 +19,21 @@ cc_test(
     deps = [
         "indirect",
         "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "indirect_consteval",
+    srcs = ["indirect_consteval.cc"],
+    deps = [
+        "indirect",
+    ],
+)
+
+build_test(
+    name = "indirect_consteval_build_test",
+    targets = [
+        "indirect_consteval",
     ],
 )
 
