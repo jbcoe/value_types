@@ -199,11 +199,12 @@ constructor of a potentially derived-type object will be used to call the
 destructor.
 
 To allow compiler generation of special member functions of an abstract
-interface type `I` in conjunction with `polymorphic`, `PolymorphicInterface`
-needs at least a non-virtual protected destructor and a protected copy
-constructor. `PolymorphicInterface` does not need to be assignable, move
-constructible or move assignable for `polymorphic<I>` to be assignable, move
-constructible or move assignable.
+interface type `PolymorphicInterface` in conjunction with `polymorphic`,
+`PolymorphicInterface` needs at least a non-virtual protected destructor and a
+protected copy constructor. `PolymorphicInterface` does not need to be
+assignable, move constructible or move assignable for
+`polymorphic<PolymorphicInterface>` to be assignable, move constructible or move
+assignable.
 
 ```c++
 class PolymorphicInterface {
@@ -967,15 +968,16 @@ constructor introduces significant sharp-edges into the design of
 `polymorphic_value` allowing the possibility of object slicing on copy when the
 dynamic and static types of a derived-type pointer do not match.
 
-We decied to remove the copier, deleter and pointer constructor in favour of
-adding allocator support. Composite class design with `indirect` and
-`polymorphic` does not need a pointer constructor, excluding a
-pointer-constructor now does not prevent us from adding one in a later revision
-of the standard. Allocator support, we were advised, needs to be there from the
-beginning and cannot be added retrospectively. As `indirect` and `polymorphic`
-are intended to be used alongside other C++ standrd library types like
-`std::map` and `std::vector` it is important that they have allocator support in
-contexts where allocators are used.
+We decided to remove the copier, deleter and pointer constructor in favour of
+adding allocator support. A pointer constructor and support for custom copiers
+and deleters are not core to the design of either class template; both could be
+added in a later revision of the standard if required.
+
+ Allocator support, we were advised, needs to be there from the beginning and
+cannot be added retrospectively. As `indirect` and `polymorphic` are intended to
+be used alongside other C++ standard library types like `std::map` and
+`std::vector` it is important that they have allocator support in contexts where
+allocators are used.
 
 ### Pointer-like helper functions
 
@@ -1069,7 +1071,7 @@ intended to be an `indirect` that supports polymorphism.
 
 A polymorphic value type with a small buffer optimisation that did not allocate
 a control block for the owned object would need be a different type, it is not
-possible to add a small object optimisation to `polymorphic` without making 
-breaking changes. There may be a case for the addition of 
-`small_polymorphic<T, N>` akin to `llvm::SmallVector<T, N>` but we are not 
-proposing its addition here.
+possible to add a small object optimisation to `polymorphic` without making
+breaking changes. There may be a case for the addition of `small_polymorphic<T,
+N>` akin to `llvm::SmallVector<T, N>` but we are not proposing its addition
+here.
