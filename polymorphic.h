@@ -84,7 +84,7 @@ class polymorphic {
   [[no_unique_address]] A alloc_;
 #endif
 
-  using allocator_traits = std::allocator_traits<A>
+  using allocator_traits = std::allocator_traits<A>;
 
  public:
   using value_type = T;
@@ -160,7 +160,8 @@ class polymorphic {
   }
 
   polymorphic(polymorphic&& other) noexcept(
-      allocator_traits::propagate_on_container_move_assignment::value) {
+      allocator_traits::propagate_on_container_move_assignment::value)
+      : alloc_(other.alloc_) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     if (this != &other) {
       if constexpr (allocator_traits::propagate_on_container_move_assignment::
@@ -182,7 +183,7 @@ class polymorphic {
 
   polymorphic& operator=(const polymorphic& other){
 
-    if (this == &rhs) { return *this; }
+    if (this == &other) { return *this; }
 
     if (allocator_traits::propagate_on_container_copy_assignment::value) {
       allocator_type alloc = other.alloc_;
