@@ -293,6 +293,35 @@ TEST(PolymorphicTest, CountAllocationsForMoveAssignment) {
   EXPECT_EQ(dealloc_counter, 2);
 }
 
+template <typename T>
+struct NonEqualTrackingAllocator : TrackingAllocator<T> {
+  using TrackingAllocator<T>::TrackingAllocator;
+  friend bool operator==(const NonEqualTrackingAllocator& lhs,
+                         const NonEqualTrackingAllocator& rhs) noexcept {
+    return false;
+  }
+};
+
+TEST(PolymorphicTest, CountAllocationsForMoveAssignmentWhenAllocatorsDontCompareEqual) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::polymorphic<Derived, NonEqualTrackingAllocator<Derived>> a(
+        std::allocator_arg,
+        NonEqualTrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived>, 42);
+    xyz::polymorphic<Derived, NonEqualTrackingAllocator<Derived>> b(
+        std::allocator_arg,
+        NonEqualTrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived>, 101);
+    EXPECT_EQ(alloc_counter, 2);
+    EXPECT_EQ(dealloc_counter, 0);
+    b = std::move(a); // This will copy as allocators don't compare equal.
+  }
+  EXPECT_EQ(alloc_counter, 3);
+  EXPECT_EQ(dealloc_counter, 3);
+}
+
 TEST(PolymorphicTest, CountAllocationsForMoveConstruction) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
