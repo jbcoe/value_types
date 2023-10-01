@@ -171,7 +171,7 @@ class polymorphic {
   polymorphic& operator=(const polymorphic& other) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     polymorphic tmp(other);
-    swap(tmp);
+    this->swap(tmp);
     return *this;
   }
 

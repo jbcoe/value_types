@@ -141,7 +141,7 @@ class indirect {
   {
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     indirect tmp(other);
-    swap(tmp);
+    this->swap(tmp);
     return *this;
   }
 
