@@ -185,7 +185,7 @@ class polymorphic {
         swap(tmp);
       } else {
         polymorphic tmp(other);
-        swap(tmp);
+        this->swap(tmp);
       }
     }
     return *this;
@@ -239,15 +239,14 @@ class polymorphic {
   constexpr void swap(polymorphic& other) noexcept {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     using std::swap;
-    swap(cb_, other.cb_);
-    swap(alloc_, other.alloc_);
+    std::swap(cb_, other.cb_);
+    std::swap(alloc_, other.alloc_);
   }
 
   friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept {
     assert(lhs.cb_ != nullptr);  // LCOV_EXCL_LINE
     assert(rhs.cb_ != nullptr);  // LCOV_EXCL_LINE
-    using std::swap;
-    swap(lhs.cb_, rhs.cb_);
+    std::swap(lhs.cb_, rhs.cb_);
   }
 
  private:
