@@ -46,8 +46,6 @@ Design of these two types is so deeply coupled that future work will proceed in
 The `indirect` and `polymorphic` class templates are header-only. To use them,
 include the headers `indirect.h` and `polymorphic.h` in your project.
 
-## Example
-
 ```cpp
 #include "indirect.h"
 
@@ -77,6 +75,16 @@ public:
 
     // ...
 };
+```
+
+### Compiler explorer
+
+You can try out `indirect` and `polymorphic` in [Compiler explorer](https://godbolt.org/)
+by adding the includes:
+
+```cpp
+#include <https://raw.githubusercontent.com/jbcoe/value_types/main/indirect.h>
+#include <https://raw.githubusercontent.com/jbcoe/value_types/main/polymorphic.h>
 ```
 
 ## License
