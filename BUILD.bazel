@@ -20,6 +20,15 @@ cc_test(
     ],
 )
 
+cc_binary(
+    name = "indirect_benchmark",
+    srcs = ["indirect_benchmark.cc"],
+    deps = [
+        ":indirect",
+        "@com_google_benchmark//:benchmark_main",
+    ],
+)
+
 cc_test(
     name = "polymorphic_test",
     size = "small",
