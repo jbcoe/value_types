@@ -24,7 +24,7 @@ class A {
   size_t value() const { return value_; }
 };
 
-static void Indirect_BM_RawPtrClone(benchmark::State& state) {
+static void Indirect_BM_Copy_RawPtr(benchmark::State& state) {
   auto p = new A(42);
   for (auto _ : state) {
     auto pp = p->clone();
@@ -33,7 +33,7 @@ static void Indirect_BM_RawPtrClone(benchmark::State& state) {
   delete p;
 }
 
-static void Indirect_BM_RawPointerVectorCopy(benchmark::State& state) {
+static void Indirect_BM_VectorCopy_RawPointer(benchmark::State& state) {
   std::vector<A*> v(LARGE_VECTOR_SIZE);
   for (size_t i = 0; i < LARGE_VECTOR_SIZE; ++i) {
     v[i] = new A(i);
@@ -57,7 +57,7 @@ static void Indirect_BM_RawPointerVectorCopy(benchmark::State& state) {
   }
 }
 
-static void Indirect_BM_RawPointerArrayCopy(benchmark::State& state) {
+static void Indirect_BM_ArrayCopy_RawPointer(benchmark::State& state) {
   std::array<A*, LARGE_ARRAY_SIZE> v;
   for (size_t i = 0; i < v.size(); ++i) {
     v[i] = new A(i);
@@ -79,7 +79,7 @@ static void Indirect_BM_RawPointerArrayCopy(benchmark::State& state) {
   }
 }
 
-static void Indirect_BM_RawPointerVectorAccumulate(benchmark::State& state) {
+static void Indirect_BM_VectorAccumulate_RawPointer(benchmark::State& state) {
   std::vector<A*> v(LARGE_VECTOR_SIZE);
   for (size_t i = 0; i < LARGE_VECTOR_SIZE; ++i) {
     v[i] = new A(i);
@@ -97,7 +97,7 @@ static void Indirect_BM_RawPointerVectorAccumulate(benchmark::State& state) {
   }
 }
 
-static void Indirect_BM_UniquePtrClone(benchmark::State& state) {
+static void Indirect_BM_Copy_UniquePtr(benchmark::State& state) {
   auto p = std::make_unique<A>(42);
   for (auto _ : state) {
     auto pp = std::unique_ptr<A>(p->clone());
@@ -105,7 +105,7 @@ static void Indirect_BM_UniquePtrClone(benchmark::State& state) {
   }
 }
 
-static void Indirect_BM_UniquePointerVectorCopy(benchmark::State& state) {
+static void Indirect_BM_VectorCopy_UniquePointer(benchmark::State& state) {
   std::vector<std::unique_ptr<A>> v(LARGE_VECTOR_SIZE);
   for (size_t i = 0; i < LARGE_VECTOR_SIZE; ++i) {
     v[i] = std::make_unique<A>(i);
@@ -120,7 +120,7 @@ static void Indirect_BM_UniquePointerVectorCopy(benchmark::State& state) {
   }
 }
 
-static void Indirect_BM_UniquePointerArrayCopy(benchmark::State& state) {
+static void Indirect_BM_ArrayCopy_UniquePointer(benchmark::State& state) {
   std::array<std::unique_ptr<A>, LARGE_ARRAY_SIZE> v;
   for (size_t i = 0; i < v.size(); ++i) {
     v[i] = std::make_unique<A>(i);
@@ -134,7 +134,7 @@ static void Indirect_BM_UniquePointerArrayCopy(benchmark::State& state) {
     benchmark::DoNotOptimize(vv);
   }
 }
-static void Indirect_BM_UniquePointerVectorAccumulate(benchmark::State& state) {
+static void Indirect_BM_VectorAccumulate_UniquePointer(benchmark::State& state) {
   std::vector<std::unique_ptr<A>> v(LARGE_VECTOR_SIZE);
   for (size_t i = 0; i < LARGE_VECTOR_SIZE; ++i) {
     v[i] = std::make_unique<A>(i);
@@ -148,7 +148,7 @@ static void Indirect_BM_UniquePointerVectorAccumulate(benchmark::State& state) {
   }
 }
 
-static void Indirect_BM_IndirectCopy(benchmark::State& state) {
+static void Indirect_BM_Copy_Indirect(benchmark::State& state) {
   auto p = xyz::indirect<A>(std::in_place, 42);
   for (auto _ : state) {
     auto pp = p;
@@ -156,7 +156,7 @@ static void Indirect_BM_IndirectCopy(benchmark::State& state) {
   }
 }
 
-static void Indirect_BM_IndirectVectorCopy(benchmark::State& state) {
+static void Indirect_BM_VectorCopy_Indirect(benchmark::State& state) {
   std::vector<xyz::indirect<A>> v;
   v.reserve(LARGE_VECTOR_SIZE);
   for (size_t i = 0; i < LARGE_VECTOR_SIZE; ++i) {
@@ -169,7 +169,7 @@ static void Indirect_BM_IndirectVectorCopy(benchmark::State& state) {
   }
 }
 
-static void Indirect_BM_IndirectArrayCopy(benchmark::State& state) {
+static void Indirect_BM_ArrayCopy_Indirect(benchmark::State& state) {
   std::array<std::optional<xyz::indirect<A>>, LARGE_ARRAY_SIZE> v;
   for (size_t i = 0; i < v.size(); ++i) {
     v[i] = std::optional<xyz::indirect<A>>(xyz::indirect<A>(std::in_place, i));
@@ -181,7 +181,7 @@ static void Indirect_BM_IndirectArrayCopy(benchmark::State& state) {
   }
 }
 
-static void Indirect_BM_IndirectVectorAccumulate(benchmark::State& state) {
+static void Indirect_BM_VectorAccumulate_Indirect(benchmark::State& state) {
   std::vector<xyz::indirect<A>> v;
   v.reserve(LARGE_VECTOR_SIZE);
   for (size_t i = 0; i < LARGE_VECTOR_SIZE; ++i) {
@@ -198,18 +198,18 @@ static void Indirect_BM_IndirectVectorAccumulate(benchmark::State& state) {
 
 }  // namespace
 
-BENCHMARK(Indirect_BM_RawPtrClone);
-BENCHMARK(Indirect_BM_UniquePtrClone);
-BENCHMARK(Indirect_BM_IndirectCopy);
+BENCHMARK(Indirect_BM_Copy_RawPtr);
+BENCHMARK(Indirect_BM_Copy_UniquePtr);
+BENCHMARK(Indirect_BM_Copy_Indirect);
 
-BENCHMARK(Indirect_BM_RawPointerVectorCopy);
-BENCHMARK(Indirect_BM_UniquePointerVectorCopy);
-BENCHMARK(Indirect_BM_IndirectVectorCopy);
+BENCHMARK(Indirect_BM_VectorCopy_RawPointer);
+BENCHMARK(Indirect_BM_VectorCopy_UniquePointer);
+BENCHMARK(Indirect_BM_VectorCopy_Indirect);
 
-BENCHMARK(Indirect_BM_RawPointerArrayCopy);
-BENCHMARK(Indirect_BM_UniquePointerArrayCopy);
-BENCHMARK(Indirect_BM_IndirectArrayCopy);
+BENCHMARK(Indirect_BM_ArrayCopy_RawPointer);
+BENCHMARK(Indirect_BM_ArrayCopy_UniquePointer);
+BENCHMARK(Indirect_BM_ArrayCopy_Indirect);
 
-BENCHMARK(Indirect_BM_RawPointerVectorAccumulate);
-BENCHMARK(Indirect_BM_UniquePointerVectorAccumulate);
-BENCHMARK(Indirect_BM_IndirectVectorAccumulate);
+BENCHMARK(Indirect_BM_VectorAccumulate_RawPointer);
+BENCHMARK(Indirect_BM_VectorAccumulate_UniquePointer);
+BENCHMARK(Indirect_BM_VectorAccumulate_Indirect);

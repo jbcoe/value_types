@@ -72,7 +72,7 @@ class PolyDerived2 : public PolyBase {
   size_t value() const override { return 2 * value_; }
 };
 
-static void Polymorphic_BM_RawPtrClone(benchmark::State& state) {
+static void Polymorphic_BM_Copy_RawPtr(benchmark::State& state) {
   auto p = new Derived(42);
   for (auto _ : state) {
     auto pp = p->clone();
@@ -81,7 +81,7 @@ static void Polymorphic_BM_RawPtrClone(benchmark::State& state) {
   delete p;
 }
 
-static void Polymorphic_BM_RawPointerVectorCopy(benchmark::State& state) {
+static void Polymorphic_BM_VectorCopy_RawPointer(benchmark::State& state) {
   std::vector<Base*> v(LARGE_VECTOR_SIZE);
   for (size_t i = 0; i < LARGE_VECTOR_SIZE; ++i) {
     if (i % 2 == 0) {
@@ -109,7 +109,7 @@ static void Polymorphic_BM_RawPointerVectorCopy(benchmark::State& state) {
   }
 }
 
-static void Polymorphic_BM_RawPointerArrayCopy(benchmark::State& state) {
+static void Polymorphic_BM_ArrayCopy_RawPointer(benchmark::State& state) {
   std::array<Base*, LARGE_ARRAY_SIZE> v;
   for (size_t i = 0; i < v.size(); ++i) {
     if (i % 2 == 0) {
@@ -135,7 +135,7 @@ static void Polymorphic_BM_RawPointerArrayCopy(benchmark::State& state) {
   }
 }
 
-static void Polymorphic_BM_RawPointerVectorAccumulate(benchmark::State& state) {
+static void Polymorphic_BM_VectorAccumulate_RawPointer(benchmark::State& state) {
   std::vector<Base*> v(LARGE_VECTOR_SIZE);
   for (size_t i = 0; i < LARGE_VECTOR_SIZE; ++i) {
     if (i % 2 == 0) {
@@ -157,7 +157,7 @@ static void Polymorphic_BM_RawPointerVectorAccumulate(benchmark::State& state) {
   }
 }
 
-static void Polymorphic_BM_UniquePtrClone(benchmark::State& state) {
+static void Polymorphic_BM_Copy_UniquePtr(benchmark::State& state) {
   auto p = std::make_unique<Derived>(42);
   for (auto _ : state) {
     auto pp = std::unique_ptr<Base>(p->clone());
@@ -165,7 +165,7 @@ static void Polymorphic_BM_UniquePtrClone(benchmark::State& state) {
   }
 }
 
-static void Polymorphic_BM_UniquePointerVectorCopy(benchmark::State& state) {
+static void Polymorphic_BM_VectorCopy_UniquePointer(benchmark::State& state) {
   std::vector<std::unique_ptr<Base>> v(LARGE_VECTOR_SIZE);
   for (size_t i = 0; i < LARGE_VECTOR_SIZE; ++i) {
     if (i % 2 == 0) {
@@ -184,7 +184,7 @@ static void Polymorphic_BM_UniquePointerVectorCopy(benchmark::State& state) {
   }
 }
 
-static void Polymorphic_BM_UniquePointerArrayCopy(benchmark::State& state) {
+static void Polymorphic_BM_ArrayCopy_UniquePointer(benchmark::State& state) {
   std::array<std::unique_ptr<Base>, LARGE_ARRAY_SIZE> v;
   for (size_t i = 0; i < v.size(); ++i) {
     if (i % 2 == 0) {
@@ -202,7 +202,7 @@ static void Polymorphic_BM_UniquePointerArrayCopy(benchmark::State& state) {
     benchmark::DoNotOptimize(vv);
   }
 }
-static void Polymorphic_BM_UniquePointerVectorAccumulate(
+static void Polymorphic_BM_VectorAccumulate_UniquePointer(
     benchmark::State& state) {
   std::vector<std::unique_ptr<Base>> v(LARGE_VECTOR_SIZE);
   for (size_t i = 0; i < LARGE_VECTOR_SIZE; ++i) {
@@ -221,7 +221,7 @@ static void Polymorphic_BM_UniquePointerVectorAccumulate(
   }
 }
 
-static void Polymorphic_BM_PolymorphicCopy(benchmark::State& state) {
+static void Polymorphic_BM_Copy_Polymorphic(benchmark::State& state) {
   auto p = xyz::polymorphic<PolyBase>(std::in_place_type<PolyDerived>, 42);
   for (auto _ : state) {
     auto pp = p;
@@ -229,7 +229,7 @@ static void Polymorphic_BM_PolymorphicCopy(benchmark::State& state) {
   }
 }
 
-static void Polymorphic_BM_PolymorphicVectorCopy(benchmark::State& state) {
+static void Polymorphic_BM_VectorCopy_Polymorphic(benchmark::State& state) {
   std::vector<xyz::polymorphic<PolyBase>> v;
   v.reserve(LARGE_VECTOR_SIZE);
   for (size_t i = 0; i < LARGE_VECTOR_SIZE; ++i) {
@@ -248,7 +248,7 @@ static void Polymorphic_BM_PolymorphicVectorCopy(benchmark::State& state) {
   }
 }
 
-static void Polymorphic_BM_PolymorphicArrayCopy(benchmark::State& state) {
+static void Polymorphic_BM_ArrayCopy_Polymorphic(benchmark::State& state) {
   std::array<std::optional<xyz::polymorphic<PolyBase>>, LARGE_ARRAY_SIZE> v;
   for (size_t i = 0; i < v.size(); ++i) {
     if (i % 2 == 0) {
@@ -266,7 +266,7 @@ static void Polymorphic_BM_PolymorphicArrayCopy(benchmark::State& state) {
   }
 }
 
-static void Polymorphic_BM_PolymorphicVectorAccumulate(
+static void Polymorphic_BM_VectorAccumulate_Polymorphic(
     benchmark::State& state) {
   std::vector<xyz::polymorphic<PolyBase>> v;
   v.reserve(LARGE_VECTOR_SIZE);
@@ -290,18 +290,18 @@ static void Polymorphic_BM_PolymorphicVectorAccumulate(
 
 }  // namespace
 
-BENCHMARK(Polymorphic_BM_RawPtrClone);
-BENCHMARK(Polymorphic_BM_UniquePtrClone);
-BENCHMARK(Polymorphic_BM_PolymorphicCopy);
+BENCHMARK(Polymorphic_BM_Copy_RawPtr);
+BENCHMARK(Polymorphic_BM_Copy_UniquePtr);
+BENCHMARK(Polymorphic_BM_Copy_Polymorphic);
 
-BENCHMARK(Polymorphic_BM_RawPointerVectorCopy);
-BENCHMARK(Polymorphic_BM_UniquePointerVectorCopy);
-BENCHMARK(Polymorphic_BM_PolymorphicVectorCopy);
+BENCHMARK(Polymorphic_BM_VectorCopy_RawPointer);
+BENCHMARK(Polymorphic_BM_VectorCopy_UniquePointer);
+BENCHMARK(Polymorphic_BM_VectorCopy_Polymorphic);
 
-BENCHMARK(Polymorphic_BM_RawPointerArrayCopy);
-BENCHMARK(Polymorphic_BM_UniquePointerArrayCopy);
-BENCHMARK(Polymorphic_BM_PolymorphicArrayCopy);
+BENCHMARK(Polymorphic_BM_ArrayCopy_RawPointer);
+BENCHMARK(Polymorphic_BM_ArrayCopy_UniquePointer);
+BENCHMARK(Polymorphic_BM_ArrayCopy_Polymorphic);
 
-BENCHMARK(Polymorphic_BM_RawPointerVectorAccumulate);
-BENCHMARK(Polymorphic_BM_UniquePointerVectorAccumulate);
-BENCHMARK(Polymorphic_BM_PolymorphicVectorAccumulate);
+BENCHMARK(Polymorphic_BM_VectorAccumulate_RawPointer);
+BENCHMARK(Polymorphic_BM_VectorAccumulate_UniquePointer);
+BENCHMARK(Polymorphic_BM_VectorAccumulate_Polymorphic);
