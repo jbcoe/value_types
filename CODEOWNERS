@@ -1,0 +1,8 @@
+# Global owner
+@jbcoe
+
+# CMake 
+CMakeLists.txt @twon
+
+# Bazel 
+*.bazel @jbcoe
