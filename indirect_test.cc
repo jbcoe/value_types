@@ -378,6 +378,33 @@ TEST(IndirectTest, CountAllocationsForMoveAssignment) {
   EXPECT_EQ(dealloc_counter, 2);
 }
 
+TEST(IndirectTest, CountAllocationsForAssignmentToMovedFromObject) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::indirect<int, TrackingAllocator<int>> a(
+        std::allocator_arg,
+        TrackingAllocator<int>(&alloc_counter, &dealloc_counter), std::in_place,
+        42);
+    xyz::indirect<int, TrackingAllocator<int>> b(
+        std::allocator_arg,
+        TrackingAllocator<int>(&alloc_counter, &dealloc_counter), std::in_place,
+        101);
+    EXPECT_EQ(alloc_counter, 2);
+    EXPECT_EQ(dealloc_counter, 0);
+    b = std::move(a);
+    EXPECT_EQ(dealloc_counter, 1);
+    a = xyz::indirect<int, TrackingAllocator<int>>(
+        std::allocator_arg,
+        TrackingAllocator<int>(&alloc_counter, &dealloc_counter), std::in_place,
+        404);
+    EXPECT_EQ(alloc_counter, 3);
+    EXPECT_EQ(dealloc_counter, 1);
+  }
+  EXPECT_EQ(alloc_counter, 3);
+  EXPECT_EQ(dealloc_counter, 3);
+}
+
 TEST(IndirectTest, CountAllocationsForMoveConstruction) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
