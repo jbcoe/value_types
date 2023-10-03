@@ -40,7 +40,7 @@ and `polymorphic_value` can be found at
   C++](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1950r2.html)
 
 Design of these two types is so deeply coupled that future work will proceed in
-a new paper (to be drafted).
+[an updated paper](DRAFT.md).
 
 ## Use
 The `indirect` and `polymorphic` class templates are header-only. To use them,
@@ -87,3 +87,14 @@ This code is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 We spoke about an earlier draft at [C++ on
 Sea](https://www.youtube.com/watch?v=sjLRX4WMvlU) in 2022.
+
+## References
+
+* [TK's allocator user guide]
+  (https://rawgit.com/google/cxx-std-draft/allocator-paper/allocator_user_guide.html)
+
+* [A polymorphic value-type for C++]
+  (https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0201r5.html)
+
+* [indirect_value: A Free-Store-Allocated Value Type For C++]
+  (https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1950r2.html)
