@@ -31,45 +31,64 @@ namespace xyz {
 namespace detail {
 template <class T, class A>
 struct control_block {
-  T* p_;
-  virtual ~control_block() = default;
-  virtual void destroy(A& alloc) = 0;
-  virtual control_block<T, A>* clone(A& alloc) = 0;
+  typedef void(destroy_fn)(control_block*, A& alloc);
+  typedef control_block<T, A>*(clone_fn)(const control_block*, A& alloc);
+
+  struct vtable {
+    destroy_fn* const destroy;
+    clone_fn* const clone;
+  } local_vtable_;
+
+  control_block(destroy_fn* const destroy, clone_fn* const clone)
+      : local_vtable_{.destroy = destroy, .clone = clone} {}
+
+  void destroy(A& alloc) { local_vtable_.destroy(this, alloc); }
+
+  control_block* clone(A& alloc) const {
+    return local_vtable_.clone(this, alloc);
+  }
+};
+
+template <class T, class A>
+struct fake_control_block : public control_block<T, A> {
+  fake_control_block() = delete;
+  std::byte data_;
 };
 
 template <class T, class U, class A>
 class direct_control_block : public control_block<T, A> {
   U u_;
 
+  using cb_allocator = typename std::allocator_traits<A>::template rebind_alloc<
+      direct_control_block<T, U, A>>;
+  using cb_alloc_traits = std::allocator_traits<cb_allocator>;
+
  public:
   template <class... Ts>
-  direct_control_block(Ts&&... ts) : u_(std::forward<Ts>(ts)...) {
-    control_block<T, A>::p_ = &u_;
-  }
-
-  control_block<T, A>* clone(A& alloc) override {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<direct_control_block<T, U, A>>;
-    cb_allocator cb_alloc(alloc);
-    using cb_alloc_traits = std::allocator_traits<cb_allocator>;
-    auto* mem = cb_alloc_traits::allocate(cb_alloc, 1);
-    try {
-      cb_alloc_traits::construct(cb_alloc, mem, u_);
-      return mem;
-    } catch (...) {
-      cb_alloc_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
-  }
-
-  void destroy(A& alloc) override {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<direct_control_block<T, U, A>>;
-    cb_allocator cb_alloc(alloc);
-    using cb_alloc_traits = std::allocator_traits<cb_allocator>;
-    cb_alloc_traits::destroy(cb_alloc, this);
-    cb_alloc_traits::deallocate(cb_alloc, this, 1);
-  }
+  direct_control_block(Ts&&... ts)
+      : control_block<T, A>{
+            // destroy
+            +[](control_block<T, A>* p, A& alloc) {
+              auto cb = static_cast<direct_control_block*>(p);
+              cb_allocator cb_alloc(alloc);
+              cb_alloc_traits::destroy(cb_alloc, cb);
+              cb_alloc_traits::deallocate(cb_alloc, cb, 1);
+            },
+            // clone
+            +[](const control_block<T, A>* p,
+                A& alloc) -> control_block<T, A>* {
+              auto cb = static_cast<const direct_control_block*>(p);
+              cb_allocator cb_alloc(alloc);
+              auto* mem = cb_alloc_traits::allocate(cb_alloc, 1);
+              try {
+                cb_alloc_traits::construct(cb_alloc, mem, cb->u_);
+                return mem;
+              } catch (...) {
+                cb_alloc_traits::deallocate(cb_alloc, mem, 1);
+                throw;
+              }
+            }},
+        u_(std::forward<Ts>(ts)...) {}
 };
 
 }  // namespace detail
@@ -186,24 +205,28 @@ class polymorphic {
     return *this;
   }
 
+  constexpr T* get_pointer() const noexcept {
+    return (T*)&reinterpret_cast<detail::fake_control_block<T, A>*>(cb_)->data_;
+  }
+
   constexpr T* operator->() noexcept {
     assert(cb_ != nullptr);  // LCOV_EXCL_LINE
-    return cb_->p_;
+    return get_pointer();
   }
 
   constexpr const T* operator->() const noexcept {
     assert(cb_ != nullptr);  // LCOV_EXCL_LINE
-    return cb_->p_;
+    return get_pointer();
   }
 
   constexpr T& operator*() noexcept {
     assert(cb_ != nullptr);  // LCOV_EXCL_LINE
-    return *cb_->p_;
+    return *get_pointer();
   }
 
   constexpr const T& operator*() const noexcept {
     assert(cb_ != nullptr);  // LCOV_EXCL_LINE
-    return *cb_->p_;
+    return *get_pointer();
   }
 
   constexpr bool valueless_after_move() const noexcept {
