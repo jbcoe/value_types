@@ -35,24 +35,28 @@ namespace detail {
 template <class T, class A>
 struct control_block {
   control_block() {}
-  template<typename U> control_block(std::in_place_type_t<U>) {
-    destroy = [](A& alloc, T* src) {
+  template<typename U> control_block(U& example) {
+    offset = reinterpret_cast<char*>(static_cast<T*>(&example)) - reinterpret_cast<char*>(&example);
+
+    destroy = [](A& alloc, void* src) {
+      U* u = static_cast<U*>(src);
       using u_allocator = typename std::allocator_traits<A>::template rebind_alloc<U>;
       using u_alloc_traits = std::allocator_traits<u_allocator>;
 
       u_allocator u_alloc(alloc);
-      u_alloc_traits::destroy(u_alloc, src);
-      u_alloc_traits::deallocate(u_alloc, static_cast<U*>(src), 1);
+      u_alloc_traits::destroy(u_alloc, u);
+      u_alloc_traits::deallocate(u_alloc, u, 1);
     };
 
-    clone = [](A& alloc, const T& src)->T* {
+    clone = [](A& alloc, const void* src)->T* {
+      const U* u = static_cast<const U*>(src);
       using u_allocator = typename std::allocator_traits<A>::template rebind_alloc<U>;
       using u_alloc_traits = std::allocator_traits<u_allocator>;
 
       u_allocator u_alloc(alloc);
       auto* mem = u_alloc_traits::allocate(u_alloc, 1);
       try {
-        u_alloc_traits::construct(u_alloc, mem, static_cast<const U&>(src));
+        u_alloc_traits::construct(u_alloc, mem, *u);
         return mem;
       } catch (...) {
         u_alloc_traits::deallocate(u_alloc, mem, 1);
@@ -61,11 +65,14 @@ struct control_block {
     };
   }
 
-  void (*destroy)(A& alloc, T* src);
-  T* (*clone)(A& alloc, const T& src);
+  size_t offset;            // Where inside U does T start. This works for virtual bases as long as we know that the U we get as example is _exactly_ an U, not a subclass.
+  void (*destroy)(A& alloc, void* src);
+  T* (*clone)(A& alloc, const void* src);
 };
 
 #if IMPL_OPTION == 1
+
+#error Option 1 does not work as the ctor does not have a real example object to provide.
 
 // Just initiate each (used) template variable instance. This is susceptible to static initialization order issues
 template<class T, class U, class A> inline control_block<T, A> s_control_block = control_block<T, A>(std::in_place_type<U>);
@@ -79,23 +86,23 @@ template<class T, class U, class A> control_block<T, A>* init_control_block()
 
 // Put the control block inside the function to make sure it is initialized as early as needed. Properly thread-safe but the
 // overhead of checking the "initialized" flag for each call is a drawback.
-template<class T, class U, class A> control_block<T, A>* init_control_block()
+template<class T, class A, class U> control_block<T, A>* init_control_block(U& example)
 {
-  static control_block<T, A> instance(std::in_place_type<U>);
+  static control_block<T, A> instance(example);
   return &instance;
 }
 
 #elif IMPL_OPTION == 3
 
-template<class T, class U, class A> inline control_block<T, A> s_control_block;
+template<class T, class A, class U> inline control_block<T, A> s_control_block;
 
 // Set up the control block each time to make sure it is set early enough without the function-static variable overhead.
 // Thread safety is so-so as multiple threads may write the same values to the function pointers at the same time, which could be
 // bad on some architectures, possibly.
-template<class T, class U, class A> control_block<T, A>* init_control_block()
+template<class T, class A, class U> control_block<T, A>* init_control_block(U& example)
 {
-  s_control_block<T, U, A> = control_block<T, A>(std::in_place_type<U>);
-  return &s_control_block<T, U, A>;
+  s_control_block<T, A, U> = control_block<T, A>(example);
+  return &s_control_block<T, A, U>;
 }
 
 #else
@@ -123,11 +130,11 @@ public:
   polymorphic()
     requires std::default_initializable<T>
   {
-    cb_ = detail::init_control_block<T, T, A>();
     auto* mem = std::allocator_traits<A>::allocate(alloc_, 1);
     try {
       std::allocator_traits<A>::construct(alloc_, mem);
       p_ = mem;
+      cb_ = detail::init_control_block<T, A>(*mem);
     } catch (...) {
       std::allocator_traits<A>::deallocate(alloc_, mem, 1);
       throw;
@@ -140,7 +147,6 @@ public:
              std::copy_constructible<U> &&
              (std::derived_from<U, T> || std::same_as<U, T>)
   {
-    cb_ = detail::init_control_block<T, U, A>();
     using u_allocator = typename std::allocator_traits<A>::template rebind_alloc<U>;
     using u_traits = std::allocator_traits<u_allocator>;
     u_allocator u_alloc(alloc_);
@@ -148,6 +154,7 @@ public:
     try {
       u_traits::construct(u_alloc, mem, std::forward<Ts>(ts)...);
       p_ = mem;
+      cb_ = detail::init_control_block<T, A>(*mem);
     } catch (...) {
       u_traits::deallocate(u_alloc, mem, 1);
       throw;
@@ -161,7 +168,6 @@ public:
              std::copy_constructible<U> &&
              (std::derived_from<U, T> || std::same_as<U, T>)
       : alloc_(alloc) {
-    cb_ = detail::init_control_block<T, U, A>();
     using u_allocator = typename std::allocator_traits<A>::template rebind_alloc<U>;
     using u_traits = std::allocator_traits<u_allocator>;
     u_allocator u_alloc(alloc_);
@@ -169,6 +175,7 @@ public:
     try {
       u_traits::construct(u_alloc, mem, std::forward<Ts>(ts)...);
       p_ = mem;
+      cb_ = detail::init_control_block<T, A>(*mem);
     } catch (...) {
       u_traits::deallocate(u_alloc, mem, 1);
       throw;
@@ -178,13 +185,13 @@ public:
   polymorphic(const polymorphic& other) : alloc_(other.alloc_) {
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = other.cb_;
-    p_ = cb_->clone(alloc_, *other.p_);
+    p_ = cb_->clone(alloc_, reinterpret_cast<const char*>(other.p_) - other.cb_->offset);
   }
 
   polymorphic(std::allocator_arg_t, const A& alloc, const polymorphic& other) : alloc_(alloc) {
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = other.cb_;
-    p_ = cb_->clone(alloc_, *other.p_);
+    p_ = cb_->clone(alloc_, reinterpret_cast<const char*>(other.p_) - other.cb_->offset);
   }
 
   polymorphic(polymorphic&& other) noexcept : alloc_(std::move(other.alloc_)) {
@@ -261,7 +268,7 @@ public:
  private:
   void reset() noexcept {
     if (p_ != nullptr) {
-      cb_->destroy(alloc_, p_);
+      cb_->destroy(alloc_, reinterpret_cast<char*>(p_) - cb_->offset);
       p_ = nullptr;
     }
   }

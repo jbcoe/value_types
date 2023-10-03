@@ -130,6 +130,20 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
                 common_compiler_settings
         )
 
+        add_executable(cloning_ptr_test "")
+        target_sources(cloning_ptr_test
+            PRIVATE
+                cloning_ptr_test.cc
+                cloning_ptr.h
+
+        )
+
+        target_link_libraries(cloning_ptr_test
+            PRIVATE
+                GTest::gtest_main
+                common_compiler_settings
+        )
+
         if (ENABLE_SANITIZERS)
             set(SANITIZER_FLAGS_ASAN "-fsanitize=address -fno-omit-frame-pointer")
             set(SANITIZER_FLAGS_UBSAN "-fsanitize=undefined")
