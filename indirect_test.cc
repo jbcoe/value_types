@@ -76,10 +76,7 @@ TEST(IndirectTest, MoveAssignment) {
   EXPECT_EQ(*a, 42);
   a = std::move(b);
 
-#if XYZ_USES_ALLOCATORS == 1
   EXPECT_TRUE(b.valueless_after_move());
-#endif
-
   EXPECT_EQ(*a, 101);
 }
 
@@ -393,16 +390,18 @@ TEST(IndirectTest, CountAllocationsForAssignmentToMovedFromObject) {
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
     b = std::move(a);
-    EXPECT_EQ(dealloc_counter, 1);
-    a = xyz::indirect<int, TrackingAllocator<int>>(
+    EXPECT_EQ(dealloc_counter, 1); // b's value is destroyed.
+    xyz::indirect<int, TrackingAllocator<int>> c(
         std::allocator_arg,
         TrackingAllocator<int>(&alloc_counter, &dealloc_counter), std::in_place,
         404);
-    EXPECT_EQ(alloc_counter, 3);
+    EXPECT_TRUE(a.valueless_after_move());
+    a = c; // This will cause an allocation as a is valueless.
+    EXPECT_EQ(alloc_counter, 4);
     EXPECT_EQ(dealloc_counter, 1);
   }
-  EXPECT_EQ(alloc_counter, 3);
-  EXPECT_EQ(dealloc_counter, 3);
+  EXPECT_EQ(alloc_counter, 4);
+  EXPECT_EQ(dealloc_counter, 4);
 }
 
 TEST(IndirectTest, CountAllocationsForMoveConstruction) {
