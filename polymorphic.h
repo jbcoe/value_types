@@ -33,19 +33,26 @@ template <class T, class A>
 struct control_block {
   typedef void(destroy_fn)(control_block*, A& alloc);
   typedef control_block<T, A>*(clone_fn)(const control_block*, A& alloc);
+  typedef T*(pointer_fn)(control_block*);
 
   struct vtable {
     destroy_fn* const destroy;
     clone_fn* const clone;
+    pointer_fn* const pointer;
   } local_vtable_;
 
-  control_block(destroy_fn* const destroy, clone_fn* const clone)
-      : local_vtable_{.destroy = destroy, .clone = clone} {}
+  control_block(destroy_fn* const destroy, clone_fn* const clone,
+                pointer_fn* pointer)
+      : local_vtable_{.destroy = destroy, .clone = clone, .pointer = pointer} {}
 
   void destroy(A& alloc) { local_vtable_.destroy(this, alloc); }
 
   control_block* clone(A& alloc) const {
     return local_vtable_.clone(this, alloc);
+  }
+
+  T* pointer() const {
+    return local_vtable_.pointer(const_cast<control_block*>(this));
   }
 };
 
@@ -87,6 +94,12 @@ class direct_control_block : public control_block<T, A> {
                 cb_alloc_traits::deallocate(cb_alloc, mem, 1);
                 throw;
               }
+            },
+            // ptr
+            +[](control_block<T, A>* p) -> T* {
+              auto cb = static_cast<direct_control_block*>(p);
+              U* u = &cb->u_;
+              return static_cast<T*>(u);
             }},
         u_(std::forward<Ts>(ts)...) {}
 };
@@ -205,9 +218,7 @@ class polymorphic {
     return *this;
   }
 
-  constexpr T* get_pointer() const noexcept {
-    return (T*)&reinterpret_cast<detail::fake_control_block<T, A>*>(cb_)->data_;
-  }
+  constexpr T* get_pointer() const noexcept { return cb_->pointer(); }
 
   constexpr T* operator->() noexcept {
     assert(cb_ != nullptr);  // LCOV_EXCL_LINE
