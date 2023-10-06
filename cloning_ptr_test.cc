@@ -52,7 +52,7 @@ TEST(CloningPtrTest, ValueAccessFromInPlaceConstructedObject) {
 }
 
 TEST(CloningPtrTest, ValueAccessFromDefaultConstructedObject) {
-  xyz::cloning_ptr<A> a;
+  xyz::cloning_ptr<A> a(std::in_place_type<A>);
   EXPECT_EQ(*a, 0);
 }
 
@@ -229,7 +229,7 @@ struct ThrowsOnCopyConstruction {
 };
 
 TEST(CloningPtrTest, DefaultConstructorWithExceptions) {
-  EXPECT_THROW(xyz::cloning_ptr<ThrowsOnConstruction>(),
+  EXPECT_THROW(xyz::cloning_ptr<ThrowsOnConstruction>{ std::in_place_type<ThrowsOnConstruction> },
                ThrowsOnConstruction::Exception);
 }
 
@@ -290,7 +290,8 @@ TEST(CloningPtrTest, InteractionWithUnorderedMap) {
 //// copy and destroy it without having seen the definition. What you can't do, just as for indirect, is to construct the cloning_ptr 
 //// without having seen its definition (obviously).
 
- // This T type is only forward declared now
+// This T type is only forward declared now
+//struct ForwardDeclared {};
 struct ForwardDeclared;
 
 // Some header file which only sees the forward declaration

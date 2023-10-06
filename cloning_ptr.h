@@ -42,10 +42,10 @@ public:
                  std::copy_constructible<U> &&
                  (std::derived_from<U, T> || std::same_as<U, T>) :
         m_ptr(std::make_unique<U>(std::forward<Ts>(ts)...)),
-        m_cloner([](T& src)->std::unique_ptr<T> {
+        m_cloner([](const T& src)->std::unique_ptr<T> {
             // Create a unique_ptr<U>, which is the actual type of src. Then let the return statement cast this to a
             // unique_ptr<T>.
-            return make_unique<U>(static_cast<const U&>(src));      // Problem: static_cast does not work from virtual bases. 
+            return std::make_unique<U>(static_cast<const U&>(src));      // Problem: static_cast does not work from virtual bases. 
         })
     {
     }
@@ -56,10 +56,12 @@ public:
     cloning_ptr& operator=(const cloning_ptr& src) {
         m_ptr = src.m_cloner(*src);
         m_cloner = src.m_cloner;
+        return *this;
     }
     cloning_ptr& operator=(cloning_ptr&& src) noexcept {
         m_ptr = std::move(src.m_ptr);
         m_cloner = src.m_cloner;
+        return *this;
     }
 
     // Modifiers
@@ -72,7 +74,7 @@ public:
 
     // Observers
     T* get() const { return m_ptr.get(); }      // Shallow const like unique_ptr. For better or for worse.
-    operator bool() { return m_ptr; }
+    operator bool() const { return m_ptr != nullptr; }
 
     T* operator->() noexcept { return m_ptr.get(); }
     const T* operator->() const noexcept { return m_ptr.get(); }
@@ -91,7 +93,7 @@ private:
     {}
 
     std::unique_ptr<T> m_ptr;
-    std::unique_ptr<T> (*m_cloner)(T& src) = nullptr;
+    std::unique_ptr<T> (*m_cloner)(const T& src) = nullptr;
 };
 
 
