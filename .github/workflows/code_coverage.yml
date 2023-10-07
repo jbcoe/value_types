@@ -52,5 +52,5 @@ jobs:
 
       - name: Upload
         working-directory: ${{github.workspace}}/build
-        # Run LCov target to generate code coverage report
-        run: bash <(curl -s https://codecov.io/bash) -f '!*_test.cc' -X gcov || echo "Codecov did not collect coverage reports"
+        # Upload code coverage report
+        run: bash <(curl -s https://codecov.io/bash) -X gcov || echo "Codecov did not collect coverage reports"
