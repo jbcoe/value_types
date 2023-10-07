@@ -147,36 +147,39 @@ class polymorphic {
   }
 
   polymorphic(const polymorphic& other) : alloc_(other.alloc_) {
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(other.cb_ != nullptr);
     cb_ = other.cb_->clone(alloc_);
   }
 
-  polymorphic(std::allocator_arg_t, const A& alloc, const polymorphic& other) : alloc_(alloc) {
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
+  polymorphic(std::allocator_arg_t, const A& alloc, const polymorphic& other)
+      : alloc_(alloc) {
+    assert(other.cb_ != nullptr);
     cb_ = other.cb_->clone(alloc_);
   }
 
   polymorphic(polymorphic&& other) noexcept : alloc_(std::move(other.alloc_)) {
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(other.cb_ != nullptr);
     cb_ = std::exchange(other.cb_, nullptr);
   }
 
-  polymorphic(std::allocator_arg_t, const A& alloc, polymorphic&& other) noexcept : alloc_(alloc){
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
+  polymorphic(std::allocator_arg_t, const A& alloc,
+              polymorphic&& other) noexcept
+      : alloc_(alloc) {
+    assert(other.cb_ != nullptr);
     cb_ = std::exchange(other.cb_, nullptr);
   }
 
   ~polymorphic() { reset(); }
 
   polymorphic& operator=(const polymorphic& other) {
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(other.cb_ != nullptr);
     polymorphic tmp(other);
     this->swap(tmp);
     return *this;
   }
 
   polymorphic& operator=(polymorphic&& other) noexcept {
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(other.cb_ != nullptr);
     reset();
     alloc_ = std::move(other.alloc_);
     cb_ = std::exchange(other.cb_, nullptr);
@@ -184,22 +187,22 @@ class polymorphic {
   }
 
   constexpr T* operator->() noexcept {
-    assert(cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(cb_ != nullptr);
     return cb_->p_;
   }
 
   constexpr const T* operator->() const noexcept {
-    assert(cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(cb_ != nullptr);
     return cb_->p_;
   }
 
   constexpr T& operator*() noexcept {
-    assert(cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(cb_ != nullptr);
     return *cb_->p_;
   }
 
   constexpr const T& operator*() const noexcept {
-    assert(cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(cb_ != nullptr);
     return *cb_->p_;
   }
 
@@ -210,13 +213,13 @@ class polymorphic {
   constexpr allocator_type get_allocator() const noexcept { return alloc_; }
 
   constexpr void swap(polymorphic& other) noexcept {
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(other.cb_ != nullptr);
     std::swap(cb_, other.cb_);
   }
 
   friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept {
-    assert(lhs.cb_ != nullptr);  // LCOV_EXCL_LINE
-    assert(rhs.cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(lhs.cb_ != nullptr);
+    assert(rhs.cb_ != nullptr);
     std::swap(lhs.cb_, rhs.cb_);
   }
 

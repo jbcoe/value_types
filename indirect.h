@@ -97,7 +97,7 @@ class indirect {
   indirect(const indirect& other)
     requires std::copy_constructible<T>
       : alloc_(other.alloc_) {
-    assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(other.p_ != nullptr);
     T* mem = allocator_traits::allocate(alloc_, 1);
     try {
       allocator_traits::construct(alloc_, mem, *other);
@@ -111,7 +111,7 @@ class indirect {
   indirect(std::allocator_arg_t, const A& alloc, const indirect& other)
     requires std::copy_constructible<T>
       : alloc_(alloc) {
-    assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(other.p_ != nullptr);
     T* mem = allocator_traits::allocate(alloc_, 1);
     try {
       allocator_traits::construct(alloc_, mem, *other);
@@ -124,13 +124,13 @@ class indirect {
 
   indirect(indirect&& other) noexcept
       : p_(nullptr), alloc_(std::move(other.alloc_)) {
-    assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(other.p_ != nullptr);
     std::swap(p_, other.p_);
   }
 
   indirect(std::allocator_arg_t, const A& alloc, indirect&& other) noexcept
       : p_(nullptr), alloc_(alloc) {
-    assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(other.p_ != nullptr);
     std::swap(p_, other.p_);
   }
 
@@ -139,14 +139,14 @@ class indirect {
   indirect& operator=(const indirect& other)
     requires std::copy_constructible<T>
   {
-    assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(other.p_ != nullptr);
     indirect tmp(other);
     this->swap(tmp);
     return *this;
   }
 
   indirect& operator=(indirect&& other) noexcept {
-    assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(other.p_ != nullptr);
     reset();
     alloc_ = std::move(other.alloc_);
     p_ = std::exchange(other.p_, nullptr);
@@ -154,22 +154,22 @@ class indirect {
   }
 
   constexpr const T& operator*() const noexcept {
-    assert(p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(p_ != nullptr);
     return *p_;
   }
 
   constexpr T& operator*() noexcept {
-    assert(p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(p_ != nullptr);
     return *p_;
   }
 
   constexpr const T* operator->() const noexcept {
-    assert(p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(p_ != nullptr);
     return p_;
   }
 
   constexpr T* operator->() noexcept {
-    assert(p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(p_ != nullptr);
     return p_;
   }
 
@@ -178,14 +178,14 @@ class indirect {
   constexpr allocator_type get_allocator() const noexcept { return alloc_; }
 
   constexpr void swap(indirect& other) noexcept {
-    assert(p_ != nullptr);        // LCOV_EXCL_LINE
-    assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(p_ != nullptr);
+    assert(other.p_ != nullptr);
     std::swap(p_, other.p_);
   }
 
   friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    assert(!lhs.valueless_after_move());
+    assert(!rhs.valueless_after_move());
     std::swap(lhs.p_, rhs.p_);
   }
 
@@ -193,8 +193,8 @@ class indirect {
   friend bool operator==(const indirect<T, A>& lhs, const indirect<U, AA>& rhs)
     requires std::equality_comparable_with<T, U>
   {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    assert(!lhs.valueless_after_move());
+    assert(!rhs.valueless_after_move());
     return *lhs == *rhs;
   }
 
@@ -202,8 +202,8 @@ class indirect {
   friend bool operator!=(const indirect<T, A>& lhs, const indirect<U, AA>& rhs)
     requires std::equality_comparable_with<T, U>
   {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    assert(!lhs.valueless_after_move());
+    assert(!rhs.valueless_after_move());
     return *lhs != *rhs;
   }
 
@@ -211,8 +211,8 @@ class indirect {
   friend auto operator<=>(const indirect<T, A>& lhs, const indirect<U, AA>& rhs)
     requires std::three_way_comparable_with<T, U>
   {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    assert(!lhs.valueless_after_move());
+    assert(!rhs.valueless_after_move());
     return *lhs <=> *rhs;
   }
 
@@ -220,7 +220,7 @@ class indirect {
   friend bool operator==(const indirect<T, A>& lhs, const U& rhs)
     requires(!is_indirect_v<U>)
   {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
+    assert(!lhs.valueless_after_move());
     return *lhs == rhs;
   }
 
@@ -228,7 +228,7 @@ class indirect {
   friend bool operator==(const U& lhs, const indirect<T, A>& rhs)
     requires(!is_indirect_v<U>)
   {
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    assert(!rhs.valueless_after_move());
     return lhs == *rhs;
   }
 
@@ -236,7 +236,7 @@ class indirect {
   friend bool operator!=(const indirect<T, A>& lhs, const U& rhs)
     requires(!is_indirect_v<U>)
   {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
+    assert(!lhs.valueless_after_move());
     return *lhs != rhs;
   }
 
@@ -244,7 +244,7 @@ class indirect {
   friend bool operator!=(const U& lhs, const indirect<T, A>& rhs)
     requires(!is_indirect_v<U>)
   {
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    assert(!rhs.valueless_after_move());
     return lhs != *rhs;
   }
 
@@ -252,7 +252,7 @@ class indirect {
   friend auto operator<=>(const indirect<T, A>& lhs, const U& rhs)
     requires(!is_indirect_v<U>)
   {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
+    assert(!lhs.valueless_after_move());
     return *lhs <=> rhs;
   }
 
@@ -260,7 +260,7 @@ class indirect {
   friend auto operator<=>(const U& lhs, const indirect<T, A>& rhs)
     requires(!is_indirect_v<U>)
   {
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    assert(!rhs.valueless_after_move());
     return lhs <=> *rhs;
   }
 
