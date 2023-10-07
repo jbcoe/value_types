@@ -46,8 +46,6 @@ Design of these two types is so deeply coupled that future work will proceed in
 The `indirect` and `polymorphic` class templates are header-only. To use them,
 include the headers `indirect.h` and `polymorphic.h` in your project.
 
-## Example
-
 ```cpp
 #include "indirect.h"
 
@@ -79,6 +77,16 @@ public:
 };
 ```
 
+### Compiler explorer
+
+You can try out `indirect` and `polymorphic` in [Compiler explorer](https://godbolt.org/)
+by adding the includes:
+
+```cpp
+#include <https://raw.githubusercontent.com/jbcoe/value_types/main/indirect.h>
+#include <https://raw.githubusercontent.com/jbcoe/value_types/main/polymorphic.h>
+```
+
 ## License
 
 This code is licensed under the MIT License. See [LICENSE](LICENSE) for details.
@@ -87,3 +95,14 @@ This code is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 We spoke about an earlier draft at [C++ on
 Sea](https://www.youtube.com/watch?v=sjLRX4WMvlU) in 2022.
+
+## References
+
+* [TK's allocator user guide]
+  (https://rawgit.com/google/cxx-std-draft/allocator-paper/allocator_user_guide.html)
+
+* [A polymorphic value-type for C++]
+  (https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0201r5.html)
+
+* [indirect_value: A Free-Store-Allocated Value Type For C++]
+  (https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1950r2.html)

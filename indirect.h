@@ -125,15 +125,13 @@ class indirect {
 
   indirect(indirect&& other) noexcept : p_(nullptr), alloc_(other.alloc_) {
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
-    using std::swap;
-    swap(p_, other.p_);
+    std::swap(p_, other.p_);
   }
 
   indirect(std::allocator_arg_t, const A& alloc, indirect&& other) noexcept
       : p_(nullptr), alloc_(alloc) {
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
-    using std::swap;
-    swap(p_, other.p_);
+    std::swap(p_, other.p_);
   }
 
   ~indirect() { reset(); }
@@ -149,7 +147,7 @@ class indirect {
       swap(tmp);
     } else {
       indirect tmp(other);
-      swap(tmp);
+      this->swap(tmp);
     }
     return *this;
   }
@@ -204,18 +202,18 @@ class indirect {
 
   constexpr bool valueless_after_move() const noexcept { return p_ == nullptr; }
 
+  constexpr allocator_type get_allocator() const noexcept { return alloc_; }
+
   constexpr void swap(indirect& other) noexcept {
     assert(p_ != nullptr);        // LCOV_EXCL_LINE
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
-    using std::swap;
-    swap(p_, other.p_);
+    std::swap(p_, other.p_);
   }
 
   friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept {
     assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
     assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
-    using std::swap;
-    swap(lhs.p_, rhs.p_);
+    std::swap(lhs.p_, rhs.p_);
   }
 
   template <class U, class AA>
