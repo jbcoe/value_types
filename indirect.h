@@ -142,7 +142,7 @@ class indirect {
     requires std::copy_constructible<T>
   {
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
-    if constexpr (allocator_traits::propagate_on_container_move_assignment::
+    if constexpr (allocator_traits::propagate_on_container_copy_assignment::
                       value) {
       alloc_ = other.alloc_;
       indirect tmp(std::allocator_arg, alloc_, other);
