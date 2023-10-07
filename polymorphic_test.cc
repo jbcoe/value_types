@@ -425,6 +425,32 @@ TEST(PolymorphicTest, InteractionWithSizedAllocators) {
             (sizeof(int*) + sizeof(TrackingAllocator<int>)));
 }
 
+struct BaseA {
+  int a_value = 3;
+  virtual int value() { return a_value; }
+};
+
+struct BaseB {
+  int b_value = 4;
+  virtual int value() { return b_value; }
+};
+
+struct MultipleBases : BaseA, BaseB {
+  int d_value = 5;
+  virtual int value() { return d_value; }
+};
+
+TEST(PolymorphicTest, MultipleBases) {
+  xyz::polymorphic<BaseA> a(std::in_place_type<MultipleBases>);
+
+  xyz::polymorphic<BaseB> b(std::in_place_type<MultipleBases>);
+
+  EXPECT_EQ(a->value(), 5);
+  EXPECT_EQ(b->value(), 5);
+  EXPECT_EQ(a->a_value, 3);
+  EXPECT_EQ(b->b_value, 4);
+}
+
 #if (__cpp_lib_memory_resource >= 201603L)
 TEST(PolymorphicTest, InteractionWithPMRAllocators) {
   std::array<std::byte, 1024> buffer;
