@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.19 FATAL_ERROR)
 cmake_policy(SET CMP0127 NEW)
 
 if(NOT DEFINED PROJECT_NAME)
@@ -90,7 +90,7 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
 
         FetchContent_Declare(
             benchmark
-            URL https://github.com/google/benchmark/archive/v1.5.3.zip
+            URL https://github.com/google/benchmark/archive/v1.8.3.zip
         )
         FetchContent_MakeAvailable(benchmark)
 
