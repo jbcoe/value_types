@@ -36,6 +36,7 @@ cc_binary(
         "indirect_benchmark.cc",
         "polymorphic_benchmark.cc",
     ],
+    copts = ["-Wunused-but-set-variable"],
     deps = [
         ":indirect",
         ":polymorphic",
