@@ -76,10 +76,7 @@ TEST(IndirectTest, MoveAssignment) {
   EXPECT_EQ(*a, 42);
   a = std::move(b);
 
-#if XYZ_USES_ALLOCATORS == 1
   EXPECT_TRUE(b.valueless_after_move());
-#endif
-
   EXPECT_EQ(*a, 101);
 }
 
@@ -275,10 +272,8 @@ TEST(IndirectTest, GetAllocator) {
   unsigned dealloc_counter = 0;
   TrackingAllocator<int> allocator(&alloc_counter, &dealloc_counter);
 
-  xyz::indirect<int, TrackingAllocator<int>> a(
-      std::allocator_arg,
-      allocator,
-      std::in_place, 42);
+  xyz::indirect<int, TrackingAllocator<int>> a(std::allocator_arg, allocator,
+                                               std::in_place, 42);
   EXPECT_EQ(alloc_counter, 1);
   EXPECT_EQ(dealloc_counter, 0);
 
@@ -332,7 +327,35 @@ TEST(IndirectTest, CountAllocationsForCopyAssignment) {
         101);
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
-    b = a;
+    b = a;  // Will not allocate as int is assignable.
+  }
+  EXPECT_EQ(alloc_counter, 2);
+  EXPECT_EQ(dealloc_counter, 2);
+}
+
+struct NonAssignable {
+  int value;
+  NonAssignable(int v) : value(v) {}
+  NonAssignable(const NonAssignable&) = default;
+  NonAssignable& operator=(const NonAssignable&) = delete;
+};
+
+TEST(IndirectTest, CountAllocationsForCopyAssignmentForNonAssignableT) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::indirect<NonAssignable, TrackingAllocator<NonAssignable>> a(
+        std::allocator_arg,
+        TrackingAllocator<NonAssignable>(&alloc_counter, &dealloc_counter),
+        std::in_place, 42);
+    xyz::indirect<NonAssignable, TrackingAllocator<NonAssignable>> b(
+        std::allocator_arg,
+        TrackingAllocator<NonAssignable>(&alloc_counter, &dealloc_counter),
+        std::in_place, 101);
+    EXPECT_EQ(alloc_counter, 2);
+    EXPECT_EQ(dealloc_counter, 0);
+    b = a;  // Will allocate.
+    EXPECT_EQ(a->value, b->value);
   }
   EXPECT_EQ(alloc_counter, 3);
   EXPECT_EQ(dealloc_counter, 3);
@@ -367,7 +390,8 @@ struct NonEqualTrackingAllocator : TrackingAllocator<T> {
   }
 };
 
-TEST(IndirectTest, CountAllocationsForMoveAssignmentWhenAllocatorsDontCompareEqual) {
+TEST(IndirectTest,
+     CountAllocationsForMoveAssignmentWhenAllocatorsDontCompareEqual) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
@@ -381,10 +405,39 @@ TEST(IndirectTest, CountAllocationsForMoveAssignmentWhenAllocatorsDontCompareEqu
         std::in_place, 101);
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
-    b = std::move(a); // This will copy as allocators don't compare equal.
+    b = std::move(a);  // This will copy as allocators don't compare equal.
   }
   EXPECT_EQ(alloc_counter, 3);
   EXPECT_EQ(dealloc_counter, 3);
+}
+
+TEST(IndirectTest, CountAllocationsForAssignmentToMovedFromObject) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::indirect<int, TrackingAllocator<int>> a(
+        std::allocator_arg,
+        TrackingAllocator<int>(&alloc_counter, &dealloc_counter), std::in_place,
+        42);
+    xyz::indirect<int, TrackingAllocator<int>> b(
+        std::allocator_arg,
+        TrackingAllocator<int>(&alloc_counter, &dealloc_counter), std::in_place,
+        101);
+    EXPECT_EQ(alloc_counter, 2);
+    EXPECT_EQ(dealloc_counter, 0);
+    b = std::move(a);
+    EXPECT_EQ(dealloc_counter, 1);  // b's value is destroyed.
+    xyz::indirect<int, TrackingAllocator<int>> c(
+        std::allocator_arg,
+        TrackingAllocator<int>(&alloc_counter, &dealloc_counter), std::in_place,
+        404);
+    EXPECT_TRUE(a.valueless_after_move());
+    a = c;  // This will cause an allocation as a is valueless.
+    EXPECT_EQ(alloc_counter, 4);
+    EXPECT_EQ(dealloc_counter, 1);
+  }
+  EXPECT_EQ(alloc_counter, 4);
+  EXPECT_EQ(dealloc_counter, 4);
 }
 
 TEST(IndirectTest, CountAllocationsForMoveConstruction) {

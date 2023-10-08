@@ -140,14 +140,28 @@ class indirect {
     requires std::copy_constructible<T>
   {
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
-    if constexpr (allocator_traits::propagate_on_container_copy_assignment::
-                      value) {
-      alloc_ = other.alloc_;
-      indirect tmp(std::allocator_arg, alloc_, other);
-      swap(tmp);
-    } else {
-      indirect tmp(other);
-      this->swap(tmp);
+    if (this != &other) {
+      if constexpr (std::is_copy_assignable_v<T>) {
+        if (p_ == nullptr) {
+          T* mem = allocator_traits::allocate(alloc_, 1);
+          try {
+            allocator_traits::construct(alloc_, mem, *other);
+            p_ = mem;
+          } catch (...) {
+            allocator_traits::deallocate(alloc_, mem, 1);
+            throw;
+          }
+        } else {
+          *p_ = *other.p_;
+        }
+      } else {
+        indirect tmp(other);
+        this->swap(tmp);
+      }
+      if constexpr (allocator_traits::propagate_on_container_copy_assignment::
+                        value) {
+        alloc_ = other.alloc_;
+      }
     }
     return *this;
   }
