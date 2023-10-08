@@ -1,4 +1,4 @@
-workspace(name = "indirect_value")
+workspace(name = "xyz_value_types")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
