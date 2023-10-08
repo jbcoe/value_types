@@ -88,6 +88,12 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
         set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
         FetchContent_MakeAvailable(googletest)
 
+        FetchContent_Declare(
+            benchmark
+            URL https://github.com/google/benchmark/archive/v1.5.3.zip
+        )
+        FetchContent_MakeAvailable(benchmark)
+
         add_library(common_compiler_settings INTERFACE)
 
         target_compile_options(common_compiler_settings
@@ -128,6 +134,20 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
                 polymorphic
                 GTest::gtest_main
                 common_compiler_settings
+        )
+
+        add_executable(value_types_benchmark "")
+        target_sources(value_types_benchmark
+            PRIVATE
+                indirect_benchmark.cc
+                polymorphic_benchmark.cc
+        )
+        target_link_libraries(value_types_benchmark
+        PRIVATE
+            polymorphic
+            indirect
+            benchmark::benchmark_main
+            common_compiler_settings
         )
 
         if (ENABLE_SANITIZERS)
