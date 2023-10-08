@@ -445,9 +445,13 @@ constexpr indirect& operator=(const indirect& other);
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: If `*this` is not valueless, destroys the owned object. Then,
-  constructs an owned object using the copy constructor of the object owned by
-  `other`.
+* _Effects_: If `*this` is not valueless and `std::is_copy_assignable_v<T>` is
+  true, then the owned object in `*this` is copy assigned from the owned object
+  in `other`. Otherwise if `*this` is not valueless and
+  `std::is_copy_assignable_v<T>` is false, destroys the owned object and then,
+  constructs a new owned object using the copy constructor of the object owned
+  by `other`. Otherwise if `*this` is valueless, constructs an owned object
+  using the copy constructor of the object owned by `other`.
 
 * _Postconditions_: `*this` is not valueless.
 
