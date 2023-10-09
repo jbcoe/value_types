@@ -35,6 +35,7 @@ namespace xyz {
 template<typename T> class cloning_ptr {
 public:
     cloning_ptr() = default;
+    cloning_ptr(std::nullptr_t) {}
 
     template <class U, class... Ts>
     explicit cloning_ptr(std::in_place_type_t<U>, Ts&&... ts)
@@ -63,7 +64,8 @@ public:
         m_cloner = src.m_cloner;
         return *this;
     }
-
+    cloning_ptr& operator=(const nullptr_t& src) noexcept { reset(); }
+    
     // Modifiers
     template <class U, class... Ts>
     void emplace(Ts&&... ts) { *this = make<U>(std::forward<Ts>(ts)...); }
@@ -85,6 +87,9 @@ public:
     // Creation helper
     template<class U, class... Ts>
     static cloning_ptr make(Ts&&... ts) { return cloning_ptr(std::in_place_type<U>, std::forward<Ts>(ts)...); }
+
+    // Comparison
+    auto operator<=>(const cloning_ptr& rhs) const { return m_ptr <=> rhs.m_ptr; }
 
 private:
     cloning_ptr(std::unique_ptr<T> src) : m_ptr(std::move(src)), m_cloner([](T& src)->std::unique_ptr<T> {
