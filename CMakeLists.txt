@@ -88,6 +88,12 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
         set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
         FetchContent_MakeAvailable(googletest)
 
+        FetchContent_Declare(
+            benchmark
+            URL https://github.com/google/benchmark/archive/v1.8.3.zip
+        )
+        FetchContent_MakeAvailable(benchmark)
+
         add_library(common_compiler_settings INTERFACE)
 
         target_compile_options(common_compiler_settings
@@ -95,11 +101,11 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
                 $<$<CXX_COMPILER_ID:MSVC>:/EHsc>
                 $<$<CXX_COMPILER_ID:MSVC>:/W4>
                 $<$<CXX_COMPILER_ID:MSVC>:/bigobj>
-                $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:Clang>>:-Werror;-Wall;-Wno-self-assign-overloaded;-Wno-unknown-warning-option>
+                $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:Clang>>:-Werror;-Wall;-Wno-self-assign-overloaded;-Wno-unknown-warning-option;-Wno-unused-but-set-variable>
         )
 
         set_target_properties(common_compiler_settings PROPERTIES
-            CXX_STANDARD 23
+            CXX_STANDARD 20
             CXX_STANDARD_REQUIRED YES
             CXX_EXTENSIONS NO
         )
@@ -128,6 +134,20 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
                 polymorphic
                 GTest::gtest_main
                 common_compiler_settings
+        )
+
+        add_executable(value_types_benchmark "")
+        target_sources(value_types_benchmark
+            PRIVATE
+                indirect_benchmark.cc
+                polymorphic_benchmark.cc
+        )
+        target_link_libraries(value_types_benchmark
+        PRIVATE
+            polymorphic
+            indirect
+            benchmark::benchmark_main
+            common_compiler_settings
         )
 
         if (ENABLE_SANITIZERS)

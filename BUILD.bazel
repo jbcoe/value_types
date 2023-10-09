@@ -61,3 +61,17 @@ build_test(
         "polymorphic_consteval",
     ],
 )
+
+cc_binary(
+    name = "value_types_benchmark",
+    srcs = [
+        "indirect_benchmark.cc",
+        "polymorphic_benchmark.cc",
+    ],
+    copts = ["-Wunused-but-set-variable"],
+    deps = [
+        ":indirect",
+        ":polymorphic",
+        "@com_google_benchmark//:benchmark_main",
+    ],
+)
