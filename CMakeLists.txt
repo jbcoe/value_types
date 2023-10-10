@@ -101,7 +101,7 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
                 $<$<CXX_COMPILER_ID:MSVC>:/EHsc>
                 $<$<CXX_COMPILER_ID:MSVC>:/W4>
                 $<$<CXX_COMPILER_ID:MSVC>:/bigobj>
-                $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:Clang>>:-Werror;-Wall;-Wno-self-assign-overloaded;-Wno-unknown-warning-option;-Wno-unused-but-set-variable>
+                $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:Clang>>:-Werror;-Wall;-Wno-self-assign-overloaded;-Wno-unknown-warning-option>
         )
 
         set_target_properties(common_compiler_settings PROPERTIES
