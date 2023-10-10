@@ -94,7 +94,11 @@ This code is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 ## Talks and presentations
 
 We spoke about an earlier draft at [C++ on
-Sea](https://www.youtube.com/watch?v=sjLRX4WMvlU) in 2022.
+Sea](https://www.youtube.com/watch?v=sjLRX4WMvlU) in 2022. 
+
+There are some significant design changes since this talk was given (after feedback 
+and discussion at a C++ London meetup). We've pared down the number of constructors 
+and made the null state unobservable.
 
 ## References
 
