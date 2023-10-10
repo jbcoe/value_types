@@ -50,8 +50,8 @@ include the headers `indirect.h` and `polymorphic.h` in your project.
 #include "indirect.h"
 
 class Composite {
-  indirect<A> a_; // a_ owns an object of type A
-  indirect<B> b_; // b_ owns an object of type B
+  xyz::indirect<A> a_; // a_ owns an object of type A
+  xyz::indirect<B> b_; // b_ owns an object of type B
 public:
   Composite(const A& a, const B& b) : 
     a_(std::in_place, a), 
@@ -65,8 +65,8 @@ public:
 #include "polymorphic.h"
 
 class CompositeWithPolymorphicMembers {
-  polymorphic<X> x_; // x_ owns an object of type X or derived from X
-  polymorphic<Y> y_; // y_ owns an object of type Y or derived from Y
+  xyz::polymorphic<X> x_; // x_ owns an object of type X or derived from X
+  xyz::polymorphic<Y> y_; // y_ owns an object of type Y or derived from Y
 public:
   template <typename Tx, typename Ty>
   Composite(const Tx& x, const Ty& y) : 
