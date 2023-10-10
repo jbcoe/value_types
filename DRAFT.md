@@ -330,6 +330,9 @@ class indirect {
 
 template <class T, class Alloc>
 struct std::uses_allocator<indirect<T, Alloc>, Alloc> : true_type {};
+
+template <class T, class Alloc>
+struct hash<indirect<T, Alloc>>;
 ```
 
 #### X.Y.3 Constructors [indirect.ctor]
@@ -638,14 +641,29 @@ constexpr auto operator<=>(const U& lhs, const indirect<T, A>& rhs);
 * _Remarks_: Specializations of this function template for which `*lhs <=> *rhs`
   is a core constant expression are constexpr functions.
 
-#### Allocator related traits
+#### X.Y.10 Allocator related traits [indirect.allocator.traits]
 
 ```c++
 template <class T, class Alloc>
-struct std::uses_allocator<xyz::indirect<T>, Alloc> : true_type {};
+struct std::uses_allocator<indirect<T>, Alloc> : true_type {};
 ```
 
 * _Preconditions_: Alloc meets the _Cpp17Allocator_ requirements.
+
+#### X.Y.11 Hash support [indirect.hash]
+  
+```c++
+template <class T, class Alloc>
+struct std::hash<indirect<T, Alloc>>;
+```
+
+* _Preconditions_: `i` is not valueless.
+
+The specialization `hash<indirect<T>>` is enabled ([unord.hash]) if and only if
+`hash<remove_const_t<T>>` is enabled. When enabled, for an object `i` of type
+`indirect<T>`, then `hash<indirect<T>>()(i)` evaluates to the same value as
+`hash<remove_const_t<T>>()(*i)`. The member functions are not guaranteed to be
+noexcept.
 
 ### X.Z Class template polymorphic [polymorphic]
 
@@ -904,7 +922,7 @@ constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept;
 
 ```c++
 template <class T, class Alloc>
-struct std::uses_allocator<xyz::polymorphic<T>, Alloc> : true_type {};
+struct std::uses_allocator<polymorphic<T>, Alloc> : true_type {};
 ```
 
 * _Preconditions_: Alloc meets the _Cpp17Allocator_ requirements.
