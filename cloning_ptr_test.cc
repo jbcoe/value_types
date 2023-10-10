@@ -286,6 +286,56 @@ TEST(CloningPtrTest, InteractionWithUnorderedMap) {
   }
 }
 
+
+class B {
+public:
+    virtual ~B() {}
+
+    double m_value;
+};
+
+class Dual : public A, public B {
+};
+
+
+TEST(CloningPtrTest, SecondBase) {
+    xyz::cloning_ptr<B> p1(std::in_place_type<Dual>);
+    p1->m_value = 3.25;
+
+    xyz::cloning_ptr<B> p2(p1);
+
+    // Check that cloning created a Dual
+    auto d = dynamic_cast<Dual*>(&*p2);
+    EXPECT_NE(d, nullptr);
+
+    EXPECT_EQ(p2->m_value, 3.25);
+
+    p1->m_value = 14;
+
+    EXPECT_NE(p2->m_value, 14);         // Check that cloning took place.
+};
+
+
+/// Test with virtual bases
+struct Left : public virtual A {
+    int m_leftVal = 1;
+};
+struct Right : public virtual A {
+    int m_rightVal = 2;
+};
+
+struct Both : public Left, public Right {
+    Both(int i) : A(i) {}
+};
+
+TEST(CloningPtrTest, VirtualBase) {
+    xyz::cloning_ptr<A> pa(std::in_place_type<Both>, 17);
+
+    xyz::cloning_ptr<A> pa2(pa);
+
+    EXPECT_EQ(pa2->value(), 17);
+};
+
 //// This is a compilability test showing that you can compile a class containing a cloning_ptr to a forward declared class and still
 //// copy and destroy it without having seen the definition. What you can't do, just as for indirect, is to construct the cloning_ptr 
 //// without having seen its definition (obviously).
