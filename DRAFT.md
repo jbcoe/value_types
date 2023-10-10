@@ -659,11 +659,11 @@ struct std::hash<indirect<T, Alloc>>;
 
 * _Preconditions_: `i` is not valueless.
 
-The specialization `hash<indirect<T>>` is enabled ([unord.hash]) if and only if
-`hash<remove_const_t<T>>` is enabled. When enabled, for an object `i` of type
-`indirect<T>`, then `hash<indirect<T>>()(i)` evaluates to the same value as
-`hash<remove_const_t<T>>()(*i)`. The member functions are not guaranteed to be
-noexcept.
+The specialization `hash<indirect<T, Alloc>>` is enabled ([unord.hash]) if and
+only if `hash<remove_const_t<T>>` is enabled. When enabled, for an object `i` of
+type `indirect<T, Alloc>`, then `hash<indirect<T, Alloc>>()(i)` evaluates to the
+same value as `hash<remove_const_t<T>>()(*i)`. The member functions are not
+guaranteed to be noexcept.
 
 ### X.Z Class template polymorphic [polymorphic]
 
