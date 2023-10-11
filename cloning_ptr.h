@@ -28,6 +28,23 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace xyz {
 
+namespace detail {
+
+    struct impl_base {
+        virtual ~impl_base() = default;
+        virtual impl_base* clone() const = 0;
+    };
+
+    template <typename U>
+    struct impl : public impl_base {
+        template <typename... Ts>
+                impl(Ts&&... ts) : m_value(std::forward<Ts>(ts)...) {}
+
+        impl_base* clone() const override { return new impl(m_value); }
+        U m_value;
+    };
+
+}
 
 // VERSION WITH impl, but still fat.
 
@@ -35,26 +52,7 @@ namespace xyz {
 // unique_ptr can't. There is no array version as this does not make sense with polymorphism. Would be cool though, if indexing was
 // stepped correctly. OTOH most often you'd want to have different element types.
 template<typename T> class cloning_ptr {
-  struct impl_base {
-    virtual void clone(cloning_ptr& src) = 0;
-    virtual ~impl_base() = default;
-  };
-
-  template <typename U>
-  struct impl : public impl_base {
-    template <typename... Ts>
-    impl(Ts&&... ts) : m_value(std::forward<Ts>(ts)...) {}
-
-    void clone(cloning_ptr& dest) override {
-      auto p = std::make_unique<impl<U>>(m_value);
-      dest.m_ptr = &p->m_value;
-      dest.m_impl = std::move(p);
-    }
-
-    U m_value;
-  };
-
- public:
+public:
     cloning_ptr() = default;
     cloning_ptr(std::nullptr_t) {}
 
@@ -67,16 +65,35 @@ template<typename T> class cloning_ptr {
         emplace<U>(std::forward<Ts>(ts)...);
     }
 
-    cloning_ptr(const cloning_ptr& src) { src.m_impl->clone(*this); }
-    cloning_ptr(cloning_ptr&& src) noexcept : m_impl(std::move(src.m_impl)), m_ptr(src.m_ptr) {}
-              
+    cloning_ptr(const cloning_ptr& src) { *this = src; }
+    template<typename X> cloning_ptr(const cloning_ptr<X>& src) { *this = src; }
+
+    cloning_ptr(cloning_ptr&& src) noexcept { *this = std::move(src); }
+    template<typename X> cloning_ptr(cloning_ptr<X>&& src) noexcept { *this = std::move(src); }
+    ~cloning_ptr() { reset(); }
+             
     cloning_ptr& operator=(const cloning_ptr& src) {
-        src.m_impl->clone(*this);       // My old value is deleted thanks to unique_ptr.
+        reset();
+        detail::impl_base* c = src.get_impl()->clone();
+        m_offset = src.m_offset;
+        m_ptr = reinterpret_cast<T*>(reinterpret_cast<char*>(c) + m_offset);
         return *this;
     }
-    cloning_ptr& operator=(cloning_ptr&& src) noexcept {
-        m_impl = std::move(src.m_impl);
-        m_ptr = src.m_ptr;
+    template<typename X> cloning_ptr& operator=(const cloning_ptr<X>& src) {
+        reset();
+        detail::impl_base* c = src.get_impl()->clone();
+        X* x = reinterpret_cast<X*>(reinterpret_cast<char*>(c) + src.m_offset);
+        m_ptr = x;   // Offset add from X to T happens.
+        m_offset = reinterpret_cast<char*>(m_ptr) - reinterpret_cast<char*>(c);
+        return *this;
+    }
+    template<typename X> cloning_ptr& operator=(cloning_ptr<X>&& src) noexcept {
+        reset();
+        X* x = src.get();
+        m_ptr = x;   // Offset add from X to T happens.
+        m_offset = reinterpret_cast<char*>(m_ptr) - reinterpret_cast<char*>(src.get_impl());
+        src.m_ptr = nullptr;
+        src.m_offset = 0;
         return *this;
     }
     cloning_ptr& operator=(const nullptr_t& src) noexcept { reset(); }
@@ -84,18 +101,19 @@ template<typename T> class cloning_ptr {
     // Modifiers
     template <class U, class... Ts>
     void emplace(Ts&&... ts) {
-        auto p = std::make_unique<impl<U>>(std::forward<Ts>(ts)...);
-        m_ptr = &p->m_value;
-        m_impl = std::move(p);
+        detail::impl<U>* p = new detail::impl<U>(std::forward<Ts>(ts)...);
+        U* value = &p->m_value;
+        m_ptr = value;      // Offset adjustment happens.
+        m_offset = reinterpret_cast<char*>(m_ptr) - reinterpret_cast<char*>(p);
     }
     
-    void reset() { m_impl.reset(); m_ptr = nullptr; }
-    void swap(cloning_ptr& other) noexcept { using std::swap; swap(m_impl, other.m_impl); swap(m_ptr, other.m_ptr); }
+    void reset() { delete get_impl(); m_ptr = nullptr; }
+    void swap(cloning_ptr& other) noexcept { using std::swap; swap(m_offset, other.m_offset); swap(m_ptr, other.m_ptr); }
 
     // Observers
     const T* get() const { return m_ptr; }
     T* get() { return m_ptr; }
-    operator bool() const { return m_impl != nullptr; }
+    operator bool() const { return m_ptr != nullptr; }
 
     T* operator->() noexcept { return m_ptr; }
     const T* operator->() const noexcept { return m_ptr; }
@@ -107,11 +125,16 @@ template<typename T> class cloning_ptr {
     template<class U, class... Ts>
     static cloning_ptr make(Ts&&... ts) { return cloning_ptr(std::in_place_type<U>, std::forward<Ts>(ts)...); }
 
-    // Comparison
+    // Comparison is shallow, and as meaningless as for unique_ptr. Could be made deep, but that brings us further from pointer
+    // semantics, and why didn't unique_ptr do this?
     auto operator<=>(const cloning_ptr& rhs) const { return m_ptr <=> rhs.m_ptr; }
 
-private:
-    std::unique_ptr<impl_base> m_impl;
+//private:      -- Some friending would be required...
+    detail::impl_base* get_impl() const {
+        return reinterpret_cast<detail::impl_base*>(reinterpret_cast<char*>(m_ptr) - m_offset);
+    }
+
+    size_t m_offset = 0;            // Offset from the T m_ptr points to to the start of the impl_base containing it.
     T* m_ptr = nullptr;
 };
 
@@ -120,6 +143,7 @@ template <typename T> void swap(cloning_ptr<T>& lhs, cloning_ptr<T>& rhs) noexce
     lhs.swap(rhs);
 }
 
+// Add *_pointer_cast overloads here. These will come in both lvalue and rvalue versions, where the former clone if the cast was successful.
 
 }  // namespace xyz
 
