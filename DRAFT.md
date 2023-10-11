@@ -184,8 +184,8 @@ used in composite classes where smart pointers are currently used to
 make it nullable, nullability must be explicitly opted-into by using
 `std::optional<indirect<T>>` or `std::optional<polymorphic<T>>`.
 
-Access to an `optional<indirect<T>>` or `optional<polymorphic<T>>` requires
-double indirection: either `(*v)->some_member` or `(**v)`.
+Access to an `std::optional<indirect<T>>` or `std::optional<polymorphic<T>>`
+requires double indirection: either `(*v)->some_member` or `(**v)`.
 
 Note: As the null state of `indirect` and `polymorphic` is not observable, and
 access to a moved from object is erroneous, `std::optional` can be specialized
