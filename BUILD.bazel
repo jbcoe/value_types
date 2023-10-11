@@ -12,6 +12,16 @@ cc_library(
     copts = ["-Iexternal/value_types/"],
 )
 
+cc_library(
+    name = "polymorphic_experimental_inline_vtable",
+    defines = ["XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE"],
+    hdrs = [
+        "experimental/polymorphic_inline_vtable.h",
+        "polymorphic.h",
+    ],
+    copts = ["-Iexternal/value_types/"],
+)
+
 cc_test(
     name = "indirect_test",
     size = "small",
@@ -71,6 +81,52 @@ cc_binary(
     deps = [
         ":indirect",
         ":polymorphic",
+        "@com_google_benchmark//:benchmark_main",
+    ],
+)
+
+cc_binary(
+    name = "polymorphic_benchmark",
+    srcs = [
+        "polymorphic_benchmark.cc",
+    ],
+    deps = [
+        ":polymorphic",
+        "@com_google_benchmark//:benchmark_main",
+    ],
+)
+
+cc_test(
+    name = "polymorphic_experimental_inline_vtable_test",
+    size = "small",
+    srcs = ["polymorphic_test.cc"],
+    deps = [
+        "polymorphic_experimental_inline_vtable",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+cc_library(
+    name = "polymorphic_consteval_experimental_inline_vtable",
+    srcs = ["polymorphic_consteval.cc"],
+    deps = [
+        "polymorphic_experimental_inline_vtable",
+    ],
+)
+
+build_test(
+    name = "polymorphic_consteval_experimental_inline_vtable_build_test",
+    targets = [
+        "polymorphic_consteval",
+    ],
+)
+
+cc_binary(
+    name = "polymorphic_benchmark_experimental_inline_vtable",
+    srcs = [
+        "polymorphic_benchmark.cc",
+    ],
+    deps = [
+        ":polymorphic_experimental_inline_vtable",
         "@com_google_benchmark//:benchmark_main",
     ],
 )
