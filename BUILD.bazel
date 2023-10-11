@@ -1,3 +1,5 @@
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
+
 cc_library(
     name = "indirect",
     hdrs = ["indirect.h"],
@@ -20,6 +22,21 @@ cc_test(
     ],
 )
 
+cc_library(
+    name = "indirect_consteval",
+    srcs = ["indirect_consteval.cc"],
+    deps = [
+        "indirect",
+    ],
+)
+
+build_test(
+    name = "indirect_consteval_build_test",
+    targets = [
+        "indirect_consteval",
+    ],
+)
+
 cc_test(
     name = "polymorphic_test",
     size = "small",
@@ -30,13 +47,27 @@ cc_test(
     ],
 )
 
+cc_library(
+    name = "polymorphic_consteval",
+    srcs = ["polymorphic_consteval.cc"],
+    deps = [
+        "polymorphic",
+    ],
+)
+
+build_test(
+    name = "polymorphic_consteval_build_test",
+    targets = [
+        "polymorphic_consteval",
+    ],
+)
+
 cc_binary(
     name = "value_types_benchmark",
     srcs = [
         "indirect_benchmark.cc",
         "polymorphic_benchmark.cc",
     ],
-    copts = ["-Wunused-but-set-variable"],
     deps = [
         ":indirect",
         ":polymorphic",
