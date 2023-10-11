@@ -216,9 +216,9 @@ class PolymorphicInterface {
 };
 ```
 
-For an interface type with a public, virtual copy constructor, users would
-potentially pay the cost of virtual dispatch twice when deleting
-`polymorphic<I>` objects containing derived-type objects.
+For an interface type with a public, virtual destructor, users would potentially
+pay the cost of virtual dispatch twice when deleting `polymorphic<I>` objects
+containing derived-type objects.
 
 All derived-types owned by a `polymorphic` must be publicly copy constructible.
 
