@@ -262,27 +262,27 @@ class indirect {
   using value_type = T;
   using allocator_type = Allocator;
 
-  indirect();
+  constexpr indirect();
 
   template <class... Ts>
-  explicit indirect(std::in_place_t, Ts&&... ts);
+  explicit constexpr indirect(std::in_place_t, Ts&&... ts);
 
   template <class... Ts>
-  indirect(std::allocator_arg_t, const Allocator& alloc, std::in_place_t, Ts&&... ts);
+  constexpr indirect(std::allocator_arg_t, const Allocator& alloc, std::in_place_t, Ts&&... ts);
 
-  indirect(const indirect& other);
+  constexpr indirect(const indirect& other);
 
-  indirect(std::allocator_arg_t, const Allocator& alloc, const indirect& other);
+  constexpr indirect(std::allocator_arg_t, const Allocator& alloc, const indirect& other);
 
-  indirect(indirect&& other) noexcept;
+  constexpr indirect(indirect&& other) noexcept;
   
-  indirect(std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcept;
+  constexpr indirect(std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcept;
 
-  ~indirect();
+  constexpr ~indirect();
 
-  indirect& operator=(const indirect& other);
+  constexpr indirect& operator=(const indirect& other);
 
-  indirect& operator=(indirect&& other) noexcept;
+  constexpr indirect& operator=(indirect&& other) noexcept;
 
   constexpr const T& operator*() const noexcept;
 
@@ -349,7 +349,7 @@ indirect()
 
 ```c++
 template <class... Ts>
-explicit indirect(std::in_place_t, Ts&&... ts);
+explicit constexpr indirect(std::in_place_t, Ts&&... ts);
 ```
 
 * _Constraints_: `is_constructible_v<T, Ts...>` is true.
@@ -361,7 +361,7 @@ explicit indirect(std::in_place_t, Ts&&... ts);
 
 ```c++
 template <class... Ts>
-indirect(std::allocator_arg_t, const Allocator& alloc, std::in_place_t, Ts&&... ts);
+constexpr indirect(std::allocator_arg_t, const Allocator& alloc, std::in_place_t, Ts&&... ts);
 ```
 
 * _Constraints_: `is_constructible_v<T, Ts...>` is true.
@@ -374,7 +374,7 @@ indirect(std::allocator_arg_t, const Allocator& alloc, std::in_place_t, Ts&&... 
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-indirect(const indirect& other);
+constexpr indirect(const indirect& other);
 ```
 
 * _Constraints_: `is_copy_constructible_v<T>` is true.
@@ -387,7 +387,7 @@ indirect(const indirect& other);
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-indirect(std::allocator_arg_t, const Allocator& alloc, const indirect& other);
+constexpr indirect(std::allocator_arg_t, const Allocator& alloc, const indirect& other);
 ```
 
 * _Constraints_: `is_copy_constructible_v<T>` is true and `uses_allocator<T,
@@ -402,7 +402,7 @@ indirect(std::allocator_arg_t, const Allocator& alloc, const indirect& other);
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-indirect(indirect&& other) noexcept;
+constexpr indirect(indirect&& other) noexcept;
 ```
 
 * _Preconditions_: `other` is not valueless.
@@ -415,7 +415,7 @@ indirect(indirect&& other) noexcept;
   is true.
 
 ```c++
-indirect(std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcept;
+constexpr indirect(std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcept;
 ```
 
 * _Constraints_: `is_copy_constructible_v<T>` is true and `uses_allocator<T,
@@ -435,7 +435,7 @@ indirect(std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcep
 #### X.Y.4 Destructor [indirect.dtor]
 
 ```c++
-~indirect();
+constexpr ~indirect();
 ```
 
 * _Effects_: If `*this` is not valueless, destroys the owned object.
@@ -443,7 +443,7 @@ indirect(std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcep
 #### X.Y.5 Assignment [indirect.assign]
 
 ```c++
-indirect& operator=(const indirect& other);
+constexpr indirect& operator=(const indirect& other);
 ```
 
 * _Preconditions_: `other` is not valueless.
@@ -459,7 +459,7 @@ indirect& operator=(const indirect& other);
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-indirect& operator=(indirect&& other) noexcept;
+constexpr indirect& operator=(indirect&& other) noexcept;
 ```
 
 * _Preconditions_: `other` is not valueless.
@@ -694,24 +694,24 @@ class polymorphic {
   polymorphic();
 
   template <class U, class... Ts>
-  explicit polymorphic(std::in_place_type_t<U>, Ts&&... ts);
+  explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts);
 
   template <class U, class... Ts>
-  polymorphic(std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
+  constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
 
-  polymorphic(const polymorphic& other);
+  constexpr polymorphic(const polymorphic& other);
   
-  polymorphic(std::allocator_arg_t, const Allocator& alloc, const polymorphic& other);
+  constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc, const polymorphic& other);
 
-  polymorphic(polymorphic&& other) noexcept;
+  constexpr polymorphic(polymorphic&& other) noexcept;
   
-  polymorphic(std::allocator_arg_t, const Allocator& alloc, polymorphic&& other) noexcept;
+  constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc, polymorphic&& other) noexcept;
 
-  ~polymorphic();
+  constexpr ~polymorphic();
 
-  polymorphic& operator=(const polymorphic& other);
+  constexpr polymorphic& operator=(const polymorphic& other);
 
-  polymorphic& operator=(polymorphic&& other) noexcept;
+  constexpr polymorphic& operator=(polymorphic&& other) noexcept;
 
   constexpr const T& operator*() const noexcept;
 
