@@ -216,9 +216,9 @@ class PolymorphicInterface {
 };
 ```
 
-For an interface type with a public, virtual copy constructor, users would
-potentially pay the cost of virtual dispatch twice when deleting
-`polymorphic<I>` objects containing derived-type objects.
+For an interface type with a public, virtual destructor, users would potentially
+pay the cost of virtual dispatch twice when deleting `polymorphic<I>` objects
+containing derived-type objects.
 
 All derived-types owned by a `polymorphic` must be publicly copy constructible.
 
@@ -983,10 +983,10 @@ In the name of minimal size and efficiency we opted to use two class templates.
 
 ### Copiers, deleters, pointer constructors and allocator support
 
-Both `indirect_value` and `polymorphic_value` have constructors that take a
-pointer along with a copier and deleter. The copier and deleter can be used to
-specify how the object should be copied and deleted. The existence of a pointer
-constructor introduces significant sharp-edges into the design of
+The older types `indirect_value` and `polymorphic_value` had constructors that
+take a pointer along with a copier and deleter. The copier and deleter could be
+used to specify how the object should be copied and deleted. The existence of a
+pointer constructor introduces significant sharp-edges into the design of
 `polymorphic_value` allowing the possibility of object slicing on copy when the
 dynamic and static types of a derived-type pointer do not match.
 

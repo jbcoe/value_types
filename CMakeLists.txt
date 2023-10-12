@@ -92,6 +92,7 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
             benchmark
             URL https://github.com/google/benchmark/archive/v1.8.3.zip
         )
+        set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
         FetchContent_MakeAvailable(benchmark)
 
         add_library(common_compiler_settings INTERFACE)
