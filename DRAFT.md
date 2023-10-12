@@ -1094,7 +1094,7 @@ constructor allocates memory.
 
 As designed, `polymorphic<T>` does not require that `T` (or constructed classes
 of type `U` derived from `T`) are move constructible or move assignable for
-`polymorphic<T>` to be move constructible or move assignable
+`polymorphic<T>` to be move constructible or move assignable.
 
 A polymorphic value type with a small buffer optimisation that did not allocate
 a control block for the owned object would need be a different type, it is not
