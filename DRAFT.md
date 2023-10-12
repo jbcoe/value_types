@@ -177,23 +177,23 @@ require the owned object to be moveable. The existence of a null state allows
 move to be implemented cheaply without requiring the owned object to be
 moveable.
 
-Where a nullable `indirect` or `polymorphic` is required using `std::optional`
+Where a nullable `indirect` or `polymorphic` is required, using `std::optional`
 is recommended. This may be commonplace as `indirect` and `polymorphic` may be
 used in composite classes where smart pointers are currently used to
 (mis)represent component objects. Putting `T` onto the free-store should not
 make it nullable, nullability must be explicitly opted-into by using
 `std::optional<indirect<T>>` or `std::optional<polymorphic<T>>`.
 
-Access to an `std::optional<indirect<T>>` or `std::optional<polymorphic<T>>`
+Access to a `std::optional<indirect<T>>` or `std::optional<polymorphic<T>>`
 requires double indirection: either `(*v)->some_member` or `(**v)`.
 
 Note: As the null state of `indirect` and `polymorphic` is not observable, and
-access to a moved from object is erroneous, `std::optional` can be specialized
+access to a moved-from object is erroneous, `std::optional` can be specialized
 by implementers to exchange pointers on move construction and assignment.
 
 ### Design for polymorphic types
 
-To be used as a base class with `polymorphic` a type `PolymorphicInterface` does
+To be used as a base class with `polymorphic`, a type `PolymorphicInterface` does
 not need a virtual destructor. The same mechanism that is used to call the copy
 constructor of a potentially derived-type object will be used to call the
 destructor.
@@ -216,7 +216,7 @@ class PolymorphicInterface {
 };
 ```
 
-For an interface type with a public, virtual destructor, users would potentially
+For an interface type with a public virtual destructor, users would potentially
 pay the cost of virtual dispatch twice when deleting `polymorphic<I>` objects
 containing derived-type objects.
 
@@ -226,9 +226,9 @@ All derived-types owned by a `polymorphic` must be publicly copy constructible.
 
 This proposal is a continuation of the work started in [P0201] and [P1950].
 
-There was previous work on a cloned pointer type [N3339] which met with
-opposition because of the mixing of value and pointer semantics. We feel that the
-unambiguous value-semantics of `indirect` and `polymorphic` address these concerns.
+Previous work on a cloned pointer type [N3339] met with opposition because of the mixing 
+of value and pointer semantics. We feel that the unambiguous value-semantics of `indirect` 
+and `polymorphic` as described in this proposal address these concerns.
 
 ## Impact on the standard
 
@@ -944,28 +944,28 @@ suggestions and useful discussion.
 
 ## References
 
-"_A Preliminary Proposal for a Deep-Copying Smart Pointer_", W.E.Brown, 2012
+"_A Preliminary Proposal for a Deep-Copying Smart Pointer_", W. E. Brown, 2012
 [http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3339.pdf]
 
-_A polymorphic value-type for C++_, J.B.Coe, S.Parent 2019
+_A polymorphic value-type for C++_, J. B. Coe, S. Parent 2019
 [https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0201r5.html]
 
-_A Free-Store-Allocated Value Type for C++_, J.B.Coe, A.Peacock 2022
+_A Free-Store-Allocated Value Type for C++_, J. B. Coe, A. Peacock 2022
 [https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1950r2.html]
 
 A C++20 reference implementation is available on GitHub
-[https://github.com/jbcoe/value_types]
+[https://www.github.com/jbcoe/value_types]
 
 ## Appendix A: Detailed design decisions
 
 We discuss some of the decisions that were made in the design of `indirect` and
-`polymorphic`. Where there are multiple options we discuss the advantages and
+`polymorphic`. Where there are multiple options, we discuss the advantages and
 disadvantages of each.
 
 ### Two class templates, not one
 
-It's conceivable that a single class template could be used as a vocabulary type
-for an indirect value-type supporting polymorphsim. Implementing this would
+It is conceivable that a single class template could be used as a vocabulary type
+for an indirect value-type supporting polymorphism. However, implementing this would
 impose efficiency costs on the copy constructor in the case where the owned
 object is the same type as the template type. When the owned object is a derived
 type, the copy constructor uses type erasure to perform dynamic dispatch and
@@ -979,65 +979,65 @@ constructor to be implemented efficiently in the case where the owned type and
 template type match. This would increase the object size beyond that of a single
 pointer as the discriminant would need to be stored.
 
-In the name of minimal size and efficiency we opted to use two class templates.
+For the sake of minimal size and efficiency, we opted to use two class templates.
 
 ### Copiers, deleters, pointer constructors and allocator support
 
 The older types `indirect_value` and `polymorphic_value` had constructors that
 take a pointer along with a copier and deleter. The copier and deleter could be
 used to specify how the object should be copied and deleted. The existence of a
-pointer constructor introduces significant sharp-edges into the design of
-`polymorphic_value` allowing the possibility of object slicing on copy when the
-dynamic and static types of a derived-type pointer do not match.
+pointer constructor introduces undesirable capabilities into the design of
+`polymorphic_value`, such as allowing the possibility of object slicing on copy 
+when the dynamic and static types of a derived-type pointer do not match.
 
 We decided to remove the copier, deleter and pointer constructor in favour of
 adding allocator support. A pointer constructor and support for custom copiers
 and deleters are not core to the design of either class template; both could be
 added in a later revision of the standard if required.
 
- Allocator support, we were advised, needs to be there from the beginning and
-cannot be added retrospectively. As `indirect` and `polymorphic` are intended to
-be used alongside other C++ standard library types like `std::map` and
-`std::vector` it is important that they have allocator support in contexts where
+We have been advised that allocator support must be a part of the initial implementation 
+and cannot be added retrospectively. As `indirect` and `polymorphic` are intended to
+be used alongside other C++ standard library types, such as `std::map` and
+`std::vector`, it is important that they have allocator support in contexts where
 allocators are used.
 
 ### Pointer-like helper functions
 
-Earlier revisions of `polymorphic_value` (when it was `cloned_ptr`) had helper
+Earlier revisions of `polymorphic_value` (see `cloned_ptr` [N3339]) had helper
 functions to get access to the underlying pointer. These were removed under the
 advice of the Library Evolution Working Group as they were not core to the
 design of the class template nor were they consistent with value-type semantics.
 
-Pointer-like accessors like `dynamic_pointer_cast` and `static_pointer_cast`
-which are provided for `std::shared_ptr` could be added in a later revision of
+Pointer-like accessors like `dynamic_pointer_cast` and `static_pointer_cast`,
+which are provided for `std::shared_ptr`, could be added in a later revision of
 the standard if required.
 
 ### Comparisons and hashing
 
 We support comparisons and hashing for `indirect` but not `polymorphic`.
+This is because comparing and hashing polymorphic types is not a uniquely 
+solved problem, though it could well be implemented by adding suitable member 
+functions to the base class. Rather than impose the signatures of these member 
+functions upon users of `polymorphic`, we decided to leave hashing and comparison 
+unsupported but implementable by users.
 
-In the case where the owned object `T` is hashable or comparable, `indirect<T>`
-is hashable or comparable by forwarding the hash or comparison to the owned
-object.
+For `indirect`, in the case where the owned object `T` is hashable or comparable, 
+`indirect<T>` is hashable or comparable by forwarding the hash or comparison to the 
+owned object.
 
-Comparing and hashing polymorphic types is not a uniquely solved problem, though
-it could well be implemented by adding suitable member functions to the base
-class. Rather than impose the signatures of these member functions upon users of
-`polymorphic` we decided to leave hashing and comparsion unsupported but
-implementable by users.
 
 ### Implicit conversions
 
 We decided that there should be no implicit conversion of a value `T` to an
 `indirect<T>` or `polymorphic<T>`. An implicit conversion would require use of
-the free-store and of memory allocation which is best made explicit by the user.
+the free-store and of memory allocation, which is best made explicit by the user.
 
 ```c++
 Rectangle r(w, h);
 polymorphic<Shape> s = r; // error
 ```
 
-To hoist a value into an `indirect` or `polymorphic` the user must use the
+To transform a value into `indirect` or `polymorphic`, the user must use the
 appropriate constructor.
 
 ```c++
@@ -1077,8 +1077,8 @@ A converting constructor could be added in a future version of the C++ standard.
 
 ### Small object optimisation for `polymorphic`
 
-`polymorphic` could be designed to make use of a small object optimisation. A
-small object optimisation uses a buffer to potentially store the owned object
+`polymorphic` could be designed to include a small object optimisation. 
+Small object optimisation uses a buffer to potentially store the owned object
 and avoid allocating memory. This would make move construction more complicated
 as the owned object must be moved from one buffer to another potentially
 invoking allocations if the owned object's move constructor allocates memory.
@@ -1095,5 +1095,5 @@ A polymorphic value type with a small buffer optimisation that did not allocate
 a control block for the owned object would need be a different type, it is not
 possible to add a small object optimisation to `polymorphic` without making
 breaking changes. There may be a case for the addition of `small_polymorphic<T,
-N>` akin to `llvm::SmallVector<T, N>` but we are not proposing its addition
+N>` similar to `llvm::SmallVector<T, N>` but we are not proposing its addition
 here.
