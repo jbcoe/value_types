@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.22.4 FATAL_ERROR)
 cmake_policy(SET CMP0127 NEW)
+cmake_policy(SET CMP0135 NEW)
 
 if(NOT DEFINED PROJECT_NAME)
     set(CPP_VALUE_TYPES_IS_NOT_SUBPROJECT ON)
