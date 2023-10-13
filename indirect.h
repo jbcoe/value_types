@@ -81,7 +81,8 @@ class indirect {
   }
 
   template <class... Ts>
-  constexpr indirect(std::allocator_arg_t, const A& alloc, std::in_place_t, Ts&&... ts)
+  constexpr indirect(std::allocator_arg_t, const A& alloc, std::in_place_t,
+                     Ts&&... ts)
     requires std::constructible_from<T, Ts&&...>
       : alloc_(alloc) {
     T* mem = allocator_traits::allocate(alloc_, 1);
@@ -96,7 +97,8 @@ class indirect {
 
   constexpr indirect(const indirect& other)
     requires std::copy_constructible<T>
-      : alloc_(other.alloc_) {
+      : alloc_(allocator_traits::select_on_container_copy_construction(
+            other.alloc_)) {
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     T* mem = allocator_traits::allocate(alloc_, 1);
     try {
@@ -108,7 +110,8 @@ class indirect {
     }
   }
 
-  constexpr indirect(std::allocator_arg_t, const A& alloc, const indirect& other)
+  constexpr indirect(std::allocator_arg_t, const A& alloc,
+                     const indirect& other)
     requires std::copy_constructible<T>
       : alloc_(alloc) {
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
@@ -123,12 +126,13 @@ class indirect {
   }
 
   constexpr indirect(indirect&& other) noexcept
-      : p_(nullptr), alloc_(std::move(other.alloc_)) {
+      : p_(nullptr), alloc_(other.alloc_) {
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     std::swap(p_, other.p_);
   }
 
-  constexpr indirect(std::allocator_arg_t, const A& alloc, indirect&& other) noexcept
+  constexpr indirect(std::allocator_arg_t, const A& alloc,
+                     indirect&& other) noexcept
       : p_(nullptr), alloc_(alloc) {
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     std::swap(p_, other.p_);
@@ -140,31 +144,58 @@ class indirect {
     requires std::copy_constructible<T>
   {
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
-    if constexpr (std::is_copy_assignable_v<T>) {
-      if (p_ == nullptr) {
-        T* mem = allocator_traits::allocate(alloc_, 1);
-        try {
-          allocator_traits::construct(alloc_, mem, *other);
-          p_ = mem;
-        } catch (...) {
-          allocator_traits::deallocate(alloc_, mem, 1);
-          throw;
+    if (this != &other) {
+      if constexpr (std::is_copy_assignable_v<T>) {
+        if (p_ == nullptr) {
+          T* mem = allocator_traits::allocate(alloc_, 1);
+          try {
+            allocator_traits::construct(alloc_, mem, *other);
+            p_ = mem;
+          } catch (...) {
+            allocator_traits::deallocate(alloc_, mem, 1);
+            throw;
+          }
+        } else {
+          *p_ = *other.p_;
         }
       } else {
-        *p_ = *other.p_;
+        indirect tmp(other);
+        this->swap(tmp);
       }
-    } else {
-      indirect tmp(other);
-      this->swap(tmp);
+      if constexpr (allocator_traits::propagate_on_container_copy_assignment::
+                        value) {
+        alloc_ = other.alloc_;
+      }
     }
     return *this;
   }
 
-  constexpr indirect& operator=(indirect&& other) noexcept {
+  constexpr indirect& operator=(indirect&& other) noexcept(
+      allocator_traits::propagate_on_container_move_assignment::value ||
+      allocator_traits::is_always_equal::value) {
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
-    reset();
-    alloc_ = std::move(other.alloc_);
-    p_ = std::exchange(other.p_, nullptr);
+    if (this != &other) {
+      reset();
+      if constexpr (allocator_traits::propagate_on_container_move_assignment::
+                        value) {
+        alloc_ = other.alloc_;
+        p_ = std::exchange(other.p_, nullptr);
+      } else {
+        if (alloc_ == other.alloc_) {
+          p_ = std::exchange(other.p_, nullptr);
+        } else {
+          T* mem = allocator_traits::allocate(alloc_, 1);
+          try {
+            allocator_traits::construct(alloc_, mem, *other);
+            p_ = mem;
+            other.reset();
+          } catch (...) {
+            allocator_traits::deallocate(alloc_, mem, 1);
+            throw;
+          }
+        }
+      }
+    }
     return *this;
   }
 
@@ -192,20 +223,26 @@ class indirect {
 
   constexpr allocator_type get_allocator() const noexcept { return alloc_; }
 
-  constexpr void swap(indirect& other) noexcept {
+  constexpr void swap(indirect& other) noexcept(
+      allocator_traits::propagate_on_container_swap::value ||
+      allocator_traits::is_always_equal::value) {
     assert(p_ != nullptr);        // LCOV_EXCL_LINE
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     std::swap(p_, other.p_);
+    if constexpr (allocator_traits::propagate_on_container_swap::value) {
+      std::swap(alloc_, other.alloc_);
+    }
   }
 
-  friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
-    std::swap(lhs.p_, rhs.p_);
+  friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
+      allocator_traits::propagate_on_container_swap::value ||
+      allocator_traits::is_always_equal::value) {
+    lhs.swap(rhs);
   }
 
   template <class U, class AA>
-  friend constexpr bool operator==(const indirect<T, A>& lhs, const indirect<U, AA>& rhs)
+  friend constexpr bool operator==(const indirect<T, A>& lhs,
+                                   const indirect<U, AA>& rhs)
     requires std::equality_comparable_with<T, U>
   {
     assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
@@ -214,7 +251,8 @@ class indirect {
   }
 
   template <class U, class AA>
-  friend constexpr bool operator!=(const indirect<T, A>& lhs, const indirect<U, AA>& rhs)
+  friend constexpr bool operator!=(const indirect<T, A>& lhs,
+                                   const indirect<U, AA>& rhs)
     requires std::equality_comparable_with<T, U>
   {
     assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
@@ -223,7 +261,8 @@ class indirect {
   }
 
   template <class U, class AA>
-  friend constexpr auto operator<=>(const indirect<T, A>& lhs, const indirect<U, AA>& rhs)
+  friend constexpr auto operator<=>(const indirect<T, A>& lhs,
+                                    const indirect<U, AA>& rhs)
     requires std::three_way_comparable_with<T, U>
   {
     assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE

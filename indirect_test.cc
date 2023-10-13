@@ -259,6 +259,12 @@ struct TrackingAllocator {
     std::allocator<T> default_allocator{};
     default_allocator.deallocate(p, n);
   }
+
+  friend bool operator==(const TrackingAllocator& lhs,
+                         const TrackingAllocator& rhs) noexcept {
+    return lhs.alloc_counter_ == rhs.alloc_counter_ &&
+           lhs.dealloc_counter_ == rhs.dealloc_counter_;
+  }
 };
 
 TEST(IndirectTest, GetAllocator) {
@@ -375,6 +381,36 @@ TEST(IndirectTest, CountAllocationsForMoveAssignment) {
   EXPECT_EQ(dealloc_counter, 2);
 }
 
+template <typename T>
+struct NonEqualTrackingAllocator : TrackingAllocator<T> {
+  using TrackingAllocator<T>::TrackingAllocator;
+  friend bool operator==(const NonEqualTrackingAllocator&,
+                         const NonEqualTrackingAllocator&) noexcept {
+    return false;
+  }
+};
+
+TEST(IndirectTest,
+     CountAllocationsForMoveAssignmentWhenAllocatorsDontCompareEqual) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::indirect<int, NonEqualTrackingAllocator<int>> a(
+        std::allocator_arg,
+        NonEqualTrackingAllocator<int>(&alloc_counter, &dealloc_counter),
+        std::in_place, 42);
+    xyz::indirect<int, NonEqualTrackingAllocator<int>> b(
+        std::allocator_arg,
+        NonEqualTrackingAllocator<int>(&alloc_counter, &dealloc_counter),
+        std::in_place, 101);
+    EXPECT_EQ(alloc_counter, 2);
+    EXPECT_EQ(dealloc_counter, 0);
+    b = std::move(a);  // This will copy as allocators don't compare equal.
+  }
+  EXPECT_EQ(alloc_counter, 3);
+  EXPECT_EQ(dealloc_counter, 3);
+}
+
 TEST(IndirectTest, CountAllocationsForAssignmentToMovedFromObject) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
@@ -390,13 +426,13 @@ TEST(IndirectTest, CountAllocationsForAssignmentToMovedFromObject) {
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
     b = std::move(a);
-    EXPECT_EQ(dealloc_counter, 1); // b's value is destroyed.
+    EXPECT_EQ(dealloc_counter, 1);  // b's value is destroyed.
     xyz::indirect<int, TrackingAllocator<int>> c(
         std::allocator_arg,
         TrackingAllocator<int>(&alloc_counter, &dealloc_counter), std::in_place,
         404);
     EXPECT_TRUE(a.valueless_after_move());
-    a = c; // This will cause an allocation as a is valueless.
+    a = c;  // This will cause an allocation as a is valueless.
     EXPECT_EQ(alloc_counter, 4);
     EXPECT_EQ(dealloc_counter, 1);
   }
@@ -418,6 +454,57 @@ TEST(IndirectTest, CountAllocationsForMoveConstruction) {
   }
   EXPECT_EQ(alloc_counter, 1);
   EXPECT_EQ(dealloc_counter, 1);
+}
+
+template <typename T>
+struct POCSTrackingAllocator : TrackingAllocator<T> {
+  using TrackingAllocator<T>::TrackingAllocator;
+  using propagate_on_container_swap = std::true_type;
+};
+
+TEST(IndirectTest, NonMemberSwapWhenAllocatorsDontCompareEqual) {
+
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::indirect<int, POCSTrackingAllocator<int>> a(
+        std::allocator_arg,
+        POCSTrackingAllocator<int>(&alloc_counter, &dealloc_counter),
+        std::in_place, 42);
+    xyz::indirect<int, POCSTrackingAllocator<int>> b(
+        std::allocator_arg,
+        POCSTrackingAllocator<int>(&alloc_counter, &dealloc_counter),
+        std::in_place, 101);
+    EXPECT_EQ(alloc_counter, 2);
+    EXPECT_EQ(dealloc_counter, 0);
+    swap(a, b);
+    EXPECT_EQ(*a, 101);
+    EXPECT_EQ(*b, 42);
+  }
+  EXPECT_EQ(alloc_counter, 2);
+  EXPECT_EQ(dealloc_counter, 2);
+}
+
+TEST(IndirectTest, MemberSwapWhenAllocatorsDontCompareEqual) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::indirect<int, POCSTrackingAllocator<int>> a(
+        std::allocator_arg,
+        POCSTrackingAllocator<int>(&alloc_counter, &dealloc_counter),
+        std::in_place, 42);
+    xyz::indirect<int, POCSTrackingAllocator<int>> b(
+        std::allocator_arg,
+        POCSTrackingAllocator<int>(&alloc_counter, &dealloc_counter),
+        std::in_place, 101);
+    EXPECT_EQ(alloc_counter, 2);
+    EXPECT_EQ(dealloc_counter, 0);
+    a.swap(b);
+    EXPECT_EQ(*a, 101);
+    EXPECT_EQ(*b, 42);
+  }
+  EXPECT_EQ(alloc_counter, 2);
+  EXPECT_EQ(dealloc_counter, 2);
 }
 
 struct ThrowsOnConstruction {
