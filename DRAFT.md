@@ -289,7 +289,7 @@ class indirect {
 
   constexpr indirect& operator=(const indirect& other);
 
-  constexpr indirect& operator=(indirect&& other) noexcept;
+  constexpr indirect& operator=(indirect&& other) noexcept(see below);
 
   constexpr const T& operator*() const noexcept;
 
@@ -303,9 +303,9 @@ class indirect {
 
   constexpr allocator_type get_allocator() const noexcept;
 
-  constexpr void swap(indirect& other) noexcept;
+  constexpr void swap(indirect& other) noexcept(see below);
 
-  friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept;
+  friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept(see below);
 
   template <class U, class AA>
   friend constexpr bool operator==(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
@@ -409,9 +409,7 @@ constexpr indirect(std::allocator_arg_t, const Allocator& alloc, const indirect&
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-constexpr indirect(indirect&& other) noexcept(
-    allocator_traits<Allocator>::propagate_on_container_move_assignment::value ||
-    allocator_traits<Allocator>::is_always_equal::value);
+constexpr indirect(indirect&& other) noexcept;
 ```
 
 * _Preconditions_: `other` is not valueless.
@@ -468,7 +466,9 @@ constexpr indirect& operator=(const indirect& other);
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-constexpr indirect& operator=(indirect&& other) noexcept;
+constexpr indirect& operator=(indirect&& other) noexcept(
+    allocator_traits<Allocator>::propagate_on_container_move_assignment::value ||
+    allocator_traits<Allocator>::is_always_equal::value);
 ```
 
 * _Preconditions_: `other` is not valueless.
@@ -724,7 +724,7 @@ class polymorphic {
 
   constexpr polymorphic& operator=(const polymorphic& other);
 
-  constexpr polymorphic& operator=(polymorphic&& other) noexcept;
+  constexpr polymorphic& operator=(polymorphic&& other) noexcept(see below);
 
   constexpr const T& operator*() const noexcept;
 
@@ -738,9 +738,9 @@ class polymorphic {
 
   constexpr allocator_type get_allocator() const noexcept;
 
-  constexpr void swap(polymorphic& other) noexcept;
+  constexpr void swap(polymorphic& other) noexcept(see below);
 
-  friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept;
+  friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(see below);
 };
 
 template <class T, class Alloc>
@@ -863,7 +863,9 @@ polymorphic& operator=(const polymorphic& other);
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-polymorphic& operator=(polymorphic&& other) noexcept;
+polymorphic& operator=(polymorphic&& other) noexcept(
+    allocator_traits<Allocator>::propagate_on_container_move_assignment::value ||
+    allocator_traits<Allocator>::is_always_equal::value);
 ```
 
 * _Preconditions_: `other` is not valueless.
@@ -914,7 +916,9 @@ constexpr allocator_type get_allocator() const noexcept;
 #### X.Z.7 Swap [polymorphic.swap]
 
 ```c++
-constexpr void swap(polymorphic& other) noexcept;
+constexpr void swap(polymorphic& other) noexcept(
+    allocator_traits<Allocator>::propagate_on_container_swap::value ||
+    allocator_traits<Allocator>::is_always_equal::value);
 ```
 
 * _Preconditions_: `*this` is not valueless, `other` is not valueless.
@@ -924,7 +928,9 @@ constexpr void swap(polymorphic& other) noexcept;
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
 ```c++
-constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept;
+constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(
+    allocator_traits<Allocator>::propagate_on_container_swap::value ||
+    allocator_traits<Allocator>::is_always_equal::value);
 ```
 
 * _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
