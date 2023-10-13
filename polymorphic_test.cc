@@ -312,8 +312,8 @@ TEST(PolymorphicTest, CountAllocationsForMoveAssignment) {
 template <typename T>
 struct NonEqualTrackingAllocator : TrackingAllocator<T> {
   using TrackingAllocator<T>::TrackingAllocator;
-  friend bool operator==(const NonEqualTrackingAllocator& lhs,
-                         const NonEqualTrackingAllocator& rhs) noexcept {
+  friend bool operator==(const NonEqualTrackingAllocator&,
+                         const NonEqualTrackingAllocator&) noexcept {
     return false;
   }
 };

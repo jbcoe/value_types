@@ -171,7 +171,8 @@ class indirect {
   }
 
   constexpr indirect& operator=(indirect&& other) noexcept(
-      allocator_traits::propagate_on_container_move_assignment::value) {
+      allocator_traits::propagate_on_container_move_assignment::value ||
+      allocator_traits::is_always_equal::value) {
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     if (this != &other) {
       reset();

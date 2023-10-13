@@ -402,7 +402,9 @@ constexpr indirect(std::allocator_arg_t, const Allocator& alloc, const indirect&
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-constexpr indirect(indirect&& other) noexcept;
+constexpr indirect(indirect&& other) noexcept(
+    allocator_traits<Allocator>::propagate_on_container_move_assignment::value ||
+    allocator_traits<Allocator>::is_always_equal::value);
 ```
 
 * _Preconditions_: `other` is not valueless.
@@ -510,7 +512,9 @@ constexpr allocator_type get_allocator() const noexcept;
 #### X.Y.7 Swap [indirect.swap]
 
 ```c++
-constexpr void swap(indirect& other) noexcept;
+constexpr void swap(indirect& other) noexcept(
+    allocator_traits<Allocator>::propagate_on_container_swap::value ||
+    allocator_traits<Allocator>::is_always_equal::value);
 ```
 
 * _Preconditions_: `*this` is not valueless, `other` is not valueless.
@@ -520,7 +524,9 @@ constexpr void swap(indirect& other) noexcept;
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
 ```c++
-constexpr void swap(indirect& lhs, indirect& rhs) noexcept;
+constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
+    allocator_traits<Allocator>::propagate_on_container_swap::value ||
+    allocator_traits<Allocator>::is_always_equal::value);
 ```
 
 * _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
