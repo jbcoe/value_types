@@ -100,6 +100,8 @@ class polymorphic {
   [[no_unique_address]] A alloc_;
 #endif
 
+  using allocator_traits = std::allocator_traits<A>;
+  
  public:
   using value_type = T;
   using allocator_type = A;
@@ -162,7 +164,9 @@ class polymorphic {
     }
   }
 
-  constexpr polymorphic(const polymorphic& other) : alloc_(other.alloc_) {
+  constexpr polymorphic(const polymorphic& other)
+      : alloc_(allocator_traits::select_on_container_copy_construction(
+            other.alloc_)) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = other.cb_->clone(alloc_);
   }
@@ -191,16 +195,36 @@ class polymorphic {
 
   constexpr polymorphic& operator=(const polymorphic& other) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
-    polymorphic tmp(other);
-    this->swap(tmp);
+    if (this != &other) {
+      if constexpr (allocator_traits::propagate_on_container_copy_assignment::
+                        value) {
+        alloc_ = other.alloc_;
+        polymorphic tmp(std::allocator_arg, alloc_, other);
+        swap(tmp);
+      } else {
+        polymorphic tmp(other);
+        this->swap(tmp);
+      }
+    }
     return *this;
   }
 
-  constexpr polymorphic& operator=(polymorphic&& other) noexcept {
+  constexpr polymorphic& operator=(polymorphic&& other) noexcept(
+      allocator_traits::propagate_on_container_move_assignment::value) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     reset();
-    alloc_ = std::move(other.alloc_);
-    cb_ = std::exchange(other.cb_, nullptr);
+    if constexpr (allocator_traits::propagate_on_container_move_assignment::
+                      value) {
+      alloc_ = other.alloc_;
+      cb_ = std::exchange(other.cb_, nullptr);
+    } else {
+      if (alloc_ == other.alloc_) {
+        cb_ = std::exchange(other.cb_, nullptr);
+      } else {
+        cb_ = other.cb_->clone(alloc_);
+        other.reset();
+      }
+    }
     return *this;
   }
 
