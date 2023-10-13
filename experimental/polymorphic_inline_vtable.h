@@ -20,7 +20,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifndef XYZ_POLYMORPHIC_H_
 #define XYZ_POLYMORPHIC_H_
-#warning Including experimental header "experimental/polymorphic_inline_vtable.h"
+
 #include <cassert>
 #include <concepts>
 #include <memory>
@@ -33,8 +33,7 @@ template <class T, class A>
 struct control_block {
   T* p_;
   typedef void(destroy_fn)(control_block*, A& alloc);
-  typedef control_block<T, A>*(clone_fn)(const control_block*,
-                                                   A& alloc);
+  typedef control_block<T, A>*(clone_fn)(const control_block*, A& alloc);
 
   struct vtable {
     destroy_fn* const destroy;

@@ -26,7 +26,6 @@ target_include_directories(value_types
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
-
 target_sources(value_types
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect.h>
@@ -35,7 +34,6 @@ target_sources(value_types
     #    $<BUILD_INTERFACE:$<$<CXX_COMPILER_ID:MSVC>:${CMAKE_CURRENT_SOURCE_DIR}/indirect_value.natvis>>
     #    $<INSTALL_INTERFACE:$<$<BOOL:${ENABLE_INCLUDE_NATVIS}>:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/indirect_value.natvis>>
 )
-
 target_compile_features(value_types
     INTERFACE
         cxx_std_23
@@ -47,12 +45,10 @@ target_include_directories(indirect
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
-
 target_sources(indirect
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect.h>
 )
-
 target_compile_features(indirect
     INTERFACE
         cxx_std_23
@@ -64,16 +60,35 @@ target_include_directories(polymorphic
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
-
 target_sources(polymorphic
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h>
 )
-
 target_compile_features(polymorphic
     INTERFACE
         cxx_std_23
 )
+
+add_library(polymorphic_inline_vtable INTERFACE)
+target_include_directories(polymorphic_inline_vtable
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+target_sources(polymorphic_inline_vtable
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/polymorphic_inline_vtable.h>
+)
+target_compile_features(polymorphic_inline_vtable
+    INTERFACE
+        cxx_std_23
+)
+target_compile_definitions(polymorphic_inline_vtable 
+    INTERFACE 
+        -DXYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
+)
+
 
 add_library(value_types::value_types ALIAS value_types)
 
@@ -96,7 +111,6 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
         FetchContent_MakeAvailable(benchmark)
 
         add_library(common_compiler_settings INTERFACE)
-
         target_compile_options(common_compiler_settings
             INTERFACE
                 $<$<CXX_COMPILER_ID:MSVC>:/EHsc>
@@ -104,7 +118,6 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
                 $<$<CXX_COMPILER_ID:MSVC>:/bigobj>
                 $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:Clang>>:-Werror;-Wall;-Wno-self-assign-overloaded;-Wno-unknown-warning-option>
         )
-
         set_target_properties(common_compiler_settings PROPERTIES
             CXX_STANDARD 20
             CXX_STANDARD_REQUIRED YES
@@ -116,7 +129,6 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
             PRIVATE
                 indirect_test.cc
         )
-
         target_link_libraries(indirect_test
             PRIVATE
                 indirect
@@ -129,10 +141,21 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
             PRIVATE
                 polymorphic_test.cc
         )
-
         target_link_libraries(polymorphic_test
             PRIVATE
                 polymorphic
+                GTest::gtest_main
+                common_compiler_settings
+        )
+
+        add_executable(polymorphic_inline_vtable_test "")
+        target_sources(polymorphic_inline_vtable_test
+            PRIVATE
+                polymorphic_test.cc
+        )
+        target_link_libraries(polymorphic_inline_vtable_test
+            PRIVATE
+            polymorphic_inline_vtable
                 GTest::gtest_main
                 common_compiler_settings
         )
@@ -144,11 +167,35 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
                 polymorphic_benchmark.cc
         )
         target_link_libraries(value_types_benchmark
-        PRIVATE
-            polymorphic
-            indirect
-            benchmark::benchmark_main
-            common_compiler_settings
+            PRIVATE
+                polymorphic
+                indirect
+                benchmark::benchmark_main
+                common_compiler_settings
+        )
+
+        add_executable(polymorphic_benchmark "")
+        target_sources(polymorphic_benchmark
+            PRIVATE
+                polymorphic_benchmark.cc
+        )
+        target_link_libraries(polymorphic_benchmark
+            PRIVATE
+                polymorphic
+                benchmark::benchmark_main
+                common_compiler_settings
+        )
+
+        add_executable(polymorphic_inline_vtable_benchmark "")
+        target_sources(polymorphic_inline_vtable_benchmark
+            PRIVATE
+                polymorphic_benchmark.cc
+        )
+        target_link_libraries(polymorphic_inline_vtable_benchmark
+            PRIVATE
+                polymorphic_inline_vtable
+                benchmark::benchmark_main
+                common_compiler_settings
         )
 
         if (ENABLE_SANITIZERS)
