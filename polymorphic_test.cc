@@ -354,6 +354,56 @@ TEST(PolymorphicTest, CountAllocationsForMoveConstruction) {
   EXPECT_EQ(dealloc_counter, 1);
 }
 
+template <typename T>
+struct POCSTrackingAllocator : TrackingAllocator<T> {
+  using TrackingAllocator<T>::TrackingAllocator;
+  using propagate_on_container_swap = std::true_type;
+};
+
+TEST(PolymorphicTest, NonMemberSwapWhenAllocatorsDontCompareEqual) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::polymorphic<Derived, POCSTrackingAllocator<Derived>> a(
+        std::allocator_arg,
+        POCSTrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived>, 42);
+    xyz::polymorphic<Derived, POCSTrackingAllocator<Derived>> b(
+        std::allocator_arg,
+        POCSTrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived>, 101);
+    EXPECT_EQ(alloc_counter, 2);
+    EXPECT_EQ(dealloc_counter, 0);
+    swap(a, b);
+    EXPECT_EQ(a->value(), 101);
+    EXPECT_EQ(b->value(), 42);
+  }
+  EXPECT_EQ(alloc_counter, 2);
+  EXPECT_EQ(dealloc_counter, 2);
+}
+
+TEST(PolymorphicTest, MemberSwapWhenAllocatorsDontCompareEqual) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::polymorphic<Derived, POCSTrackingAllocator<Derived>> a(
+        std::allocator_arg,
+        POCSTrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived>, 42);
+    xyz::polymorphic<Derived, POCSTrackingAllocator<Derived>> b(
+        std::allocator_arg,
+        POCSTrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived>, 101);
+    EXPECT_EQ(alloc_counter, 2);
+    EXPECT_EQ(dealloc_counter, 0);
+    a.swap(b);
+    EXPECT_EQ(a->value(), 101);
+    EXPECT_EQ(b->value(), 42);
+  }
+  EXPECT_EQ(alloc_counter, 2);
+  EXPECT_EQ(dealloc_counter, 2);
+}
+
 struct ThrowsOnConstruction {
   class Exception : public std::exception {
     const char* what() const noexcept override {
