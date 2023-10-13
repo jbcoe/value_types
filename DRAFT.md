@@ -68,16 +68,19 @@ where the compiler will generate special member functions. This means that the
 class templates should provide the special member functions where they are
 supported by the owned object type `T`.
 
-* `indirect<T>` and `polymorphic<T>` are default constructible in cases where
-  `T` is default constructible.
+* `indirect<T, Alloc>` and `polymorphic<T, Alloc>` are default constructible in
+  cases where `T` is default constructible.
 
-* `indirect<T>` is copy constructible where `T` is copy constructible and
+* `indirect<T, Alloc>` is copy constructible where `T` is copy constructible and
   assignable.
 
-* `polymorphic<T>` is unconditionally copy constructible and assignable.
+* `polymorphic<T, Alloc>` is unconditionally copy constructible and assignable.
 
-* `indirect<T>` and `polymorphic<T>` are unconditionally move constructible and
-  assignable.
+* `indirect<T, Alloc>` and `polymorphic<T, Alloc>` are unconditionally move
+  constructible and assignable.
+
+* `indirect<T, Alloc>` and `polymorphic<T, Alloc>` destroy the owned object in
+  their destructors.
 
 ### Deep copies
 
@@ -162,14 +165,17 @@ the owned objects where the owned objects can be compared: where `T` is ordered,
 The hash operation, which is defined only for `indirect`, hashes the owned
 object where the owned object can be hashed.
 
+We discuss why only `indirect` is comparable and hashable in an appendix.
+
 ### Unobservable null state and interaction with `std::optional`
 
 Both `indirect` and `polymorphic` have a null state which is used to implement
 move. The null state is not intended to be observable to the user, there is no
 `operator bool` or `has_value` member function. Accessing the value of a
 `indirect` or `polymorphic` after it has been moved from is erroneous behaviour.
-We provide a `valueless_after_move` member function to allow explicit checks for
-the valueless state in cases where it cannot be verified statically.
+We provide a `valueless_after_move` member function, that returns `true` if an
+object is an a valueless state, to allow explicit checks for the valueless state
+in cases where it cannot be verified statically.
 
 Without a null state, moving `indirect` or `polymorphic` would require
 allocation and moving from the owned object. This would be expensive and would
@@ -193,9 +199,9 @@ by implementers to exchange pointers on move construction and assignment.
 
 ### Design for polymorphic types
 
-To be used as a base class with `polymorphic`, a type `PolymorphicInterface` does
-not need a virtual destructor. The same mechanism that is used to call the copy
-constructor of a potentially derived-type object will be used to call the
+To be used as a base class with `polymorphic`, a type `PolymorphicInterface`
+does not need a virtual destructor. The same mechanism that is used to call the
+copy constructor of a potentially derived-type object will be used to call the
 destructor.
 
 To allow compiler generation of special member functions of an abstract
@@ -226,9 +232,10 @@ All derived-types owned by a `polymorphic` must be publicly copy constructible.
 
 This proposal is a continuation of the work started in [P0201] and [P1950].
 
-Previous work on a cloned pointer type [N3339] met with opposition because of the mixing 
-of value and pointer semantics. We feel that the unambiguous value-semantics of `indirect` 
-and `polymorphic` as described in this proposal address these concerns.
+Previous work on a cloned pointer type [N3339] met with opposition because of
+the mixing of value and pointer semantics. We feel that the unambiguous
+value-semantics of `indirect` and `polymorphic` as described in this proposal
+address these concerns.
 
 ## Impact on the standard
 
@@ -396,8 +403,8 @@ constexpr indirect(std::allocator_arg_t, const Allocator& alloc, const indirect&
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
   _Cpp17Allocator_ requirements.
 
-* _Effects_: Equivalent to the preceding constructor except that the allocator is
-  initialized with alloc.
+* _Effects_: Equivalent to the preceding constructor except that the allocator
+  is initialized with alloc.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -424,8 +431,8 @@ constexpr indirect(std::allocator_arg_t, const Allocator& alloc, indirect&& othe
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
   _Cpp17Allocator_ requirements.
 
-* _Effects_: Equivalent to the preceding constructors except that the allocator is
-  initialized with alloc.
+* _Effects_: Equivalent to the preceding constructors except that the allocator
+  is initialized with alloc.
 
 * _Postconditions_: `other` is valueless.
 
@@ -464,8 +471,8 @@ constexpr indirect& operator=(indirect&& other) noexcept;
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: If `*this` is not valueless, destroys the owned object.
-  Then takes ownership of the object owned by `other`.
+* _Effects_: If `*this` is not valueless, destroys the owned object. Then takes
+  ownership of the object owned by `other`.
 
 * _Postconditions_: `*this` is not valueless. `other` is valueless.
 
@@ -752,11 +759,11 @@ template <class U, class... Ts>
 explicit polymorphic(std::in_place_type_t<U>, Ts&&... ts);
 ```
 
-* _Constraints_: `is_base_of_v<T, U>` is true,
-  `is_constructible_v<U, Ts...>` is true, `is_copy_constructible_v<U>` is true.
+* _Constraints_: `is_base_of_v<T, U>` is true, `is_constructible_v<U, Ts...>` is
+  true, `is_copy_constructible_v<U>` is true.
 
-* _Effects_: Constructs a polymorphic owning an instance of `U` created with
-  the arguments `Ts`.
+* _Effects_: Constructs a polymorphic owning an instance of `U` created with the
+  arguments `Ts`.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -770,8 +777,8 @@ polymorphic(std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U
 
 * _Preconditions_: `Allocator` meets the _Cpp17Allocator_ requirements.
 
-* _Effects_: Equivalent to the preceding constructor except that the allocator is
-  initialized with alloc.
+* _Effects_: Equivalent to the preceding constructor except that the allocator
+  is initialized with alloc.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -781,8 +788,8 @@ polymorphic(const polymorphic& other);
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: Constructs a polymorphic owning an instance of `T` created with
-  the copy constructor of the object owned by `other`.
+* _Effects_: Constructs a polymorphic owning an instance of `T` created with the
+  copy constructor of the object owned by `other`.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -793,8 +800,8 @@ polymorphic(std::allocator_arg_t, const Allocator& alloc, const polymorphic& oth
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
   _Cpp17Allocator_ requirements.
 
-* _Effects_: Equivalent to the preceding constructor except that the allocator is
-  initialized with alloc.
+* _Effects_: Equivalent to the preceding constructor except that the allocator
+  is initialized with alloc.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -819,8 +826,8 @@ polymorphic(std::allocator_arg_t, const Allocator& alloc, polymorphic&& other) n
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
   _Cpp17Allocator_ requirements.
 
-* _Effects_: Equivalent to the preceding constructor except that the allocator is
-  initialized with alloc.
+* _Effects_: Equivalent to the preceding constructor except that the allocator
+  is initialized with alloc.
 
 * _Postconditions_: `other` is valueless.
 
@@ -855,8 +862,8 @@ polymorphic& operator=(polymorphic&& other) noexcept;
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: If `*this` is not valueless, destroys the owned object.
-  Then takes ownership of the object owned by `other`.
+* _Effects_: If `*this` is not valueless, destroys the owned object. Then takes
+  ownership of the object owned by `other`.
 
 * _Postconditions_: `*this` is not valueless. `other` is valueless.
 
@@ -937,10 +944,10 @@ A C++20 reference implementation of this proposal is available on GitHub at
 The authors would like to thank Andrew Bennieston, Bengt Gustafsson, Casey
 Carter, Daniel Krügler, David Krauss, Ed Catmur, Geoff Romer, Germán Diago,
 Jonathan Wakely, Kilian Henneberger, LanguageLawyer, Louis Dionne, Maciej Bogus,
-Malcolm Parsons, Matthew Calabrese, Nathan Myers, Nevin Liber, Nina Ranns,
-Patrice Roy, Roger Orr, Stephan T Lavavej, Stephen Kelly, Thomas Koeppe, Thomas
-Russell, Tom Hudson, Tomasz Kamiński, Tony van Eerd and Ville Voutilainen for
-suggestions and useful discussion.
+Malcolm Parsons, Matthew Calabrese, Nathan Myers, Neelofer Banglawala, Nevin
+Liber, Nina Ranns, Patrice Roy, Roger Orr, Stephan T Lavavej, Stephen Kelly,
+Thomas Koeppe, Thomas Russell, Tom Hudson, Tomasz Kamiński, Tony van Eerd and
+Ville Voutilainen for suggestions and useful discussion.
 
 ## References
 
@@ -964,12 +971,12 @@ disadvantages of each.
 
 ### Two class templates, not one
 
-It is conceivable that a single class template could be used as a vocabulary type
-for an indirect value-type supporting polymorphism. However, implementing this would
-impose efficiency costs on the copy constructor in the case where the owned
-object is the same type as the template type. When the owned object is a derived
-type, the copy constructor uses type erasure to perform dynamic dispatch and
-call the derived type copy constructor. The overhead of indirection and a
+It is conceivable that a single class template could be used as a vocabulary
+type for an indirect value-type supporting polymorphism. However, implementing
+this would impose efficiency costs on the copy constructor in the case where the
+owned object is the same type as the template type. When the owned object is a
+derived type, the copy constructor uses type erasure to perform dynamic dispatch
+and call the derived type copy constructor. The overhead of indirection and a
 virtual function call is not tolerable where the owned object type and template
 type match.
 
@@ -979,7 +986,8 @@ constructor to be implemented efficiently in the case where the owned type and
 template type match. This would increase the object size beyond that of a single
 pointer as the discriminant would need to be stored.
 
-For the sake of minimal size and efficiency, we opted to use two class templates.
+For the sake of minimal size and efficiency, we opted to use two class
+templates.
 
 ### Copiers, deleters, pointer constructors and allocator support
 
@@ -987,7 +995,7 @@ The older types `indirect_value` and `polymorphic_value` had constructors that
 take a pointer along with a copier and deleter. The copier and deleter could be
 used to specify how the object should be copied and deleted. The existence of a
 pointer constructor introduces undesirable capabilities into the design of
-`polymorphic_value`, such as allowing the possibility of object slicing on copy 
+`polymorphic_value`, such as allowing the possibility of object slicing on copy
 when the dynamic and static types of a derived-type pointer do not match.
 
 We decided to remove the copier, deleter and pointer constructor in favour of
@@ -995,18 +1003,18 @@ adding allocator support. A pointer constructor and support for custom copiers
 and deleters are not core to the design of either class template; both could be
 added in a later revision of the standard if required.
 
-We have been advised that allocator support must be a part of the initial implementation 
-and cannot be added retrospectively. As `indirect` and `polymorphic` are intended to
-be used alongside other C++ standard library types, such as `std::map` and
-`std::vector`, it is important that they have allocator support in contexts where
-allocators are used.
+We have been advised that allocator support must be a part of the initial
+implementation and cannot be added retrospectively. As `indirect` and
+`polymorphic` are intended to be used alongside other C++ standard library
+types, such as `std::map` and `std::vector`, it is important that they have
+allocator support in contexts where allocators are used.
 
 ### Pointer-like helper functions
 
-Earlier revisions of `polymorphic_value` (see `cloned_ptr` [N3339]) had helper
-functions to get access to the underlying pointer. These were removed under the
-advice of the Library Evolution Working Group as they were not core to the
-design of the class template nor were they consistent with value-type semantics.
+Earlier revisions of `polymorphic_value` had helper functions to get access to
+the underlying pointer. These were removed under the advice of the Library
+Evolution Working Group as they were not core to the design of the class
+template nor were they consistent with value-type semantics.
 
 Pointer-like accessors like `dynamic_pointer_cast` and `static_pointer_cast`,
 which are provided for `std::shared_ptr`, could be added in a later revision of
@@ -1014,23 +1022,23 @@ the standard if required.
 
 ### Comparisons and hashing
 
-We support comparisons and hashing for `indirect` but not `polymorphic`.
-This is because comparing and hashing polymorphic types is not a uniquely 
-solved problem, though it could well be implemented by adding suitable member 
-functions to the base class. Rather than impose the signatures of these member 
-functions upon users of `polymorphic`, we decided to leave hashing and comparison 
+We support comparisons and hashing for `indirect` but not `polymorphic`. This is
+because comparing and hashing polymorphic types is not a uniquely solved
+problem, though it could well be implemented by adding suitable member functions
+to the base class. Rather than impose the signatures of these member functions
+upon users of `polymorphic`, we decided to leave hashing and comparison
 unsupported but implementable by users.
 
-For `indirect`, in the case where the owned object `T` is hashable or comparable, 
-`indirect<T>` is hashable or comparable by forwarding the hash or comparison to the 
-owned object.
-
+For `indirect`, in the case where the owned object `T` is hashable or
+comparable, `indirect<T>` is hashable or comparable by forwarding the hash or
+comparison to the owned object.
 
 ### Implicit conversions
 
 We decided that there should be no implicit conversion of a value `T` to an
 `indirect<T>` or `polymorphic<T>`. An implicit conversion would require use of
-the free-store and of memory allocation, which is best made explicit by the user.
+the free-store and of memory allocation, which is best made explicit by the
+user.
 
 ```c++
 Rectangle r(w, h);
@@ -1077,19 +1085,16 @@ A converting constructor could be added in a future version of the C++ standard.
 
 ### Small object optimisation for `polymorphic`
 
-`polymorphic` could be designed to include a small object optimisation. 
-Small object optimisation uses a buffer to potentially store the owned object
-and avoid allocating memory. This would make move construction more complicated
-as the owned object must be moved from one buffer to another potentially
-invoking allocations if the owned object's move constructor allocates memory.
+`polymorphic` could be designed to include a small object optimisation like that
+used in `std::string`. A small object optimisation uses a buffer to potentially
+store the owned object and avoid allocating memory. This would make move
+construction more complicated as the owned object must be moved from one buffer
+to another potentially invoking allocations if the owned object's move
+constructor allocates memory.
 
 As designed, `polymorphic<T>` does not require that `T` (or constructed classes
 of type `U` derived from `T`) are move constructible or move assignable for
 `polymorphic<T>` to be move constructible or move assignable.
-
-Memory indirection is the sole point of `indirect`. An `indirect` with a small
-buffer optimisation would be better implemented as just a `T`. `polymorphic` is
-intended to be an `indirect` that supports polymorphism.
 
 A polymorphic value type with a small buffer optimisation that did not allocate
 a control block for the owned object would need be a different type, it is not
