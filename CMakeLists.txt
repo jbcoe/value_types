@@ -1,5 +1,6 @@
-cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.22.4 FATAL_ERROR)
 cmake_policy(SET CMP0127 NEW)
+cmake_policy(SET CMP0135 NEW)
 
 if(NOT DEFINED PROJECT_NAME)
     set(CPP_VALUE_TYPES_IS_NOT_SUBPROJECT ON)
@@ -88,6 +89,13 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
         set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
         FetchContent_MakeAvailable(googletest)
 
+        FetchContent_Declare(
+            benchmark
+            URL https://github.com/google/benchmark/archive/v1.8.3.zip
+        )
+        set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+        FetchContent_MakeAvailable(benchmark)
+
         add_library(common_compiler_settings INTERFACE)
 
         target_compile_options(common_compiler_settings
@@ -99,7 +107,7 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
         )
 
         set_target_properties(common_compiler_settings PROPERTIES
-            CXX_STANDARD 23
+            CXX_STANDARD 20
             CXX_STANDARD_REQUIRED YES
             CXX_EXTENSIONS NO
         )
@@ -128,6 +136,20 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
                 polymorphic
                 GTest::gtest_main
                 common_compiler_settings
+        )
+
+        add_executable(value_types_benchmark "")
+        target_sources(value_types_benchmark
+            PRIVATE
+                indirect_benchmark.cc
+                polymorphic_benchmark.cc
+        )
+        target_link_libraries(value_types_benchmark
+        PRIVATE
+            polymorphic
+            indirect
+            benchmark::benchmark_main
+            common_compiler_settings
         )
 
         add_executable(cloning_ptr_test "")

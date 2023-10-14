@@ -46,14 +46,12 @@ Design of these two types is so deeply coupled that future work will proceed in
 The `indirect` and `polymorphic` class templates are header-only. To use them,
 include the headers `indirect.h` and `polymorphic.h` in your project.
 
-## Example
-
 ```cpp
 #include "indirect.h"
 
 class Composite {
-  indirect<A> a_; // a_ owns an object of type A
-  indirect<B> b_; // b_ owns an object of type B
+  xyz::indirect<A> a_; // a_ owns an object of type A
+  xyz::indirect<B> b_; // b_ owns an object of type B
 public:
   Composite(const A& a, const B& b) : 
     a_(std::in_place, a), 
@@ -67,8 +65,8 @@ public:
 #include "polymorphic.h"
 
 class CompositeWithPolymorphicMembers {
-  polymorphic<X> x_; // x_ owns an object of type X or derived from X
-  polymorphic<Y> y_; // y_ owns an object of type Y or derived from Y
+  xyz::polymorphic<X> x_; // x_ owns an object of type X or derived from X
+  xyz::polymorphic<Y> y_; // y_ owns an object of type Y or derived from Y
 public:
   template <typename Tx, typename Ty>
   Composite(const Tx& x, const Ty& y) : 
@@ -79,6 +77,16 @@ public:
 };
 ```
 
+### Compiler explorer
+
+You can try out `indirect` and `polymorphic` in [Compiler explorer](https://godbolt.org/)
+by adding the includes:
+
+```cpp
+#include <https://raw.githubusercontent.com/jbcoe/value_types/main/indirect.h>
+#include <https://raw.githubusercontent.com/jbcoe/value_types/main/polymorphic.h>
+```
+
 ## License
 
 This code is licensed under the MIT License. See [LICENSE](LICENSE) for details.
@@ -86,7 +94,11 @@ This code is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 ## Talks and presentations
 
 We spoke about an earlier draft at [C++ on
-Sea](https://www.youtube.com/watch?v=sjLRX4WMvlU) in 2022.
+Sea](https://www.youtube.com/watch?v=sjLRX4WMvlU) in 2022. 
+
+There are some significant design changes since this talk was given (after feedback 
+and discussion at a C++ London meetup). We've pared down the number of constructors 
+and made the null state unobservable.
 
 ## References
 

@@ -2,7 +2,7 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-DXXXXX.0
+P3019R0
 
 Working Group: Library Evolution, Library
 
@@ -68,16 +68,19 @@ where the compiler will generate special member functions. This means that the
 class templates should provide the special member functions where they are
 supported by the owned object type `T`.
 
-* `indirect<T>` and `polymorphic<T>` are default constructible in cases where
-  `T` is default constructible.
+* `indirect<T, Alloc>` and `polymorphic<T, Alloc>` are default constructible in
+  cases where `T` is default constructible.
 
-* `indirect<T>` is copy constructible where `T` is copy constructible and
+* `indirect<T, Alloc>` is copy constructible where `T` is copy constructible and
   assignable.
 
-* `polymorphic<T>` is unconditionally copy constructible and assignable.
+* `polymorphic<T, Alloc>` is unconditionally copy constructible and assignable.
 
-* `indirect<T>` and `polymorphic<T>` are unconditionally move constructible and
-  assignable.
+* `indirect<T, Alloc>` and `polymorphic<T, Alloc>` are unconditionally move
+  constructible and assignable.
+
+* `indirect<T, Alloc>` and `polymorphic<T, Alloc>` destroy the owned object in
+  their destructors.
 
 ### Deep copies
 
@@ -162,14 +165,17 @@ the owned objects where the owned objects can be compared: where `T` is ordered,
 The hash operation, which is defined only for `indirect`, hashes the owned
 object where the owned object can be hashed.
 
+We discuss why only `indirect` is comparable and hashable in an appendix.
+
 ### Unobservable null state and interaction with `std::optional`
 
 Both `indirect` and `polymorphic` have a null state which is used to implement
-move. The null state is not intended to be observable to the user, there is no
-`operator bool` or `has_value` member function. Accessing the value of a
+move. The null state is not intended to be observable to the user. There is no
+`operator bool` or `has_value` member function. Accessing the value of an
 `indirect` or `polymorphic` after it has been moved from is erroneous behaviour.
-We provide a `valueless_after_move` member function to allow explicit checks for
-the valueless state in cases where it cannot be verified statically.
+We provide a `valueless_after_move` member function that returns `true` if an
+object is in a valueless state to allow explicit checks for the valueless state
+in cases where it cannot be verified statically.
 
 Without a null state, moving `indirect` or `polymorphic` would require
 allocation and moving from the owned object. This would be expensive and would
@@ -177,25 +183,29 @@ require the owned object to be moveable. The existence of a null state allows
 move to be implemented cheaply without requiring the owned object to be
 moveable.
 
-Where a nullable `indirect` or `polymorphic` is required using `std::optional`
+Where a nullable `indirect` or `polymorphic` is required, using `std::optional`
 is recommended. This may be commonplace as `indirect` and `polymorphic` may be
 used in composite classes where smart pointers are currently used to
 (mis)represent component objects. Putting `T` onto the free-store should not
-make it nullable, nullability must be explicitly opted-into by using
+make it nullable. Nullability must be explicitly opted-into by using
 `std::optional<indirect<T>>` or `std::optional<polymorphic<T>>`.
 
-Access to an `optional<indirect<T>>` or `optional<polymorphic<T>>` requires
-double indirection: either `(*v)->some_member` or `(**v)`.
+`std::optional<>` is specialized for `indirect<>` and `polymorphic<>` so they
+incur no additional overhead.
+
+Access to a `std::optional<indirect<T>>` or `std::optional<polymorphic<T>>` can
+be done with double indirection, `(**v)`, or with a single arrow operator to
+access a member, `v->some_member`.
 
 Note: As the null state of `indirect` and `polymorphic` is not observable, and
-access to a moved from object is erroneous, `std::optional` can be specialized
+access to a moved-from object is erroneous, `std::optional` can be specialized
 by implementers to exchange pointers on move construction and assignment.
 
 ### Design for polymorphic types
 
-To be used as a base class with `polymorphic` a type `PolymorphicInterface` does
-not need a virtual destructor. The same mechanism that is used to call the copy
-constructor of a potentially derived-type object will be used to call the
+To be used as a base class with `polymorphic`, a type `PolymorphicInterface`
+does not need a virtual destructor. The same mechanism that is used to call the
+copy constructor of a potentially derived-type object will be used to call the
 destructor.
 
 To allow compiler generation of special member functions of an abstract
@@ -216,19 +226,20 @@ class PolymorphicInterface {
 };
 ```
 
-For an interface type with a public, virtual copy constructor, users would
-potentially pay the cost of virtual dispatch twice when deleting
-`polymorphic<I>` objects containing derived-type objects.
+For an interface type with a public virtual destructor, users would potentially
+pay the cost of virtual dispatch twice when deleting `polymorphic<I>` objects
+containing derived-type objects.
 
-All derived-types owned by a `polymorphic` must be publicly copy constructible.
+All derived types owned by a `polymorphic` must be publicly copy-constructible.
 
 ## Prior work
 
-This proposal is a continuation of the work started in [P0201] and [P1950].
+This proposal continues the work started in [P0201] and [P1950].
 
-There was previous work on a cloned pointer type [N3339] which met with
-opposition because of the mixing of value and pointer semantics. We feel that the
-unambiguous value-semantics of `indirect` and `polymorphic` address these concerns.
+Previous work on a cloned pointer type [N3339] met with opposition because of
+the mixing of value and pointer semantics. We feel that the unambiguous value
+semantics of `indirect` and `polymorphic` as described in this proposal address
+these concerns.
 
 ## Impact on the standard
 
@@ -262,27 +273,30 @@ class indirect {
   using value_type = T;
   using allocator_type = Allocator;
 
-  indirect();
+  constexpr indirect();
 
   template <class... Ts>
-  explicit indirect(std::in_place_t, Ts&&... ts);
+  explicit constexpr indirect(std::in_place_t, Ts&&... ts);
 
   template <class... Ts>
-  indirect(std::allocator_arg_t, const Allocator& alloc, std::in_place_t, Ts&&... ts);
+  constexpr indirect(
+    std::allocator_arg_t, const Allocator& alloc, std::in_place_t, Ts&&... ts);
 
-  indirect(const indirect& other);
+  constexpr indirect(const indirect& other);
 
-  indirect(std::allocator_arg_t, const Allocator& alloc, const indirect& other);
+  constexpr indirect(
+    std::allocator_arg_t, const Allocator& alloc, const indirect& other);
 
-  indirect(indirect&& other) noexcept;
+  constexpr indirect(indirect&& other) noexcept;
   
-  indirect(std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcept;
+  constexpr indirect(
+    std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcept;
 
-  ~indirect();
+  constexpr ~indirect();
 
-  indirect& operator=(const indirect& other);
+  constexpr indirect& operator=(const indirect& other);
 
-  indirect& operator=(indirect&& other) noexcept;
+  constexpr indirect& operator=(indirect&& other) noexcept(see below);
 
   constexpr const T& operator*() const noexcept;
 
@@ -296,18 +310,21 @@ class indirect {
 
   constexpr allocator_type get_allocator() const noexcept;
 
-  constexpr void swap(indirect& other) noexcept;
+  constexpr void swap(indirect& other) noexcept(see below);
 
-  friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept;
-
-  template <class U, class AA>
-  friend constexpr bool operator==(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+  friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept(see below);
 
   template <class U, class AA>
-  friend constexpr bool operator!=(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+  friend constexpr bool operator==(
+    const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
 
   template <class U, class AA>
-  friend constexpr auto operator<=>(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+  friend constexpr bool operator!=(
+    const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+
+  template <class U, class AA>
+  friend constexpr auto operator<=>(
+    const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
 
   template <class U>
   friend constexpr bool operator==(const indirect<T, A>& lhs, const U& rhs);
@@ -330,6 +347,9 @@ class indirect {
 
 template <class T, class Alloc>
 struct std::uses_allocator<indirect<T, Alloc>, Alloc> : true_type {};
+
+template <class T, class Alloc>
+struct hash<indirect<T, Alloc>>;
 ```
 
 #### X.Y.3 Constructors [indirect.ctor]
@@ -346,7 +366,7 @@ indirect()
 
 ```c++
 template <class... Ts>
-explicit indirect(std::in_place_t, Ts&&... ts);
+explicit constexpr indirect(std::in_place_t, Ts&&... ts);
 ```
 
 * _Constraints_: `is_constructible_v<T, Ts...>` is true.
@@ -358,7 +378,8 @@ explicit indirect(std::in_place_t, Ts&&... ts);
 
 ```c++
 template <class... Ts>
-indirect(std::allocator_arg_t, const Allocator& alloc, std::in_place_t, Ts&&... ts);
+constexpr indirect(
+  std::allocator_arg_t, const Allocator& alloc, std::in_place_t, Ts&&... ts);
 ```
 
 * _Constraints_: `is_constructible_v<T, Ts...>` is true.
@@ -371,7 +392,7 @@ indirect(std::allocator_arg_t, const Allocator& alloc, std::in_place_t, Ts&&... 
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-indirect(const indirect& other);
+constexpr indirect(const indirect& other);
 ```
 
 * _Constraints_: `is_copy_constructible_v<T>` is true.
@@ -384,7 +405,8 @@ indirect(const indirect& other);
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-indirect(std::allocator_arg_t, const Allocator& alloc, const indirect& other);
+constexpr indirect(
+  std::allocator_arg_t, const Allocator& alloc, const indirect& other);
 ```
 
 * _Constraints_: `is_copy_constructible_v<T>` is true and `uses_allocator<T,
@@ -393,18 +415,18 @@ indirect(std::allocator_arg_t, const Allocator& alloc, const indirect& other);
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
   _Cpp17Allocator_ requirements.
 
-* _Effects_: Equivalent to the preceding constructor except that the allocator is
-  initialized with alloc.
+* _Effects_: Equivalent to the preceding constructor except that the allocator
+  is initialized with alloc.
 
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-indirect(indirect&& other) noexcept;
+constexpr indirect(indirect&& other) noexcept;
 ```
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: Constructs an indirect owning the object owned by `other`.
+* _Effects_: Constructs an `indirect` owning the object owned by `other`.
 
 * _Postconditions_: `other` is valueless.
 
@@ -412,7 +434,8 @@ indirect(indirect&& other) noexcept;
   is true.
 
 ```c++
-indirect(std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcept;
+constexpr indirect(
+  std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcept;
 ```
 
 * _Constraints_: `is_copy_constructible_v<T>` is true and `uses_allocator<T,
@@ -421,8 +444,8 @@ indirect(std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcep
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
   _Cpp17Allocator_ requirements.
 
-* _Effects_: Equivalent to the preceding constructors except that the allocator is
-  initialized with alloc.
+* _Effects_: Equivalent to the preceding constructors except that the allocator
+  is initialized with alloc.
 
 * _Postconditions_: `other` is valueless.
 
@@ -432,7 +455,7 @@ indirect(std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcep
 #### X.Y.4 Destructor [indirect.dtor]
 
 ```c++
-~indirect();
+constexpr ~indirect();
 ```
 
 * _Effects_: If `*this` is not valueless, destroys the owned object.
@@ -440,25 +463,31 @@ indirect(std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcep
 #### X.Y.5 Assignment [indirect.assign]
 
 ```c++
-indirect& operator=(const indirect& other);
+constexpr indirect& operator=(const indirect& other);
 ```
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: If `*this` is not valueless, destroys the owned object. Then,
-  constructs an owned object using the copy constructor of the object owned by
-  `other`.
+* _Effects_: If `*this` is not valueless and `std::is_copy_assignable_v<T>` is
+  true, then the owned object in `*this` is copy assigned from the owned object
+  in `other`. Otherwise if `*this` is not valueless and
+  `std::is_copy_assignable_v<T>` is false, destroys the owned object and then,
+  constructs a new owned object using the copy constructor of the object owned
+  by `other`. Otherwise if `*this` is valueless, constructs an owned object
+  using the copy constructor of the object owned by `other`.
 
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-indirect& operator=(indirect&& other) noexcept;
+constexpr indirect& operator=(indirect&& other) noexcept(
+    allocator_traits<Allocator>::propagate_on_container_move_assignment::value ||
+    allocator_traits<Allocator>::is_always_equal::value);
 ```
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: If `*this` is not valueless, destroys the owned object.
-  Then takes ownership of the object owned by `other`.
+* _Effects_: If `*this` is not valueless, destroys the owned object. Then takes
+  ownership of the object owned by `other`.
 
 * _Postconditions_: `*this` is not valueless. `other` is valueless.
 
@@ -503,7 +532,9 @@ constexpr allocator_type get_allocator() const noexcept;
 #### X.Y.7 Swap [indirect.swap]
 
 ```c++
-constexpr void swap(indirect& other) noexcept;
+constexpr void swap(indirect& other) noexcept(
+    allocator_traits<Allocator>::propagate_on_container_swap::value ||
+    allocator_traits<Allocator>::is_always_equal::value);
 ```
 
 * _Preconditions_: `*this` is not valueless, `other` is not valueless.
@@ -513,7 +544,9 @@ constexpr void swap(indirect& other) noexcept;
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
 ```c++
-constexpr void swap(indirect& lhs, indirect& rhs) noexcept;
+constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
+    allocator_traits<Allocator>::propagate_on_container_swap::value ||
+    allocator_traits<Allocator>::is_always_equal::value);
 ```
 
 * _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
@@ -546,7 +579,7 @@ constexpr bool operator!=(const indirect<T, A>& lhs, const indirect<U, AA>& rhs)
 * _Effects_: returns  `*lhs != *rhs`.
 
 * _Remarks_: Specializations of this function template for which `*lhs != *rhs`
-  is a core constant expression are constexpr functions.
+  is a core constant expression, are constexpr functions.
 
 ```c++
 template <class U, class AA>
@@ -558,7 +591,7 @@ constexpr auto operator<=>(const indirect<T, A>& lhs, const indirect<U, AA>& rhs
 * _Effects_: returns  `*lhs <=> *rhs`.
 
 * _Remarks_: Specializations of this function template for which `*lhs <=> *rhs`
-  is a core constant expression are constexpr functions.
+  is a core constant expression, are constexpr functions.
 
 #### X.Y.9 Comparison with T [indirect.comp.with.t]
 
@@ -572,7 +605,7 @@ constexpr bool operator==(const indirect<T, A>& lhs, const U& rhs);
 * _Effects_: returns  `*lhs == rhs`.
 
 * _Remarks_: Specializations of this function template for which `*lhs == *rhs`
-  is a core constant expression are constexpr functions.
+  is a core constant expression, are constexpr functions.
 
 ```c++
 template <class T, class A, class U>
@@ -584,7 +617,7 @@ constexpr bool operator==(const U& lhs, const indirect<T, A>& rhs);
 * _Effects_: returns  `lhs == *rhs`.
 
 * _Remarks_: Specializations of this function template for which `*lhs == *rhs`
-  is a core constant expression are constexpr functions.
+  is a core constant expression, are constexpr functions.
 
 ```c++
 template <class T, class A, class U>
@@ -596,7 +629,7 @@ constexpr bool operator!=(const indirect<T, A>& lhs, const U& rhs)
 * _Effects_: returns  `*lhs != rhs`.
 
 * _Remarks_: Specializations of this function template for which `*lhs != *rhs`
-  is a core constant expression are constexpr functions.
+  is a core constant expression, are constexpr functions.
 
 ```c++
 template <class T, class A, class U>
@@ -608,7 +641,7 @@ constexpr bool operator!=(const U& lhs, const indirect<T, A>& rhs);
 * _Effects_: returns  `lhs != *rhs`.
 
 * _Remarks_: Specializations of this function template for which `*lhs != *rhs`
-  is a core constant expression are constexpr functions.
+  is a core constant expression, are constexpr functions.
 
 ```c++
 template <class T, class A, class U>
@@ -620,7 +653,7 @@ constexpr auto operator<=>(const indirect<T, A>& lhs, const U& rhs);
 * _Effects_: returns  `*lhs <=> rhs`.
 
 * _Remarks_: Specializations of this function template for which `*lhs <=> *rhs`
-  is a core constant expression are constexpr functions.
+  is a core constant expression, are constexpr functions.
 
 ```c++
 template <class T, class A, class U>
@@ -632,16 +665,55 @@ constexpr auto operator<=>(const U& lhs, const indirect<T, A>& rhs);
 * _Effects_: returns  `lhs <=> *rhs`.
 
 * _Remarks_: Specializations of this function template for which `*lhs <=> *rhs`
-  is a core constant expression are constexpr functions.
+  is a core constant expression, are constexpr functions.
 
-#### Allocator related traits
+#### X.Y.10 Allocator related traits [indirect.allocator.traits]
 
 ```c++
 template <class T, class Alloc>
-struct std::uses_allocator<xyz::indirect<T>, Alloc> : true_type {};
+struct std::uses_allocator<indirect<T>, Alloc> : true_type {};
 ```
 
 * _Preconditions_: Alloc meets the _Cpp17Allocator_ requirements.
+
+#### X.Y.11 Hash support [indirect.hash]
+  
+```c++
+template <class T, class Alloc>
+struct std::hash<indirect<T, Alloc>>;
+```
+
+* _Preconditions_: `i` is not valueless.
+
+The specialization `hash<indirect<T, Alloc>>` is enabled ([unord.hash]) if and
+only if `hash<remove_const_t<T>>` is enabled. When enabled, for an object `i` of
+type `indirect<T, Alloc>`, then `hash<indirect<T, Alloc>>()(i)` evaluates to the
+same value as `hash<remove_const_t<T>>()(*i)`. The member functions are not
+guaranteed to be noexcept.
+
+#### X.Y.12 Optional support [indirect.optional]
+
+```c++
+template <class T, class Alloc>
+class std::optional<indirect<T, Alloc>>;
+```
+
+The specialization `std::optional<indirect<T, Alloc>>` guarantees
+`size(std::optional<indirect<T, Alloc>>) == size(indirect<T, Alloc>>)`.
+
+```c++
+// [optional.observe], observers
+constexpr const indirect<T, Alloc>& operator->() const noexcept;
+constexpr indirect<T, Alloc>& operator->() noexcept;
+```
+
+* _Preconditions_: `*this` contains a value.
+* _Returns_: `val`.
+* _Remarks_: These functions are constexpr. The specialization
+  `std::optional<indirect<T, Alloc>>` provides `operator->` that returns a
+  reference to the contained `indirect`.
+
+Otherwise, the interface of the specialization is as defined in [optional].
 
 ### X.Z Class template polymorphic [polymorphic]
 
@@ -672,24 +744,27 @@ class polymorphic {
   polymorphic();
 
   template <class U, class... Ts>
-  explicit polymorphic(std::in_place_type_t<U>, Ts&&... ts);
+  explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts);
 
   template <class U, class... Ts>
-  polymorphic(std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
+  constexpr polymorphic(
+    std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
 
-  polymorphic(const polymorphic& other);
+  constexpr polymorphic(const polymorphic& other);
   
-  polymorphic(std::allocator_arg_t, const Allocator& alloc, const polymorphic& other);
+  constexpr polymorphic(
+    std::allocator_arg_t, const Allocator& alloc, const polymorphic& other);
 
-  polymorphic(polymorphic&& other) noexcept;
+  constexpr polymorphic(polymorphic&& other) noexcept;
   
-  polymorphic(std::allocator_arg_t, const Allocator& alloc, polymorphic&& other) noexcept;
+  constexpr polymorphic(
+    std::allocator_arg_t, const Allocator& alloc, polymorphic&& other) noexcept;
 
-  ~polymorphic();
+  constexpr ~polymorphic();
 
-  polymorphic& operator=(const polymorphic& other);
+  constexpr polymorphic& operator=(const polymorphic& other);
 
-  polymorphic& operator=(polymorphic&& other) noexcept;
+  constexpr polymorphic& operator=(polymorphic&& other) noexcept(see below);
 
   constexpr const T& operator*() const noexcept;
 
@@ -703,9 +778,9 @@ class polymorphic {
 
   constexpr allocator_type get_allocator() const noexcept;
 
-  constexpr void swap(polymorphic& other) noexcept;
+  constexpr void swap(polymorphic& other) noexcept(see below);
 
-  friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept;
+  friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(see below);
 };
 
 template <class T, class Alloc>
@@ -730,17 +805,18 @@ template <class U, class... Ts>
 explicit polymorphic(std::in_place_type_t<U>, Ts&&... ts);
 ```
 
-* _Constraints_: `is_base_of_v<T, U>` is true,
-  `is_constructible_v<U, Ts...>` is true, `is_copy_constructible_v<U>` is true.
+* _Constraints_: `is_base_of_v<T, U>` is true, `is_constructible_v<U, Ts...>` is
+  true, `is_copy_constructible_v<U>` is true.
 
-* _Effects_: Constructs a polymorphic owning an instance of `U` created with
-  the arguments `Ts`.
+* _Effects_: Constructs a polymorphic owning an instance of `U` created with the
+  arguments `Ts`.
 
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
 template <class U, class... Ts>
-polymorphic(std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
+polymorphic(
+  std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
 ```
 
 * _Constraints_: `is_base_of_v<T, U>` is true, `is_constructible_v<U, Ts...>` is
@@ -748,8 +824,8 @@ polymorphic(std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U
 
 * _Preconditions_: `Allocator` meets the _Cpp17Allocator_ requirements.
 
-* _Effects_: Equivalent to the preceding constructor except that the allocator is
-  initialized with alloc.
+* _Effects_: Equivalent to the preceding constructor except that the allocator
+  is initialized with alloc.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -759,20 +835,21 @@ polymorphic(const polymorphic& other);
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: Constructs a polymorphic owning an instance of `T` created with
-  the copy constructor of the object owned by `other`.
+* _Effects_: Constructs a polymorphic owning an instance of `T` created with the
+  copy constructor of the object owned by `other`.
 
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-polymorphic(std::allocator_arg_t, const Allocator& alloc, const polymorphic& other);
+polymorphic(
+  std::allocator_arg_t, const Allocator& alloc, const polymorphic& other);
 ```
 
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
   _Cpp17Allocator_ requirements.
 
-* _Effects_: Equivalent to the preceding constructor except that the allocator is
-  initialized with alloc.
+* _Effects_: Equivalent to the preceding constructor except that the allocator
+  is initialized with alloc.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -791,14 +868,15 @@ polymorphic(polymorphic&& other) noexcept;
   is true.
 
 ```c++
-polymorphic(std::allocator_arg_t, const Allocator& alloc, polymorphic&& other) noexcept;
+polymorphic(
+  std::allocator_arg_t, const Allocator& alloc, polymorphic&& other) noexcept;
 ```
 
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
   _Cpp17Allocator_ requirements.
 
-* _Effects_: Equivalent to the preceding constructor except that the allocator is
-  initialized with alloc.
+* _Effects_: Equivalent to the preceding constructor except that the allocator
+  is initialized with alloc.
 
 * _Postconditions_: `other` is valueless.
 
@@ -828,13 +906,15 @@ polymorphic& operator=(const polymorphic& other);
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-polymorphic& operator=(polymorphic&& other) noexcept;
+polymorphic& operator=(polymorphic&& other) noexcept(
+    allocator_traits<Allocator>::propagate_on_container_move_assignment::value ||
+    allocator_traits<Allocator>::is_always_equal::value);
 ```
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: If `*this` is not valueless, destroys the owned object.
-  Then takes ownership of the object owned by `other`.
+* _Effects_: If `*this` is not valueless, destroys the owned object. Then takes
+  ownership of the object owned by `other`.
 
 * _Postconditions_: `*this` is not valueless. `other` is valueless.
 
@@ -879,7 +959,9 @@ constexpr allocator_type get_allocator() const noexcept;
 #### X.Z.7 Swap [polymorphic.swap]
 
 ```c++
-constexpr void swap(polymorphic& other) noexcept;
+constexpr void swap(polymorphic& other) noexcept(
+    allocator_traits<Allocator>::propagate_on_container_swap::value ||
+    allocator_traits<Allocator>::is_always_equal::value);
 ```
 
 * _Preconditions_: `*this` is not valueless, `other` is not valueless.
@@ -889,7 +971,9 @@ constexpr void swap(polymorphic& other) noexcept;
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
 ```c++
-constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept;
+constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(
+    allocator_traits<Allocator>::propagate_on_container_swap::value ||
+    allocator_traits<Allocator>::is_always_equal::value);
 ```
 
 * _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
@@ -900,10 +984,34 @@ constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept;
 
 ```c++
 template <class T, class Alloc>
-struct std::uses_allocator<xyz::polymorphic<T>, Alloc> : true_type {};
+struct std::uses_allocator<polymorphic<T>, Alloc> : true_type {};
 ```
 
 * _Preconditions_: Alloc meets the _Cpp17Allocator_ requirements.
+
+#### X.Z.9 Optional support [polymorphic.optional]
+
+```c++
+template <class T, class Alloc>
+class std::optional<polymorphic<T, Alloc>>;
+```
+
+The specialization `std::optional<polymorphic<T, Alloc>>` guarantees
+`size(std::optional<polymorphic<T, Alloc>>) == size(polymorphic<T, Alloc>>)`.
+
+```c++
+// [optional.observe], observers
+constexpr const polymorphic<T, Alloc>& operator->() const noexcept;
+constexpr polymorphic<T, Alloc>& operator->() noexcept;
+```
+
+* _Preconditions_: `*this` contains a value.
+* _Returns_: `val`.
+* _Remarks_: These functions are constexpr. The specialization
+  `std::optional<polymorphic<T, Alloc>>` provides `operator->` that returns a
+  reference to the contained `polymorphic`.
+
+Otherwise, the interface of the specialization is as defined in [optional].
 
 ## Reference implementation
 
@@ -915,107 +1023,107 @@ A C++20 reference implementation of this proposal is available on GitHub at
 The authors would like to thank Andrew Bennieston, Bengt Gustafsson, Casey
 Carter, Daniel Krügler, David Krauss, Ed Catmur, Geoff Romer, Germán Diago,
 Jonathan Wakely, Kilian Henneberger, LanguageLawyer, Louis Dionne, Maciej Bogus,
-Malcolm Parsons, Matthew Calabrese, Nathan Myers, Nevin Liber, Nina Ranns,
-Patrice Roy, Roger Orr, Stephan T Lavavej, Stephen Kelly, Thomas Koeppe, Thomas
-Russell, Tom Hudson, Tomasz Kamiński, Tony van Eerd and Ville Voutilainen for
-suggestions and useful discussion.
+Malcolm Parsons, Matthew Calabrese, Nathan Myers, Neelofer Banglawala, Nevin
+Liber, Nina Ranns, Patrice Roy, Roger Orr, Stephan T Lavavej, Stephen Kelly,
+Thomas Koeppe, Thomas Russell, Tom Hudson, Tomasz Kamiński, Tony van Eerd and
+Ville Voutilainen for suggestions and useful discussion.
 
 ## References
 
-"_A Preliminary Proposal for a Deep-Copying Smart Pointer_", W.E.Brown, 2012
+"_A Preliminary Proposal for a Deep-Copying Smart Pointer_", W. E. Brown, 2012
 [http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3339.pdf]
 
-_A polymorphic value-type for C++_, J.B.Coe, S.Parent 2019
-[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0201r5.html]
+_A polymorphic value-type for C++_, J. B. Coe, S. Parent 2019
+[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0201r6.html]
 
-_A Free-Store-Allocated Value Type for C++_, J.B.Coe, A.Peacock 2022
+_A Free-Store-Allocated Value Type for C++_, J. B. Coe, A. Peacock 2022
 [https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1950r2.html]
 
 A C++20 reference implementation is available on GitHub
-[https://github.com/jbcoe/value_types]
+[https://www.github.com/jbcoe/value_types]
 
 ## Appendix A: Detailed design decisions
 
 We discuss some of the decisions that were made in the design of `indirect` and
-`polymorphic`. Where there are multiple options we discuss the advantages and
+`polymorphic`. Where there are multiple options, we discuss the advantages and
 disadvantages of each.
 
 ### Two class templates, not one
 
-It's conceivable that a single class template could be used as a vocabulary type
-for an indirect value-type supporting polymorphsim. Implementing this would
-impose efficiency costs on the copy constructor in the case where the owned
-object is the same type as the template type. When the owned object is a derived
-type, the copy constructor uses type erasure to perform dynamic dispatch and
-call the derived type copy constructor. The overhead of indirection and a
-virtual function call is not tolerable where the owned object type and template
-type match.
+It is conceivable that a single class template could be used as a vocabulary
+type for an indirect value-type supporting polymorphism. However, implementing
+this would impose efficiency costs on the copy constructor when the owned object
+is the same type as the template type. When the owned object is a derived type,
+the copy constructor uses type erasure to perform dynamic dispatch and call the
+derived type copy constructor. The overhead of indirection and a virtual
+function call is not tolerable where the owned object type and template type
+match.
 
 One potential solution would be to use a `std::variant` to store the owned type
 or the control block used to manage the owned type. This would allow the copy
-constructor to be implemented efficiently in the case where the owned type and
-template type match. This would increase the object size beyond that of a single
-pointer as the discriminant would need to be stored.
+constructor to be implemented efficiently when the owned type and template type
+match. This would increase the object size beyond that of a single pointer as
+the discriminant must be stored.
 
-In the name of minimal size and efficiency we opted to use two class templates.
+For the sake of minimal size and efficiency, we opted to use two class
+templates.
 
-### Copiers, deleters, pointer constructors and allocator support
+### Copiers, deleters, pointer constructors, and allocator support
 
-Both `indirect_value` and `polymorphic_value` have constructors that take a
-pointer along with a copier and deleter. The copier and deleter can be used to
+The older types `indirect_value` and `polymorphic_value` had constructors that
+take a pointer, copier, and deleter. The copier and deleter could be used to
 specify how the object should be copied and deleted. The existence of a pointer
-constructor introduces significant sharp-edges into the design of
-`polymorphic_value` allowing the possibility of object slicing on copy when the
-dynamic and static types of a derived-type pointer do not match.
+constructor introduces undesirable capabilities into the design of
+`polymorphic_value`, such as allowing the possibility of object slicing on copy
+when the dynamic and static types of a derived-type pointer do not match.
 
-We decided to remove the copier, deleter and pointer constructor in favour of
+We decided to remove the copier, delete, and pointer constructor in favour of
 adding allocator support. A pointer constructor and support for custom copiers
 and deleters are not core to the design of either class template; both could be
 added in a later revision of the standard if required.
 
- Allocator support, we were advised, needs to be there from the beginning and
-cannot be added retrospectively. As `indirect` and `polymorphic` are intended to
-be used alongside other C++ standard library types like `std::map` and
-`std::vector` it is important that they have allocator support in contexts where
-allocators are used.
+We have been advised that allocator support must be a part of the initial
+implementation and cannot be added retrospectively. As `indirect` and
+`polymorphic` are intended to be used alongside other C++ standard library
+types, such as `std::map` and `std::vector`, it is important that they have
+allocator support in contexts where allocators are used.
 
 ### Pointer-like helper functions
 
-Earlier revisions of `polymorphic_value` (when it was `cloned_ptr`) had helper
-functions to get access to the underlying pointer. These were removed under the
-advice of the Library Evolution Working Group as they were not core to the
-design of the class template nor were they consistent with value-type semantics.
+Earlier revisions of `polymorphic_value` had helper functions to get access to
+the underlying pointer. These were removed under the advice of the Library
+Evolution Working Group as they were not core to the design of the class
+template, nor were they consistent with value-type semantics.
 
-Pointer-like accessors like `dynamic_pointer_cast` and `static_pointer_cast`
-which are provided for `std::shared_ptr` could be added in a later revision of
+Pointer-like accessors like `dynamic_pointer_cast` and `static_pointer_cast`,
+which are provided for `std::shared_ptr`, could be added in a later revision of
 the standard if required.
 
 ### Comparisons and hashing
 
-We support comparisons and hashing for `indirect` but not `polymorphic`.
+We support comparisons and hashing for `indirect` but not `polymorphic`. This is
+because comparing and hashing polymorphic types is not a uniquely solved
+problem, though it could well be implemented by adding suitable member functions
+to the base class. Rather than impose the signatures of these member functions
+upon users of `polymorphic`, we decided to leave hashing and comparison
+unsupported but implementable by users.
 
-In the case where the owned object `T` is hashable or comparable, `indirect<T>`
-is hashable or comparable by forwarding the hash or comparison to the owned
-object.
-
-Comparing and hashing polymorphic types is not a uniquely solved problem, though
-it could well be implemented by adding suitable member functions to the base
-class. Rather than impose the signatures of these member functions upon users of
-`polymorphic` we decided to leave hashing and comparsion unsupported but
-implementable by users.
+For `indirect`, in the case where the owned object `T` is hashable or
+comparable, `indirect<T>` is hashable or comparable by forwarding the hash or
+comparison to the owned object.
 
 ### Implicit conversions
 
 We decided that there should be no implicit conversion of a value `T` to an
-`indirect<T>` or `polymorphic<T>`. An implicit conversion would require use of
-the free-store and of memory allocation which is best made explicit by the user.
+`indirect<T>` or `polymorphic<T>`. An implicit conversion would require using
+the free store and memory allocation, which is best made explicit by the user.
 
 ```c++
 Rectangle r(w, h);
 polymorphic<Shape> s = r; // error
 ```
 
-To hoist a value into an `indirect` or `polymorphic` the user must use the
+To transform a value into `indirect` or `polymorphic`, the user must use the
 appropriate constructor.
 
 ```c++
@@ -1026,7 +1134,7 @@ assert(dynamic_cast<Rectangle*>(&*s) != nullptr);
 
 ### Explicit conversions
 
-The older class template `polymorphic_value` had explicit conversions allowing
+The older class template `polymorphic_value` had explicit conversions, allowing
 construction of a `polymorphic_value<T>` from a `polymorphic_value<U>` where `T`
 was a base class of `U`.
 
@@ -1053,25 +1161,22 @@ outside of tests.
 
 A converting constructor could be added in a future version of the C++ standard.
 
-### Small object optimisation for `polymorphic`
+### Small object optimization for `polymorphic`
 
-`polymorphic` could be designed to make use of a small object optimisation. A
-small object optimisation uses a buffer to potentially store the owned object
-and avoid allocating memory. This would make move construction more complicated
-as the owned object must be moved from one buffer to another potentially
-invoking allocations if the owned object's move constructor allocates memory.
+`polymorphic` could be designed to include a small object optimization like that
+used in `std::string`. A small object optimization uses a buffer to potentially
+store the owned object and avoid allocating memory. This would make move
+construction more complicated as the owned object must be moved from one buffer
+to another, potentially invoking allocations if the owned object's move
+constructor allocates memory.
 
 As designed, `polymorphic<T>` does not require that `T` (or constructed classes
 of type `U` derived from `T`) are move constructible or move assignable for
 `polymorphic<T>` to be move constructible or move assignable.
 
-Memory indirection is the sole point of `indirect`. An `indirect` with a small
-buffer optimisation would be better implemented as just a `T`. `polymorphic` is
-intended to be an `indirect` that supports polymorphism.
-
-A polymorphic value type with a small buffer optimisation that did not allocate
-a control block for the owned object would need be a different type, it is not
-possible to add a small object optimisation to `polymorphic` without making
+A polymorphic value type with a small buffer optimization that did not allocate
+a control block for the owned object would need to be a different type. It is
+not possible to add a small object optimization to `polymorphic` without making
 breaking changes. There may be a case for the addition of `small_polymorphic<T,
-N>` akin to `llvm::SmallVector<T, N>` but we are not proposing its addition
+N>` similar to `llvm::SmallVector<T, N>`, but we are not proposing its addition
 here.

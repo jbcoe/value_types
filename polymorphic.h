@@ -127,7 +127,7 @@ public:
   using value_type = T;
   using allocator_type = A;
 
-  polymorphic()
+  constexpr polymorphic()
     requires std::default_initializable<T>
   {
     auto* mem = std::allocator_traits<A>::allocate(alloc_, 1);
@@ -142,7 +142,7 @@ public:
   }
 
   template <class U, class... Ts>
-  explicit polymorphic(std::in_place_type_t<U>, Ts&&... ts)
+  explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts)
     requires std::constructible_from<U, Ts&&...> &&
              std::copy_constructible<U> &&
              (std::derived_from<U, T> || std::same_as<U, T>)
@@ -162,8 +162,8 @@ public:
   }
 
   template <class U, class... Ts>
-  polymorphic(std::allocator_arg_t, const A& alloc, std::in_place_type_t<U>,
-              Ts&&... ts)
+  constexpr polymorphic(std::allocator_arg_t, const A& alloc,
+                        std::in_place_type_t<U>, Ts&&... ts)
     requires std::constructible_from<U, Ts&&...> &&
              std::copy_constructible<U> &&
              (std::derived_from<U, T> || std::same_as<U, T>)
@@ -206,7 +206,7 @@ public:
     p_ = std::exchange(other.p_, nullptr);
   }
 
-  ~polymorphic() { reset(); }
+  constexpr ~polymorphic() { reset(); }
 
   polymorphic& operator=(const polymorphic& other) {
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
@@ -274,7 +274,7 @@ public:
       p_ = nullptr;
     }
   }
-};
+};  // namespace xyz
 
 }  // namespace xyz
 

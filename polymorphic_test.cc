@@ -199,6 +199,12 @@ struct TrackingAllocator {
     std::allocator<T> default_allocator{};
     default_allocator.deallocate(p, n);
   }
+
+  friend bool operator==(const TrackingAllocator& lhs,
+                         const TrackingAllocator& rhs) noexcept {
+    return lhs.alloc_counter_ == rhs.alloc_counter_ &&
+           lhs.dealloc_counter_ == rhs.dealloc_counter_;
+  }
 };
 
 TEST(PolymorphicTest, GetAllocator) {
@@ -303,6 +309,35 @@ TEST(PolymorphicTest, CountAllocationsForMoveAssignment) {
   EXPECT_EQ(dealloc_counter, 2);
 }
 
+template <typename T>
+struct NonEqualTrackingAllocator : TrackingAllocator<T> {
+  using TrackingAllocator<T>::TrackingAllocator;
+  friend bool operator==(const NonEqualTrackingAllocator&,
+                         const NonEqualTrackingAllocator&) noexcept {
+    return false;
+  }
+};
+
+TEST(PolymorphicTest, CountAllocationsForMoveAssignmentWhenAllocatorsDontCompareEqual) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::polymorphic<Derived, NonEqualTrackingAllocator<Derived>> a(
+        std::allocator_arg,
+        NonEqualTrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived>, 42);
+    xyz::polymorphic<Derived, NonEqualTrackingAllocator<Derived>> b(
+        std::allocator_arg,
+        NonEqualTrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived>, 101);
+    EXPECT_EQ(alloc_counter, 2);
+    EXPECT_EQ(dealloc_counter, 0);
+    b = std::move(a); // This will copy as allocators don't compare equal.
+  }
+  EXPECT_EQ(alloc_counter, 3);
+  EXPECT_EQ(dealloc_counter, 3);
+}
+
 TEST(PolymorphicTest, CountAllocationsForMoveConstruction) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
@@ -317,6 +352,56 @@ TEST(PolymorphicTest, CountAllocationsForMoveConstruction) {
   }
   EXPECT_EQ(alloc_counter, 1);
   EXPECT_EQ(dealloc_counter, 1);
+}
+
+template <typename T>
+struct POCSTrackingAllocator : TrackingAllocator<T> {
+  using TrackingAllocator<T>::TrackingAllocator;
+  using propagate_on_container_swap = std::true_type;
+};
+
+TEST(PolymorphicTest, NonMemberSwapWhenAllocatorsDontCompareEqual) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::polymorphic<Derived, POCSTrackingAllocator<Derived>> a(
+        std::allocator_arg,
+        POCSTrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived>, 42);
+    xyz::polymorphic<Derived, POCSTrackingAllocator<Derived>> b(
+        std::allocator_arg,
+        POCSTrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived>, 101);
+    EXPECT_EQ(alloc_counter, 2);
+    EXPECT_EQ(dealloc_counter, 0);
+    swap(a, b);
+    EXPECT_EQ(a->value(), 101);
+    EXPECT_EQ(b->value(), 42);
+  }
+  EXPECT_EQ(alloc_counter, 2);
+  EXPECT_EQ(dealloc_counter, 2);
+}
+
+TEST(PolymorphicTest, MemberSwapWhenAllocatorsDontCompareEqual) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::polymorphic<Derived, POCSTrackingAllocator<Derived>> a(
+        std::allocator_arg,
+        POCSTrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived>, 42);
+    xyz::polymorphic<Derived, POCSTrackingAllocator<Derived>> b(
+        std::allocator_arg,
+        POCSTrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived>, 101);
+    EXPECT_EQ(alloc_counter, 2);
+    EXPECT_EQ(dealloc_counter, 0);
+    a.swap(b);
+    EXPECT_EQ(a->value(), 101);
+    EXPECT_EQ(b->value(), 42);
+  }
+  EXPECT_EQ(alloc_counter, 2);
+  EXPECT_EQ(dealloc_counter, 2);
 }
 
 struct ThrowsOnConstruction {
@@ -423,6 +508,32 @@ TEST(PolymorphicTest, InteractionWithSizedAllocators) {
   EXPECT_EQ(sizeof(xyz::polymorphic<int>), sizeof(int*) * 2);
   EXPECT_EQ(sizeof(xyz::polymorphic<int, TrackingAllocator<int>>),
             (sizeof(int*) * 2 + sizeof(TrackingAllocator<int>)));
+}
+
+struct BaseA {
+  int a_value = 3;
+  virtual int value() { return a_value; }
+};
+
+struct BaseB {
+  int b_value = 4;
+  virtual int value() { return b_value; }
+};
+
+struct MultipleBases : BaseA, BaseB {
+  int d_value = 5;
+  virtual int value() { return d_value; }
+};
+
+TEST(PolymorphicTest, MultipleBases) {
+  xyz::polymorphic<BaseA> a(std::in_place_type<MultipleBases>);
+
+  xyz::polymorphic<BaseB> b(std::in_place_type<MultipleBases>);
+
+  EXPECT_EQ(a->value(), 5);
+  EXPECT_EQ(b->value(), 5);
+  EXPECT_EQ(a->a_value, 3);
+  EXPECT_EQ(b->b_value, 4);
 }
 
 #if (__cpp_lib_memory_resource >= 201603L)
