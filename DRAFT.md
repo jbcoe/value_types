@@ -2,7 +2,7 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-P3019
+P3019R0
 
 Working Group: Library Evolution, Library
 
@@ -988,7 +988,7 @@ struct std::uses_allocator<polymorphic<T>, Alloc> : true_type {};
 ```
 
 * _Preconditions_: Alloc meets the _Cpp17Allocator_ requirements.
-* 
+
 #### X.Z.9 Optional support [polymorphic.optional]
 
 ```c++
@@ -1034,7 +1034,7 @@ Ville Voutilainen for suggestions and useful discussion.
 [http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3339.pdf]
 
 _A polymorphic value-type for C++_, J. B. Coe, S. Parent 2019
-[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0201r6.html]
+[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0201r6.html]
 
 _A Free-Store-Allocated Value Type for C++_, J. B. Coe, A. Peacock 2022
 [https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1950r2.html]
