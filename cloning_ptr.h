@@ -28,6 +28,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace xyz {
 
+template <typename T> class cloning_ptr;
+
+template <typename T, typename X> cloning_ptr<T> dynamic_pointer_cast(const cloning_ptr<X>& src);
+template <typename T, typename X> cloning_ptr<T> dynamic_pointer_cast(cloning_ptr<X>&& src);
+template <typename T, typename X> cloning_ptr<T> static_pointer_cast(const cloning_ptr<X>& src);
+template <typename T, typename X> cloning_ptr<T> static_pointer_cast(cloning_ptr<X>&& src);
+
 namespace detail {
 
     // Impl class allowing cloning and destruction using virtual methods.
@@ -40,7 +47,7 @@ namespace detail {
     template <typename U>
     struct impl : public impl_base {
         template <typename... Ts>
-                impl(Ts&&... ts) : m_value(std::forward<Ts>(ts)...) {}
+        impl(Ts&&... ts) : m_value(std::forward<Ts>(ts)...) {}
 
         std::unique_ptr<impl_base> clone() const override { return std::make_unique<impl>(m_value); }
         U m_value;
@@ -55,17 +62,22 @@ namespace detail {
         // Comparison is shallow, and as meaningless as for unique_ptr. As only the same pointer compares equal. Useful for storing in
         // set/map only.
         template <class X> auto operator<=>(const cloning_ptr_base& rhs) const {
-          return m_impl <=> rhs.m_impl;
+            return m_impl <=> rhs.m_impl;
         }
 
-  //  protected:
+    private:
+        template <typename T> friend class cloning_ptr;
+        template <typename T, typename X> friend cloning_ptr<T> xyz::dynamic_pointer_cast(const cloning_ptr<X>& src);
+        template <typename T, typename X> friend cloning_ptr<T> xyz::dynamic_pointer_cast(cloning_ptr<X>&& src);
+        template <typename T, typename X> friend cloning_ptr<T> xyz::static_pointer_cast(const cloning_ptr<X>& src);
+        template <typename T, typename X> friend cloning_ptr<T> xyz::static_pointer_cast(cloning_ptr<X>&& src);
+
         cloning_ptr_base() = default;
         cloning_ptr_base(std::unique_ptr<impl_base> impl) : m_impl(std::move(impl)) {}
  
         std::unique_ptr<impl_base> m_impl;
     };
     
-
 }
 
 // cloning_ptr can only be created initially by make_copying. After that it can be (deeply) copied and moved just like
@@ -76,6 +88,8 @@ public:
     cloning_ptr() = default;
     cloning_ptr(std::nullptr_t) {}
 
+    // constructor could be removed now that we have make_cloning. Well, it would be private and
+    // make_cloning would be a friend. That would not need un_place_type as make_cloning could set up the members.
     template <class U, class... Ts>
     explicit cloning_ptr(std::in_place_type_t<U>, Ts&&... ts)
         requires std::constructible_from<U, Ts&&...> &&
@@ -120,17 +134,21 @@ public:
 
         m_ptr = src.get();
         m_impl = std::move(src.m_impl);
-        src.m_ptr = nullptr;
+        src.__clear_ptr();
         return *this;
     }
     cloning_ptr& operator=(const nullptr_t& src) noexcept { reset(); }
     
     // Modifiers
+
+    // emplace could be removed now that we have make_cloning.
     template <class U, class... Ts>
-    void emplace(Ts&&... ts) {
+    U& emplace(Ts&&... ts) {
         auto impl = std::make_unique<detail::impl<U>>(std::forward<Ts>(ts)...);
-        m_ptr = &impl->m_value;      // Offset adjustment happens.
+        U& ret = impl->m_value;
+        m_ptr = &ret;      // Offset adjustment U -> T happens.
         m_impl = std::move(impl);
+        return ret;
     }
     
     void swap(cloning_ptr& other) noexcept { using std::swap; swap(m_impl, other.m_impl); swap(m_ptr, other.m_ptr); }
@@ -146,11 +164,14 @@ public:
     T& operator*() noexcept { return *m_ptr; }
     const T& operator*() const noexcept { return *m_ptr; }
 
-    // Creation helper
-    template<class U, class... Ts>
-    static cloning_ptr make(Ts&&... ts) { return cloning_ptr(std::in_place_type<U>, std::forward<Ts>(ts)...); }
+    void __clear_ptr() { m_ptr = nullptr; }         // Internal but public due to problems with friend declarations below.
 
 private:
+    // I can't get these friend declarations to work... maybe a MSVC bug.
+    //template <typename U>
+    //friend cloning_ptr<U>& cloning_ptr<U>::operator=(const cloning_ptr<T>&);
+    //template <typename U>
+    //friend cloning_ptr<U>& cloning_ptr<U>::operator=(cloning_ptr<T>&&);
     template <typename T, typename X> friend cloning_ptr<T> dynamic_pointer_cast(const cloning_ptr<X>& src);
     template <typename T, typename X> friend cloning_ptr<T> dynamic_pointer_cast(cloning_ptr<X>&& src);
     template <typename T, typename X> friend cloning_ptr<T> static_pointer_cast(const cloning_ptr<X>& src);
@@ -172,6 +193,14 @@ template <typename L, typename R> auto operator<=>(const cloning_ptr<L>& lhs, co
 }
 
 
+// Creation helper
+template<class U, class... Ts>
+static cloning_ptr<U> make_cloning(Ts&&... ts) 
+{
+    return cloning_ptr<U>{std::in_place_type<U>, std::forward<Ts>(ts)...};
+}
+
+
 // *_pointer_cast overloads. These come both lvalue and rvalue versions, where the former clone if the cast was successful.
 
 template<typename T, typename X>
@@ -179,15 +208,14 @@ cloning_ptr<T> dynamic_pointer_cast(const cloning_ptr<X>& src) {
     // Early check to avoid copying if downcast can't be done. Also catches
     // that src is null.
     auto tp = dynamic_cast<const T*>(src.get());
-    if (tp == nullptr) return {};
+    if (tp == nullptr) 
+        return {};
 
-    size_t offset = reinterpret_cast<const char*>(tp) -
-                    reinterpret_cast<const char*>(src.m_impl.get());
+    size_t offset = reinterpret_cast<const char*>(tp) - reinterpret_cast<const char*>(src.m_impl.get());
 
     cloning_ptr<T> ret;
     ret.m_impl = src.m_impl->clone();
-    ret.m_ptr = reinterpret_cast<T*>(reinterpret_cast<char*>(ret.m_impl.get()) +
-                                     offset);
+    ret.m_ptr = reinterpret_cast<T*>(reinterpret_cast<char*>(ret.m_impl.get()) + offset);
     return ret;
 }
 
@@ -215,13 +243,11 @@ cloning_ptr<T> static_pointer_cast(const cloning_ptr<X>& src) {
     if (tp == nullptr) 
         return {};
 
-    size_t offset = reinterpret_cast<const char*>(tp) -
-                    reinterpret_cast<const char*>(src.m_impl.get());
+    size_t offset = reinterpret_cast<const char*>(tp) - reinterpret_cast<const char*>(src.m_impl.get());
 
     cloning_ptr<T> ret;
     ret.m_impl = src.m_impl->clone();
-    ret.m_ptr = reinterpret_cast<T*>(reinterpret_cast<char*>(ret.m_impl.get()) +
-                                     offset);
+    ret.m_ptr = reinterpret_cast<T*>(reinterpret_cast<char*>(ret.m_impl.get()) + offset);
     return ret;
 }
 
@@ -231,13 +257,11 @@ cloning_ptr<T> static_pointer_cast(cloning_ptr<X>&& src) {
     if (tp == nullptr) 
         return {};  // src retains its value.
 
-    size_t offset = reinterpret_cast<const char*>(tp) -
-                    reinterpret_cast<const char*>(src.m_impl.get());
+    size_t offset = reinterpret_cast<const char*>(tp) - reinterpret_cast<const char*>(src.m_impl.get());
 
     cloning_ptr<T> ret;
     ret.m_impl = std::move(src.m_impl);
-    ret.m_ptr = reinterpret_cast<T*>(reinterpret_cast<char*>(ret.m_impl.get()) +
-                                     offset);
+    ret.m_ptr = reinterpret_cast<T*>(reinterpret_cast<char*>(ret.m_impl.get()) + offset);
     return ret;
 }
 

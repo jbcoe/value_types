@@ -389,7 +389,7 @@ struct AB : public ABase, public BBase
 
 
 TEST(CloningPtrTest, DownCast) {
-    xyz::cloning_ptr<BBase> pb(std::in_place_type<AB>);
+    xyz::cloning_ptr<BBase> pb(xyz::make_cloning<AB>());
     pb->b = 32;
 
     xyz::cloning_ptr<AB> pdab(dynamic_pointer_cast<AB>(pb));
