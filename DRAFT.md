@@ -988,7 +988,7 @@ struct std::uses_allocator<polymorphic<T>, Alloc> : true_type {};
 ```
 
 * _Preconditions_: Alloc meets the _Cpp17Allocator_ requirements.
-* 
+
 #### X.Z.9 Optional support [polymorphic.optional]
 
 ```c++
