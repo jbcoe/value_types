@@ -313,7 +313,7 @@ TEST(CloningPtrTest, SecondBase) {
     p1->m_value = 14;
 
     EXPECT_NE(p2->m_value, 14);         // Check that cloning took place.
-};
+}
 
 
 /// Test with virtual bases
@@ -329,11 +329,11 @@ struct Both : public Left, public Right {
 };
 
 TEST(CloningPtrTest, VirtualBase) {
-    xyz::cloning_ptr<A> pa(std::in_place_type<Both>, 17);
+    xyz::cloning_ptr<Both> pb(std::in_place_type<Both>, 17);
 
-    xyz::cloning_ptr<A> pa2(pa);
+    xyz::cloning_ptr<A> pa(pb);
 
-    EXPECT_EQ(pa2->value(), 17);
+    EXPECT_EQ(pa->value(), 17);
 };
 
 //// This is a compilability test showing that you can compile a class containing a cloning_ptr to a forward declared class and still
@@ -367,9 +367,39 @@ struct FDerived : public ForwardDeclared {
 
 FDerived d;
 
+
 // The C++ file that defines the UsingForwardDeclared methods after including the definition of FDerived in its header file.
-UsingForwardDeclared::UsingForwardDeclared()
-    : m_member(std::in_place_type<FDerived>) {}
+UsingForwardDeclared::UsingForwardDeclared() : m_member(std::in_place_type<FDerived>)
+{
+}
+
+struct ABase {
+    virtual ~ABase() {}
+    int a = 17;
+};
+        
+struct BBase {
+    virtual ~BBase() {}
+    int b = 17;
+};
+
+struct AB : public ABase, public BBase
+{
+};
+
+
+TEST(CloningPtrTest, DownCast) {
+    xyz::cloning_ptr<BBase> pb(std::in_place_type<AB>);
+    pb->b = 32;
+
+    xyz::cloning_ptr<AB> pdab(dynamic_pointer_cast<AB>(pb));
+    EXPECT_EQ(pdab->a, 17);
+    EXPECT_EQ(pdab->b, 32);
+
+    xyz::cloning_ptr<AB> psab(static_pointer_cast<AB>(pb));
+    EXPECT_EQ(psab->a, 17);
+    EXPECT_EQ(psab->b, 32);
+}
 
 
 }  // namespace
