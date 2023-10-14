@@ -156,7 +156,7 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
         )
         target_link_libraries(polymorphic_inline_vtable_test
             PRIVATE
-            polymorphic_inline_vtable
+                polymorphic_inline_vtable
                 GTest::gtest_main
                 common_compiler_settings
         )
