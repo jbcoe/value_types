@@ -101,7 +101,7 @@ class polymorphic {
 #endif
 
   using allocator_traits = std::allocator_traits<A>;
-  
+
  public:
   using value_type = T;
   using allocator_type = A;
@@ -254,15 +254,25 @@ class polymorphic {
 
   constexpr allocator_type get_allocator() const noexcept { return alloc_; }
 
-  constexpr void swap(polymorphic& other) noexcept {
+  constexpr void swap(polymorphic& other) noexcept(
+      allocator_traits::propagate_on_container_swap::value ||
+      allocator_traits::is_always_equal::value) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     std::swap(cb_, other.cb_);
+    if constexpr (allocator_traits::propagate_on_container_swap::value) {
+      std::swap(alloc_, other.alloc_);
+    }
   }
 
-  friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept {
+  friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(
+      allocator_traits::propagate_on_container_swap::value ||
+      allocator_traits::is_always_equal::value) {
     assert(lhs.cb_ != nullptr);  // LCOV_EXCL_LINE
     assert(rhs.cb_ != nullptr);  // LCOV_EXCL_LINE
     std::swap(lhs.cb_, rhs.cb_);
+    if constexpr (allocator_traits::propagate_on_container_swap::value) {
+      std::swap(lhs.alloc_, rhs.alloc_);
+    }
   }
 
  private:
