@@ -1,3 +1,5 @@
+test --test_output=errors
+
 build --cxxopt='-std=c++20'
 
 build:asan --strip=never

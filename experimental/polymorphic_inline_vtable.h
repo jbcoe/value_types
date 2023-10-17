@@ -18,10 +18,6 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==============================================================================*/
 
-#ifdef XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
-#include "experimental/polymorphic_inline_vtable.h"
-#endif // XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
-
 #ifndef XYZ_POLYMORPHIC_H_
 #define XYZ_POLYMORPHIC_H_
 
@@ -36,45 +32,59 @@ namespace detail {
 template <class T, class A>
 struct control_block {
   T* p_;
-  virtual constexpr ~control_block() = default;
-  virtual constexpr void destroy(A& alloc) = 0;
-  virtual constexpr control_block<T, A>* clone(A& alloc) = 0;
+  typedef void(destroy_fn)(control_block*, A& alloc);
+  typedef control_block<T, A>*(clone_fn)(const control_block*, A& alloc);
+
+  struct vtable {
+    destroy_fn* const destroy;
+    clone_fn* const clone;
+  } local_vtable_;
+
+  constexpr control_block(destroy_fn* const destroy, clone_fn* const clone)
+      : local_vtable_{.destroy = destroy, .clone = clone} {}
+
+  constexpr void destroy(A& alloc) { local_vtable_.destroy(this, alloc); }
+
+  constexpr control_block* clone(A& alloc) const {
+    return local_vtable_.clone(this, alloc);
+  }
 };
 
 template <class T, class U, class A>
 class direct_control_block : public control_block<T, A> {
   U u_;
 
+  using cb_allocator = typename std::allocator_traits<A>::template rebind_alloc<
+      direct_control_block<T, U, A>>;
+  using cb_alloc_traits = std::allocator_traits<cb_allocator>;
+
  public:
-  constexpr ~direct_control_block() override = default;
-
   template <class... Ts>
-  constexpr direct_control_block(Ts&&... ts) : u_(std::forward<Ts>(ts)...) {
-    control_block<T, A>::p_ = &u_;
-  }
-
-  constexpr control_block<T, A>* clone(A& alloc) override {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<direct_control_block<T, U, A>>;
-    cb_allocator cb_alloc(alloc);
-    using cb_alloc_traits = std::allocator_traits<cb_allocator>;
-    auto* mem = cb_alloc_traits::allocate(cb_alloc, 1);
-    try {
-      cb_alloc_traits::construct(cb_alloc, mem, u_);
-      return mem;
-    } catch (...) {
-      cb_alloc_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
-  }
-
-  constexpr void destroy(A& alloc) override {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<direct_control_block<T, U, A>>;
-    cb_allocator cb_alloc(alloc);
-    using cb_alloc_traits = std::allocator_traits<cb_allocator>;
-    cb_alloc_traits::destroy(cb_alloc, this);
-    cb_alloc_traits::deallocate(cb_alloc, this, 1);
+  constexpr direct_control_block(Ts&&... ts)
+      : control_block<T, A>{
+            // destroy
+            +[](control_block<T, A>* p, A& alloc) {
+              auto cb = static_cast<direct_control_block*>(p);
+              cb_allocator cb_alloc(alloc);
+              cb_alloc_traits::destroy(cb_alloc, cb);
+              cb_alloc_traits::deallocate(cb_alloc, cb, 1);
+            },
+            // clone
+            +[](const control_block<T, A>* p,
+                A& alloc) -> control_block<T, A>* {
+              auto cb = static_cast<const direct_control_block*>(p);
+              cb_allocator cb_alloc(alloc);
+              auto* mem = cb_alloc_traits::allocate(cb_alloc, 1);
+              try {
+                cb_alloc_traits::construct(cb_alloc, mem, cb->u_);
+                return mem;
+              } catch (...) {
+                cb_alloc_traits::deallocate(cb_alloc, mem, 1);
+                throw;
+              }
+            }},
+        u_(std::forward<Ts>(ts)...) {
+    this->p_ = &u_;
   }
 };
 
@@ -114,7 +124,7 @@ class polymorphic {
   }
 
   template <class U, class... Ts>
-  explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts)
+  constexpr explicit polymorphic(std::in_place_type_t<U>, Ts&&... ts)
     requires std::constructible_from<U, Ts&&...> &&
              std::copy_constructible<U> &&
              (std::derived_from<U, T> || std::same_as<U, T>)
@@ -168,7 +178,8 @@ class polymorphic {
     cb_ = other.cb_->clone(alloc_);
   }
 
-  constexpr polymorphic(polymorphic&& other) noexcept : alloc_(other.alloc_) {
+  constexpr polymorphic(polymorphic&& other) noexcept
+      : alloc_(std::move(other.alloc_)) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = std::exchange(other.cb_, nullptr);
   }
@@ -256,7 +267,12 @@ class polymorphic {
   friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(
       allocator_traits::propagate_on_container_swap::value ||
       allocator_traits::is_always_equal::value) {
-    lhs.swap(rhs);
+    assert(lhs.cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(rhs.cb_ != nullptr);  // LCOV_EXCL_LINE
+    std::swap(lhs.cb_, rhs.cb_);
+    if constexpr (allocator_traits::propagate_on_container_swap::value) {
+      std::swap(lhs.alloc_, rhs.alloc_);
+    }
   }
 
  private:
@@ -266,7 +282,7 @@ class polymorphic {
       cb_ = nullptr;
     }
   }
-};  // namespace xyz
+};
 
 }  // namespace xyz
 
