@@ -699,7 +699,7 @@ class std::optional<indirect<T, Alloc>>;
 ```
 
 The specialization `std::optional<indirect<T, Alloc>>` guarantees
-`size(std::optional<indirect<T, Alloc>>) == size(indirect<T, Alloc>>)`.
+`sizeof(std::optional<indirect<T, Alloc>>) == sizeof(indirect<T, Alloc>>)`.
 
 ```c++
 // [optional.observe], observers
@@ -997,7 +997,7 @@ class std::optional<polymorphic<T, Alloc>>;
 ```
 
 The specialization `std::optional<polymorphic<T, Alloc>>` guarantees
-`size(std::optional<polymorphic<T, Alloc>>) == size(polymorphic<T, Alloc>>)`.
+`sizeof(std::optional<polymorphic<T, Alloc>>) == sizeof(polymorphic<T, Alloc>>)`.
 
 ```c++
 // [optional.observe], observers
