@@ -715,6 +715,24 @@ constexpr indirect<T, Alloc>& operator->() noexcept;
 
 Otherwise, the interface of the specialization is as defined in [optional].
 
+#### X.Y.13 Formatter support [indirect.fmt]
+
+```c++
+// [indirect.fmt]
+template <class T, class Alloc, class charT>
+  requires { std::formatter<T, char>{}; };
+struct std::formatter<indirect<T, Alloc>, charT> : std::formatter<T> {
+  constexpr typename FormatContext::iterator parse(format_parse_context& ctx);
+
+  template<class FormatContext>
+  typename FormatContext::iterator format(
+    indirect<T, Alloc> const& value, FormatContext& ctx) const;
+};
+```
+
+Specialization of `std::formatter<indirect<T, Alloc>, charT>` when the underlying
+T support specialisation of `std::formatter<T, charT>`.
+
 ### X.Z Class template polymorphic [polymorphic]
 
 #### X.Z.1 Class template polymorphic general [polymorphic.general]

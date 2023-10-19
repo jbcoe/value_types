@@ -367,8 +367,6 @@ struct std::formatter<xyz::indirect<T, Alloc>, charT> : std::formatter<T> {
   template<class FormatContext>
   auto format(xyz::indirect<T, Alloc> const& value, FormatContext& ctx) const
       -> typename FormatContext::iterator {
-//    using namespace std::literals;
-//    return std::format_to(ctx.out(), "{}", *value);
     return std::formatter<T>::format(*value, ctx);
   }
 };
