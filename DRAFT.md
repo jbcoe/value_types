@@ -715,6 +715,13 @@ constexpr indirect<T, Alloc>& operator->() noexcept;
 
 Otherwise, the interface of the specialization is as defined in [optional].
 
+## Feature-test Macro
+Add a new feature-test macro:
+
+```c++
+#define __cpp_lib_indirect 2023XXL
+```
+
 ### X.Z Class template polymorphic [polymorphic]
 
 #### X.Z.1 Class template polymorphic general [polymorphic.general]
@@ -1017,7 +1024,7 @@ Otherwise, the interface of the specialization is as defined in [optional].
 Add a new feature-test macro:
 
 ```c++
-#define __cpp_lib_value_types 2023XXL 
+#define __cpp_lib_polymorphic 2023XXL
 ```
 
 ## Reference implementation
