@@ -370,6 +370,6 @@ struct std::formatter<xyz::indirect<T, Alloc>> {
     return std::format_to(ctx.out(), "{}", *value);
   }
 };
-#endif
+#endif // __cpp_lib_format >= 201907L
 
 #endif  // XYZ_INDIRECT_H
