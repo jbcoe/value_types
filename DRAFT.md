@@ -733,6 +733,13 @@ struct std::formatter<indirect<T, Alloc>, charT> : std::formatter<T> {
 Specialization of `std::formatter<indirect<T, Alloc>, charT>` when the underlying
 T support specialisation of `std::formatter<T, charT>`.
 
+## Feature-test Macro
+Add a new feature-test macro:
+
+```c++
+#define __cpp_lib_indirect 2023XXL
+```
+
 ### X.Z Class template polymorphic [polymorphic]
 
 #### X.Z.1 Class template polymorphic general [polymorphic.general]
@@ -1030,6 +1037,13 @@ constexpr polymorphic<T, Alloc>& operator->() noexcept;
   reference to the contained `polymorphic`.
 
 Otherwise, the interface of the specialization is as defined in [optional].
+
+## Feature-test Macro
+Add a new feature-test macro:
+
+```c++
+#define __cpp_lib_polymorphic 2023XXL
+```
 
 ## Reference implementation
 
