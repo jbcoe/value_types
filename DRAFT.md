@@ -730,9 +730,9 @@ struct std::formatter<indirect<T, Alloc>, charT> : std::formatter<T> {
 ```
 
 Specialization of `std::formatter<indirect<T, Alloc>, charT>` when the underlying
-T supports specialisation of `std::formatter<T, charT>`.
+`T` supports specialisation of `std::formatter<T, charT>`.
 
-* Preconditions: The specialization formatter<T, charT> meets the Formatter requirements.
+* Preconditions: The specialization `formatter<T, charT>` meets the _Formatter_ requirements.
 
 ## Feature-test Macro [indirect.predefined.ft]
 
