@@ -720,7 +720,6 @@ Otherwise, the interface of the specialization is as defined in [optional].
 ```c++
 // [indirect.fmt]
 template <class T, class Alloc, class charT>
-  requires { std::formatter<T, char>{}; };
 struct std::formatter<indirect<T, Alloc>, charT> : std::formatter<T> {
   constexpr typename FormatContext::iterator parse(format_parse_context& ctx);
 
@@ -731,7 +730,9 @@ struct std::formatter<indirect<T, Alloc>, charT> : std::formatter<T> {
 ```
 
 Specialization of `std::formatter<indirect<T, Alloc>, charT>` when the underlying
-T support specialisation of `std::formatter<T, charT>`.
+T supports specialisation of `std::formatter<T, charT>`.
+
+* Preconditions: The specialization formatter<T, charT> meets the Formatter requirements.
 
 ## Feature-test Macro
 Add a new feature-test macro:
