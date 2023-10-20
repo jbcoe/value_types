@@ -358,7 +358,7 @@ concept is_formattable = requires(T t) { std::formatter<T, charT>{}; };
 
 template <class T, class Alloc, class charT>
   requires xyz::is_formattable<T, charT>
-struct std::formatter<xyz::indirect<T, Alloc>, charT> : std::formatter<T> {
+struct std::formatter<xyz::indirect<T, Alloc>, charT> : std::formatter<T, charT> {
   template <class ParseContext>
   constexpr auto parse(ParseContext& ctx) -> typename ParseContext::iterator {
     return std::formatter<T>::parse(ctx);
