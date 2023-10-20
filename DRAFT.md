@@ -731,11 +731,12 @@ struct std::formatter<indirect<T, Alloc>, charT> : std::formatter<T, charT> {
 ```
 
 Specialization of `std::formatter<indirect<T, Alloc>, charT>` when the underlying
-T supports specialisation of `std::formatter<T, charT>`.
+`T` supports specialisation of `std::formatter<T, charT>`.
 
-* Preconditions: The specialization formatter<T, charT> meets the Formatter requirements.
+* Preconditions: The specialization `formatter<T, charT>` meets the _Formatter_ requirements.
 
-## Feature-test Macro
+## Feature-test Macro [indirect.predefined.ft]
+
 Add a new feature-test macro:
 
 ```c++
@@ -1040,7 +1041,8 @@ constexpr polymorphic<T, Alloc>& operator->() noexcept;
 
 Otherwise, the interface of the specialization is as defined in [optional].
 
-## Feature-test Macro
+## Feature-test Macro [polymorphic.predefined.ft]
+
 Add a new feature-test macro:
 
 ```c++
