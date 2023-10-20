@@ -720,8 +720,9 @@ Otherwise, the interface of the specialization is as defined in [optional].
 ```c++
 // [indirect.fmt]
 template <class T, class Alloc, class charT>
-struct std::formatter<indirect<T, Alloc>, charT> : std::formatter<T> {
-  constexpr typename FormatContext::iterator parse(format_parse_context& ctx);
+struct std::formatter<indirect<T, Alloc>, charT> : std::formatter<T, charT> {
+  template<class ParseContext>
+  constexpr typename ParseContext::iterator parse(ParseContext& ctx);
 
   template<class FormatContext>
   typename FormatContext::iterator format(

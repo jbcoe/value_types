@@ -351,13 +351,13 @@ struct std::hash<xyz::indirect<T, Alloc>> {
 
 namespace xyz {
 
-template <class T>
-concept is_formattable = requires(T t) { std::formatter<T, char>{}; };
+template <class T, class charT>
+concept is_formattable = requires(T t) { std::formatter<T, charT>{}; };
     
-}
+} // namespace xyz
 
 template <class T, class Alloc, class charT>
-  requires xyz::is_formattable<T>
+  requires xyz::is_formattable<T, charT>
 struct std::formatter<xyz::indirect<T, Alloc>, charT> : std::formatter<T> {
   constexpr auto parse(format_parse_context& ctx)
       -> format_parse_context::iterator {
