@@ -647,4 +647,23 @@ TEST(IndirectTest, HashCustomAllocator) {
   EXPECT_EQ(std::hash<IndirectType>()(a), std::hash<int>()(*a));
 }
 #endif  // (__cpp_lib_memory_resource >= 201603L)
+
+#if (__cpp_lib_format >= 201907L)
+
+TEST(IndirectTest, FormatNativeTypesDefaultFormatting) {
+  EXPECT_EQ(std::format("{}", xyz::indirect<bool>(std::in_place, true)), "true");
+  EXPECT_EQ(std::format("{}", xyz::indirect<int>(std::in_place, 100)), "100");
+  EXPECT_EQ(std::format("{}", xyz::indirect<float>(std::in_place, 50.0f)), "50");
+  EXPECT_EQ(std::format("{}", xyz::indirect<double>(std::in_place, 25.0)), "25");
+}
+
+TEST(IndirectTest, FormatNativeTypesPropagateFormatting) {
+  EXPECT_EQ(std::format("{:*<6}", xyz::indirect<bool>(std::in_place, true)), "true**");
+  EXPECT_EQ(std::format("{:*^7}", xyz::indirect<int>(std::in_place, 100)), "**100**");
+  EXPECT_EQ(std::format("{:>7}", xyz::indirect<float>(std::in_place, 50.0f)), "     50");
+  EXPECT_EQ(std::format("{:+8.3e}", xyz::indirect<double>(std::in_place, 25.75)), "+2.575e+01");
+}
+
+#endif  // __cpp_lib_format >= 201907L
+
 }  // namespace

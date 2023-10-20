@@ -26,6 +26,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <memory>
 #include <utility>
 
+#if __has_include(<format>)
+#include <format>
+#endif
+
 namespace xyz {
 
 template <class T, class A>
@@ -342,5 +346,31 @@ struct std::hash<xyz::indirect<T, Alloc>> {
     return std::hash<typename xyz::indirect<T, Alloc>::value_type>{}(*key);
   }
 };
+
+#if (__cpp_lib_format >= 201907L)
+
+namespace xyz {
+
+template <class T>
+concept is_formattable = requires(T t) { std::formatter<T, char>{}; };
+    
+}
+
+template <class T, class Alloc, class charT>
+  requires xyz::is_formattable<T>
+struct std::formatter<xyz::indirect<T, Alloc>, charT> : std::formatter<T> {
+  constexpr auto parse(format_parse_context& ctx)
+      -> format_parse_context::iterator {
+    return std::formatter<T>::parse(ctx);
+  }
+
+  template<class FormatContext>
+  auto format(xyz::indirect<T, Alloc> const& value, FormatContext& ctx) const
+      -> typename FormatContext::iterator {
+    return std::formatter<T>::format(*value, ctx);
+  }
+};
+
+#endif // __cpp_lib_format >= 201907L
 
 #endif  // XYZ_INDIRECT_H
