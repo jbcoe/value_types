@@ -361,13 +361,13 @@ template <class T, class Alloc, class charT>
 struct std::formatter<xyz::indirect<T, Alloc>, charT> : std::formatter<T, charT> {
   template <class ParseContext>
   constexpr auto parse(ParseContext& ctx) -> typename ParseContext::iterator {
-    return std::formatter<T>::parse(ctx);
+    return std::formatter<T, charT>::parse(ctx);
   }
 
   template <class FormatContext>
   auto format(xyz::indirect<T, Alloc> const& value, FormatContext& ctx) const ->
       typename FormatContext::iterator {
-    return std::formatter<T>::format(*value, ctx);
+    return std::formatter<T, charT>::format(*value, ctx);
   }
 };
 
