@@ -99,7 +99,7 @@ indirect storage is required.
 ### `const` propagation
 
 When composite objects contain `pointer`, `unique_ptr` or `shared_ptr` members
-they allow non-const access to ther respective pointees when accessed through a
+they allow non-const access to their respective pointees when accessed through a
 const access path. This prevents the compiler from eliminating a source of
 const-correctness bugs and makes it difficult to reason about the
 const-correctness of a composite object.
@@ -720,8 +720,9 @@ Otherwise, the interface of the specialization is as defined in [optional].
 ```c++
 // [indirect.fmt]
 template <class T, class Alloc, class charT>
-struct std::formatter<indirect<T, Alloc>, charT> : std::formatter<T> {
-  constexpr typename FormatContext::iterator parse(format_parse_context& ctx);
+struct std::formatter<indirect<T, Alloc>, charT> : std::formatter<T, charT> {
+  template<class ParseContext>
+  constexpr typename ParseContext::iterator parse(ParseContext& ctx);
 
   template<class FormatContext>
   typename FormatContext::iterator format(
@@ -730,11 +731,12 @@ struct std::formatter<indirect<T, Alloc>, charT> : std::formatter<T> {
 ```
 
 Specialization of `std::formatter<indirect<T, Alloc>, charT>` when the underlying
-T supports specialisation of `std::formatter<T, charT>`.
+`T` supports specialisation of `std::formatter<T, charT>`.
 
-* Preconditions: The specialization formatter<T, charT> meets the Formatter requirements.
+* Preconditions: The specialization `formatter<T, charT>` meets the _Formatter_ requirements.
 
-## Feature-test Macro
+## Feature-test Macro [indirect.predefined.ft]
+
 Add a new feature-test macro:
 
 ```c++
@@ -1039,7 +1041,8 @@ constexpr polymorphic<T, Alloc>& operator->() noexcept;
 
 Otherwise, the interface of the specialization is as defined in [optional].
 
-## Feature-test Macro
+## Feature-test Macro [polymorphic.predefined.ft]
+
 Add a new feature-test macro:
 
 ```c++
