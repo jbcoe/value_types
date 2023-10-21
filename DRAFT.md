@@ -99,7 +99,7 @@ indirect storage is required.
 ### `const` propagation
 
 When composite objects contain `pointer`, `unique_ptr` or `shared_ptr` members
-they allow non-const access to ther respective pointees when accessed through a
+they allow non-const access to their respective pointees when accessed through a
 const access path. This prevents the compiler from eliminating a source of
 const-correctness bugs and makes it difficult to reason about the
 const-correctness of a composite object.
