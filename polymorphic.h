@@ -20,7 +20,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifdef XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
 #include "experimental/polymorphic_inline_vtable.h"
-#endif // XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
+#endif  // XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
 
 #ifndef XYZ_POLYMORPHIC_H_
 #define XYZ_POLYMORPHIC_H_
@@ -116,8 +116,7 @@ class polymorphic {
   template <class U, class... Ts>
   explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts)
     requires std::constructible_from<U, Ts&&...> &&
-             std::copy_constructible<U> &&
-             (std::derived_from<U, T> || std::same_as<U, T>)
+             std::copy_constructible<U> && std::derived_from<U, T>
   {
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
