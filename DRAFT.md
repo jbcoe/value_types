@@ -1251,6 +1251,7 @@ class Class {
 
 ```c++
 // Class.cpp
+
 class Impl {
  public:
   void do_something();
@@ -1298,6 +1299,7 @@ class Class {
 
 ```c++
 // Class.cpp
+
 class Impl {
  public:
   void do_something();
