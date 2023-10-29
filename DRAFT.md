@@ -1217,11 +1217,101 @@ breaking changes. There may be a case for the addition of `small_polymorphic<T,
 N>` similar to `llvm::SmallVector<T, N>`, but we are not proposing its addition
 here.
 
-
 ## Appendix B: Before and after examples
 
 We include some minimal, illustrative examples of how `indirect` and
 `polymorphic` can be used to simplify composite class design.
+
+### Using `indirect` for binary compatibility using the PIMPL idiom
+
+Without using `indirect` we use `std::unique_ptr` to manage the lifetime of the
+implementation object. All const-qualified methods of the composite will need to
+be manually checked to ensure that they are not calling non-const qualified
+methods of component objects.
+
+#### Before, without using `indirect`
+
+```c++
+// Class.h
+
+class Class {
+  class Impl;
+  std::unique_ptr<Impl> impl_;
+ public:
+  Class();
+  ~Class();
+  Class(const Class&);
+  Class& operator=(const Class&);
+  Class(Class&&) noexcept = default;
+  Class& operator=(Class&&) noexcept = default;
+  
+  void do_something();
+};
+```
+
+```c++
+// Class.cpp
+class Impl {
+ public:
+  void do_something();
+};
+
+Class::Class() : impl_(std::make_unique<Impl>()) {}
+
+Class::~Class() = default;
+
+Class::Class(const Class& other) : impl_(std::make_unique<Impl>(*other.impl_)) {}
+
+Class& Class::operator=(const Class& other) {
+  if (this != &other) {
+    Class tmp(other);
+    using std::swap;
+    swap(*this, tmp);
+  }
+  return *this;
+}
+
+void Class::do_something() {
+  impl_->do_something();
+}
+```
+
+#### After, using `indirect`
+
+```c++
+// Class.h
+
+class Class {
+  class Impl;
+  indirect<Impl> impl_;
+ public:
+  Class();
+  ~Class();
+  Class(const Class&);
+  Class& operator=(const Class&);
+  Class(Class&&) noexcept = default;
+  Class& operator=(Class&&) noexcept = default;
+  
+  void do_something();
+};
+```
+
+```c++
+// Class.cpp
+class Impl {
+ public:
+  void do_something();
+};
+
+Class::Class() : impl_(indirect<Impl>()) {}
+Class::~Class() = default;
+Class::Class(const Class&) = default;
+Class& Class::operator=(const Class&) = default;
+
+void Class::do_something() {
+  impl_->do_something();
+}
+```
 
 ### Using `polymorphic` for a composite class
 
