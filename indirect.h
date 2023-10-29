@@ -337,9 +337,6 @@ concept is_hashable = requires(T t) { std::hash<T>{}(t); };
 }  // namespace xyz
 
 template <class T, class Alloc>
-struct std::uses_allocator<xyz::indirect<T, Alloc>, Alloc> : true_type {};
-
-template <class T, class Alloc>
   requires xyz::is_hashable<T>
 struct std::hash<xyz::indirect<T, Alloc>> {
   constexpr std::size_t operator()(const xyz::indirect<T, Alloc>& key) const {
