@@ -346,9 +346,6 @@ class indirect {
 };
 
 template <class T, class Alloc>
-struct std::uses_allocator<indirect<T, Alloc>, Alloc> : true_type {};
-
-template <class T, class Alloc>
 struct hash<indirect<T, Alloc>>;
 ```
 
@@ -409,8 +406,7 @@ constexpr indirect(
   std::allocator_arg_t, const Allocator& alloc, const indirect& other);
 ```
 
-* _Constraints_: `is_copy_constructible_v<T>` is true and `uses_allocator<T,
-  Allocator>` is true.
+* _Constraints_: `is_copy_constructible_v<T>` is true.
 
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
   _Cpp17Allocator_ requirements.
@@ -438,8 +434,7 @@ constexpr indirect(
   std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcept;
 ```
 
-* _Constraints_: `is_copy_constructible_v<T>` is true and `uses_allocator<T,
-  Allocator>` is true.
+* _Constraints_: `is_copy_constructible_v<T>` is true.
 
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
   _Cpp17Allocator_ requirements.
@@ -667,16 +662,9 @@ constexpr auto operator<=>(const U& lhs, const indirect<T, A>& rhs);
 * _Remarks_: Specializations of this function template for which `*lhs <=> *rhs`
   is a core constant expression, are constexpr functions.
 
-#### X.Y.10 Allocator related traits [indirect.allocator.traits]
-
-```c++
-template <class T, class Alloc>
-struct std::uses_allocator<indirect<T>, Alloc> : true_type {};
-```
-
 * _Preconditions_: Alloc meets the _Cpp17Allocator_ requirements.
 
-#### X.Y.11 Hash support [indirect.hash]
+#### X.Y.10 Hash support [indirect.hash]
   
 ```c++
 template <class T, class Alloc>
@@ -810,9 +798,6 @@ class polymorphic {
 
   friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(see below);
 };
-
-template <class T, class Alloc>
-struct std::uses_allocator<polymorphic<T, Alloc>, Alloc> : true_type {};
 ```
 
 #### X.Z.3 Constructors [polymorphic.ctor]
@@ -1008,16 +993,7 @@ constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(
 
 * _Effects_: Swaps the objects owned by `lhs` and `rhs`.
 
-#### X.Z.8 Allocator related traits [polymorphic.traits]
-
-```c++
-template <class T, class Alloc>
-struct std::uses_allocator<polymorphic<T>, Alloc> : true_type {};
-```
-
-* _Preconditions_: Alloc meets the _Cpp17Allocator_ requirements.
-
-#### X.Z.9 Optional support [polymorphic.optional]
+#### X.Z.8 Optional support [polymorphic.optional]
 
 ```c++
 template <class T, class Alloc>
