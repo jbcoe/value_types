@@ -1,4 +1,5 @@
 /* Copyright (c) 2016 The Value Types Authors. All Rights Reserved.
+
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
 the Software without restriction, including without limitation the rights to
@@ -335,9 +336,6 @@ template <class T>
 concept is_hashable = requires(T t) { std::hash<T>{}(t); };
 
 }  // namespace xyz
-
-template <class T, class Alloc>
-struct std::uses_allocator<xyz::indirect<T, Alloc>, Alloc> : true_type {};
 
 template <class T, class Alloc>
   requires xyz::is_hashable<T>
