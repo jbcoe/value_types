@@ -44,19 +44,13 @@ inline constexpr bool is_indirect_v<indirect<T, A>> = true;
 
 template <class T, class A = std::allocator<T>>
 class indirect {
-  T* p_;
-
-#if defined(_MSC_VER)
-  [[msvc::no_unique_address]] A alloc_;
-#else
-  [[no_unique_address]] A alloc_;
-#endif
-
   using allocator_traits = std::allocator_traits<A>;
 
  public:
   using value_type = T;
   using allocator_type = A;
+  using pointer = typename allocator_traits::pointer;
+  using const_pointer = typename allocator_traits::const_pointer;
 
   constexpr indirect()
     requires std::default_initializable<T>
@@ -214,12 +208,12 @@ class indirect {
     return *p_;
   }
 
-  constexpr const T* operator->() const noexcept {
+  constexpr const_pointer operator->() const noexcept {
     assert(p_ != nullptr);  // LCOV_EXCL_LINE
     return p_;
   }
 
-  constexpr T* operator->() noexcept {
+  constexpr pointer operator->() noexcept {
     assert(p_ != nullptr);  // LCOV_EXCL_LINE
     return p_;
   }
@@ -324,6 +318,14 @@ class indirect {
   }
 
  private:
+  pointer p_;
+
+#if defined(_MSC_VER)
+  [[msvc::no_unique_address]] A alloc_;
+#else
+  [[no_unique_address]] A alloc_;
+#endif
+
   constexpr void reset() noexcept {
     if (p_ == nullptr) return;
     allocator_traits::destroy(alloc_, p_);

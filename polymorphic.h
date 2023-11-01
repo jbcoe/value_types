@@ -35,7 +35,10 @@ namespace xyz {
 namespace detail {
 template <class T, class A>
 struct control_block {
-  T* p_;
+  using allocator_traits = std::allocator_traits<A>;
+
+  typename allocator_traits::pointer p_;
+
   virtual constexpr ~control_block() = default;
   virtual constexpr void destroy(A& alloc) = 0;
   virtual constexpr control_block<T, A>* clone(A& alloc) = 0;
@@ -95,6 +98,8 @@ class polymorphic {
  public:
   using value_type = T;
   using allocator_type = A;
+  using pointer = typename allocator_traits::pointer;
+  using const_pointer = typename allocator_traits::const_pointer;
 
   constexpr polymorphic()
     requires std::default_initializable<T>
@@ -216,12 +221,12 @@ class polymorphic {
     return *this;
   }
 
-  constexpr T* operator->() noexcept {
+  constexpr pointer operator->() noexcept {
     assert(cb_ != nullptr);  // LCOV_EXCL_LINE
     return cb_->p_;
   }
 
-  constexpr const T* operator->() const noexcept {
+  constexpr const_pointer operator->() const noexcept {
     assert(cb_ != nullptr);  // LCOV_EXCL_LINE
     return cb_->p_;
   }
