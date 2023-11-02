@@ -55,7 +55,7 @@ class indirect {
   constexpr indirect()
     requires std::default_initializable<T>
   {
-    T* mem = allocator_traits::allocate(alloc_, 1);
+    auto mem = allocator_traits::allocate(alloc_, 1);
     try {
       allocator_traits::construct(alloc_, mem);
       p_ = mem;
@@ -69,7 +69,7 @@ class indirect {
   explicit constexpr indirect(std::in_place_t, Ts&&... ts)
     requires std::constructible_from<T, Ts&&...>
   {
-    T* mem = allocator_traits::allocate(alloc_, 1);
+    auto mem = allocator_traits::allocate(alloc_, 1);
     try {
       allocator_traits::construct(alloc_, mem, std::forward<Ts>(ts)...);
       p_ = mem;
@@ -84,7 +84,7 @@ class indirect {
                      Ts&&... ts)
     requires std::constructible_from<T, Ts&&...>
       : alloc_(alloc) {
-    T* mem = allocator_traits::allocate(alloc_, 1);
+    auto mem = allocator_traits::allocate(alloc_, 1);
     try {
       allocator_traits::construct(alloc_, mem, std::forward<Ts>(ts)...);
       p_ = mem;
@@ -99,7 +99,7 @@ class indirect {
       : alloc_(allocator_traits::select_on_container_copy_construction(
             other.alloc_)) {
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
-    T* mem = allocator_traits::allocate(alloc_, 1);
+    auto mem = allocator_traits::allocate(alloc_, 1);
     try {
       allocator_traits::construct(alloc_, mem, *other);
       p_ = mem;
@@ -114,7 +114,7 @@ class indirect {
     requires std::copy_constructible<T>
       : alloc_(alloc) {
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
-    T* mem = allocator_traits::allocate(alloc_, 1);
+    auto mem = allocator_traits::allocate(alloc_, 1);
     try {
       allocator_traits::construct(alloc_, mem, *other);
       p_ = mem;
