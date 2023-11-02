@@ -1173,26 +1173,6 @@ outside of tests.
 
 A converting constructor could be added in a future version of the C++ standard.
 
-### Small object optimization for `polymorphic`
-
-`polymorphic` could be designed to include a small object optimization like that
-used in `std::string`. A small object optimization uses a buffer to potentially
-store the owned object and avoid allocating memory. This would make move
-construction more complicated as the owned object must be moved from one buffer
-to another, potentially invoking allocations if the owned object's move
-constructor allocates memory.
-
-As designed, `polymorphic<T>` does not require that `T` (or constructed classes
-of type `U` derived from `T`) are move constructible or move assignable for
-`polymorphic<T>` to be move constructible or move assignable.
-
-A polymorphic value type with a small buffer optimization that did not allocate
-a control block for the owned object would need to be a different type. It is
-not possible to add a small object optimization to `polymorphic` without making
-breaking changes. There may be a case for the addition of `small_polymorphic<T,
-N>` similar to `llvm::SmallVector<T, N>`, but we are not proposing its addition
-here.
-
 ## Appendix B: Before and after examples
 
 We include some minimal, illustrative examples of how `indirect` and
