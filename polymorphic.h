@@ -61,7 +61,7 @@ class direct_control_block : public control_block<T, A> {
         A>::template rebind_alloc<direct_control_block<T, U, A>>;
     cb_allocator cb_alloc(alloc);
     using cb_alloc_traits = std::allocator_traits<cb_allocator>;
-    auto* mem = cb_alloc_traits::allocate(cb_alloc, 1);
+    auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
     try {
       cb_alloc_traits::construct(cb_alloc, mem, u_);
       return mem;
@@ -108,7 +108,7 @@ class polymorphic {
         A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
     using cb_traits = std::allocator_traits<cb_allocator>;
     cb_allocator cb_alloc(alloc_);
-    auto* mem = cb_traits::allocate(cb_alloc, 1);
+    auto mem = cb_traits::allocate(cb_alloc, 1);
     try {
       cb_traits::construct(cb_alloc, mem);
       cb_ = mem;
@@ -127,7 +127,7 @@ class polymorphic {
         A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
     using cb_traits = std::allocator_traits<cb_allocator>;
     cb_allocator cb_alloc(alloc_);
-    auto* mem = cb_traits::allocate(cb_alloc, 1);
+    auto mem = cb_traits::allocate(cb_alloc, 1);
     try {
       cb_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
       cb_ = mem;
@@ -148,7 +148,7 @@ class polymorphic {
         A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
     using cb_traits = std::allocator_traits<cb_allocator>;
     cb_allocator cb_alloc(alloc_);
-    auto* mem = cb_traits::allocate(cb_alloc, 1);
+    auto mem = cb_traits::allocate(cb_alloc, 1);
     try {
       cb_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
       cb_ = mem;
