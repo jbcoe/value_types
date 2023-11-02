@@ -31,8 +31,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace xyz {
 
 namespace detail {
+
 template <class T, class A>
 struct control_block {
+  using allocator_type = A;
+
   T* p_;
   virtual constexpr ~control_block() = default;
   virtual constexpr void destroy(A& alloc) = 0;
@@ -275,7 +278,7 @@ class polymorphic {
         alloc_ = other.alloc_;
         polymorphic tmp(std::allocator_arg, alloc_, other);
         swap(tmp);
-      } else {
+    } else {
         polymorphic tmp(other);
         this->swap(tmp);
       }
@@ -296,13 +299,22 @@ class polymorphic {
       if (alloc_ == other.alloc_) {
         // cb_ = std::exchange(other.cb_, nullptr);
         other.buffer_.relocate(&buffer_);
-      } else {
+    } else {
         // cb_ = other.cb_->clone(alloc_);
         other.buffer_.clone(&buffer_);
         other.reset();
       }
     }
     return *this;
+  }
+
+  constexpr ~polymorphic() noexcept {
+    if (storage_.index() == 0) {
+    } else if (storage_.index() == 1) {
+    } else if (storage_.index() == 2) {
+    } else {
+      std::unreachable();
+    }
   }
 
   constexpr T* operator->() noexcept {

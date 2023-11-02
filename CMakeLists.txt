@@ -90,6 +90,25 @@ target_compile_definitions(polymorphic_inline_vtable
         -DXYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
 )
 
+add_library(polymorphic_sbo INTERFACE)
+target_include_directories(polymorphic_inline_vtable
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+target_sources(polymorphic_sbo
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/polymorphic_sbo.h>
+)
+target_compile_features(polymorphic_sbo
+    INTERFACE
+        cxx_std_23
+)
+target_compile_definitions(polymorphic_sbo 
+    INTERFACE 
+        -DXYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
+)
+
 
 add_library(value_types::value_types ALIAS value_types)
 
@@ -157,6 +176,22 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
         target_link_libraries(polymorphic_inline_vtable_test
             PRIVATE
                 polymorphic_inline_vtable
+                GTest::gtest_main
+                common_compiler_settings
+        )
+
+        add_executable(polymorphic_sbo_test "")
+        target_sources(polymorphic_sbo_test
+            PRIVATE
+                polymorphic_test.cc
+        )
+        target_compile_options(polymorphic_sbo_test
+            PRIVATE
+                $<$<CXX_COMPILER_ID:Clang>:-ftemplate-backtrace-limit=0> 
+        )
+        target_link_libraries(polymorphic_sbo_test
+            PRIVATE
+                polymorphic_sbo
                 GTest::gtest_main
                 common_compiler_settings
         )
