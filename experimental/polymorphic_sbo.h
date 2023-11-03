@@ -96,11 +96,11 @@ struct buffer {
   using relocate_fn = void (*)(struct buffer*, struct buffer*);
   using destroy_fn = void (*)(struct buffer*);
 
-  ptr_fn* ptr_ = nullptr;
-  cptr_fn* cptr_ = nullptr;
-  clone_fn* clone_ = nullptr;
-  relocate_fn* relocate_ = nullptr;
-  destroy_fn* destroy_ = nullptr;
+  ptr_fn ptr_ = nullptr;
+  cptr_fn cptr_ = nullptr;
+  clone_fn clone_ = nullptr;
+  relocate_fn relocate_ = nullptr;
+  destroy_fn destroy_ = nullptr;
   std::array<std::byte, PolymorphicBufferCapacity> data_;
 
   constexpr buffer() = default;
@@ -118,7 +118,8 @@ struct buffer {
       return static_cast<const T*>(
           std::launder(reinterpret_cast<const U*>(self->data_.data())));
     };
-    clone_ = [](const struct buffer* self, struct buffer* destination) -> void {
+    clone_ =
+        [](const struct buffer* self, struct buffer* destination) -> void {
       new (destination->data_.data())
           U(*std::launder(reinterpret_cast<const U*>(self->data_.data())));
       destination->ptr_ = self->ptr_;
@@ -140,17 +141,17 @@ struct buffer {
   }
 
   constexpr void clone(struct buffer* destination) const {
-    clone_(this, destination);
+    (*clone_)(this, destination);
   }
 
-  constexpr void destroy() { destroy_(this); }
+  constexpr void destroy() { (*destroy_)(this); }
 
   constexpr void relocate(struct buffer* destination) {
-    relocate_(this, destination);
+    (*relocate_)(this, destination);
   }
 
-  constexpr T* ptr() { return ptr_(this); }
-  constexpr T const* ptr() const { return cptr_(this); }
+  constexpr T* ptr() { return (*ptr_)(this); }
+  constexpr T const* ptr() const { return (*cptr_)(this); }
 };
 
 }  // namespace detail
@@ -316,24 +317,24 @@ class polymorphic {
     switch (static_cast<idx>(storage_.index())) {
       case idx::EMPTY:
         assert("Valueless after move");  // LCOV_EXCL_LINE
-        std::unreachable();
       case idx::BUFFER:
         return std::get<idx::BUFFER>(storage_).ptr();
       case idx::CONTROL_BLOCK:
         return std::get<idx::CONTROL_BLOCK>(storage_)->p_;
     }
+    std::unreachable();
   }
 
   constexpr const T* operator->() const noexcept {
     switch (storage_.index()) {
       case idx::EMPTY:
         assert("Valueless after move");  // LCOV_EXCL_LINE
-        std::unreachable();
       case idx::BUFFER:
         return std::get<idx::BUFFER>(storage_).ptr();
       case idx::CONTROL_BLOCK:
         return std::get<idx::CONTROL_BLOCK>(storage_)->p_;
     }
+    std::unreachable();
   }
 
   constexpr T& operator*() noexcept {
