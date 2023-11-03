@@ -148,7 +148,8 @@ struct buffer {
     relocate_(this, destination);
   }
 
-  constexpr T* ptr() const { return ptr_(this); }
+  constexpr T* ptr() { return ptr_(this); }
+  constexpr T const* ptr() const { return cptr_(this); }
 };
 
 }  // namespace detail
@@ -157,7 +158,7 @@ template <class T, class A = std::allocator<T>>
 class polymorphic {
   std::variant<std::monostate, detail::buffer<T>, detail::control_block<T, A>*>
       storage_;
-  enum class idx { EMPTY, BUFFER, CONTROL_BLOCK };
+  enum idx { EMPTY, BUFFER, CONTROL_BLOCK };
 
 #if defined(_MSC_VER)
   [[msvc::no_unique_address]] A alloc_;
@@ -174,8 +175,8 @@ class polymorphic {
   constexpr polymorphic()
     requires std::default_initializable<T>
   {
-    if constexpr (is_sbo_compatible<T>()) {
-      storage_.emplace<idx::BUFFER>(detail::buffer<T>());
+    if constexpr (detail::is_sbo_compatible<T>()) {
+      storage_.template emplace<idx::BUFFER>(detail::buffer<T>());
     } else {
       using cb_allocator = typename std::allocator_traits<
           A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
@@ -184,7 +185,7 @@ class polymorphic {
       auto* mem = cb_traits::allocate(cb_alloc, 1);
       try {
         cb_traits::construct(cb_alloc, mem);
-        storage_.emplace<idx::CONTROL_BLOCK>(mem);
+        storage_.template emplace<idx::CONTROL_BLOCK>(mem);
       } catch (...) {
         cb_traits::deallocate(cb_alloc, mem, 1);
         throw;
@@ -197,8 +198,9 @@ class polymorphic {
     requires std::constructible_from<U, Ts&&...> &&
              std::copy_constructible<U> && std::derived_from<U, T>
   {
-    if constexpr (is_sbo_compatible<U>()) {
-      storage_.emplace<idx::BUFFER>(detail::buffer<U>(std::forward<Ts>(ts)...));
+    if constexpr (detail::is_sbo_compatible<U>()) {
+      storage_.template emplace<idx::BUFFER>(
+          detail::buffer<U>(std::forward<Ts>(ts)...));
     } else {
       using cb_allocator = typename std::allocator_traits<
           A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
@@ -207,7 +209,7 @@ class polymorphic {
       auto* mem = cb_traits::allocate(cb_alloc, 1);
       try {
         cb_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
-        storage_.emplace<idx::CONTROL_BLOCK>(mem);
+        storage_.template emplace<idx::CONTROL_BLOCK>(mem);
       } catch (...) {
         cb_traits::deallocate(cb_alloc, mem, 1);
         throw;
@@ -222,8 +224,9 @@ class polymorphic {
              std::copy_constructible<U> &&
              (std::derived_from<U, T> || std::same_as<U, T>)
       : alloc_(alloc) {
-    if constexpr (is_sbo_compatible<U>()) {
-      storage_.emplace<idx::BUFFER>(detail::buffer<U>(std::forward<Ts>(ts)...));
+    if constexpr (detail::is_sbo_compatible<U>()) {
+      storage_.template emplace<idx::BUFFER>(
+          detail::buffer<U>(std::forward<Ts>(ts)...));
     } else {
       using cb_allocator = typename std::allocator_traits<
           A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
@@ -232,7 +235,7 @@ class polymorphic {
       auto* mem = cb_traits::allocate(cb_alloc, 1);
       try {
         cb_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
-        storage_.emplace<idx::CONTROL_BLOCK>(mem);
+        storage_.template emplace<idx::CONTROL_BLOCK>(mem);
       } catch (...) {
         cb_traits::deallocate(cb_alloc, mem, 1);
         throw;
@@ -243,35 +246,35 @@ class polymorphic {
   constexpr polymorphic(const polymorphic& other)
       : alloc_(allocator_traits::select_on_container_copy_construction(
             other.alloc_)) {
-    // assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!other.valueless_after_move());  // LCOV_EXCL_LINE
     // cb_ = other.cb_->clone(alloc_);
-    other.buffer_.clone(&buffer_);
+    // other.buffer_.clone(&buffer_);
   }
 
   constexpr polymorphic(std::allocator_arg_t, const A& alloc,
                         const polymorphic& other)
       : alloc_(alloc) {
-    // assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
-    cb_ = other.cb_->clone(alloc_);
+    assert(!other.valueless_after_move());  // LCOV_EXCL_LINE
+    // cb_ = other.cb_->clone(alloc_);
   }
 
   constexpr polymorphic(polymorphic&& other) noexcept : alloc_(other.alloc_) {
-    // assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!other.valueless_after_move());  // LCOV_EXCL_LINE
     // cb_ = std::exchange(other.cb_, nullptr);
-    other.buffer_.relocate(&buffer_);
+    // other.buffer_.relocate(&buffer_);
   }
 
   constexpr polymorphic(std::allocator_arg_t, const A& alloc,
                         polymorphic&& other) noexcept
       : alloc_(alloc) {
-    // assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
-    cb_ = std::exchange(other.cb_, nullptr);
+    assert(!other.valueless_after_move());  // LCOV_EXCL_LINE
+    // cb_ = std::exchange(other.cb_, nullptr);
   }
 
   constexpr ~polymorphic() { reset(); }
 
   constexpr polymorphic& operator=(const polymorphic& other) {
-    // assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!other.valueless_after_move());  // LCOV_EXCL_LINE
     if (this != &other) {
       if constexpr (allocator_traits::propagate_on_container_copy_assignment::
                         value) {
@@ -288,44 +291,35 @@ class polymorphic {
 
   constexpr polymorphic& operator=(polymorphic&& other) noexcept(
       allocator_traits::propagate_on_container_move_assignment::value) {
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!other.valueless_after_move());  // LCOV_EXCL_LINE
     reset();
     if constexpr (allocator_traits::propagate_on_container_move_assignment::
                       value) {
       alloc_ = other.alloc_;
       // cb_ = std::exchange(other.cb_, nullptr);
-      other.buffer_.relocate(&buffer_);
+      other.buffer().relocate(&buffer());
     } else {
       if (alloc_ == other.alloc_) {
         // cb_ = std::exchange(other.cb_, nullptr);
-        other.buffer_.relocate(&buffer_);
+        other.buffer().relocate(&buffer());
     } else {
         // cb_ = other.cb_->clone(alloc_);
-        other.buffer_.clone(&buffer_);
+        other.buffer().clone(&buffer());
         other.reset();
       }
     }
     return *this;
   }
 
-  constexpr ~polymorphic() noexcept {
-    if (storage_.index() == 0) {
-    } else if (storage_.index() == 1) {
-    } else if (storage_.index() == 2) {
-    } else {
-      std::unreachable();
-    }
-  }
-
   constexpr T* operator->() noexcept {
-    switch (storage_.index()) {
+    switch (static_cast<idx>(storage_.index())) {
       case idx::EMPTY:
         assert("Valueless after move");  // LCOV_EXCL_LINE
         std::unreachable();
       case idx::BUFFER:
-        return storage_.template get<idx::BUFFER>().ptr();
+        return std::get<idx::BUFFER>(storage_).ptr();
       case idx::CONTROL_BLOCK:
-        return storage_.template get<idx::CONTROL_BLOCK>()->p_;
+        return std::get<idx::CONTROL_BLOCK>(storage_)->p_;
     }
   }
 
@@ -335,9 +329,9 @@ class polymorphic {
         assert("Valueless after move");  // LCOV_EXCL_LINE
         std::unreachable();
       case idx::BUFFER:
-        return storage_.template get<idx::BUFFER>().cptr();
+        return std::get<idx::BUFFER>(storage_).ptr();
       case idx::CONTROL_BLOCK:
-        return storage_.template get<idx::CONTROL_BLOCK>()->p_;
+        return std::get<idx::CONTROL_BLOCK>(storage_)->p_;
     }
   }
 
@@ -358,12 +352,12 @@ class polymorphic {
   constexpr void swap(polymorphic& other) noexcept(
       allocator_traits::propagate_on_container_swap::value ||
       allocator_traits::is_always_equal::value) {
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
-    // std::swap(cb_, other.cb_);
+    // assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
+    //  std::swap(cb_, other.cb_);
     detail::buffer<T> tmp;
-    buffer_.relocate(&tmp);
-    other.buffer_.relocate(&buffer_);
-    tmp.relocate(&other.buffer_);
+    buffer().relocate(&tmp);
+    other.buffer().relocate(&buffer());
+    tmp.relocate(&other.buffer());
     if constexpr (allocator_traits::propagate_on_container_swap::value) {
       std::swap(alloc_, other.alloc_);
     }
@@ -376,12 +370,28 @@ class polymorphic {
   }
 
  private:
+  constexpr auto& buffer() {
+    assert(storage_.index() == idx::BUFFER);  // LCOV_EXCL_LINE
+    return std::get<idx::BUFFER>(storage_);
+  }
+
+  constexpr auto const& buffer() const {
+    assert(storage_.index() == idx::BUFFER);  // LCOV_EXCL_LINE
+    return std::get<idx::BUFFER>(storage_);
+  }
   constexpr void reset() noexcept {
     // if (cb_ != nullptr) {
     //   cb_->destroy(alloc_);
     //   cb_ = nullptr;
     // }
-    buffer_.destroy();
+    buffer().destroy();
+
+    /* if (storage_.index() == 0) {
+    } else if (storage_.index() == 1) {
+    } else if (storage_.index() == 2) {
+    } else {
+      std::unreachable();
+    }*/
   }
 };  // namespace xyz
 
