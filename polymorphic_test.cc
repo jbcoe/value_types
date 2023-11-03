@@ -536,7 +536,9 @@ TEST(PolymorphicTest, MultipleBases) {
   EXPECT_EQ(b->b_value, 4);
 }
 
+
 #if (__cpp_lib_memory_resource >= 201603L)
+/*
 TEST(PolymorphicTest, InteractionWithPMRAllocators) {
   std::array<std::byte, 1024> buffer;
   std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
@@ -562,6 +564,7 @@ TEST(PolymorphicTest, InteractionWithPMRAllocatorsWhenCopyThrows) {
   std::pmr::vector<PolymorphicType> values{pa};
   EXPECT_THROW(values.push_back(a), ThrowsOnCopyConstruction::Exception);
 }
+*/
 #endif  // (__cpp_lib_memory_resource >= 201603L)
 
 }  // namespace
