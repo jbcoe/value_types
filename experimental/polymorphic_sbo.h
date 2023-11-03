@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <array>
 #include <cassert>
 #include <concepts>
+#include <functional>
 #include <memory>
 #include <utility>
 #include <variant>
@@ -107,7 +108,7 @@ struct buffer {
   template <typename U, typename... Ts>
     requires std::derived_from<U, T> && std::constructible_from<U, Ts...> &&
              (is_sbo_compatible<U>())
-  constexpr buffer(Ts&&... ts) {
+  constexpr buffer(std::type_identity<U>, Ts&&... ts) {
     new (data_.data()) U(std::forward<Ts>(ts)...);
     ptr_ = [](struct buffer* self) -> T* {
       return static_cast<T*>(
@@ -200,7 +201,7 @@ class polymorphic {
   {
     if constexpr (detail::is_sbo_compatible<U>()) {
       storage_.template emplace<idx::BUFFER>(
-          detail::buffer<U>(std::forward<Ts>(ts)...));
+          detail::buffer<T>(std::type_identity<U>{}, std::forward<Ts>(ts)...));
     } else {
       using cb_allocator = typename std::allocator_traits<
           A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
@@ -226,7 +227,7 @@ class polymorphic {
       : alloc_(alloc) {
     if constexpr (detail::is_sbo_compatible<U>()) {
       storage_.template emplace<idx::BUFFER>(
-          detail::buffer<U>(std::forward<Ts>(ts)...));
+          detail::buffer<T>(std::type_identity<U>{}, std::forward<Ts>(ts)...));
     } else {
       using cb_allocator = typename std::allocator_traits<
           A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
