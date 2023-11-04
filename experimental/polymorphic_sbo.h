@@ -437,8 +437,8 @@ class polymorphic {
       case idx::CONTROL_BLOCK:
         switch (static_cast<idx>(other.storage_.index())) {
           case idx::BUFFER: {
-            auto* cb = std::get<idx::CONTROL_BLOCK>(other.storage_);
-            auto& other_buf = std::get<idx::BUFFER>(storage_);
+            auto* cb = std::get<idx::CONTROL_BLOCK>(storage_);
+            auto& other_buf = std::get<idx::BUFFER>(other.storage_);
             other_buf.relocate(storage_.template emplace<idx::BUFFER>());
             other.storage_.template emplace<idx::CONTROL_BLOCK>(cb);
             break;

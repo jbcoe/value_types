@@ -35,12 +35,23 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace {
 
-class Base : public xyz::NoPolymorphicSBO {
+class Base {
  public:
   virtual ~Base() = default;
   virtual int value() const = 0;
   virtual void set_value(int) = 0;
 };
+class Derived_NoSBO : public Base, public xyz::NoPolymorphicSBO {
+ private:
+  int value_;
+
+ public:
+  Derived_NoSBO(int v) : value_(v) {}
+  Derived_NoSBO() : Derived_NoSBO(0) {}
+  int value() const override { return value_; }
+  void set_value(int v) override { value_ = v; }
+};
+
 class Derived : public Base {
  private:
   int value_;
@@ -52,73 +63,55 @@ class Derived : public Base {
   void set_value(int v) override { value_ = v; }
 };
 
-class BaseWithSBO {
- public:
-  virtual ~BaseWithSBO() = default;
-  virtual int value() const = 0;
-  virtual void set_value(int) = 0;
-};
-
-class DerivedWithSBO : public BaseWithSBO {
- private:
-  int value_;
-
- public:
-  DerivedWithSBO(int v) : value_(v) {}
-  DerivedWithSBO() : DerivedWithSBO(0) {}
-  int value() const override { return value_; }
-  void set_value(int v) override { value_ = v; }
-};
-
 TEST(PolymorphicTest, ValueAccessFromInPlaceConstructedObject) {
-  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
+  xyz::polymorphic<Base> a(std::in_place_type<Derived_NoSBO>, 42);
   EXPECT_EQ(a->value(), 42);
 }
 
 TEST(PolymorphicTest, ValueAccessFromInPlaceConstructedObjectWithSBO) {
-  xyz::polymorphic<BaseWithSBO> a(std::in_place_type<DerivedWithSBO>, 42);
+  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
   EXPECT_EQ(a->value(), 42);
 }
 
 TEST(PolymorphicTest, ValueAccessFromDefaultConstructedObject) {
-  xyz::polymorphic<Derived> a;
+  xyz::polymorphic<Derived_NoSBO> a;
   EXPECT_EQ(a->value(), 0);
 }
 
 TEST(PolymorphicTest, ValueAccessFromDefaultConstructedObjectWithSBO) {
-  xyz::polymorphic<DerivedWithSBO> a;
+  xyz::polymorphic<Derived> a;
   EXPECT_EQ(a->value(), 0);
 }
 
 TEST(PolymorphicTest, CopiesAreDistinct) {
-  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
+  xyz::polymorphic<Base> a(std::in_place_type<Derived_NoSBO>, 42);
   auto aa = a;
   EXPECT_EQ(a->value(), aa->value());
   EXPECT_NE(&*a, &*aa);
 }
 
 TEST(PolymorphicTest, CopiesAreDistinctWithSBO) {
-  xyz::polymorphic<BaseWithSBO> a(std::in_place_type<DerivedWithSBO>, 42);
+  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
   auto aa = a;
   EXPECT_EQ(a->value(), aa->value());
   EXPECT_NE(&*a, &*aa);
 }
 
 TEST(PolymorphicTest, MoveRendersSourceValueless) {
-  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
+  xyz::polymorphic<Base> a(std::in_place_type<Derived_NoSBO>, 42);
   auto aa = std::move(a);
   EXPECT_TRUE(a.valueless_after_move());
 }
 
 TEST(PolymorphicTest, MoveRendersSourceValuelessWithSBO) {
-  xyz::polymorphic<BaseWithSBO> a(std::in_place_type<DerivedWithSBO>, 42);
+  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
   auto aa = std::move(a);
   EXPECT_TRUE(a.valueless_after_move());
 }
 
 TEST(PolymorphicTest, Swap) {
-  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
-  xyz::polymorphic<Base> b(std::in_place_type<Derived>, 101);
+  xyz::polymorphic<Base> a(std::in_place_type<Derived_NoSBO>, 42);
+  xyz::polymorphic<Base> b(std::in_place_type<Derived_NoSBO>, 101);
   EXPECT_EQ(a->value(), 42);
   EXPECT_EQ(b->value(), 101);
   swap(a, b);
@@ -127,8 +120,28 @@ TEST(PolymorphicTest, Swap) {
 }
 
 TEST(PolymorphicTest, SwapWithSBO) {
-  xyz::polymorphic<BaseWithSBO> a(std::in_place_type<DerivedWithSBO>, 42);
-  xyz::polymorphic<BaseWithSBO> b(std::in_place_type<DerivedWithSBO>, 101);
+  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
+  xyz::polymorphic<Base> b(std::in_place_type<Derived>, 101);
+  EXPECT_EQ(a->value(), 42);
+  EXPECT_EQ(b->value(), 101);
+  swap(a, b);
+  EXPECT_EQ(a->value(), 101);
+  EXPECT_EQ(b->value(), 42);
+}
+
+TEST(PolymorphicTest, SwapWithNoSBOAndSBO) {
+  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
+  xyz::polymorphic<Base> b(std::in_place_type<Derived_NoSBO>, 101);
+  EXPECT_EQ(a->value(), 42);
+  EXPECT_EQ(b->value(), 101);
+  swap(a, b);
+  EXPECT_EQ(a->value(), 101);
+  EXPECT_EQ(b->value(), 42);
+}
+
+TEST(PolymorphicTest, SwapWithSBOAndNoSBO) {
+  xyz::polymorphic<Base> a(std::in_place_type<Derived_NoSBO>, 42);
+  xyz::polymorphic<Base> b(std::in_place_type<Derived>, 101);
   EXPECT_EQ(a->value(), 42);
   EXPECT_EQ(b->value(), 101);
   swap(a, b);
@@ -137,17 +150,17 @@ TEST(PolymorphicTest, SwapWithSBO) {
 }
 
 TEST(PolymorphicTest, AccessDerivedObject) {
-  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
+  xyz::polymorphic<Base> a(std::in_place_type<Derived_NoSBO>, 42);
   EXPECT_EQ(a->value(), 42);
 }
 
 TEST(PolymorphicTest, AccessDerivedObjectWithSBO) {
-  xyz::polymorphic<BaseWithSBO> a(std::in_place_type<DerivedWithSBO>, 42);
+  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
   EXPECT_EQ(a->value(), 42);
 }
 
 TEST(PolymorphicTest, CopiesOfDerivedObjectsAreDistinct) {
-  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
+  xyz::polymorphic<Base> a(std::in_place_type<Derived_NoSBO>, 42);
   auto aa = a;
   EXPECT_EQ(a->value(), aa->value());
   aa->set_value(101);
@@ -155,7 +168,7 @@ TEST(PolymorphicTest, CopiesOfDerivedObjectsAreDistinct) {
 }
 
 TEST(PolymorphicTest, CopiesOfDerivedObjectsAreDistinctWithSBO) {
-  xyz::polymorphic<BaseWithSBO> a(std::in_place_type<DerivedWithSBO>, 42);
+  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
   auto aa = a;
   EXPECT_EQ(a->value(), aa->value());
   aa->set_value(101);
@@ -163,8 +176,8 @@ TEST(PolymorphicTest, CopiesOfDerivedObjectsAreDistinctWithSBO) {
 }
 
 TEST(PolymorphicTest, CopyAssignment) {
-  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
-  xyz::polymorphic<Base> b(std::in_place_type<Derived>, 101);
+  xyz::polymorphic<Base> a(std::in_place_type<Derived_NoSBO>, 42);
+  xyz::polymorphic<Base> b(std::in_place_type<Derived_NoSBO>, 101);
   EXPECT_EQ(a->value(), 42);
   a = b;
 
@@ -173,8 +186,8 @@ TEST(PolymorphicTest, CopyAssignment) {
 }
 
 TEST(PolymorphicTest, CopyAssignmentWithSBO) {
-  xyz::polymorphic<BaseWithSBO> a(std::in_place_type<DerivedWithSBO>, 42);
-  xyz::polymorphic<BaseWithSBO> b(std::in_place_type<DerivedWithSBO>, 101);
+  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
+  xyz::polymorphic<Base> b(std::in_place_type<Derived>, 101);
   EXPECT_EQ(a->value(), 42);
   a = b;
 
@@ -183,8 +196,8 @@ TEST(PolymorphicTest, CopyAssignmentWithSBO) {
 }
 
 TEST(PolymorphicTest, MoveAssignment) {
-  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
-  xyz::polymorphic<Base> b(std::in_place_type<Derived>, 101);
+  xyz::polymorphic<Base> a(std::in_place_type<Derived_NoSBO>, 42);
+  xyz::polymorphic<Base> b(std::in_place_type<Derived_NoSBO>, 101);
   EXPECT_EQ(a->value(), 42);
   a = std::move(b);
 
@@ -193,8 +206,8 @@ TEST(PolymorphicTest, MoveAssignment) {
 }
 
 TEST(PolymorphicTest, MoveAssignmentWithSBO) {
-  xyz::polymorphic<BaseWithSBO> a(std::in_place_type<DerivedWithSBO>, 42);
-  xyz::polymorphic<BaseWithSBO> b(std::in_place_type<DerivedWithSBO>, 101);
+  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
+  xyz::polymorphic<Base> b(std::in_place_type<Derived>, 101);
   EXPECT_EQ(a->value(), 42);
   a = std::move(b);
 
@@ -203,8 +216,8 @@ TEST(PolymorphicTest, MoveAssignmentWithSBO) {
 }
 
 TEST(PolymorphicTest, NonMemberSwap) {
-  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
-  xyz::polymorphic<Base> b(std::in_place_type<Derived>, 101);
+  xyz::polymorphic<Base> a(std::in_place_type<Derived_NoSBO>, 42);
+  xyz::polymorphic<Base> b(std::in_place_type<Derived_NoSBO>, 101);
   using std::swap;
   swap(a, b);
   EXPECT_EQ(a->value(), 101);
@@ -212,8 +225,8 @@ TEST(PolymorphicTest, NonMemberSwap) {
 }
 
 TEST(PolymorphicTest, NonMemberSwapWithSBO) {
-  xyz::polymorphic<BaseWithSBO> a(std::in_place_type<DerivedWithSBO>, 42);
-  xyz::polymorphic<BaseWithSBO> b(std::in_place_type<DerivedWithSBO>, 101);
+  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
+  xyz::polymorphic<Base> b(std::in_place_type<Derived>, 101);
   using std::swap;
   swap(a, b);
   EXPECT_EQ(a->value(), 101);
@@ -221,8 +234,8 @@ TEST(PolymorphicTest, NonMemberSwapWithSBO) {
 }
 
 TEST(PolymorphicTest, MemberSwap) {
-  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
-  xyz::polymorphic<Base> b(std::in_place_type<Derived>, 101);
+  xyz::polymorphic<Base> a(std::in_place_type<Derived_NoSBO>, 42);
+  xyz::polymorphic<Base> b(std::in_place_type<Derived_NoSBO>, 101);
 
   a.swap(b);
   EXPECT_EQ(a->value(), 101);
@@ -230,8 +243,8 @@ TEST(PolymorphicTest, MemberSwap) {
 }
 
 TEST(PolymorphicTest, MemberSwapWithSBO) {
-  xyz::polymorphic<BaseWithSBO> a(std::in_place_type<DerivedWithSBO>, 42);
-  xyz::polymorphic<BaseWithSBO> b(std::in_place_type<DerivedWithSBO>, 101);
+  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
+  xyz::polymorphic<Base> b(std::in_place_type<Derived>, 101);
 
   a.swap(b);
   EXPECT_EQ(a->value(), 101);
@@ -313,7 +326,7 @@ TEST(PolymorphicTest, GetAllocator) {
   xyz::polymorphic<Base, TrackingAllocator<Base>> a(
       std::allocator_arg,
       TrackingAllocator<Base>(&alloc_counter, &dealloc_counter),
-      std::in_place_type<Derived>, 42);
+      std::in_place_type<Derived_NoSBO>, 42);
   EXPECT_EQ(alloc_counter, 1);
   EXPECT_EQ(dealloc_counter, 0);
 
@@ -329,7 +342,7 @@ TEST(PolymorphicTest, CountAllocationsForInPlaceConstruction) {
     xyz::polymorphic<Base, TrackingAllocator<Base>> a(
         std::allocator_arg,
         TrackingAllocator<Base>(&alloc_counter, &dealloc_counter),
-        std::in_place_type<Derived>, 42);
+        std::in_place_type<Derived_NoSBO>, 42);
     EXPECT_EQ(alloc_counter, 1);
     EXPECT_EQ(dealloc_counter, 0);
   }
@@ -344,7 +357,7 @@ TEST(PolymorphicTest, CountAllocationsForDerivedTypeConstruction) {
     xyz::polymorphic<Base, TrackingAllocator<Base>> a(
         std::allocator_arg,
         TrackingAllocator<Base>(&alloc_counter, &dealloc_counter),
-        std::in_place_type<Derived>, 42);
+        std::in_place_type<Derived_NoSBO>, 42);
     EXPECT_EQ(alloc_counter, 1);
     EXPECT_EQ(dealloc_counter, 0);
   }
@@ -356,13 +369,13 @@ TEST(PolymorphicTest, CountAllocationsForCopyConstruction) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::polymorphic<Derived, TrackingAllocator<Derived>> a(
+    xyz::polymorphic<Derived_NoSBO, TrackingAllocator<Derived_NoSBO>> a(
         std::allocator_arg,
-        TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
-        std::in_place_type<Derived>, 42);
+        TrackingAllocator<Derived_NoSBO>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived_NoSBO>, 42);
     EXPECT_EQ(alloc_counter, 1);
     EXPECT_EQ(dealloc_counter, 0);
-    xyz::polymorphic<Derived, TrackingAllocator<Derived>> b(a);
+    xyz::polymorphic<Derived_NoSBO, TrackingAllocator<Derived_NoSBO>> b(a);
   }
   EXPECT_EQ(alloc_counter, 2);
   EXPECT_EQ(dealloc_counter, 2);
@@ -372,14 +385,14 @@ TEST(PolymorphicTest, CountAllocationsForCopyAssignment) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::polymorphic<Derived, TrackingAllocator<Derived>> a(
+    xyz::polymorphic<Derived_NoSBO, TrackingAllocator<Derived_NoSBO>> a(
         std::allocator_arg,
-        TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
-        std::in_place_type<Derived>, 42);
-    xyz::polymorphic<Derived, TrackingAllocator<Derived>> b(
+        TrackingAllocator<Derived_NoSBO>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived_NoSBO>, 42);
+    xyz::polymorphic<Derived_NoSBO, TrackingAllocator<Derived_NoSBO>> b(
         std::allocator_arg,
-        TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
-        std::in_place_type<Derived>, 101);
+        TrackingAllocator<Derived_NoSBO>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived_NoSBO>, 101);
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
     b = a;
@@ -392,14 +405,14 @@ TEST(PolymorphicTest, CountAllocationsForMoveAssignment) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::polymorphic<Derived, TrackingAllocator<Derived>> a(
+    xyz::polymorphic<Derived_NoSBO, TrackingAllocator<Derived_NoSBO>> a(
         std::allocator_arg,
-        TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
-        std::in_place_type<Derived>, 42);
-    xyz::polymorphic<Derived, TrackingAllocator<Derived>> b(
+        TrackingAllocator<Derived_NoSBO>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived_NoSBO>, 42);
+    xyz::polymorphic<Derived_NoSBO, TrackingAllocator<Derived_NoSBO>> b(
         std::allocator_arg,
-        TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
-        std::in_place_type<Derived>, 101);
+        TrackingAllocator<Derived_NoSBO>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived_NoSBO>, 101);
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
     b = std::move(a);
@@ -428,14 +441,16 @@ TEST(PolymorphicTest,
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::polymorphic<Derived, NonEqualTrackingAllocator<Derived>> a(
+    xyz::polymorphic<Derived_NoSBO, NonEqualTrackingAllocator<Derived_NoSBO>> a(
         std::allocator_arg,
-        NonEqualTrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
-        std::in_place_type<Derived>, 42);
-    xyz::polymorphic<Derived, NonEqualTrackingAllocator<Derived>> b(
+        NonEqualTrackingAllocator<Derived_NoSBO>(&alloc_counter,
+                                                &dealloc_counter),
+        std::in_place_type<Derived_NoSBO>, 42);
+    xyz::polymorphic<Derived_NoSBO, NonEqualTrackingAllocator<Derived_NoSBO>> b(
         std::allocator_arg,
-        NonEqualTrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
-        std::in_place_type<Derived>, 101);
+        NonEqualTrackingAllocator<Derived_NoSBO>(&alloc_counter,
+                                                &dealloc_counter),
+        std::in_place_type<Derived_NoSBO>, 101);
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
     b = std::move(a);  // This will copy as allocators don't compare equal.
@@ -448,13 +463,14 @@ TEST(PolymorphicTest, CountAllocationsForMoveConstruction) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::polymorphic<Derived, TrackingAllocator<Derived>> a(
+    xyz::polymorphic<Derived_NoSBO, TrackingAllocator<Derived_NoSBO>> a(
         std::allocator_arg,
-        TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
-        std::in_place_type<Derived>, 42);
+        TrackingAllocator<Derived_NoSBO>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived_NoSBO>, 42);
     EXPECT_EQ(alloc_counter, 1);
     EXPECT_EQ(dealloc_counter, 0);
-    xyz::polymorphic<Derived, TrackingAllocator<Derived>> b(std::move(a));
+    xyz::polymorphic<Derived_NoSBO, TrackingAllocator<Derived_NoSBO>> b(
+        std::move(a));
   }
   EXPECT_EQ(alloc_counter, 1);
   EXPECT_EQ(dealloc_counter, 1);
@@ -475,14 +491,14 @@ TEST(PolymorphicTest, NonMemberSwapWhenAllocatorsDontCompareEqual) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::polymorphic<Derived, POCSTrackingAllocator<Derived>> a(
+    xyz::polymorphic<Derived_NoSBO, POCSTrackingAllocator<Derived_NoSBO>> a(
         std::allocator_arg,
-        POCSTrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
-        std::in_place_type<Derived>, 42);
-    xyz::polymorphic<Derived, POCSTrackingAllocator<Derived>> b(
+        POCSTrackingAllocator<Derived_NoSBO>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived_NoSBO>, 42);
+    xyz::polymorphic<Derived_NoSBO, POCSTrackingAllocator<Derived_NoSBO>> b(
         std::allocator_arg,
-        POCSTrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
-        std::in_place_type<Derived>, 101);
+        POCSTrackingAllocator<Derived_NoSBO>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived_NoSBO>, 101);
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
     swap(a, b);
@@ -497,14 +513,14 @@ TEST(PolymorphicTest, MemberSwapWhenAllocatorsDontCompareEqual) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::polymorphic<Derived, POCSTrackingAllocator<Derived>> a(
+    xyz::polymorphic<Derived_NoSBO, POCSTrackingAllocator<Derived_NoSBO>> a(
         std::allocator_arg,
-        POCSTrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
-        std::in_place_type<Derived>, 42);
-    xyz::polymorphic<Derived, POCSTrackingAllocator<Derived>> b(
+        POCSTrackingAllocator<Derived_NoSBO>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived_NoSBO>, 42);
+    xyz::polymorphic<Derived_NoSBO, POCSTrackingAllocator<Derived_NoSBO>> b(
         std::allocator_arg,
-        POCSTrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
-        std::in_place_type<Derived>, 101);
+        POCSTrackingAllocator<Derived_NoSBO>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived_NoSBO>, 101);
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
     a.swap(b);
@@ -557,7 +573,8 @@ struct ThrowsOnCopyConstruction : xyz::NoPolymorphicSBO {
 struct ThrowsOnCopyConstructionWithSBO {
   class Exception : public std::runtime_error {
    public:
-    Exception() : std::runtime_error("ThrowsOnCopyConstructionWithSBO::Exception") {}
+    Exception()
+        : std::runtime_error("ThrowsOnCopyConstructionWithSBO::Exception") {}
   };
 
   ThrowsOnCopyConstructionWithSBO() = default;
@@ -626,7 +643,7 @@ TEST(PolymorphicTest, ConstructorWithExceptionsTrackingAllocations) {
 TEST(PolymorphicTest, InteractionWithOptional) {
   std::optional<xyz::polymorphic<Base>> a;
   EXPECT_FALSE(a.has_value());
-  a.emplace(std::in_place_type<Derived>, 42);
+  a.emplace(std::in_place_type<Derived_NoSBO>, 42);
   EXPECT_TRUE(a.has_value());
   EXPECT_EQ((*a)->value(), 42);
 }
@@ -634,7 +651,7 @@ TEST(PolymorphicTest, InteractionWithOptional) {
 TEST(PolymorphicTest, InteractionWithVector) {
   std::vector<xyz::polymorphic<Base>> as;
   for (int i = 0; i < 16; ++i) {
-    as.push_back(xyz::polymorphic<Base>(std::in_place_type<Derived>, i));
+    as.push_back(xyz::polymorphic<Base>(std::in_place_type<Derived_NoSBO>, i));
   }
   for (int i = 0; i < 16; ++i) {
     EXPECT_EQ(as[i]->value(), i);
@@ -644,7 +661,7 @@ TEST(PolymorphicTest, InteractionWithVector) {
 TEST(PolymorphicTest, InteractionWithMap) {
   std::map<int, xyz::polymorphic<Base>> as;
   for (int i = 0; i < 16; ++i) {
-    as.emplace(i, xyz::polymorphic<Base>(std::in_place_type<Derived>, i));
+    as.emplace(i, xyz::polymorphic<Base>(std::in_place_type<Derived_NoSBO>, i));
   }
   for (auto [k, v] : as) {
     EXPECT_EQ(v->value(), k);
@@ -654,7 +671,7 @@ TEST(PolymorphicTest, InteractionWithMap) {
 TEST(PolymorphicTest, InteractionWithUnorderedMap) {
   std::unordered_map<int, xyz::polymorphic<Base>> as;
   for (int i = 0; i < 16; ++i) {
-    as.emplace(i, xyz::polymorphic<Base>(std::in_place_type<Derived>, i));
+    as.emplace(i, xyz::polymorphic<Base>(std::in_place_type<Derived_NoSBO>, i));
   }
   for (auto [k, v] : as) {
     EXPECT_EQ(v->value(), k);
@@ -703,7 +720,8 @@ TEST(PolymorphicTest, InteractionWithPMRAllocators) {
   std::pmr::polymorphic_allocator<Base> pa{&mbr};
   using PolymorphicBase =
       xyz::polymorphic<Base, std::pmr::polymorphic_allocator<Base>>;
-  PolymorphicBase a(std::allocator_arg, pa, std::in_place_type<Derived>, 42);
+  PolymorphicBase a(std::allocator_arg, pa, std::in_place_type<Derived_NoSBO>,
+                    42);
   std::pmr::vector<PolymorphicBase> values{pa};
   values.push_back(a);
   values.push_back(std::move(a));
