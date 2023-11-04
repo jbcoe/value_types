@@ -31,6 +31,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace xyz {
 
+[[noreturn]] inline void unreachable() { std::terminate(); }
+
 namespace detail {
 
 template <class T, class A>
@@ -90,17 +92,19 @@ constexpr bool is_sbo_compatible() {
 
 template <class T>
 struct buffer {
-  using ptr_fn = T* (*)(struct buffer*);
-  using cptr_fn = const T* (*)(const struct buffer*);
-  using clone_fn = void (*)(const struct buffer*, struct buffer*);
-  using relocate_fn = void (*)(struct buffer*, struct buffer*);
-  using destroy_fn = void (*)(struct buffer*);
+  using ptr_fn = T* (*)(buffer*);
+  using cptr_fn = const T* (*)(const buffer*);
+  using clone_fn = void (*)(const buffer*, buffer*);
+  using relocate_fn = void (*)(buffer*, buffer*);
+  using destroy_fn = void (*)(buffer*);
 
-  ptr_fn ptr_ = nullptr;
-  cptr_fn cptr_ = nullptr;
-  clone_fn clone_ = nullptr;
-  relocate_fn relocate_ = nullptr;
-  destroy_fn destroy_ = nullptr;
+  struct vtable {
+    ptr_fn ptr = nullptr;
+    cptr_fn cptr = nullptr;
+    clone_fn clone = nullptr;
+    relocate_fn relocate = nullptr;
+    destroy_fn destroy = nullptr;
+  } vtable_;
   std::array<std::byte, PolymorphicBufferCapacity> data_;
 
   constexpr buffer() = default;
@@ -108,50 +112,47 @@ struct buffer {
   template <typename U, typename... Ts>
     requires std::derived_from<U, T> && std::constructible_from<U, Ts...> &&
              (is_sbo_compatible<U>())
-  constexpr buffer(std::type_identity<U>, Ts&&... ts) {
+  constexpr buffer(std::type_identity<U>, Ts&&... ts)
+      : vtable_{
+            .ptr = [](buffer* self) -> T* {
+              U* u = std::launder(reinterpret_cast<U*>(self->data_.data()));
+              return static_cast<T*>(u);
+            },
+            .cptr = [](const buffer* self) -> const T* {
+              const U* u =
+                  std::launder(reinterpret_cast<const U*>(self->data_.data()));
+              return static_cast<const T*>(u);
+            },
+            .clone = [](const buffer* self, buffer* destination) -> void {
+              const U* u =
+                  std::launder(reinterpret_cast<const U*>(self->data_.data()));
+              new (destination->data_.data()) U(*u);
+              destination->vtable_ = self->vtable_;
+            },
+            .relocate = [](buffer* self, buffer* destination) -> void {
+              U* u = std::launder(reinterpret_cast<U*>(self->data_.data()));
+              new (destination->data_.data()) U(std::move(*u));
+              destination->vtable_ = self->vtable_;
+            },
+            .destroy = [](buffer* self) -> void {
+              std::launder(reinterpret_cast<U*>(self->data_.data()))->~U();
+            }} {
     new (data_.data()) U(std::forward<Ts>(ts)...);
-    ptr_ = [](struct buffer* self) -> T* {
-      return static_cast<T*>(
-          std::launder(reinterpret_cast<U*>(self->data_.data())));
-    };
-    cptr_ = [](const struct buffer* self) -> const T* {
-      return static_cast<const T*>(
-          std::launder(reinterpret_cast<const U*>(self->data_.data())));
-    };
-    clone_ =
-        [](const struct buffer* self, struct buffer* destination) -> void {
-      new (destination->data_.data())
-          U(*std::launder(reinterpret_cast<const U*>(self->data_.data())));
-      destination->ptr_ = self->ptr_;
-      destination->clone_ = self->clone_;
-      destination->relocate_ = self->relocate_;
-      destination->destroy_ = self->destroy_;
-    };
-    relocate_ = [](struct buffer* self, struct buffer* destination) -> void {
-      new (destination->data_.data())
-          U(std::move(*std::launder(reinterpret_cast<U*>(self->data_.data()))));
-      destination->ptr_ = self->ptr_;
-      destination->clone_ = self->clone_;
-      destination->relocate_ = self->relocate_;
-      destination->destroy_ = self->destroy_;
-    };
-    destroy_ = [](struct buffer* self) -> void {
-      std::launder(reinterpret_cast<U*>(self->data_.data()))->~U();
-    };
   }
 
-  constexpr void clone(struct buffer* destination) const {
-    (*clone_)(this, destination);
+  constexpr void clone(buffer& destination) const {
+    (*vtable_.clone)(this, &destination);
   }
 
-  constexpr void destroy() { (*destroy_)(this); }
+  constexpr void destroy() { vtable_.destroy(this); }
 
-  constexpr void relocate(struct buffer* destination) {
-    (*relocate_)(this, destination);
+  constexpr void relocate(buffer& destination) {
+    (*vtable_.relocate)(this, &destination);
   }
 
-  constexpr T* ptr() { return (*ptr_)(this); }
-  constexpr T const* ptr() const { return (*cptr_)(this); }
+  constexpr const T* cptr() const { return (*vtable_.cptr)(this); }
+
+  constexpr T* ptr() { return (*vtable_.ptr)(this); }
 };
 
 }  // namespace detail
@@ -173,51 +174,6 @@ class polymorphic {
  public:
   using value_type = T;
   using allocator_type = A;
-
-  constexpr polymorphic()
-    requires std::default_initializable<T>
-  {
-    if constexpr (detail::is_sbo_compatible<T>()) {
-      storage_.template emplace<idx::BUFFER>(detail::buffer<T>());
-    } else {
-      using cb_allocator = typename std::allocator_traits<
-          A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
-      using cb_traits = std::allocator_traits<cb_allocator>;
-      cb_allocator cb_alloc(alloc_);
-      auto* mem = cb_traits::allocate(cb_alloc, 1);
-      try {
-        cb_traits::construct(cb_alloc, mem);
-        storage_.template emplace<idx::CONTROL_BLOCK>(mem);
-      } catch (...) {
-        cb_traits::deallocate(cb_alloc, mem, 1);
-        throw;
-      }
-    }
-  }
-
-  template <class U, class... Ts>
-  explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts)
-    requires std::constructible_from<U, Ts&&...> &&
-             std::copy_constructible<U> && std::derived_from<U, T>
-  {
-    if constexpr (detail::is_sbo_compatible<U>()) {
-      storage_.template emplace<idx::BUFFER>(
-          detail::buffer<T>(std::type_identity<U>{}, std::forward<Ts>(ts)...));
-    } else {
-      using cb_allocator = typename std::allocator_traits<
-          A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
-      using cb_traits = std::allocator_traits<cb_allocator>;
-      cb_allocator cb_alloc(alloc_);
-      auto* mem = cb_traits::allocate(cb_alloc, 1);
-      try {
-        cb_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
-        storage_.template emplace<idx::CONTROL_BLOCK>(mem);
-      } catch (...) {
-        cb_traits::deallocate(cb_alloc, mem, 1);
-        throw;
-      }
-    }
-  }
 
   template <class U, class... Ts>
   constexpr polymorphic(std::allocator_arg_t, const A& alloc,
@@ -245,33 +201,64 @@ class polymorphic {
     }
   }
 
-  constexpr polymorphic(const polymorphic& other)
-      : alloc_(allocator_traits::select_on_container_copy_construction(
-            other.alloc_)) {
-    assert(!other.valueless_after_move());  // LCOV_EXCL_LINE
-    // cb_ = other.cb_->clone(alloc_);
-    // other.buffer_.clone(&buffer_);
-  }
+  constexpr polymorphic()
+    requires std::default_initializable<T>
+      : polymorphic(std::allocator_arg, A(), std::in_place_type<T>) {}
+
+  template <class U, class... Ts>
+  explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts)
+    requires std::constructible_from<U, Ts&&...> &&
+             std::copy_constructible<U> && std::derived_from<U, T>
+      : polymorphic(std::allocator_arg, A(), std::in_place_type<U>,
+                    std::forward<Ts>(ts)...) {}
 
   constexpr polymorphic(std::allocator_arg_t, const A& alloc,
                         const polymorphic& other)
       : alloc_(alloc) {
     assert(!other.valueless_after_move());  // LCOV_EXCL_LINE
-    // cb_ = other.cb_->clone(alloc_);
+    switch (static_cast<idx>(other.storage_.index())) {
+      case idx::BUFFER:
+        storage_.template emplace<idx::BUFFER>();
+        std::get<idx::BUFFER>(other.storage_)
+            .clone(std::get<idx::BUFFER>(storage_));
+        break;
+      case idx::CONTROL_BLOCK:
+        storage_.template emplace<idx::CONTROL_BLOCK>(
+            std::get<idx::CONTROL_BLOCK>(other.storage_)->clone(alloc_));
+        break;
+      case idx::EMPTY:
+        unreachable();
+    }
   }
 
-  constexpr polymorphic(polymorphic&& other) noexcept : alloc_(other.alloc_) {
-    assert(!other.valueless_after_move());  // LCOV_EXCL_LINE
-    // cb_ = std::exchange(other.cb_, nullptr);
-    // other.buffer_.relocate(&buffer_);
-  }
+  constexpr polymorphic(const polymorphic& other)
+      : polymorphic(std::allocator_arg,
+                    allocator_traits::select_on_container_copy_construction(
+                        other.alloc_),
+                    other) {}
 
   constexpr polymorphic(std::allocator_arg_t, const A& alloc,
                         polymorphic&& other) noexcept
       : alloc_(alloc) {
-    assert(!other.valueless_after_move());  // LCOV_EXCL_LINE
-    // cb_ = std::exchange(other.cb_, nullptr);
+    switch (static_cast<idx>(other.storage_.index())) {
+      case idx::BUFFER: {
+        auto& buf = std::get<idx::BUFFER>(other.storage_);
+        storage_.template emplace<idx::BUFFER>();
+        buf.relocate(std::get<idx::BUFFER>(storage_));
+        other.reset();
+        break;
+      }
+      case idx::CONTROL_BLOCK: {
+        auto* cb = std::get<idx::CONTROL_BLOCK>(other.storage_);
+        storage_.template emplace<idx::CONTROL_BLOCK>(cb);
+        other.storage_.template emplace<idx::EMPTY>();
+        break;
+      }
+    }
   }
+
+  constexpr polymorphic(polymorphic&& other) noexcept
+      : polymorphic(std::allocator_arg, other.alloc_, other) {}
 
   constexpr ~polymorphic() { reset(); }
 
@@ -283,7 +270,7 @@ class polymorphic {
         alloc_ = other.alloc_;
         polymorphic tmp(std::allocator_arg, alloc_, other);
         swap(tmp);
-    } else {
+      } else {
         polymorphic tmp(other);
         this->swap(tmp);
       }
@@ -298,15 +285,56 @@ class polymorphic {
     if constexpr (allocator_traits::propagate_on_container_move_assignment::
                       value) {
       alloc_ = other.alloc_;
-      // cb_ = std::exchange(other.cb_, nullptr);
-      other.buffer().relocate(&buffer());
+      switch (static_cast<idx>(other.storage_.index())) {
+        case idx::BUFFER: {
+          auto& buf = std::get<idx::BUFFER>(other.storage_);
+          storage_.template emplace<idx::BUFFER>();
+          buf.relocate(std::get<idx::BUFFER>(storage_));
+          other.reset();
+          return *this;
+        }
+        case idx::CONTROL_BLOCK: {
+          auto* cb = std::get<idx::CONTROL_BLOCK>(other.storage_);
+          storage_.template emplace<idx::CONTROL_BLOCK>(cb);
+          other.storage_.template emplace<idx::EMPTY>();
+          return *this;
+        }
+        case idx::EMPTY:
+          unreachable();
+      }
     } else {
       if (alloc_ == other.alloc_) {
-        // cb_ = std::exchange(other.cb_, nullptr);
-        other.buffer().relocate(&buffer());
-    } else {
-        // cb_ = other.cb_->clone(alloc_);
-        other.buffer().clone(&buffer());
+        switch (static_cast<idx>(other.storage_.index())) {
+          case idx::BUFFER: {
+            auto& buf = std::get<idx::BUFFER>(other.storage_);
+            storage_.template emplace<idx::BUFFER>();
+            buf.relocate(std::get<idx::BUFFER>(storage_));
+            other.reset();
+            return *this;
+          }
+          case idx::CONTROL_BLOCK: {
+            auto* cb = std::get<idx::CONTROL_BLOCK>(other.storage_);
+            storage_.template emplace<idx::CONTROL_BLOCK>(cb);
+            other.storage_.template emplace<idx::EMPTY>();
+            return *this;
+          }
+          case idx::EMPTY:
+            unreachable();
+        }
+      } else {
+        switch (static_cast<idx>(other.storage_.index())) {
+          case idx::BUFFER:
+            storage_.template emplace<idx::BUFFER>();
+            std::get<idx::BUFFER>(other.storage_)
+                .clone(std::get<idx::BUFFER>(storage_));
+            break;
+          case idx::CONTROL_BLOCK:
+            storage_.template emplace<idx::CONTROL_BLOCK>(
+                std::get<idx::CONTROL_BLOCK>(other.storage_)->clone(alloc_));
+            break;
+          case idx::EMPTY:
+            unreachable();
+        }
         other.reset();
       }
     }
@@ -314,35 +342,55 @@ class polymorphic {
   }
 
   constexpr T* operator->() noexcept {
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     switch (static_cast<idx>(storage_.index())) {
-      case idx::EMPTY:
-        assert("Valueless after move");  // LCOV_EXCL_LINE
       case idx::BUFFER:
         return std::get<idx::BUFFER>(storage_).ptr();
       case idx::CONTROL_BLOCK:
         return std::get<idx::CONTROL_BLOCK>(storage_)->p_;
+      case idx::EMPTY:
+        unreachable();
     }
-    std::unreachable();
+    unreachable();
   }
 
   constexpr const T* operator->() const noexcept {
-    switch (storage_.index()) {
-      case idx::EMPTY:
-        assert("Valueless after move");  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
+    switch (static_cast<idx>(storage_.index())) {
       case idx::BUFFER:
-        return std::get<idx::BUFFER>(storage_).ptr();
+        return std::get<idx::BUFFER>(storage_).cptr();
       case idx::CONTROL_BLOCK:
         return std::get<idx::CONTROL_BLOCK>(storage_)->p_;
+      case idx::EMPTY:
+        unreachable();
     }
-    std::unreachable();
+    unreachable();
   }
 
   constexpr T& operator*() noexcept {
-    return *operator->();
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
+    switch (static_cast<idx>(storage_.index())) {
+      case idx::BUFFER:
+        return *(std::get<idx::BUFFER>(storage_).ptr());
+      case idx::CONTROL_BLOCK:
+        return *(std::get<idx::CONTROL_BLOCK>(storage_)->p_);
+      case idx::EMPTY:
+        unreachable();
+    }
+    unreachable();
   }
 
   constexpr const T& operator*() const noexcept {
-    return *operator->();
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
+    switch (static_cast<idx>(storage_.index())) {
+      case idx::BUFFER:
+        return *(std::get<idx::BUFFER>(storage_).cptr());
+      case idx::CONTROL_BLOCK:
+        return *(std::get<idx::CONTROL_BLOCK>(storage_)->p_);
+      case idx::EMPTY:
+        unreachable();
+    }
+    unreachable();
   }
 
   constexpr bool valueless_after_move() const noexcept {
@@ -354,12 +402,13 @@ class polymorphic {
   constexpr void swap(polymorphic& other) noexcept(
       allocator_traits::propagate_on_container_swap::value ||
       allocator_traits::is_always_equal::value) {
+    // TODO(jbcoe): implement swap.
     // assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     //  std::swap(cb_, other.cb_);
-    detail::buffer<T> tmp;
-    buffer().relocate(&tmp);
-    other.buffer().relocate(&buffer());
-    tmp.relocate(&other.buffer());
+    // detail::buffer<T> tmp;
+    // buffer().relocate(&tmp);
+    // other.buffer().relocate(&buffer());
+    // tmp.relocate(&other.buffer());
     if constexpr (allocator_traits::propagate_on_container_swap::value) {
       std::swap(alloc_, other.alloc_);
     }
@@ -382,18 +431,13 @@ class polymorphic {
     return std::get<idx::BUFFER>(storage_);
   }
   constexpr void reset() noexcept {
-    // if (cb_ != nullptr) {
-    //   cb_->destroy(alloc_);
-    //   cb_ = nullptr;
-    // }
-    buffer().destroy();
-
-    /* if (storage_.index() == 0) {
-    } else if (storage_.index() == 1) {
-    } else if (storage_.index() == 2) {
-    } else {
-      std::unreachable();
-    }*/
+    switch (storage_.index()) {
+      case idx::BUFFER:
+        return std::get<idx::BUFFER>(storage_).destroy();
+      case idx::CONTROL_BLOCK:
+        return std::get<idx::CONTROL_BLOCK>(storage_)->destroy(alloc_);
+    }
+    storage_.template emplace<idx::EMPTY>();
   }
 };  // namespace xyz
 

@@ -21,7 +21,15 @@ cc_library(
     ],
     copts = ["-Iexternal/value_types/"],
 )
-
+cc_library(
+    name = "polymorphic_sbo",
+    defines = ["XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION"],
+    hdrs = [
+        "experimental/polymorphic_sbo.h",
+        "polymorphic.h",
+    ],
+    copts = ["-Iexternal/value_types/"],
+)
 cc_test(
     name = "indirect_test",
     size = "small",
@@ -94,6 +102,17 @@ cc_binary(
         ":polymorphic",
         "@com_google_benchmark//:benchmark_main",
     ],
+)
+
+cc_test(
+    name = "polymorphic_sbo_test",
+    size = "small",
+    srcs = ["polymorphic_test.cc"],
+    deps = [
+        "polymorphic_sbo",
+        "@com_google_googletest//:gtest_main",
+    ],
+    tags = ["manual"]
 )
 
 cc_test(
