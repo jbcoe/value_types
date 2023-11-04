@@ -411,15 +411,22 @@ class polymorphic {
       case idx::BUFFER: {
         switch (static_cast<idx>(other.storage_.index())) {
           case idx::BUFFER: {
+            detail::buffer<T>& buf = std::get<idx::BUFFER>(storage_);
+            detail::buffer<T>& other_buf =
+                std::get<idx::BUFFER>(other.storage_);
             detail::buffer<T> tmp;
-            std::get<idx::BUFFER>(storage_).relocate(tmp);
-            std::get<idx::BUFFER>(other.storage_)
-                .relocate(std::get<idx::BUFFER>(storage_));
-            tmp.relocate(std::get<idx::BUFFER>(other.storage_));
+            buf.relocate(tmp);
+            other_buf.relocate(buf);
+            tmp.relocate(other_buf);
             break;
           }
           case idx::CONTROL_BLOCK: {
-            // TODO(jbcoe): Swap buffer and control block.
+            detail::buffer<T>& buf = std::get<idx::BUFFER>(storage_);
+            detail::control_block<T, A>* other_cb =
+                std::get<idx::CONTROL_BLOCK>(other.storage_);
+            other.storage_.template emplace<idx::BUFFER>();
+            buf.relocate(std::get<idx::BUFFER>(other.storage_));
+            storage_.template emplace<idx::CONTROL_BLOCK>(other_cb);
             break;
           }
           case idx::EMPTY: {
@@ -431,7 +438,12 @@ class polymorphic {
       case idx::CONTROL_BLOCK: {
         switch (static_cast<idx>(other.storage_.index())) {
           case idx::BUFFER: {
-            // TODO(jbcoe): Swap buffer and control block.
+            detail::control_block<T, A>* cb =
+                std::get<idx::CONTROL_BLOCK>(other.storage_);
+            detail::buffer<T>& other_buf = std::get<idx::BUFFER>(storage_);
+            storage_.template emplace<idx::BUFFER>();
+            other_buf.relocate(std::get<idx::BUFFER>(storage_));
+            other.storage_.template emplace<idx::CONTROL_BLOCK>(cb);
             break;
           }
           case idx::CONTROL_BLOCK: {
