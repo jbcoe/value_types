@@ -25,7 +25,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <array>
 #include <map>
 
-#include "experimental/polymorphic_sbo.h"
 #if __has_include(<memory_resource>)
 #include <memory_resource>
 #endif  // #if __has_include(<memory_resource>)
