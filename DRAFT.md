@@ -1173,7 +1173,7 @@ outside of tests.
 
 A converting constructor could be added in a future version of the C++ standard.
 
-### Small Buffer Optimisation for `polymorphic`
+### Small Buffer Optimisation
 
 It is possible to implement `polymorphic` with a small buffer optimisation,
 similar to that used in `std::function`. This would allow `polymorphic` to store
