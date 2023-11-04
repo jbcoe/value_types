@@ -758,6 +758,7 @@ TEST(PolymorphicTest, MultipleBases) {
 
 #if (__cpp_lib_memory_resource >= 201603L)
 // TODO: Fix compilation issues with pmr allocators and SBO.
+// https://github.com/jbcoe/value_types/issues/112
 #ifndef XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
 TEST(PolymorphicTest, InteractionWithPMRAllocators) {
   std::array<std::byte, 1024> buffer;
