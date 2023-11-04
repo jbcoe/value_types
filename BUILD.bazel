@@ -21,6 +21,7 @@ cc_library(
     ],
     copts = ["-Iexternal/value_types/"],
 )
+
 cc_library(
     name = "polymorphic_sbo",
     defines = ["XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION"],
@@ -30,6 +31,7 @@ cc_library(
     ],
     copts = ["-Iexternal/value_types/"],
 )
+
 cc_test(
     name = "indirect_test",
     size = "small",
@@ -62,21 +64,6 @@ cc_test(
     deps = [
         "polymorphic",
         "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_library(
-    name = "polymorphic_consteval",
-    srcs = ["polymorphic_consteval.cc"],
-    deps = [
-        "polymorphic",
-    ],
-)
-
-build_test(
-    name = "polymorphic_consteval_build_test",
-    targets = [
-        "polymorphic_consteval",
     ],
 )
 
@@ -114,6 +101,17 @@ cc_test(
     ],
 )
 
+cc_binary(
+    name = "polymorphic_benchmark_sbo",
+    srcs = [
+        "polymorphic_benchmark.cc",
+    ],
+    deps = [
+        ":polymorphic_sbo",
+        "@com_google_benchmark//:benchmark_main",
+    ],
+)
+
 cc_test(
     name = "polymorphic_inline_vtable_test",
     size = "small",
@@ -121,20 +119,6 @@ cc_test(
     deps = [
         "polymorphic_inline_vtable",
         "@com_google_googletest//:gtest_main",
-    ],
-)
-cc_library(
-    name = "polymorphic_consteval_inline_vtable",
-    srcs = ["polymorphic_consteval.cc"],
-    deps = [
-        "polymorphic_inline_vtable",
-    ],
-)
-
-build_test(
-    name = "polymorphic_consteval_inline_vtable_build_test",
-    targets = [
-        "polymorphic_consteval",
     ],
 )
 

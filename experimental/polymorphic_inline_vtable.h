@@ -42,12 +42,12 @@ struct control_block {
     clone_fn* const clone;
   } local_vtable_;
 
-  constexpr control_block(destroy_fn* const destroy, clone_fn* const clone)
+  control_block(destroy_fn* const destroy, clone_fn* const clone)
       : local_vtable_{.destroy = destroy, .clone = clone} {}
 
-  constexpr void destroy(A& alloc) { local_vtable_.destroy(this, alloc); }
+  void destroy(A& alloc) { local_vtable_.destroy(this, alloc); }
 
-  constexpr control_block* clone(A& alloc) const {
+  control_block* clone(A& alloc) const {
     return local_vtable_.clone(this, alloc);
   }
 };
@@ -62,7 +62,7 @@ class direct_control_block : public control_block<T, A> {
 
  public:
   template <class... Ts>
-  constexpr direct_control_block(Ts&&... ts)
+  direct_control_block(Ts&&... ts)
       : control_block<T, A>{
             // destroy
             +[](control_block<T, A>* p, A& alloc) {
@@ -108,7 +108,7 @@ class polymorphic {
   using value_type = T;
   using allocator_type = A;
 
-  constexpr polymorphic()
+  polymorphic()
     requires std::default_initializable<T>
   {
     using cb_allocator = typename std::allocator_traits<
@@ -126,7 +126,7 @@ class polymorphic {
   }
 
   template <class U, class... Ts>
-  constexpr explicit polymorphic(std::in_place_type_t<U>, Ts&&... ts)
+  explicit polymorphic(std::in_place_type_t<U>, Ts&&... ts)
     requires std::constructible_from<U, Ts&&...> &&
              std::copy_constructible<U> &&
              (std::derived_from<U, T> || std::same_as<U, T>)
@@ -146,8 +146,8 @@ class polymorphic {
   }
 
   template <class U, class... Ts>
-  constexpr polymorphic(std::allocator_arg_t, const A& alloc,
-                        std::in_place_type_t<U>, Ts&&... ts)
+  polymorphic(std::allocator_arg_t, const A& alloc, std::in_place_type_t<U>,
+              Ts&&... ts)
     requires std::constructible_from<U, Ts&&...> &&
              std::copy_constructible<U> &&
              (std::derived_from<U, T> || std::same_as<U, T>)
@@ -166,36 +166,34 @@ class polymorphic {
     }
   }
 
-  constexpr polymorphic(const polymorphic& other)
+  polymorphic(const polymorphic& other)
       : alloc_(allocator_traits::select_on_container_copy_construction(
             other.alloc_)) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = other.cb_->clone(alloc_);
   }
 
-  constexpr polymorphic(std::allocator_arg_t, const A& alloc,
-                        const polymorphic& other)
+  polymorphic(std::allocator_arg_t, const A& alloc, const polymorphic& other)
       : alloc_(alloc) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = other.cb_->clone(alloc_);
   }
 
-  constexpr polymorphic(polymorphic&& other) noexcept
-      : alloc_(std::move(other.alloc_)) {
+  polymorphic(polymorphic&& other) noexcept : alloc_(std::move(other.alloc_)) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = std::exchange(other.cb_, nullptr);
   }
 
-  constexpr polymorphic(std::allocator_arg_t, const A& alloc,
-                        polymorphic&& other) noexcept
+  polymorphic(std::allocator_arg_t, const A& alloc,
+              polymorphic&& other) noexcept
       : alloc_(alloc) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = std::exchange(other.cb_, nullptr);
   }
 
-  constexpr ~polymorphic() { reset(); }
+  ~polymorphic() { reset(); }
 
-  constexpr polymorphic& operator=(const polymorphic& other) {
+  polymorphic& operator=(const polymorphic& other) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     if (this != &other) {
       if constexpr (allocator_traits::propagate_on_container_copy_assignment::
@@ -211,7 +209,7 @@ class polymorphic {
     return *this;
   }
 
-  constexpr polymorphic& operator=(polymorphic&& other) noexcept(
+  polymorphic& operator=(polymorphic&& other) noexcept(
       allocator_traits::propagate_on_container_move_assignment::value) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     reset();
@@ -256,7 +254,7 @@ class polymorphic {
 
   constexpr allocator_type get_allocator() const noexcept { return alloc_; }
 
-  constexpr void swap(polymorphic& other) noexcept(
+  void swap(polymorphic& other) noexcept(
       allocator_traits::propagate_on_container_swap::value ||
       allocator_traits::is_always_equal::value) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
@@ -266,7 +264,7 @@ class polymorphic {
     }
   }
 
-  friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(
+  friend void swap(polymorphic& lhs, polymorphic& rhs) noexcept(
       allocator_traits::propagate_on_container_swap::value ||
       allocator_traits::is_always_equal::value) {
     assert(lhs.cb_ != nullptr);  // LCOV_EXCL_LINE
@@ -278,7 +276,7 @@ class polymorphic {
   }
 
  private:
-  constexpr void reset() noexcept {
+  void reset() noexcept {
     if (cb_ != nullptr) {
       cb_->destroy(alloc_);
       cb_ = nullptr;
