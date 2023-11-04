@@ -31,7 +31,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace xyz {
 
-[[noreturn]] inline void unreachable() { std::terminate(); }
+[[noreturn]] inline void unreachable() { std::terminate(); }  // LCOV_EXCL_LINE
 
 struct NoPolymorphicSBO {};
 
@@ -230,7 +230,7 @@ class polymorphic {
             std::get<idx::CONTROL_BLOCK>(other.storage_)->clone(alloc_));
         break;
       case idx::EMPTY:
-        unreachable();
+        unreachable();  // LCOV_EXCL_LINE
     }
   }
 
@@ -259,7 +259,7 @@ class polymorphic {
         break;
       }
       case idx::EMPTY:
-        unreachable();
+        unreachable();  // LCOV_EXCL_LINE
     }
   }
 
@@ -306,7 +306,7 @@ class polymorphic {
           return *this;
         }
         case idx::EMPTY:
-          unreachable();
+          unreachable();  // LCOV_EXCL_LINE
       }
     } else {
       if (alloc_ == other.alloc_) {
@@ -325,7 +325,7 @@ class polymorphic {
             return *this;
           }
           case idx::EMPTY:
-            unreachable();
+            unreachable();  // LCOV_EXCL_LINE
         }
       } else {
         switch (static_cast<idx>(other.storage_.index())) {
@@ -339,7 +339,7 @@ class polymorphic {
                 std::get<idx::CONTROL_BLOCK>(other.storage_)->clone(alloc_));
             break;
           case idx::EMPTY:
-            unreachable();
+            unreachable();  // LCOV_EXCL_LINE
         }
         other.reset();
       }
@@ -355,9 +355,9 @@ class polymorphic {
       case idx::CONTROL_BLOCK:
         return std::get<idx::CONTROL_BLOCK>(storage_)->p_;
       case idx::EMPTY:
-        unreachable();
+        unreachable();  // LCOV_EXCL_LINE
     }
-    unreachable();
+    unreachable();  // LCOV_EXCL_LINE
   }
 
   constexpr const T* operator->() const noexcept {
@@ -368,9 +368,9 @@ class polymorphic {
       case idx::CONTROL_BLOCK:
         return std::get<idx::CONTROL_BLOCK>(storage_)->p_;
       case idx::EMPTY:
-        unreachable();
+        unreachable();  // LCOV_EXCL_LINE
     }
-    unreachable();
+    unreachable();  // LCOV_EXCL_LINE
   }
 
   constexpr T& operator*() noexcept {
@@ -381,9 +381,9 @@ class polymorphic {
       case idx::CONTROL_BLOCK:
         return *(std::get<idx::CONTROL_BLOCK>(storage_)->p_);
       case idx::EMPTY:
-        unreachable();
+        unreachable();  // LCOV_EXCL_LINE
     }
-    unreachable();
+    unreachable();  // LCOV_EXCL_LINE
   }
 
   constexpr const T& operator*() const noexcept {
@@ -394,9 +394,9 @@ class polymorphic {
       case idx::CONTROL_BLOCK:
         return *(std::get<idx::CONTROL_BLOCK>(storage_)->p_);
       case idx::EMPTY:
-        unreachable();
+        unreachable();  // LCOV_EXCL_LINE
     }
-    unreachable();
+    unreachable();  // LCOV_EXCL_LINE
   }
 
   constexpr bool valueless_after_move() const noexcept {
@@ -431,7 +431,7 @@ class polymorphic {
             break;
           }
           case idx::EMPTY: {
-            unreachable();
+            unreachable();  // LCOV_EXCL_LINE
           }
         }
         break;
@@ -450,12 +450,12 @@ class polymorphic {
             break;
           }
           case idx::EMPTY: {
-            unreachable();
+            unreachable();  // LCOV_EXCL_LINE
           }
         }
         break;
       case idx::EMPTY:
-        unreachable();
+        unreachable();  // LCOV_EXCL_LINE
     }
     if constexpr (allocator_traits::propagate_on_container_swap::value) {
       std::swap(alloc_, other.alloc_);
@@ -469,26 +469,6 @@ class polymorphic {
   }
 
  private:
-  // constexpr auto& buffer() {
-  //   assert(storage_.index() == idx::BUFFER);  // LCOV_EXCL_LINE
-  //   return std::get<idx::BUFFER>(storage_);
-  // }
-
-  // constexpr const auto& buffer() const {
-  //   assert(storage_.index() == idx::BUFFER);  // LCOV_EXCL_LINE
-  //   return std::get<idx::BUFFER>(storage_);
-  // }
-
-  // constexpr auto& control_block() {
-  //   assert(storage_.index() == idx::CONTROL_BLOCK);  // LCOV_EXCL_LINE
-  //   return std::get<idx::CONTROL_BLOCK>(storage_);
-  // }
-
-  // constexpr const auto& control_block() const {
-  //   assert(storage_.index() == idx::CONTROL_BLOCK);  // LCOV_EXCL_LINE
-  //   return std::get<idx::CONTROL_BLOCK>(storage_);
-  // }
-
   constexpr void reset() noexcept {
     switch (storage_.index()) {
       case idx::BUFFER:
