@@ -82,7 +82,7 @@ class direct_control_block : public control_block<T, A> {
   }
 };
 
-static constexpr size_t PolymorphicBufferCapacity = 32;
+static constexpr size_t PolymorphicBufferCapacity = 0;
 
 template <typename T>
 constexpr bool is_sbo_compatible() {
@@ -254,11 +254,13 @@ class polymorphic {
         other.storage_.template emplace<idx::EMPTY>();
         break;
       }
+      case idx::EMPTY:
+        unreachable();
     }
   }
 
   constexpr polymorphic(polymorphic&& other) noexcept
-      : polymorphic(std::allocator_arg, other.alloc_, other) {}
+      : polymorphic(std::allocator_arg, other.alloc_, std::move(other)) {}
 
   constexpr ~polymorphic() { reset(); }
 
@@ -433,9 +435,9 @@ class polymorphic {
   constexpr void reset() noexcept {
     switch (storage_.index()) {
       case idx::BUFFER:
-        return std::get<idx::BUFFER>(storage_).destroy();
+        std::get<idx::BUFFER>(storage_).destroy();
       case idx::CONTROL_BLOCK:
-        return std::get<idx::CONTROL_BLOCK>(storage_)->destroy(alloc_);
+        std::get<idx::CONTROL_BLOCK>(storage_)->destroy(alloc_);
     }
     storage_.template emplace<idx::EMPTY>();
   }

@@ -63,13 +63,10 @@ TEST(PolymorphicTest, CopiesAreDistinct) {
   EXPECT_NE(&*a, &*aa);
 }
 
-TEST(PolymorphicTest, MovePreservesOwnedObjectAddress) {
+TEST(PolymorphicTest, MoveRendersSourceValueless) {
   xyz::polymorphic<A> a(std::in_place_type<A>, 42);
-  auto address = &*a;
   auto aa = std::move(a);
-
   EXPECT_TRUE(a.valueless_after_move());
-  EXPECT_EQ(address, &*aa);
 }
 
 TEST(PolymorphicTest, Swap) {
@@ -109,12 +106,12 @@ TEST(PolymorphicTest, CopiesOfDerivedObjectsAreDistinct) {
   EXPECT_NE(&*a, &*aa);
 }
 
-TEST(PolymorphicTest, MovePreservesOwnedDerivedObjectAddress) {
-  xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
-  auto address = &*a;
-  auto aa = std::move(a);
-  EXPECT_EQ(address, &*aa);
-}
+// TEST(PolymorphicTest, MovePreservesOwnedDerivedObjectAddress) {
+//   xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
+//   auto address = &*a;
+//   auto aa = std::move(a);
+//   EXPECT_EQ(address, &*aa);
+// }
 
 TEST(PolymorphicTest, CopyAssignment) {
   xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
@@ -318,7 +315,8 @@ struct NonEqualTrackingAllocator : TrackingAllocator<T> {
   }
 };
 
-TEST(PolymorphicTest, CountAllocationsForMoveAssignmentWhenAllocatorsDontCompareEqual) {
+TEST(PolymorphicTest,
+     CountAllocationsForMoveAssignmentWhenAllocatorsDontCompareEqual) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
@@ -332,7 +330,7 @@ TEST(PolymorphicTest, CountAllocationsForMoveAssignmentWhenAllocatorsDontCompare
         std::in_place_type<Derived>, 101);
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
-    b = std::move(a); // This will copy as allocators don't compare equal.
+    b = std::move(a);  // This will copy as allocators don't compare equal.
   }
   EXPECT_EQ(alloc_counter, 3);
   EXPECT_EQ(dealloc_counter, 3);
@@ -505,18 +503,19 @@ TEST(PolymorphicTest, InteractionWithUnorderedMap) {
 }
 
 TEST(PolymorphicTest, InteractionWithSizedAllocators) {
-  EXPECT_EQ(sizeof(xyz::polymorphic<int>), sizeof(int*));
   EXPECT_EQ(sizeof(xyz::polymorphic<int, TrackingAllocator<int>>),
-            (sizeof(int*) + sizeof(TrackingAllocator<int>)));
+            (sizeof(xyz::polymorphic<int>) + sizeof(TrackingAllocator<int>)));
 }
 
 struct BaseA {
   int a_value = 3;
+  virtual ~BaseA() = default;
   virtual int value() { return a_value; }
 };
 
 struct BaseB {
   int b_value = 4;
+  virtual ~BaseB() = default;
   virtual int value() { return b_value; }
 };
 
@@ -536,8 +535,8 @@ TEST(PolymorphicTest, MultipleBases) {
   EXPECT_EQ(b->b_value, 4);
 }
 
-
 #if (__cpp_lib_memory_resource >= 201603L)
+
 /*
 TEST(PolymorphicTest, InteractionWithPMRAllocators) {
   std::array<std::byte, 1024> buffer;
@@ -565,6 +564,7 @@ TEST(PolymorphicTest, InteractionWithPMRAllocatorsWhenCopyThrows) {
   EXPECT_THROW(values.push_back(a), ThrowsOnCopyConstruction::Exception);
 }
 */
+
 #endif  // (__cpp_lib_memory_resource >= 201603L)
 
 }  // namespace
