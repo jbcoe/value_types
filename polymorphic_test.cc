@@ -312,13 +312,20 @@ TEST(PolymorphicTest, CountAllocationsForMoveAssignment) {
 template <typename T>
 struct NonEqualTrackingAllocator : TrackingAllocator<T> {
   using TrackingAllocator<T>::TrackingAllocator;
+
+  template <typename Other>
+  struct rebind {
+    using other = NonEqualTrackingAllocator<Other>;
+  };
+
   friend bool operator==(const NonEqualTrackingAllocator&,
                          const NonEqualTrackingAllocator&) noexcept {
     return false;
   }
 };
 
-TEST(PolymorphicTest, CountAllocationsForMoveAssignmentWhenAllocatorsDontCompareEqual) {
+TEST(PolymorphicTest,
+     CountAllocationsForMoveAssignmentWhenAllocatorsDontCompareEqual) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
@@ -332,7 +339,7 @@ TEST(PolymorphicTest, CountAllocationsForMoveAssignmentWhenAllocatorsDontCompare
         std::in_place_type<Derived>, 101);
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
-    b = std::move(a); // This will copy as allocators don't compare equal.
+    b = std::move(a);  // This will copy as allocators don't compare equal.
   }
   EXPECT_EQ(alloc_counter, 3);
   EXPECT_EQ(dealloc_counter, 3);
@@ -358,6 +365,11 @@ template <typename T>
 struct POCSTrackingAllocator : TrackingAllocator<T> {
   using TrackingAllocator<T>::TrackingAllocator;
   using propagate_on_container_swap = std::true_type;
+
+  template <typename Other>
+  struct rebind {
+    using other = POCSTrackingAllocator<Other>;
+  };
 };
 
 TEST(PolymorphicTest, NonMemberSwapWhenAllocatorsDontCompareEqual) {
