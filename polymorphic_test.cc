@@ -24,6 +24,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <array>
 #include <map>
+
+#include "experimental/polymorphic_sbo.h"
 #if __has_include(<memory_resource>)
 #include <memory_resource>
 #endif  // #if __has_include(<memory_resource>)
@@ -34,7 +36,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace {
 
-class A {
+class A : xyz::NoPolymorphicSBO {
   int value_ = 0;
 
  public:
@@ -81,7 +83,7 @@ TEST(PolymorphicTest, Swap) {
   EXPECT_EQ(a->value(), 101);
   EXPECT_EQ(b->value(), 42);
 }
-class Base {
+class Base : public xyz::NoPolymorphicSBO {
  public:
   virtual ~Base() = default;
   virtual int value() const = 0;
@@ -109,13 +111,6 @@ TEST(PolymorphicTest, CopiesOfDerivedObjectsAreDistinct) {
   aa->set_value(101);
   EXPECT_NE(a->value(), aa->value());
 }
-
-// TEST(PolymorphicTest, MovePreservesOwnedDerivedObjectAddress) {
-//   xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
-//   auto address = &*a;
-//   auto aa = std::move(a);
-//   EXPECT_EQ(address, &*aa);
-// }
 
 TEST(PolymorphicTest, CopyAssignment) {
   xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
@@ -406,7 +401,7 @@ TEST(PolymorphicTest, MemberSwapWhenAllocatorsDontCompareEqual) {
   EXPECT_EQ(dealloc_counter, 2);
 }
 
-struct ThrowsOnConstruction {
+struct ThrowsOnConstruction : xyz::NoPolymorphicSBO {
   class Exception : public std::exception {
     const char* what() const noexcept override {
       return "ThrowsOnConstruction::Exception";
@@ -540,8 +535,9 @@ TEST(PolymorphicTest, MultipleBases) {
 }
 
 #if (__cpp_lib_memory_resource >= 201603L)
+#ifndef XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
+// TODO: Fix compile errors in the SBO implementation.
 
-/*
 TEST(PolymorphicTest, InteractionWithPMRAllocators) {
   std::array<std::byte, 1024> buffer;
   std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
@@ -567,8 +563,8 @@ TEST(PolymorphicTest, InteractionWithPMRAllocatorsWhenCopyThrows) {
   std::pmr::vector<PolymorphicType> values{pa};
   EXPECT_THROW(values.push_back(a), ThrowsOnCopyConstruction::Exception);
 }
-*/
 
+#endif  // XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
 #endif  // (__cpp_lib_memory_resource >= 201603L)
 
 }  // namespace

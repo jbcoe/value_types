@@ -33,7 +33,18 @@ namespace xyz {
 
 [[noreturn]] inline void unreachable() { std::terminate(); }
 
+struct NoPolymorphicSBO {};
+
 namespace detail {
+
+static constexpr size_t PolymorphicBufferCapacity = 32;
+
+template <typename T>
+constexpr bool is_sbo_compatible() {
+  return !std::is_base_of_v<NoPolymorphicSBO, T> &&
+         std::is_nothrow_move_constructible_v<T> &&
+         (sizeof(T) <= PolymorphicBufferCapacity);
+}
 
 template <class T, class A>
 struct control_block {
@@ -81,14 +92,6 @@ class direct_control_block : public control_block<T, A> {
     cb_alloc_traits::deallocate(cb_alloc, this, 1);
   }
 };
-
-static constexpr size_t PolymorphicBufferCapacity = 0;
-
-template <typename T>
-constexpr bool is_sbo_compatible() {
-  return std::is_nothrow_move_constructible_v<T> &&
-         (sizeof(T) <= PolymorphicBufferCapacity);
-}
 
 template <class T>
 struct buffer {
