@@ -53,6 +53,18 @@ jobs:
                   std: 20,
                 },
             }
+          - {
+              name: "MacOS Apple Clang 15",
+              os: macos-14,
+              compiler:
+                {
+                  type: APPLE_CLANG,
+                  version: "15.0",
+                  cc: "clang",
+                  cxx: "clang++",
+                  std: 20,
+                },
+            }
     steps:
       - uses: actions/checkout@v2
       - name: Add msbuild to PATH
@@ -77,6 +89,11 @@ jobs:
         shell: bash
         run: |
           sudo xcode-select -s "/Applications/Xcode_14.0.app"
+      - name: Select Xcode 15.0
+        if: matrix.config.compiler.type == 'APPLE_CLANG' && matrix.config.compiler.version == '15.0'
+        shell: bash
+        run: |
+          sudo xcode-select -s "/Applications/Xcode_15.0.app"
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
