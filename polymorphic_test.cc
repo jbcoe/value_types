@@ -545,9 +545,9 @@ TEST(PolymorphicTest, MultipleBases) {
 }
 
 #if (__cpp_lib_memory_resource >= 201603L)
-#ifndef XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
-// TODO: Fix compile errors in the SBO implementation.
-
+// We have issues with pmr allocators, sbo and clang.
+#if defined(XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION) && defined(__clang__)
+#else
 TEST(PolymorphicTest, InteractionWithPMRAllocators) {
   std::array<std::byte, 1024> buffer;
   std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
@@ -573,8 +573,7 @@ TEST(PolymorphicTest, InteractionWithPMRAllocatorsWhenCopyThrows) {
   std::pmr::vector<PolymorphicType> values{pa};
   EXPECT_THROW(values.push_back(a), ThrowsOnCopyConstruction::Exception);
 }
-
-#endif  // XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
+#endif // XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION and __clang__ 
 #endif  // (__cpp_lib_memory_resource >= 201603L)
 
 }  // namespace

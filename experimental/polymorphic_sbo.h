@@ -64,7 +64,9 @@ class direct_control_block : public control_block<T, A> {
   constexpr ~direct_control_block() override = default;
 
   template <class... Ts>
-  constexpr direct_control_block(Ts&&... ts) : u_(std::forward<Ts>(ts)...) {
+  constexpr direct_control_block(Ts&&... ts)
+    requires std::constructible_from<U, Ts...>
+      : u_(std::forward<Ts>(ts)...) {
     control_block<T, A>::p_ = &u_;
   }
 
@@ -182,8 +184,7 @@ class polymorphic {
   constexpr polymorphic(std::allocator_arg_t, const A& alloc,
                         std::in_place_type_t<U>, Ts&&... ts)
     requires std::constructible_from<U, Ts&&...> &&
-             std::copy_constructible<U> &&
-             (std::derived_from<U, T> || std::same_as<U, T>)
+             std::copy_constructible<U> && std::derived_from<U, T>
       : alloc_(alloc) {
     if constexpr (detail::is_sbo_compatible<U>()) {
       storage_.template emplace<idx::BUFFER>(std::type_identity<U>{},
@@ -205,13 +206,12 @@ class polymorphic {
   }
 
   constexpr polymorphic()
-    requires std::default_initializable<T>
+    requires std::default_initializable<T> && std::default_initializable<A>
       : polymorphic(std::allocator_arg, A(), std::in_place_type<T>) {}
 
   template <class U, class... Ts>
   explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts)
-    requires std::constructible_from<U, Ts&&...> &&
-             std::copy_constructible<U> && std::derived_from<U, T>
+    requires std::default_initializable<A>
       : polymorphic(std::allocator_arg, A(), std::in_place_type<U>,
                     std::forward<Ts>(ts)...) {}
 
@@ -243,6 +243,7 @@ class polymorphic {
   constexpr polymorphic(std::allocator_arg_t, const A& alloc,
                         polymorphic&& other) noexcept
       : alloc_(alloc) {
+    assert(!other.valueless_after_move());  // LCOV_EXCL_LINE
     switch (static_cast<idx>(other.storage_.index())) {
       case idx::BUFFER: {
         auto& buf = std::get<idx::BUFFER>(other.storage_);
