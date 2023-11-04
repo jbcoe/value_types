@@ -42,6 +42,11 @@ jobs:
               compiler: { type: VISUAL, version: 16, cc: "cl", cxx: "cl" },
             }
           - {
+              name: "Visual Studio 2022",
+              os: windows-latest,
+              compiler: { type: VISUAL, version: 17, cc: "cl", cxx: "cl" },
+            }
+          - {
               name: "MacOS Apple Clang 14",
               os: macos-13,
               compiler:
