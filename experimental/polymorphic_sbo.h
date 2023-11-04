@@ -82,7 +82,7 @@ class direct_control_block : public control_block<T, A> {
   }
 };
 
-static constexpr size_t PolymorphicBufferCapacity = 0;
+static constexpr size_t PolymorphicBufferCapacity = 32;
 
 template <typename T>
 constexpr bool is_sbo_compatible() {
@@ -183,8 +183,8 @@ class polymorphic {
              (std::derived_from<U, T> || std::same_as<U, T>)
       : alloc_(alloc) {
     if constexpr (detail::is_sbo_compatible<U>()) {
-      storage_.template emplace<idx::BUFFER>(
-          detail::buffer<T>(std::type_identity<U>{}, std::forward<Ts>(ts)...));
+      storage_.template emplace<idx::BUFFER>(std::type_identity<U>{},
+                                             std::forward<Ts>(ts)...);
     } else {
       using cb_allocator = typename std::allocator_traits<
           A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
@@ -428,16 +428,19 @@ class polymorphic {
     return std::get<idx::BUFFER>(storage_);
   }
 
-  constexpr auto const& buffer() const {
+  constexpr const auto& buffer() const {
     assert(storage_.index() == idx::BUFFER);  // LCOV_EXCL_LINE
     return std::get<idx::BUFFER>(storage_);
   }
+
   constexpr void reset() noexcept {
     switch (storage_.index()) {
       case idx::BUFFER:
         std::get<idx::BUFFER>(storage_).destroy();
+        break;
       case idx::CONTROL_BLOCK:
         std::get<idx::CONTROL_BLOCK>(storage_)->destroy(alloc_);
+        break;
     }
     storage_.template emplace<idx::EMPTY>();
   }

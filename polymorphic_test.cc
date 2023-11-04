@@ -40,6 +40,9 @@ class A {
  public:
   A() = default;
   A(int value) : value_(value) {}
+  A(const A&) = default;
+  A(A&&) noexcept(false) =
+      default;  // noexcept(false) move constructor inhibits SBO.
   int value() const { return value_; }
   friend bool operator==(const A& lhs, const A& rhs) {
     return lhs.value_ == rhs.value_;
@@ -71,19 +74,18 @@ TEST(PolymorphicTest, MoveRendersSourceValueless) {
 
 TEST(PolymorphicTest, Swap) {
   xyz::polymorphic<A> a(std::in_place_type<A>, 42);
-  xyz::polymorphic<A> b(std::in_place_type<A>, 43);
-  auto address_a = &*a;
-  auto address_b = &*b;
+  xyz::polymorphic<A> b(std::in_place_type<A>, 101);
+  EXPECT_EQ(a->value(), 42);
+  EXPECT_EQ(b->value(), 101);
   swap(a, b);
-  EXPECT_EQ(*a, 43);
-  EXPECT_EQ(*b, 42);
-  EXPECT_EQ(address_a, &*b);
-  EXPECT_EQ(address_b, &*a);
+  EXPECT_EQ(a->value(), 101);
+  EXPECT_EQ(b->value(), 42);
 }
 class Base {
  public:
   virtual ~Base() = default;
   virtual int value() const = 0;
+  virtual void set_value(int) = 0;
 };
 class Derived : public Base {
  private:
@@ -92,6 +94,7 @@ class Derived : public Base {
  public:
   Derived(int v) : value_(v) {}
   int value() const override { return value_; }
+  void set_value(int v) override { value_ = v; }
 };
 
 TEST(PolymorphicTest, AccessDerivedObject) {
@@ -103,7 +106,8 @@ TEST(PolymorphicTest, CopiesOfDerivedObjectsAreDistinct) {
   xyz::polymorphic<Base> a(std::in_place_type<Derived>, 42);
   auto aa = a;
   EXPECT_EQ(a->value(), aa->value());
-  EXPECT_NE(&*a, &*aa);
+  aa->set_value(101);
+  EXPECT_NE(a->value(), aa->value());
 }
 
 // TEST(PolymorphicTest, MovePreservesOwnedDerivedObjectAddress) {
