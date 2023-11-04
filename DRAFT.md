@@ -1183,10 +1183,10 @@ buffer optimization means that constructors and potentially allocating member
 functions of polymorphic cannot be marked `constexpr`.
 
 The authors are sceptical of the value of a small buffer optimisation for
-objects from a type hierarchy. If the buffer is too small then all instances of
+objects from a type hierarchy. If the buffer is too small, then all instances of
 `polymorphic` will be larger than needed as they will allocate heap in addition
 to having the memory from the buffer as part of the object size. If the buffer
-is too big then polymorphic objects will be larger than necessary, potentially
+is too big, `polymorphic` objects will be larger than necessary, potentially
 introducing the need for `indirect<polymorphic<T>>`.
 
 With usage experience, implementers will be able to determine if a small buffer
