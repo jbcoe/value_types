@@ -404,13 +404,50 @@ class polymorphic {
   constexpr void swap(polymorphic& other) noexcept(
       allocator_traits::propagate_on_container_swap::value ||
       allocator_traits::is_always_equal::value) {
-    // TODO(jbcoe): implement swap.
-    // assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
-    //  std::swap(cb_, other.cb_);
-    // detail::buffer<T> tmp;
-    // buffer().relocate(&tmp);
-    // other.buffer().relocate(&buffer());
-    // tmp.relocate(&other.buffer());
+    assert(!valueless_after_move());        // LCOV_EXCL_LINE
+    assert(!other.valueless_after_move());  // LCOV_EXCL_LINE
+
+    switch (static_cast<idx>(storage_.index())) {
+      case idx::BUFFER: {
+        switch (static_cast<idx>(other.storage_.index())) {
+          case idx::BUFFER: {
+            detail::buffer<T> tmp;
+            std::get<idx::BUFFER>(storage_).relocate(tmp);
+            std::get<idx::BUFFER>(other.storage_)
+                .relocate(std::get<idx::BUFFER>(storage_));
+            tmp.relocate(std::get<idx::BUFFER>(other.storage_));
+            break;
+          }
+          case idx::CONTROL_BLOCK: {
+            // TODO(jbcoe): Swap buffer and control block.
+            break;
+          }
+          case idx::EMPTY: {
+            unreachable();
+          }
+        }
+        break;
+      }
+      case idx::CONTROL_BLOCK: {
+        switch (static_cast<idx>(other.storage_.index())) {
+          case idx::BUFFER: {
+            // TODO(jbcoe): Swap buffer and control block.
+            break;
+          }
+          case idx::CONTROL_BLOCK: {
+            std::swap(std::get<idx::CONTROL_BLOCK>(storage_),
+                      std::get<idx::CONTROL_BLOCK>(other.storage_));
+            break;
+          }
+          case idx::EMPTY: {
+            unreachable();
+          }
+        }
+        break;
+      }
+      case idx::EMPTY:
+        unreachable();
+    }
     if constexpr (allocator_traits::propagate_on_container_swap::value) {
       std::swap(alloc_, other.alloc_);
     }
