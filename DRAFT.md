@@ -352,7 +352,7 @@ struct hash<indirect<T, Alloc>>;
 #### X.Y.3 Constructors [indirect.ctor]
 
 ```c++
-indirect()
+constexpr indirect()
 ```
 
 * _Constraints_: `is_default_constructible_v<T>` is true.
@@ -760,27 +760,27 @@ class polymorphic {
   polymorphic();
 
   template <class U, class... Ts>
-  explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts);
+  explicit polymorphic(std::in_place_type_t<U>, Ts&&... ts);
 
   template <class U, class... Ts>
-  constexpr polymorphic(
+  polymorphic(
     std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
 
-  constexpr polymorphic(const polymorphic& other);
+  polymorphic(const polymorphic& other);
   
-  constexpr polymorphic(
+  polymorphic(
     std::allocator_arg_t, const Allocator& alloc, const polymorphic& other);
 
-  constexpr polymorphic(polymorphic&& other) noexcept;
+  polymorphic(polymorphic&& other) noexcept;
   
-  constexpr polymorphic(
+  polymorphic(
     std::allocator_arg_t, const Allocator& alloc, polymorphic&& other) noexcept;
 
-  constexpr ~polymorphic();
+  ~polymorphic();
 
-  constexpr polymorphic& operator=(const polymorphic& other);
+  polymorphic& operator=(const polymorphic& other);
 
-  constexpr polymorphic& operator=(polymorphic&& other) noexcept(see below);
+  polymorphic& operator=(polymorphic&& other) noexcept(see below);
 
   constexpr const T& operator*() const noexcept;
 
@@ -794,9 +794,9 @@ class polymorphic {
 
   constexpr allocator_type get_allocator() const noexcept;
 
-  constexpr void swap(polymorphic& other) noexcept(see below);
+  void swap(polymorphic& other) noexcept(see below);
 
-  friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(see below);
+  friend void swap(polymorphic& lhs, polymorphic& rhs) noexcept(see below);
 };
 ```
 
@@ -972,7 +972,7 @@ constexpr allocator_type get_allocator() const noexcept;
 #### X.Z.7 Swap [polymorphic.swap]
 
 ```c++
-constexpr void swap(polymorphic& other) noexcept(
+void swap(polymorphic& other) noexcept(
     allocator_traits<Allocator>::propagate_on_container_swap::value ||
     allocator_traits<Allocator>::is_always_equal::value);
 ```
@@ -984,7 +984,7 @@ constexpr void swap(polymorphic& other) noexcept(
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
 ```c++
-constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(
+void swap(polymorphic& lhs, polymorphic& rhs) noexcept(
     allocator_traits<Allocator>::propagate_on_container_swap::value ||
     allocator_traits<Allocator>::is_always_equal::value);
 ```
@@ -1172,6 +1172,31 @@ There is no motivating use case for explicit conversion between derived types
 outside of tests.
 
 A converting constructor could be added in a future version of the C++ standard.
+
+### Small Buffer Optimisation for `polymorphic`
+
+It is possible to implement `polymorphic` with a small buffer optimisation,
+similar to that used in `std::function`. This would allow `polymorphic` to store
+small objects without allocating memory. Like `std::function`, the size of the
+small buffer is left to be specified by the implementation. Allowing a small
+buffer optimization means that constructors and potentially allocating member
+functions of polymorphic cannot be marked `constexpr`.
+
+The authors are sceptical of the value of a small buffer optimisation for
+objects from a type hierarchy. If the buffer is too small then all instances of
+`polymorphic` will be larger that needed as they will allocate heap in addition
+to having the memory from the buffer as part of the object size. If the buffer
+is too big then polymorphic objects will be larger than necessary, potentially
+introducing the need for `indirect<polymorphic<T>>`.
+
+With usage experience implementers will be able to determine if a small buffer
+optimisation is worthwhile. We leave `polymorphic` specified so that a small
+buffer optimisation is possible.
+
+A small buffer optimisation makes little sense for `indirect` as the sensible
+size of the buffer would be dictated by the size of the stored object. This
+removes support for incomplete types and locates storage for the object locally,
+defeating the purpose of `indirect`.
 
 ## Appendix B: Before and after examples
 
