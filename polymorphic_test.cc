@@ -444,12 +444,12 @@ TEST(PolymorphicTest,
     xyz::polymorphic<Derived_NoSBO, NonEqualTrackingAllocator<Derived_NoSBO>> a(
         std::allocator_arg,
         NonEqualTrackingAllocator<Derived_NoSBO>(&alloc_counter,
-                                                &dealloc_counter),
+                                                 &dealloc_counter),
         std::in_place_type<Derived_NoSBO>, 42);
     xyz::polymorphic<Derived_NoSBO, NonEqualTrackingAllocator<Derived_NoSBO>> b(
         std::allocator_arg,
         NonEqualTrackingAllocator<Derived_NoSBO>(&alloc_counter,
-                                                &dealloc_counter),
+                                                 &dealloc_counter),
         std::in_place_type<Derived_NoSBO>, 101);
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
@@ -458,6 +458,51 @@ TEST(PolymorphicTest,
   EXPECT_EQ(alloc_counter, 3);
   EXPECT_EQ(dealloc_counter, 3);
 }
+
+#ifdef XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
+TEST(PolymorphicTest, CountAllocationsForMoveAssignmentWithSBO) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::polymorphic<Derived, TrackingAllocator<Derived>> a(
+        std::allocator_arg,
+        TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived>, 42);
+    xyz::polymorphic<Derived, TrackingAllocator<Derived>> b(
+        std::allocator_arg,
+        TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived>, 101);
+    EXPECT_EQ(alloc_counter, 0);
+    EXPECT_EQ(dealloc_counter, 0);
+    b = std::move(a);
+  }
+  // We never allocated as SBO was used.
+  EXPECT_EQ(alloc_counter, 0);
+  EXPECT_EQ(dealloc_counter, 0);
+}
+
+TEST(PolymorphicTest,
+     CountAllocationsForMoveAssignmentWhenAllocatorsDontCompareEqualWithSBO) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::polymorphic<Derived, NonEqualTrackingAllocator<Derived>> a(
+        std::allocator_arg,
+        NonEqualTrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived>, 42);
+    xyz::polymorphic<Derived, NonEqualTrackingAllocator<Derived>> b(
+        std::allocator_arg,
+        NonEqualTrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        std::in_place_type<Derived>, 101);
+    EXPECT_EQ(alloc_counter, 0);
+    EXPECT_EQ(dealloc_counter, 0);
+    b = std::move(a);
+  }
+  // We never allocated as SBO was used.
+  EXPECT_EQ(alloc_counter, 0);
+  EXPECT_EQ(dealloc_counter, 0);
+}
+#endif  // XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
 
 TEST(PolymorphicTest, CountAllocationsForMoveConstruction) {
   unsigned alloc_counter = 0;
