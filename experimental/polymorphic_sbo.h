@@ -229,7 +229,7 @@ class polymorphic {
         storage_.template emplace<idx::CONTROL_BLOCK>(
             std::get<idx::CONTROL_BLOCK>(other.storage_)->clone(alloc_));
         break;
-      case idx::EMPTY:
+      case idx::EMPTY:  // LCOV_EXCL_LINE
         unreachable();  // LCOV_EXCL_LINE
     }
   }
@@ -258,7 +258,7 @@ class polymorphic {
         other.storage_.template emplace<idx::EMPTY>();
         break;
       }
-      case idx::EMPTY:
+      case idx::EMPTY:  // LCOV_EXCL_LINE
         unreachable();  // LCOV_EXCL_LINE
     }
   }
@@ -305,7 +305,7 @@ class polymorphic {
           other.storage_.template emplace<idx::EMPTY>();
           return *this;
         }
-        case idx::EMPTY:
+        case idx::EMPTY:  // LCOV_EXCL_LINE
           unreachable();  // LCOV_EXCL_LINE
       }
     } else {
@@ -324,7 +324,7 @@ class polymorphic {
             other.storage_.template emplace<idx::EMPTY>();
             return *this;
           }
-          case idx::EMPTY:
+          case idx::EMPTY:  // LCOV_EXCL_LINE
             unreachable();  // LCOV_EXCL_LINE
         }
       } else {
@@ -338,7 +338,7 @@ class polymorphic {
             storage_.template emplace<idx::CONTROL_BLOCK>(
                 std::get<idx::CONTROL_BLOCK>(other.storage_)->clone(alloc_));
             break;
-          case idx::EMPTY:
+          case idx::EMPTY:  // LCOV_EXCL_LINE
             unreachable();  // LCOV_EXCL_LINE
         }
         other.reset();
@@ -354,7 +354,7 @@ class polymorphic {
         return std::get<idx::BUFFER>(storage_).ptr();
       case idx::CONTROL_BLOCK:
         return std::get<idx::CONTROL_BLOCK>(storage_)->p_;
-      case idx::EMPTY:
+      case idx::EMPTY:  // LCOV_EXCL_LINE
         unreachable();  // LCOV_EXCL_LINE
     }
     unreachable();  // LCOV_EXCL_LINE
@@ -367,7 +367,7 @@ class polymorphic {
         return std::get<idx::BUFFER>(storage_).cptr();
       case idx::CONTROL_BLOCK:
         return std::get<idx::CONTROL_BLOCK>(storage_)->p_;
-      case idx::EMPTY:
+      case idx::EMPTY:  // LCOV_EXCL_LINE
         unreachable();  // LCOV_EXCL_LINE
     }
     unreachable();  // LCOV_EXCL_LINE
@@ -380,7 +380,7 @@ class polymorphic {
         return *(std::get<idx::BUFFER>(storage_).ptr());
       case idx::CONTROL_BLOCK:
         return *(std::get<idx::CONTROL_BLOCK>(storage_)->p_);
-      case idx::EMPTY:
+      case idx::EMPTY:  // LCOV_EXCL_LINE
         unreachable();  // LCOV_EXCL_LINE
     }
     unreachable();  // LCOV_EXCL_LINE
@@ -393,7 +393,7 @@ class polymorphic {
         return *(std::get<idx::BUFFER>(storage_).cptr());
       case idx::CONTROL_BLOCK:
         return *(std::get<idx::CONTROL_BLOCK>(storage_)->p_);
-      case idx::EMPTY:
+      case idx::EMPTY:  // LCOV_EXCL_LINE
         unreachable();  // LCOV_EXCL_LINE
     }
     unreachable();  // LCOV_EXCL_LINE
@@ -430,9 +430,8 @@ class polymorphic {
             storage_.template emplace<idx::CONTROL_BLOCK>(other_cb);
             break;
           }
-          case idx::EMPTY: {
+          case idx::EMPTY:  // LCOV_EXCL_LINE
             unreachable();  // LCOV_EXCL_LINE
-          }
         }
         break;
       case idx::CONTROL_BLOCK:
@@ -449,12 +448,11 @@ class polymorphic {
                       std::get<idx::CONTROL_BLOCK>(other.storage_));
             break;
           }
-          case idx::EMPTY: {
+          case idx::EMPTY:  // LCOV_EXCL_LINE
             unreachable();  // LCOV_EXCL_LINE
-          }
         }
         break;
-      case idx::EMPTY:
+      case idx::EMPTY:  // LCOV_EXCL_LINE
         unreachable();  // LCOV_EXCL_LINE
     }
     if constexpr (allocator_traits::propagate_on_container_swap::value) {
