@@ -82,7 +82,7 @@ class direct_control_block : public control_block<T, A> {
   }
 };
 
-static constexpr size_t PolymorphicBufferCapacity = 32;
+static constexpr size_t PolymorphicBufferCapacity = 0;
 
 template <typename T>
 constexpr bool is_sbo_compatible() {

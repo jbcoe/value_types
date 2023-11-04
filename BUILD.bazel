@@ -112,7 +112,6 @@ cc_test(
         "polymorphic_sbo",
         "@com_google_googletest//:gtest_main",
     ],
-    tags = ["manual"]
 )
 
 cc_test(
