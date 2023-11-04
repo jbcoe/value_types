@@ -411,9 +411,8 @@ class polymorphic {
       case idx::BUFFER: {
         switch (static_cast<idx>(other.storage_.index())) {
           case idx::BUFFER: {
-            detail::buffer<T>& buf = std::get<idx::BUFFER>(storage_);
-            detail::buffer<T>& other_buf =
-                std::get<idx::BUFFER>(other.storage_);
+            auto& buf = std::get<idx::BUFFER>(storage_);
+            auto& other_buf = std::get<idx::BUFFER>(other.storage_);
             detail::buffer<T> tmp;
             buf.relocate(tmp);
             other_buf.relocate(buf);
@@ -421,9 +420,8 @@ class polymorphic {
             break;
           }
           case idx::CONTROL_BLOCK: {
-            detail::buffer<T>& buf = std::get<idx::BUFFER>(storage_);
-            detail::control_block<T, A>* other_cb =
-                std::get<idx::CONTROL_BLOCK>(other.storage_);
+            auto& buf = std::get<idx::BUFFER>(storage_);
+            auto* other_cb = std::get<idx::CONTROL_BLOCK>(other.storage_);
             other.storage_.template emplace<idx::BUFFER>();
             buf.relocate(std::get<idx::BUFFER>(other.storage_));
             storage_.template emplace<idx::CONTROL_BLOCK>(other_cb);
@@ -438,9 +436,8 @@ class polymorphic {
       case idx::CONTROL_BLOCK: {
         switch (static_cast<idx>(other.storage_.index())) {
           case idx::BUFFER: {
-            detail::control_block<T, A>* cb =
-                std::get<idx::CONTROL_BLOCK>(other.storage_);
-            detail::buffer<T>& other_buf = std::get<idx::BUFFER>(storage_);
+            auto* cb = std::get<idx::CONTROL_BLOCK>(other.storage_);
+            auto& other_buf = std::get<idx::BUFFER>(storage_);
             storage_.template emplace<idx::BUFFER>();
             other_buf.relocate(std::get<idx::BUFFER>(storage_));
             other.storage_.template emplace<idx::CONTROL_BLOCK>(cb);
@@ -480,6 +477,16 @@ class polymorphic {
   constexpr const auto& buffer() const {
     assert(storage_.index() == idx::BUFFER);  // LCOV_EXCL_LINE
     return std::get<idx::BUFFER>(storage_);
+  }
+
+  constexpr auto& control_block() {
+    assert(storage_.index() == idx::CONTROL_BLOCK);  // LCOV_EXCL_LINE
+    return std::get<idx::CONTROL_BLOCK>(storage_);
+  }
+
+  constexpr const auto& control_block() const {
+    assert(storage_.index() == idx::CONTROL_BLOCK);  // LCOV_EXCL_LINE
+    return std::get<idx::CONTROL_BLOCK>(storage_);
   }
 
   constexpr void reset() noexcept {
