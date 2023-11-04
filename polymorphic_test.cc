@@ -528,10 +528,23 @@ struct ThrowsOnConstruction : xyz::NoPolymorphicSBO {
   }
 };
 
-struct ThrowsOnCopyConstruction {
+struct ThrowsOnConstructionWithSBO {
+  class Exception : public std::exception {
+    const char* what() const noexcept override {
+      return "ThrowsOnConstructionWithSBO::Exception";
+    }
+  };
+
+  template <typename... Args>
+  ThrowsOnConstructionWithSBO(Args&&...) {
+    throw Exception();
+  }
+};
+
+struct ThrowsOnCopyConstruction : xyz::NoPolymorphicSBO {
   class Exception : public std::runtime_error {
    public:
-    Exception() : std::runtime_error("ThrowsOnConstruction::Exception") {}
+    Exception() : std::runtime_error("ThrowsOnCopyConstruction::Exception") {}
   };
 
   ThrowsOnCopyConstruction() = default;
@@ -541,15 +554,39 @@ struct ThrowsOnCopyConstruction {
   }
 };
 
+struct ThrowsOnCopyConstructionWithSBO {
+  class Exception : public std::runtime_error {
+   public:
+    Exception() : std::runtime_error("ThrowsOnCopyConstructionWithSBO::Exception") {}
+  };
+
+  ThrowsOnCopyConstructionWithSBO() = default;
+
+  ThrowsOnCopyConstructionWithSBO(const ThrowsOnCopyConstructionWithSBO&) {
+    throw Exception();
+  }
+};
+
 TEST(PolymorphicTest, DefaultConstructorWithExceptions) {
   EXPECT_THROW(xyz::polymorphic<ThrowsOnConstruction>(),
                ThrowsOnConstruction::Exception);
+}
+
+TEST(PolymorphicTest, DefaultConstructorWithExceptionsWithSBO) {
+  EXPECT_THROW(xyz::polymorphic<ThrowsOnConstructionWithSBO>(),
+               ThrowsOnConstructionWithSBO::Exception);
 }
 
 TEST(PolymorphicTest, ConstructorWithExceptions) {
   EXPECT_THROW(xyz::polymorphic<ThrowsOnConstruction>(
                    std::in_place_type<ThrowsOnConstruction>, "unused"),
                ThrowsOnConstruction::Exception);
+}
+
+TEST(PolymorphicTest, ConstructorWithExceptionsWithSBO) {
+  EXPECT_THROW(xyz::polymorphic<ThrowsOnConstructionWithSBO>(
+                   std::in_place_type<ThrowsOnConstructionWithSBO>, "unused"),
+               ThrowsOnConstructionWithSBO::Exception);
 }
 
 TEST(PolymorphicTest, CopyConstructorWithExceptions) {
@@ -559,6 +596,15 @@ TEST(PolymorphicTest, CopyConstructorWithExceptions) {
     auto aa = a;
   };
   EXPECT_THROW(create_copy(), ThrowsOnCopyConstruction::Exception);
+}
+
+TEST(PolymorphicTest, CopyConstructorWithExceptionsWithSBO) {
+  auto create_copy = []() {
+    auto a = xyz::polymorphic<ThrowsOnCopyConstructionWithSBO>(
+        std::in_place_type<ThrowsOnCopyConstructionWithSBO>);
+    auto aa = a;
+  };
+  EXPECT_THROW(create_copy(), ThrowsOnCopyConstructionWithSBO::Exception);
 }
 
 TEST(PolymorphicTest, ConstructorWithExceptionsTrackingAllocations) {
