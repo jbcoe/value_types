@@ -87,7 +87,7 @@ target_compile_features(polymorphic_inline_vtable
 )
 target_compile_definitions(polymorphic_inline_vtable 
     INTERFACE 
-        -DXYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
+        XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
 )
 
 add_library(polymorphic_sbo INTERFACE)
@@ -106,7 +106,7 @@ target_compile_features(polymorphic_sbo
 )
 target_compile_definitions(polymorphic_sbo 
     INTERFACE 
-        -DXYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
+        XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
 )
 
 
@@ -289,6 +289,7 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
         include(GoogleTest)
         gtest_discover_tests(indirect_test)
         gtest_discover_tests(polymorphic_test)
+        gtest_discover_tests(polymorphic_sbo_test)
         gtest_discover_tests(polymorphic_inline_vtable_test)
 
         if (ENABLE_CODE_COVERAGE)
