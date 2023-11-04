@@ -408,7 +408,7 @@ class polymorphic {
     assert(!other.valueless_after_move());  // LCOV_EXCL_LINE
 
     switch (static_cast<idx>(storage_.index())) {
-      case idx::BUFFER: {
+      case idx::BUFFER:
         switch (static_cast<idx>(other.storage_.index())) {
           case idx::BUFFER: {
             auto& buf = std::get<idx::BUFFER>(storage_);
@@ -422,8 +422,7 @@ class polymorphic {
           case idx::CONTROL_BLOCK: {
             auto& buf = std::get<idx::BUFFER>(storage_);
             auto* other_cb = std::get<idx::CONTROL_BLOCK>(other.storage_);
-            other.storage_.template emplace<idx::BUFFER>();
-            buf.relocate(std::get<idx::BUFFER>(other.storage_));
+            buf.relocate(other.storage_.template emplace<idx::BUFFER>());
             storage_.template emplace<idx::CONTROL_BLOCK>(other_cb);
             break;
           }
@@ -432,14 +431,12 @@ class polymorphic {
           }
         }
         break;
-      }
-      case idx::CONTROL_BLOCK: {
+      case idx::CONTROL_BLOCK:
         switch (static_cast<idx>(other.storage_.index())) {
           case idx::BUFFER: {
             auto* cb = std::get<idx::CONTROL_BLOCK>(other.storage_);
             auto& other_buf = std::get<idx::BUFFER>(storage_);
-            storage_.template emplace<idx::BUFFER>();
-            other_buf.relocate(std::get<idx::BUFFER>(storage_));
+            other_buf.relocate(storage_.template emplace<idx::BUFFER>());
             other.storage_.template emplace<idx::CONTROL_BLOCK>(cb);
             break;
           }
@@ -453,7 +450,6 @@ class polymorphic {
           }
         }
         break;
-      }
       case idx::EMPTY:
         unreachable();
     }
@@ -469,25 +465,25 @@ class polymorphic {
   }
 
  private:
-  constexpr auto& buffer() {
-    assert(storage_.index() == idx::BUFFER);  // LCOV_EXCL_LINE
-    return std::get<idx::BUFFER>(storage_);
-  }
+  // constexpr auto& buffer() {
+  //   assert(storage_.index() == idx::BUFFER);  // LCOV_EXCL_LINE
+  //   return std::get<idx::BUFFER>(storage_);
+  // }
 
-  constexpr const auto& buffer() const {
-    assert(storage_.index() == idx::BUFFER);  // LCOV_EXCL_LINE
-    return std::get<idx::BUFFER>(storage_);
-  }
+  // constexpr const auto& buffer() const {
+  //   assert(storage_.index() == idx::BUFFER);  // LCOV_EXCL_LINE
+  //   return std::get<idx::BUFFER>(storage_);
+  // }
 
-  constexpr auto& control_block() {
-    assert(storage_.index() == idx::CONTROL_BLOCK);  // LCOV_EXCL_LINE
-    return std::get<idx::CONTROL_BLOCK>(storage_);
-  }
+  // constexpr auto& control_block() {
+  //   assert(storage_.index() == idx::CONTROL_BLOCK);  // LCOV_EXCL_LINE
+  //   return std::get<idx::CONTROL_BLOCK>(storage_);
+  // }
 
-  constexpr const auto& control_block() const {
-    assert(storage_.index() == idx::CONTROL_BLOCK);  // LCOV_EXCL_LINE
-    return std::get<idx::CONTROL_BLOCK>(storage_);
-  }
+  // constexpr const auto& control_block() const {
+  //   assert(storage_.index() == idx::CONTROL_BLOCK);  // LCOV_EXCL_LINE
+  //   return std::get<idx::CONTROL_BLOCK>(storage_);
+  // }
 
   constexpr void reset() noexcept {
     switch (storage_.index()) {
@@ -500,7 +496,7 @@ class polymorphic {
     }
     storage_.template emplace<idx::EMPTY>();
   }
-};  // namespace xyz
+};
 
 }  // namespace xyz
 
