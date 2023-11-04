@@ -307,6 +307,12 @@ TEST(PolymorphicTest, CountAllocationsForMoveAssignment) {
 template <typename T>
 struct NonEqualTrackingAllocator : TrackingAllocator<T> {
   using TrackingAllocator<T>::TrackingAllocator;
+
+  template <typename Other>
+  struct rebind {
+    using other = NonEqualTrackingAllocator<Other>;
+  };
+
   friend bool operator==(const NonEqualTrackingAllocator&,
                          const NonEqualTrackingAllocator&) noexcept {
     return false;
@@ -354,6 +360,11 @@ template <typename T>
 struct POCSTrackingAllocator : TrackingAllocator<T> {
   using TrackingAllocator<T>::TrackingAllocator;
   using propagate_on_container_swap = std::true_type;
+
+  template <typename Other>
+  struct rebind {
+    using other = POCSTrackingAllocator<Other>;
+  };
 };
 
 TEST(PolymorphicTest, NonMemberSwapWhenAllocatorsDontCompareEqual) {
