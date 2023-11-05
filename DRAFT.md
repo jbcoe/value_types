@@ -1187,7 +1187,7 @@ heap in addition to having the memory from the (empty) buffer as part of the
 object size. If the buffer is too big, `polymorphic` objects will be larger than
 necessary, potentially introducing the need for `indirect<polymorphic<T>>`.
 
-We could add another, non-type, template argument to `polymorphic` to specify
+We could add a non-type template argument to `polymorphic` to specify
 the size of the small buffer:
 
 ```c++
