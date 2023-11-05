@@ -102,9 +102,8 @@ class polymorphic {
   using value_type = T;
   using allocator_type = A;
 
-  constexpr polymorphic()
-    requires std::default_initializable<T>
-  {
+  constexpr polymorphic() {
+    static_assert(std::is_default_constructible_v<T>);
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
     using cb_traits = std::allocator_traits<cb_allocator>;

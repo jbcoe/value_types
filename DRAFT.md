@@ -355,7 +355,7 @@ struct hash<indirect<T, Alloc>>;
 constexpr indirect()
 ```
 
-* _Constraints_: `is_default_constructible_v<T>` is true.
+* _Mandates_: `is_default_constructible_v<T>` is true.
 
 * _Effects_: Constructs an indirect owning a default constructed `T`.
 
@@ -392,7 +392,7 @@ constexpr indirect(
 constexpr indirect(const indirect& other);
 ```
 
-* _Constraints_: `is_copy_constructible_v<T>` is true.
+* _Mandates_: `is_copy_constructible_v<T>` is true.
 
 * _Preconditions_: `other` is not valueless.
 
@@ -406,7 +406,7 @@ constexpr indirect(
   std::allocator_arg_t, const Allocator& alloc, const indirect& other);
 ```
 
-* _Constraints_: `is_copy_constructible_v<T>` is true.
+* _Mandates_: `is_copy_constructible_v<T>` is true.
 
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
   _Cpp17Allocator_ requirements.
@@ -434,8 +434,6 @@ constexpr indirect(
   std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcept;
 ```
 
-* _Constraints_: `is_copy_constructible_v<T>` is true.
-
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
   _Cpp17Allocator_ requirements.
 
@@ -460,6 +458,8 @@ constexpr ~indirect();
 ```c++
 constexpr indirect& operator=(const indirect& other);
 ```
+
+* _Mandates_: `is_copy_constructible_v<T>` is true.
 
 * _Preconditions_: `other` is not valueless.
 
@@ -810,7 +810,7 @@ class polymorphic {
 constexpr polymorphic()
 ```
 
-* _Constraints_: `is_default_constructible_v<T>` is true,
+* _Mandates_: `is_default_constructible_v<T>` is true,
   `is_copy_constructible_v<T>` is true.
 
 * _Effects_: Constructs a polymorphic owning a default constructed `T`.
@@ -1239,8 +1239,8 @@ class Class {
   ~Class();
   Class(const Class&);
   Class& operator=(const Class&);
-  Class(Class&&) noexcept = default;
-  Class& operator=(Class&&) noexcept = default;
+  Class(Class&&) noexcept;
+  Class& operator=(Class&&) noexcept;
   
   void do_something();
 };
@@ -1269,6 +1269,9 @@ Class& Class::operator=(const Class& other) {
   return *this;
 }
 
+Class(Class&&) noexcept = default;
+Class& operator=(Class&&) noexcept = default;
+
 void Class::do_something() {
   impl_->do_something();
 }
@@ -1280,15 +1283,14 @@ void Class::do_something() {
 // Class.h
 
 class Class {
-  class Impl;
-  indirect<Impl> impl_;
+  indirect<class Impl> impl_;
  public:
   Class();
   ~Class();
   Class(const Class&);
   Class& operator=(const Class&);
-  Class(Class&&) noexcept = default;
-  Class& operator=(Class&&) noexcept = default;
+  Class(Class&&) noexcept;
+  Class& operator=(Class&&) noexcept;
   
   void do_something();
 };
@@ -1306,6 +1308,8 @@ Class::Class() : impl_(indirect<Impl>()) {}
 Class::~Class() = default;
 Class::Class(const Class&) = default;
 Class& Class::operator=(const Class&) = default;
+Class(Class&&) noexcept = default;
+Class& operator=(Class&&) noexcept = default;
 
 void Class::do_something() {
   impl_->do_something();
