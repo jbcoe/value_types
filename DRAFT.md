@@ -757,30 +757,30 @@ class polymorphic {
   using value_type = T;
   using allocator_type = Allocator;
 
-  polymorphic();
+  constexpr polymorphic();
 
   template <class U, class... Ts>
-  explicit polymorphic(std::in_place_type_t<U>, Ts&&... ts);
+  explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts);
 
   template <class U, class... Ts>
-  polymorphic(
+  constexpr polymorphic(
     std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
 
-  polymorphic(const polymorphic& other);
+  constexpr polymorphic(const polymorphic& other);
   
-  polymorphic(
+  constexpr polymorphic(
     std::allocator_arg_t, const Allocator& alloc, const polymorphic& other);
 
-  polymorphic(polymorphic&& other) noexcept;
+  constexpr polymorphic(polymorphic&& other) noexcept;
   
-  polymorphic(
+  constexpr polymorphic(
     std::allocator_arg_t, const Allocator& alloc, polymorphic&& other) noexcept;
 
-  ~polymorphic();
+  constexpr ~polymorphic();
 
-  polymorphic& operator=(const polymorphic& other);
+  constexpr polymorphic& operator=(const polymorphic& other);
 
-  polymorphic& operator=(polymorphic&& other) noexcept(see below);
+  constexpr polymorphic& operator=(polymorphic&& other) noexcept(see below);
 
   constexpr const T& operator*() const noexcept;
 
@@ -794,16 +794,16 @@ class polymorphic {
 
   constexpr allocator_type get_allocator() const noexcept;
 
-  void swap(polymorphic& other) noexcept(see below);
+  constexpr void swap(polymorphic& other) noexcept(see below);
 
-  friend void swap(polymorphic& lhs, polymorphic& rhs) noexcept(see below);
+  friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(see below);
 };
 ```
 
 #### X.Z.3 Constructors [polymorphic.ctor]
 
 ```c++
-polymorphic()
+constexpr polymorphic()
 ```
 
 * _Constraints_: `is_default_constructible_v<T>` is true,
@@ -815,7 +815,7 @@ polymorphic()
 
 ```c++
 template <class U, class... Ts>
-explicit polymorphic(std::in_place_type_t<U>, Ts&&... ts);
+explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts);
 ```
 
 * _Constraints_: `is_base_of_v<T, U>` is true, `is_constructible_v<U, Ts...>` is
@@ -828,7 +828,7 @@ explicit polymorphic(std::in_place_type_t<U>, Ts&&... ts);
 
 ```c++
 template <class U, class... Ts>
-polymorphic(
+constexpr polymorphic(
   std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
 ```
 
@@ -843,7 +843,7 @@ polymorphic(
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-polymorphic(const polymorphic& other);
+constexpr polymorphic(const polymorphic& other);
 ```
 
 * _Preconditions_: `other` is not valueless.
@@ -854,7 +854,7 @@ polymorphic(const polymorphic& other);
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-polymorphic(
+constexpr polymorphic(
   std::allocator_arg_t, const Allocator& alloc, const polymorphic& other);
 ```
 
@@ -867,7 +867,7 @@ polymorphic(
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-polymorphic(polymorphic&& other) noexcept;
+constexpr polymorphic(polymorphic&& other) noexcept;
 ```
 
 * _Preconditions_: `other` is not valueless.
@@ -881,7 +881,7 @@ polymorphic(polymorphic&& other) noexcept;
   is true.
 
 ```c++
-polymorphic(
+constexpr polymorphic(
   std::allocator_arg_t, const Allocator& alloc, polymorphic&& other) noexcept;
 ```
 
@@ -899,7 +899,7 @@ polymorphic(
 #### X.Z.4 Destructor [polymorphic.dtor]
 
 ```c++
-~polymorphic();
+constexpr ~polymorphic();
 ```
 
 * _Effects_: If `*this` is not valueless, destroys the owned object.
@@ -907,7 +907,7 @@ polymorphic(
 #### X.Z.5 Assignment [polymorphic.assign]
 
 ```c++
-polymorphic& operator=(const polymorphic& other);
+constexpr polymorphic& operator=(const polymorphic& other);
 ```
 
 * _Preconditions_: `other` is not valueless.
@@ -919,7 +919,7 @@ polymorphic& operator=(const polymorphic& other);
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-polymorphic& operator=(polymorphic&& other) noexcept(
+constexpr polymorphic& operator=(polymorphic&& other) noexcept(
     allocator_traits<Allocator>::propagate_on_container_move_assignment::value ||
     allocator_traits<Allocator>::is_always_equal::value);
 ```
@@ -972,7 +972,7 @@ constexpr allocator_type get_allocator() const noexcept;
 #### X.Z.7 Swap [polymorphic.swap]
 
 ```c++
-void swap(polymorphic& other) noexcept(
+constexpr void swap(polymorphic& other) noexcept(
     allocator_traits<Allocator>::propagate_on_container_swap::value ||
     allocator_traits<Allocator>::is_always_equal::value);
 ```
@@ -984,7 +984,7 @@ void swap(polymorphic& other) noexcept(
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
 ```c++
-void swap(polymorphic& lhs, polymorphic& rhs) noexcept(
+constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(
     allocator_traits<Allocator>::propagate_on_container_swap::value ||
     allocator_traits<Allocator>::is_always_equal::value);
 ```
