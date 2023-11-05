@@ -1259,8 +1259,7 @@ void Class::do_something() {
 // Class.h
 
 class Class {
-  class Impl;
-  indirect<Impl> impl_;
+  indirect<class Impl> impl_;
  public:
   Class();
   ~Class();
