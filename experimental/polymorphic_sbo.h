@@ -117,22 +117,22 @@ struct buffer {
              (is_sbo_compatible<U>())
   buffer(std::type_identity<U>, Ts&&... ts)
       : vtable_{.ptr = [](buffer* self) -> T* {
-                  U* u = std::launder(reinterpret_cast<U*>(self->data_.data()));
+                  U* u = std::launder(std::bit_cast<U*>(self->data_.data()));
                   return static_cast<T*>(u);
                 },
                 .clone = [](const buffer* self, buffer* destination) -> void {
                   const U* u = std::launder(
-                      reinterpret_cast<const U*>(self->data_.data()));
+                      std::bit_cast<const U*>(self->data_.data()));
                   new (destination->data_.data()) U(*u);
                   destination->vtable_ = self->vtable_;
                 },
                 .relocate = [](buffer* self, buffer* destination) -> void {
-                  U* u = std::launder(reinterpret_cast<U*>(self->data_.data()));
+                  U* u = std::launder(std::bit_cast<U*>(self->data_.data()));
                   new (destination->data_.data()) U(std::move(*u));
                   destination->vtable_ = self->vtable_;
                 },
                 .destroy = [](buffer* self) -> void {
-                  std::launder(reinterpret_cast<U*>(self->data_.data()))->~U();
+                  std::launder(std::bit_cast<U*>(self->data_.data()))->~U();
                 }} {
     new (data_.data()) U(std::forward<Ts>(ts)...);
   }
