@@ -1195,12 +1195,12 @@ template <typename T, typename Alloc, size_t BufferSize>
 class polymorphic;
 ```
 
-We opt not to provide an additional template argument to maintain consistency
-with other standard library types. Both `std::function`. and `std::string` leave
-the buffer size as an implmentation detail. Adding an additional template
-argument in a later revision of the standard would be a breaking change. With
-usage experience, implementers will be able to determine if a small buffer
-optimisation is worthwhile and what the optimal buffer size might be.
+However, we opt not to do this to maintain consistency with other standard
+library types. Both `std::function` and `std::string` leave the buffer size as
+an implementation detail. Including an additional template argument in a later
+revision of the standard would be a breaking change. With usage experience,
+implementers will be able to determine if a small buffer optimisation is
+worthwhile and what the optimal buffer size might be.
 
 A small buffer optimisation makes little sense for `indirect` as the sensible
 size of the buffer would be dictated by the size of the stored object. This
