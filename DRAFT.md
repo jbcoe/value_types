@@ -1178,9 +1178,7 @@ A converting constructor could be added in a future version of the C++ standard.
 It is possible to implement `polymorphic` with a small buffer optimisation,
 similar to that used in `std::function`. This would allow `polymorphic` to store
 small objects without allocating memory. Like `std::function`, the size of the
-small buffer is left to be specified by the implementation. Allowing a small
-buffer optimization means that constructors and potentially allocating member
-functions of polymorphic cannot be marked `constexpr`.
+small buffer is left to be specified by the implementation.
 
 The authors are sceptical of the value of a small buffer optimisation for
 objects from a type hierarchy. If the buffer is too small, all instances of
@@ -1189,9 +1187,20 @@ heap in addition to having the memory from the (empty) buffer as part of the
 object size. If the buffer is too big, `polymorphic` objects will be larger than
 necessary, potentially introducing the need for `indirect<polymorphic<T>>`.
 
-With usage experience, implementers will be able to determine if a small buffer
-optimisation is worthwhile. We leave `polymorphic` specified so that a small
-buffer optimisation is possible.
+We could add another, non-type, template argument to `polymorphic` to specify
+the size of the small buffer:
+
+```c++
+template <typename T, typename Alloc, size_t BufferSize>
+class polymorphic;
+```
+
+We opt not to provide an additional template argument to maintain consistency
+with other standard library types. Both `std::function`. and `std::string` leave
+the buffer size as an implmentation detail. Adding an additional template
+argument in a later revision of the standard would be a breaking change. With
+usage experience, implementers will be able to determine if a small buffer
+optimisation is worthwhile and what the optimal buffer size might be.
 
 A small buffer optimisation makes little sense for `indirect` as the sensible
 size of the buffer would be dictated by the size of the stored object. This
