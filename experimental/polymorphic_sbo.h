@@ -459,7 +459,7 @@ class polymorphic {
     p_ = nullptr;
   }
 
-  void update_ptr() {
+  constexpr void update_ptr() {
     assert(!valueless_after_move());  // LCOV_EXCL_LINE
     switch (static_cast<idx>(storage_.index())) {
       case idx::BUFFER:
