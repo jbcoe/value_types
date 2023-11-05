@@ -132,7 +132,7 @@ struct buffer {
                   destination->vtable_ = self->vtable_;
                 },
                 .destroy = [](buffer* self) -> void {
-                  std::launder(std::bit_cast<U*>(self->data_.data()))->~U();
+                  std::launder(std::bit_cast<U*>(self->data_.data()))->U::~U();
                 }} {
     new (data_.data()) U(std::forward<Ts>(ts)...);
   }
