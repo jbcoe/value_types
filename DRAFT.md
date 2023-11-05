@@ -695,8 +695,11 @@ constexpr const indirect<T, Alloc>& operator->() const noexcept;
 constexpr indirect<T, Alloc>& operator->() noexcept;
 ```
 
-* _Preconditions_: `*this` contains a value.
+* _Preconditions_: `*this` contains a value. The contained indirect value is not
+  valueless.
+
 * _Returns_: `val`.
+
 * _Remarks_: These functions are constexpr. The specialization
   `std::optional<indirect<T, Alloc>>` provides `operator->` that returns a
   reference to the contained `indirect`.
@@ -721,7 +724,8 @@ struct std::formatter<indirect<T, Alloc>, charT> : std::formatter<T, charT> {
 Specialization of `std::formatter<indirect<T, Alloc>, charT>` when the underlying
 `T` supports specialisation of `std::formatter<T, charT>`.
 
-* Preconditions: The specialization `formatter<T, charT>` meets the _Formatter_ requirements.
+* Preconditions: `value` is not valueless. The specialization `formatter<T,
+  charT>` meets the _Formatter_ requirements.
 
 ## Feature-test Macro [indirect.predefined.ft]
 
@@ -1009,8 +1013,11 @@ constexpr const polymorphic<T, Alloc>& operator->() const noexcept;
 constexpr polymorphic<T, Alloc>& operator->() noexcept;
 ```
 
-* _Preconditions_: `*this` contains a value.
+* _Preconditions_: `*this` is not valueless. The contained polymorphic value is
+  not valueless.
+
 * _Returns_: `val`.
+
 * _Remarks_: These functions are constexpr. The specialization
   `std::optional<polymorphic<T, Alloc>>` provides `operator->` that returns a
   reference to the contained `polymorphic`.
