@@ -8,8 +8,8 @@ class Class {
   ~Class();
   Class(const Class&);
   Class& operator=(const Class&);
-  Class(Class&&) noexcept = default;
-  Class& operator=(Class&&) noexcept = default;
+  Class(Class&&) noexcept;
+  Class& operator=(Class&&) noexcept;
 
   void do_something();
 };

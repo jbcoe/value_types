@@ -9,9 +9,8 @@ class ClassWithPolymorphicPimpl {
   ~ClassWithPolymorphicPimpl();
   ClassWithPolymorphicPimpl(const ClassWithPolymorphicPimpl&);
   ClassWithPolymorphicPimpl& operator=(const ClassWithPolymorphicPimpl&);
-  ClassWithPolymorphicPimpl(ClassWithPolymorphicPimpl&&) noexcept = default;
-  ClassWithPolymorphicPimpl& operator=(ClassWithPolymorphicPimpl&&) noexcept =
-      default;
+  ClassWithPolymorphicPimpl(ClassWithPolymorphicPimpl&&) noexcept;
+  ClassWithPolymorphicPimpl& operator=(ClassWithPolymorphicPimpl&&) noexcept;
 
   void do_something();
 };

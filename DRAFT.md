@@ -1218,8 +1218,8 @@ class Class {
   ~Class();
   Class(const Class&);
   Class& operator=(const Class&);
-  Class(Class&&) noexcept = default;
-  Class& operator=(Class&&) noexcept = default;
+  Class(Class&&) noexcept;
+  Class& operator=(Class&&) noexcept;
   
   void do_something();
 };
@@ -1248,6 +1248,9 @@ Class& Class::operator=(const Class& other) {
   return *this;
 }
 
+Class(Class&&) noexcept = default;
+Class& operator=(Class&&) noexcept = default;
+
 void Class::do_something() {
   impl_->do_something();
 }
@@ -1265,8 +1268,8 @@ class Class {
   ~Class();
   Class(const Class&);
   Class& operator=(const Class&);
-  Class(Class&&) noexcept = default;
-  Class& operator=(Class&&) noexcept = default;
+  Class(Class&&) noexcept;
+  Class& operator=(Class&&) noexcept;
   
   void do_something();
 };
@@ -1284,6 +1287,8 @@ Class::Class() : impl_(indirect<Impl>()) {}
 Class::~Class() = default;
 Class::Class(const Class&) = default;
 Class& Class::operator=(const Class&) = default;
+Class(Class&&) noexcept = default;
+Class& operator=(Class&&) noexcept = default;
 
 void Class::do_something() {
   impl_->do_something();
