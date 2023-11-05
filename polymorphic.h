@@ -42,7 +42,7 @@ struct control_block {
 };
 
 template <class T, class U, class A>
-class direct_control_block : public control_block<T, A> {
+class direct_control_block final : public control_block<T, A> {
   U u_;
 
  public:
