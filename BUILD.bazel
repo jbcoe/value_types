@@ -14,12 +14,12 @@ cc_library(
 
 cc_library(
     name = "polymorphic_inline_vtable",
-    defines = ["XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE"],
     hdrs = [
         "experimental/polymorphic_inline_vtable.h",
         "polymorphic.h",
     ],
     copts = ["-Iexternal/value_types/"],
+    defines = ["XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE"],
 )
 
 cc_test(
@@ -105,6 +105,7 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
 cc_library(
     name = "polymorphic_consteval_inline_vtable",
     srcs = ["polymorphic_consteval.cc"],
@@ -129,4 +130,28 @@ cc_binary(
         ":polymorphic_inline_vtable",
         "@com_google_benchmark//:benchmark_main",
     ],
+)
+
+cc_library(
+    name = "indirect_pimpl",
+    srcs = ["indirect_pimpl.cc"],
+    hdrs = ["indirect_pimpl.h"],
+    deps = ["indirect"],
+)
+
+build_test(
+    name = "indirect_pimpl_build_test",
+    targets = ["indirect_pimpl"],
+)
+
+cc_library(
+    name = "polymorphic_pimpl",
+    srcs = ["polymorphic_pimpl.cc"],
+    hdrs = ["polymorphic_pimpl.h"],
+    deps = ["polymorphic"],
+)
+
+build_test(
+    name = "polymorphic_pimpl_build_test",
+    targets = ["polymorphic_pimpl"],
 )

@@ -355,8 +355,6 @@ struct hash<indirect<T, Alloc>>;
 indirect()
 ```
 
-* _Constraints_: `is_default_constructible_v<T>` is true.
-
 * _Effects_: Constructs an indirect owning a default constructed `T`.
 
 * _Postconditions_: `*this` is not valueless.
@@ -392,8 +390,6 @@ constexpr indirect(
 constexpr indirect(const indirect& other);
 ```
 
-* _Constraints_: `is_copy_constructible_v<T>` is true.
-
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: Constructs an indirect owning an instance of `T` created with the
@@ -405,8 +401,6 @@ constexpr indirect(const indirect& other);
 constexpr indirect(
   std::allocator_arg_t, const Allocator& alloc, const indirect& other);
 ```
-
-* _Constraints_: `is_copy_constructible_v<T>` is true.
 
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
   _Cpp17Allocator_ requirements.
