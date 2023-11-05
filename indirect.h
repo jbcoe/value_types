@@ -118,6 +118,7 @@ class indirect {
   constexpr indirect(std::allocator_arg_t, const A& alloc,
                      const indirect& other)
       : alloc_(alloc) {
+    static_assert(std::is_copy_constructible_v<T>);
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     T* mem = allocator_traits::allocate(alloc_, 1);
     try {
