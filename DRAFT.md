@@ -355,6 +355,8 @@ struct hash<indirect<T, Alloc>>;
 indirect()
 ```
 
+* _Mandates_: `is_default_constructible_v<T>` is true.
+
 * _Effects_: Constructs an indirect owning a default constructed `T`.
 
 * _Postconditions_: `*this` is not valueless.
@@ -390,6 +392,8 @@ constexpr indirect(
 constexpr indirect(const indirect& other);
 ```
 
+* _Mandates_: `is_copy_constructible_v<T>` is true.
+
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: Constructs an indirect owning an instance of `T` created with the
@@ -401,6 +405,8 @@ constexpr indirect(const indirect& other);
 constexpr indirect(
   std::allocator_arg_t, const Allocator& alloc, const indirect& other);
 ```
+
+* _Mandates_: `is_copy_constructible_v<T>` is true.
 
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
   _Cpp17Allocator_ requirements.
@@ -428,8 +434,6 @@ constexpr indirect(
   std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcept;
 ```
 
-* _Constraints_: `is_copy_constructible_v<T>` is true.
-
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
   _Cpp17Allocator_ requirements.
 
@@ -454,6 +458,8 @@ constexpr ~indirect();
 ```c++
 constexpr indirect& operator=(const indirect& other);
 ```
+
+* _Mandates_: `is_copy_constructible_v<T>` is true.
 
 * _Preconditions_: `other` is not valueless.
 
@@ -800,7 +806,7 @@ class polymorphic {
 polymorphic()
 ```
 
-* _Constraints_: `is_default_constructible_v<T>` is true,
+* _Mandates_: `is_default_constructible_v<T>` is true,
   `is_copy_constructible_v<T>` is true.
 
 * _Effects_: Constructs a polymorphic owning a default constructed `T`.

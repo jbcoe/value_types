@@ -25,6 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <compare>
 #include <concepts>
 #include <memory>
+#include <type_traits>
 #include <utility>
 
 #if __has_include(<format>)
@@ -59,6 +60,7 @@ class indirect {
   using allocator_type = A;
 
   constexpr indirect() {
+    static_assert(std::is_default_constructible_v<T>);
     T* mem = allocator_traits::allocate(alloc_, 1);
     try {
       allocator_traits::construct(alloc_, mem);
@@ -101,6 +103,7 @@ class indirect {
   constexpr indirect(const indirect& other)
       : alloc_(allocator_traits::select_on_container_copy_construction(
             other.alloc_)) {
+    static_assert(std::is_copy_constructible_v<T>);
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     T* mem = allocator_traits::allocate(alloc_, 1);
     try {
@@ -141,8 +144,8 @@ class indirect {
 
   constexpr ~indirect() { reset(); }
 
-  constexpr indirect& operator=(const indirect& other)
-  {
+  constexpr indirect& operator=(const indirect& other) {
+    static_assert(std::is_copy_constructible_v<T>);
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     if (this != &other) {
       if constexpr (std::is_copy_assignable_v<T>) {
