@@ -22,6 +22,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "experimental/polymorphic_inline_vtable.h"
 #endif  // XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
 
+#ifdef XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
+#include "experimental/polymorphic_sbo.h"
+#endif  // XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
+
 #ifndef XYZ_POLYMORPHIC_H_
 #define XYZ_POLYMORPHIC_H_
 
@@ -31,6 +35,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <utility>
 
 namespace xyz {
+
+struct NoPolymorphicSBO {};
 
 namespace detail {
 template <class T, class A>

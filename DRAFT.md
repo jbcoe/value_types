@@ -352,7 +352,7 @@ struct hash<indirect<T, Alloc>>;
 #### X.Y.3 Constructors [indirect.ctor]
 
 ```c++
-indirect()
+constexpr indirect()
 ```
 
 * _Constraints_: `is_default_constructible_v<T>` is true.
@@ -761,7 +761,7 @@ class polymorphic {
   using value_type = T;
   using allocator_type = Allocator;
 
-  polymorphic();
+  constexpr polymorphic();
 
   template <class U, class... Ts>
   explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts);
@@ -807,7 +807,7 @@ class polymorphic {
 #### X.Z.3 Constructors [polymorphic.ctor]
 
 ```c++
-polymorphic()
+constexpr polymorphic()
 ```
 
 * _Constraints_: `is_default_constructible_v<T>` is true,
@@ -819,7 +819,7 @@ polymorphic()
 
 ```c++
 template <class U, class... Ts>
-explicit polymorphic(std::in_place_type_t<U>, Ts&&... ts);
+explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts);
 ```
 
 * _Constraints_: `is_base_of_v<T, U>` is true, `is_constructible_v<U, Ts...>` is
@@ -832,7 +832,7 @@ explicit polymorphic(std::in_place_type_t<U>, Ts&&... ts);
 
 ```c++
 template <class U, class... Ts>
-polymorphic(
+constexpr polymorphic(
   std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
 ```
 
@@ -847,7 +847,7 @@ polymorphic(
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-polymorphic(const polymorphic& other);
+constexpr polymorphic(const polymorphic& other);
 ```
 
 * _Preconditions_: `other` is not valueless.
@@ -858,7 +858,7 @@ polymorphic(const polymorphic& other);
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-polymorphic(
+constexpr polymorphic(
   std::allocator_arg_t, const Allocator& alloc, const polymorphic& other);
 ```
 
@@ -871,7 +871,7 @@ polymorphic(
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-polymorphic(polymorphic&& other) noexcept;
+constexpr polymorphic(polymorphic&& other) noexcept;
 ```
 
 * _Preconditions_: `other` is not valueless.
@@ -885,7 +885,7 @@ polymorphic(polymorphic&& other) noexcept;
   is true.
 
 ```c++
-polymorphic(
+constexpr polymorphic(
   std::allocator_arg_t, const Allocator& alloc, polymorphic&& other) noexcept;
 ```
 
@@ -903,7 +903,7 @@ polymorphic(
 #### X.Z.4 Destructor [polymorphic.dtor]
 
 ```c++
-~polymorphic();
+constexpr ~polymorphic();
 ```
 
 * _Effects_: If `*this` is not valueless, destroys the owned object.
@@ -911,7 +911,7 @@ polymorphic(
 #### X.Z.5 Assignment [polymorphic.assign]
 
 ```c++
-polymorphic& operator=(const polymorphic& other);
+constexpr polymorphic& operator=(const polymorphic& other);
 ```
 
 * _Preconditions_: `other` is not valueless.
@@ -923,7 +923,7 @@ polymorphic& operator=(const polymorphic& other);
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-polymorphic& operator=(polymorphic&& other) noexcept(
+constexpr polymorphic& operator=(polymorphic&& other) noexcept(
     allocator_traits<Allocator>::propagate_on_container_move_assignment::value ||
     allocator_traits<Allocator>::is_always_equal::value);
 ```
@@ -1180,25 +1180,39 @@ outside of tests.
 
 A converting constructor could be added in a future version of the C++ standard.
 
-### Small object optimization for `polymorphic`
+### Small Buffer Optimisation
 
-`polymorphic` could be designed to include a small object optimization like that
-used in `std::string`. A small object optimization uses a buffer to potentially
-store the owned object and avoid allocating memory. This would make move
-construction more complicated as the owned object must be moved from one buffer
-to another, potentially invoking allocations if the owned object's move
-constructor allocates memory.
+It is possible to implement `polymorphic` with a small buffer optimisation,
+similar to that used in `std::function`. This would allow `polymorphic` to store
+small objects without allocating memory. Like `std::function`, the size of the
+small buffer is left to be specified by the implementation.
 
-As designed, `polymorphic<T>` does not require that `T` (or constructed classes
-of type `U` derived from `T`) are move constructible or move assignable for
-`polymorphic<T>` to be move constructible or move assignable.
+The authors are sceptical of the value of a small buffer optimisation for
+objects from a type hierarchy. If the buffer is too small, all instances of
+`polymorphic` will be larger than needed. This is because they will allocate
+heap in addition to having the memory from the (empty) buffer as part of the
+object size. If the buffer is too big, `polymorphic` objects will be larger than
+necessary, potentially introducing the need for `indirect<polymorphic<T>>`.
 
-A polymorphic value type with a small buffer optimization that did not allocate
-a control block for the owned object would need to be a different type. It is
-not possible to add a small object optimization to `polymorphic` without making
-breaking changes. There may be a case for the addition of `small_polymorphic<T,
-N>` similar to `llvm::SmallVector<T, N>`, but we are not proposing its addition
-here.
+We could add a non-type template argument to `polymorphic` to specify
+the size of the small buffer:
+
+```c++
+template <typename T, typename Alloc, size_t BufferSize>
+class polymorphic;
+```
+
+However, we opt not to do this to maintain consistency with other standard
+library types. Both `std::function` and `std::string` leave the buffer size as
+an implementation detail. Including an additional template argument in a later
+revision of the standard would be a breaking change. With usage experience,
+implementers will be able to determine if a small buffer optimisation is
+worthwhile and what the optimal buffer size might be.
+
+A small buffer optimisation makes little sense for `indirect` as the sensible
+size of the buffer would be dictated by the size of the stored object. This
+removes support for incomplete types and locates storage for the object locally,
+defeating the purpose of `indirect`.
 
 ## Appendix B: Before and after examples
 

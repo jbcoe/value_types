@@ -6,3 +6,4 @@ _deps
 bazel-*
 build*/
 out/
+.cache
