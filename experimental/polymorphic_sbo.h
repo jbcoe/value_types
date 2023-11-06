@@ -443,7 +443,7 @@ class polymorphic {
           case BUFFER: {
             auto& buf = get<BUFFER>();
             auto& other_buf = other.get<BUFFER>();
-            detail::buffer<T, A> tmp;
+            buffer_t tmp;
 
             // Swap the buffers using relocate.
             buf.relocate(alloc_, tmp);
