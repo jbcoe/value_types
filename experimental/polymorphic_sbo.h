@@ -148,7 +148,7 @@ class buffer {
     vtable_.relocate = [](A allocator, buffer* self,
                           buffer* destination) -> void {
       if constexpr (std::is_trivially_copy_constructible_v<U>) {
-        std::memcpy(destination, self, PolymorphicBufferCapacity);
+        memcpy(destination, self, PolymorphicBufferCapacity);
       } else {
         const U* u = self->aligned_storage_for<U>();
         u_allocator_t u_allocator(allocator);
