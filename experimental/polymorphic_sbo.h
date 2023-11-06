@@ -31,20 +31,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace xyz {
 
+static constexpr size_t POLYMORPHIC_SBO_CAPACITY = 32;
+static constexpr size_t POLYMORPHIC_SBO_ALIGNMENT = alignof(std::max_align_t);
+
 [[noreturn]] inline void unreachable() { std::terminate(); }  // LCOV_EXCL_LINE
 
 struct NoPolymorphicSBO {};
 
 namespace detail {
 
-static constexpr size_t PolymorphicBufferCapacity = 32;
-
-template <typename T>
-constexpr bool is_sbo_compatible() {
-  return !std::is_base_of_v<NoPolymorphicSBO, T> &&
-         std::is_nothrow_move_constructible_v<T> &&
-         (sizeof(T) <= PolymorphicBufferCapacity);
-}
+struct tag_t {};
+constexpr tag_t tag;
 
 template <class T, class A>
 struct control_block {
@@ -95,11 +92,8 @@ class direct_control_block : public control_block<T, A> {
   }
 };
 
-template <class T, class A>
+template <class T, class A, size_t N, size_t Align>
 class buffer {
-  alignas(
-      std::max_align_t) std::array<std::byte, PolymorphicBufferCapacity> data_;
-
   struct vtable {
     using ptr_fn = T* (*)(buffer*);
     using clone_fn = void (*)(A, const buffer*, buffer*);
@@ -112,22 +106,49 @@ class buffer {
     destroy_fn destroy = nullptr;
   } vtable_;
 
+  std::byte padding_[3];
+
+  using data_t = std::array<std::byte, N>;
+  alignas(Align) data_t data_;
+
   template <typename U>
   U* aligned_storage_for() {
-    return std::launder(reinterpret_cast<U*>(data_.data()));
+    void* raw_buffer = data_.data();
+    // `can_hold_type<U>` ensures that alignment is ok.
+    auto aligned_buffer = raw_buffer;
+    // size_t size = data_.size();
+    // void* aligned_buffer = std::align(alignof(U), size, raw_buffer, size);
+    // assert(aligned_buffer && "Cannot align sufficient storage for type U");
+    return std::launder(reinterpret_cast<U*>(aligned_buffer));
   }
 
   template <typename U>
   const U* aligned_storage_for() const {
-    return std::launder(reinterpret_cast<const U*>(data_.data()));
+    const void* raw_buffer = data_.data();
+    // `can_hold_type<U>` ensures that alignment is ok.
+    auto aligned_buffer = raw_buffer;
+    // size_t size = data_.size();
+    // void* aligned_buffer = std::align(alignof(U), size, raw_buffer, size);
+    // assert(aligned_buffer && "Cannot align sufficient storage for type U");
+    return std::launder(reinterpret_cast<const U*>(aligned_buffer));
   }
 
  public:
+  template <typename U>
+  static constexpr bool can_hold_type() {
+    // clang-format off
+    return !std::is_base_of_v<NoPolymorphicSBO, T> && // Used to disable SBO for tests.
+           std::is_nothrow_move_constructible_v<T> && // Needed for noexcept move of the buffer.
+           sizeof(U) <= N &&                          // We need enough space.
+           alignof(U) <= Align;                       // TODO: Probably stricter than we need.
+    // clang-format on
+  }
+
   constexpr buffer() = default;
 
   template <typename U, typename... Ts>
     requires std::derived_from<U, T> && std::constructible_from<U, Ts...> &&
-             (is_sbo_compatible<U>())
+             (can_hold_type<U>())
   constexpr buffer(std::type_identity<U>, A allocator, Ts&&... ts) {
     using u_allocator_t = std::allocator_traits<A>::template rebind_alloc<U>;
     using u_allocator_traits = std::allocator_traits<u_allocator_t>;
@@ -148,7 +169,7 @@ class buffer {
     vtable_.relocate = [](A allocator, buffer* self,
                           buffer* destination) -> void {
       if constexpr (std::is_trivially_copy_constructible_v<U>) {
-        std::memcpy(destination, self, PolymorphicBufferCapacity);
+        std::memcpy(destination, self, N);
       } else {
         const U* u = self->aligned_storage_for<U>();
         u_allocator_t u_allocator(allocator);
@@ -160,8 +181,7 @@ class buffer {
 
     vtable_.destroy = [](A allocator, buffer* self) -> void {
       u_allocator_t u_allocator(allocator);
-      u_allocator_traits::destroy(u_allocator,
-                                  std::launder(self->aligned_storage_for<U>()));
+      u_allocator_traits::destroy(u_allocator, self->aligned_storage_for<U>());
     };
 
     u_allocator_t u_allocator(allocator);
@@ -184,13 +204,17 @@ class buffer {
 
 }  // namespace detail
 
-template <class T, class A = std::allocator<T>>
+template <class T, class A = std::allocator<T>,
+          size_t N = POLYMORPHIC_SBO_CAPACITY,
+          size_t Align = POLYMORPHIC_SBO_ALIGNMENT>
 class polymorphic {
   T* p_;
-  std::variant<std::monostate, detail::buffer<T, A>,
-               detail::control_block<T, A>*>
-      storage_;
+
+  using buffer_t = detail::buffer<T, A, N, Align>;
+  using control_block_t = detail::control_block<T, A>;
+
   enum idx { EMPTY, BUFFER, CONTROL_BLOCK };
+  std::variant<std::monostate, buffer_t, control_block_t*> storage_;
 
 #if defined(_MSC_VER)
   [[msvc::no_unique_address]] A alloc_;
@@ -210,7 +234,7 @@ class polymorphic {
     requires std::constructible_from<U, Ts&&...> &&
              std::copy_constructible<U> && std::derived_from<U, T>
       : alloc_(alloc) {
-    if constexpr (detail::is_sbo_compatible<U>()) {
+    if constexpr (buffer_t::template can_hold_type<U>()) {
       emplace<idx::BUFFER>(std::type_identity<U>{}, alloc_,
                            std::forward<Ts>(ts)...);
       p_ = get<idx::BUFFER>().ptr();
@@ -401,6 +425,10 @@ class polymorphic {
     return storage_.index() == idx::EMPTY;
   }
 
+  constexpr bool is_buffered(detail::tag_t) const noexcept {
+    return storage_.index() == idx::BUFFER;
+  }
+
   constexpr allocator_type get_allocator() const noexcept { return alloc_; }
 
   constexpr void swap(polymorphic& other) noexcept(
@@ -415,13 +443,14 @@ class polymorphic {
           case idx::BUFFER: {
             auto& buf = get<idx::BUFFER>();
             auto& other_buf = other.get<idx::BUFFER>();
-            detail::buffer<T, A> tmp;
+            buffer_t tmp;
 
             // Swap the buffers using relocate.
             buf.relocate(alloc_, tmp);
             other_buf.relocate(other.alloc_, buf);
-            // `tmp` relocate uses the allocator from `this` as `tmp`'s buffer
-            // content came from `this`.
+            // `tmp` relocate uses the allocator
+            // from `this` as `tmp`'s buffer content
+            // came from `this`.
             tmp.relocate(alloc_, other_buf);
 
             // Update pointers.

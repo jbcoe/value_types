@@ -790,3 +790,100 @@ TEST(PolymorphicTest, InteractionWithPMRAllocatorsWhenCopyThrows) {
 #endif  // (__cpp_lib_memory_resource >= 201603L)
 
 }  // namespace
+
+struct OverAligned {
+  alignas(std::max_align_t) char data = 0;
+};
+
+#ifdef XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
+TEST(PolymorphicSBOTest, BufferSmallerThanObjectNoSmallBufferUsed) {
+  struct BiggerThanChar {
+    char data[2];
+  };
+  std::vector<xyz::polymorphic<BiggerThanChar, std::allocator<BiggerThanChar>,
+                               sizeof(char)>>
+      v;
+  for (size_t i = 0; i < 8; ++i) {
+    v.emplace_back();
+  }
+  for (size_t i = 0; i < v.size(); ++i) {
+    EXPECT_FALSE(v[i].is_buffered(xyz::detail::tag));
+  }
+}
+
+TEST(PolymorphicSBOTest,
+     BufferTheSameSizeAsTriviallyAlignedObjectSmallBufferUsed) {
+  struct TriviallyAligned {};
+  std::vector<
+      xyz::polymorphic<TriviallyAligned, std::allocator<TriviallyAligned>,
+                       sizeof(TriviallyAligned), alignof(TriviallyAligned)>>
+      v;
+
+  for (size_t i = 0; i < 8; ++i) {
+    v.emplace_back();
+  }
+  for (size_t i = 0; i < v.size(); ++i) {
+    EXPECT_TRUE(v[i].is_buffered(xyz::detail::tag));
+  }
+}
+
+TEST(PolymorphicSBOTest, BufferBigEnoughForObjectAndAlignmentBufferUsed) {
+  struct Aligned {
+    alignas(4) char data = 0;
+  };
+
+  std::vector<xyz::polymorphic<Aligned, std::allocator<Aligned>,
+                               sizeof(Aligned), alignof(Aligned)>>
+      v;
+
+  for (size_t i = 0; i < 8; ++i) {
+    v.emplace_back();
+  }
+  for (size_t i = 0; i < v.size(); ++i) {
+    EXPECT_TRUE(v[i].is_buffered(xyz::detail::tag));
+  }
+}
+
+TEST(PolymorphicSBOTest, BufferNotBigEnoughForObjectAndAlignmentBufferNotUsed) {
+  struct Aligned {
+    alignas(4) char data = 0;
+  };
+
+  std::vector<xyz::polymorphic<Aligned, std::allocator<Aligned>,
+                               sizeof(Aligned), (alignof(Aligned) >> 1)>>
+      v;
+
+  for (size_t i = 0; i < 8; ++i) {
+    v.emplace_back();
+  }
+  for (size_t i = 0; i < v.size(); ++i) {
+    EXPECT_FALSE(v[i].is_buffered(xyz::detail::tag));
+  }
+}
+
+TEST(PolymorphicSBOTest, NonBufferedBigAndNonTriviallyAligned) {
+  struct BigAndNonTriviallyAligned {
+    alignas(8) char data[16];
+  };
+  std::vector<xyz::polymorphic<BigAndNonTriviallyAligned, std::allocator<BigAndNonTriviallyAligned>, 16, 4>> v;
+  for (size_t i = 0; i < 8; ++i) {
+    v.emplace_back();
+  }
+  for (size_t i = 0; i < v.size(); ++i) {
+    EXPECT_FALSE(v[i].is_buffered(xyz::detail::tag));
+  }
+}
+
+TEST(PolymorphicSBOTest, BufferedBigAndNonTriviallyAligned) {
+  struct BigAndNonTriviallyAligned {
+    alignas(8) char data[16];
+  };
+  std::vector<xyz::polymorphic<BigAndNonTriviallyAligned, std::allocator<BigAndNonTriviallyAligned>, 16, 8>> v;
+  for (size_t i = 0; i < 8; ++i) {
+    v.emplace_back();
+  }
+  for (size_t i = 0; i < v.size(); ++i) {
+    EXPECT_TRUE(v[i].is_buffered(xyz::detail::tag));
+  }
+}
+#endif  // XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
