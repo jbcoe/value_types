@@ -70,8 +70,8 @@ class direct_control_block : public control_block<T, A> {
   constexpr T* ptr() noexcept override { return &u_; }
 
   constexpr control_block<T, A>* clone(A& alloc) override {
-    using cb_allocator_t = std::allocator_traits<A>::template rebind_alloc<
-        direct_control_block<T, U, A>>;
+    using cb_allocator_t = typename std::allocator_traits<
+        A>::template rebind_alloc<direct_control_block<T, U, A>>;
     cb_allocator_t cb_alloc(alloc);
     using cb_alloc_traits = std::allocator_traits<cb_allocator_t>;
     auto* mem = cb_alloc_traits::allocate(cb_alloc, 1);
@@ -85,8 +85,8 @@ class direct_control_block : public control_block<T, A> {
   }
 
   constexpr void destroy(A& alloc) override {
-    using cb_allocator_t = std::allocator_traits<A>::template rebind_alloc<
-        direct_control_block<T, U, A>>;
+    using cb_allocator_t = typename std::allocator_traits<
+        A>::template rebind_alloc<direct_control_block<T, U, A>>;
     cb_allocator_t cb_alloc(alloc);
     using cb_alloc_traits = std::allocator_traits<cb_allocator_t>;
     cb_alloc_traits::destroy(cb_alloc, this);
@@ -152,7 +152,8 @@ class buffer {
     requires std::derived_from<U, T> && std::constructible_from<U, Ts...> &&
              (can_hold_type<U>())
   constexpr buffer(std::type_identity<U>, A allocator, Ts&&... ts) {
-    using u_allocator_t = std::allocator_traits<A>::template rebind_alloc<U>;
+    using u_allocator_t =
+        typename std::allocator_traits<A>::template rebind_alloc<U>;
     using u_allocator_traits = std::allocator_traits<u_allocator_t>;
 
     vtable_.ptr = [](buffer* self) -> T* {
