@@ -13,6 +13,12 @@ cc_library(
 )
 
 cc_library(
+    name = "unique_polymorphic",
+    hdrs = ["unique_polymorphic.h"],
+    copts = ["-Iexternal/value_types/"],
+)
+
+cc_library(
     name = "polymorphic_inline_vtable",
     hdrs = [
         "experimental/polymorphic_inline_vtable.h",
@@ -63,6 +69,16 @@ cc_test(
     srcs = ["polymorphic_test.cc"],
     deps = [
         "polymorphic",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "unique_polymorphic_test",
+    size = "small",
+    srcs = ["unique_polymorphic_test.cc"],
+    deps = [
+        "unique_polymorphic",
         "@com_google_googletest//:gtest_main",
     ],
 )
