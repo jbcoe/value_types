@@ -219,7 +219,7 @@ class polymorphic {
                            std::forward<Ts>(ts)...);
       p_ = get<idx::BUFFER>().ptr();
     } else {
-      using cb_allocator_t = std::allocator_traits<A>::template rebind_alloc<
+      using cb_allocator_t = typename std::allocator_traits<A>::template rebind_alloc<
           detail::direct_control_block<T, U, A>>;
       using cb_traits = std::allocator_traits<cb_allocator_t>;
       cb_allocator_t cb_alloc(alloc_);
