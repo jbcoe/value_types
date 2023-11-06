@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <array>
 #include <cassert>
 #include <concepts>
+#include <cstring>
 #include <functional>
 #include <memory>
 #include <utility>
@@ -169,7 +170,7 @@ class buffer {
     vtable_.relocate = [](A allocator, buffer* self,
                           buffer* destination) -> void {
       if constexpr (std::is_trivially_copy_constructible_v<U>) {
-        memcpy(destination, self, N);
+        std::memcpy(destination, self, N);
       } else {
         const U* u = self->aligned_storage_for<U>();
         u_allocator_t u_allocator(allocator);
