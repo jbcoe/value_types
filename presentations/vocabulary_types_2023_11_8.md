@@ -54,7 +54,7 @@ We probably want to standardize both sorts of library type.
 
 # Composite classes
 
-We can define composite classes: classes with other class instances as member data.
+We define composite classes as classes with other class instances as member data.
 
 Vocabulary types can be used to express common idioms.
 
