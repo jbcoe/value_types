@@ -728,7 +728,7 @@ TEST(PolymorphicTest, InteractionWithMap) {
   for (int i = 0; i < 16; ++i) {
     as.emplace(i, xyz::polymorphic<Base>(std::in_place_type<Derived_NoSBO>, i));
   }
-  for (auto [k, v] : as) {
+  for (const auto& [k, v] : as) {
     EXPECT_EQ(v->value(), k);
   }
 }
@@ -738,7 +738,7 @@ TEST(PolymorphicTest, InteractionWithUnorderedMap) {
   for (int i = 0; i < 16; ++i) {
     as.emplace(i, xyz::polymorphic<Base>(std::in_place_type<Derived_NoSBO>, i));
   }
-  for (auto [k, v] : as) {
+  for (const auto& [k, v] : as) {
     EXPECT_EQ(v->value(), k);
   }
 }
