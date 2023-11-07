@@ -25,6 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <compare>
 #include <concepts>
 #include <memory>
+#include <type_traits>
 #include <utility>
 
 #if __has_include(<format>)
@@ -58,9 +59,8 @@ class indirect {
   using value_type = T;
   using allocator_type = A;
 
-  constexpr indirect()
-    requires std::default_initializable<T>
-  {
+  constexpr indirect() {
+    static_assert(std::is_default_constructible_v<T>);
     T* mem = allocator_traits::allocate(alloc_, 1);
     try {
       allocator_traits::construct(alloc_, mem);
@@ -101,9 +101,9 @@ class indirect {
   }
 
   constexpr indirect(const indirect& other)
-    requires std::copy_constructible<T>
       : alloc_(allocator_traits::select_on_container_copy_construction(
             other.alloc_)) {
+    static_assert(std::is_copy_constructible_v<T>);
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     T* mem = allocator_traits::allocate(alloc_, 1);
     try {
@@ -117,8 +117,8 @@ class indirect {
 
   constexpr indirect(std::allocator_arg_t, const A& alloc,
                      const indirect& other)
-    requires std::copy_constructible<T>
       : alloc_(alloc) {
+    static_assert(std::is_copy_constructible_v<T>);
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     T* mem = allocator_traits::allocate(alloc_, 1);
     try {
@@ -145,9 +145,8 @@ class indirect {
 
   constexpr ~indirect() { reset(); }
 
-  constexpr indirect& operator=(const indirect& other)
-    requires std::copy_constructible<T>
-  {
+  constexpr indirect& operator=(const indirect& other) {
+    static_assert(std::is_copy_constructible_v<T>);
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     if (this != &other) {
       if constexpr (std::is_copy_assignable_v<T>) {
@@ -356,7 +355,8 @@ concept is_formattable = requires(T t) { std::formatter<T, charT>{}; };
 
 template <class T, class Alloc, class charT>
   requires xyz::is_formattable<T, charT>
-struct std::formatter<xyz::indirect<T, Alloc>, charT> : std::formatter<T, charT> {
+struct std::formatter<xyz::indirect<T, Alloc>, charT>
+    : std::formatter<T, charT> {
   template <class ParseContext>
   constexpr auto parse(ParseContext& ctx) -> typename ParseContext::iterator {
     return std::formatter<T, charT>::parse(ctx);

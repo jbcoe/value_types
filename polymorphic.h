@@ -22,6 +22,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "experimental/polymorphic_inline_vtable.h"
 #endif  // XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
 
+#ifdef XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
+#include "experimental/polymorphic_sbo.h"
+#endif  // XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
+
 #ifndef XYZ_POLYMORPHIC_H_
 #define XYZ_POLYMORPHIC_H_
 
@@ -31,6 +35,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <utility>
 
 namespace xyz {
+
+struct NoPolymorphicSBO {};
 
 namespace detail {
 template <class T, class A>
@@ -42,7 +48,7 @@ struct control_block {
 };
 
 template <class T, class U, class A>
-class direct_control_block : public control_block<T, A> {
+class direct_control_block final : public control_block<T, A> {
   U u_;
 
  public:
@@ -96,9 +102,8 @@ class polymorphic {
   using value_type = T;
   using allocator_type = A;
 
-  constexpr polymorphic()
-    requires std::default_initializable<T>
-  {
+  constexpr polymorphic() {
+    static_assert(std::is_default_constructible_v<T>);
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
     using cb_traits = std::allocator_traits<cb_allocator>;
