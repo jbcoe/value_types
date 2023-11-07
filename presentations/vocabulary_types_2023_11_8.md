@@ -21,7 +21,7 @@ _Jonathan B. Coe, Antony Peacock & Sean Parent_
 
 # Introduction
 
-We propose adding two new class templates to the C++ Standard Library.
+We propose adding two new class templates to the C++ Standard Library:
 
 ```c++
 template <typename T, typename Allocator = std::allocator<T>>
@@ -40,13 +40,13 @@ These fill an existing gap in the suite of existing standard library vocabulary 
 
 # Vocabulary Types
 
-We refer to standard library types like `std::array`, `std::map`, `std::optional`,  `std::variant` and `std::vector` as _vocabulary types_.
+We refer to standard library types such as `std::array`, `std::map`, `std::optional`,  `std::variant` and `std::vector` as _vocabulary types_.
 
-We'd anticipate that an arbitrary piece of C++ library or application code would make use of some of these types.
+We postulate that an arbitrary piece of C++ library or application code would make use of some of these types.
 
 Standardizing vocabulary types is important as it allows different libraries to easily interoperate and for users to build applications.
 
-The standard library contains other, non-vocabulary types to do specific jobs like interacting with the filesystem, formatting text for output, or dealing with concurrency.
+The standard library contains other, non-vocabulary types to do specific jobs such as interacting with the filesystem, formatting text for output, or dealing with concurrency.
 
 We probably want to standardize both sorts of library type.
 
@@ -133,7 +133,7 @@ Incomplete type support is needed for defining recursive data structures, suppor
 
 Incomplete types are supported by storing the object of the incomplete type outside of the composite object.
 
-Storing an object outside of a composite type can also be used to optimize use of cache (hot-cold-splitting).
+Storing an object outside of a composite type can also be used to optimize use of cache (hot/cold splitting).
 
 ---
 
@@ -149,7 +149,7 @@ class Composite {
 }
 ```
 
-Pointers are a poor fit for owned data, we'll need to implement all special member functions and manually check const-qualified methods - const does not propagate to a pointee when the pointer is accessed through a const-access path.
+Pointers are a poor fit for owned data as we need to implement all special member functions and manually check const-qualified methods (const does not propagate to a pointee when the pointer is accessed through a const-access path).
 
 ---
 
@@ -164,7 +164,7 @@ class Composite {
 }
 ```
 
-We don't need to implement move construction, move assignment or destruction. The compiler will implicitly delete the copy constructor and copy assignment operator; either the composite is non-copyable or we implement the copy constructor and copy assignment operator ourselves.
+We do not need to implement move construction, move assignment or destruction. The compiler will implicitly delete the copy constructor and copy assignment operator; either the composite is non-copyable or we implement the copy constructor and copy assignment operator ourselves.
 
 Const does not propagate through `std::unique_ptr`, we must manually check const-qualified methods for correctness.
 
@@ -172,7 +172,7 @@ Const does not propagate through `std::unique_ptr`, we must manually check const
 
 ## Incomplete types using `std::shared_ptr<T>`
 
-Shared pointers don't model the right thing:
+Shared pointers do not model the right thing:
 
 ```c++
 class Composite {
@@ -181,9 +181,9 @@ class Composite {
 }
 ```
 
-We don't need to implement any special member functions, but we have other issues.
+We do not need to implement any special member functions, but we have other issues.
 
-The compiler-generated copy constructor and assignment operator will give rise to multiple composite objects that share the same components: that's not ownership.
+The compiler-generated copy constructor and assignment operator will give rise to multiple composite objects that share the same components: that is not ownership.
 
 Const does not propagate through `std::shared_ptr<T>`, we must manually check const-qualified methods for correctness.
 
@@ -200,12 +200,12 @@ class Composite {
 }
 ```
 
-Again the compiler-generated copy constructor and assignment operator will give rise to multiple composite objects that share the same components, _but_ the shared components 
+Again, the compiler-generated copy constructor and assignment operator will give rise to multiple composite objects that share the same components, _but_ the shared components 
 are immutable. 
 
 If our hierarchy of composites is const-correct, immutability will hide the fact that data is shared.
 
-We can't call non-const qualified member function on our component accessed though `ptr_`.
+We cannot call non-const qualified member function on our component accessed though `ptr_`.
 
 ---
 
