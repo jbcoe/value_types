@@ -10,7 +10,7 @@ LABEL maintainer="Your Name <your@email.com>"
 ENV DEBIAN_FRONTEND=noninteractive
  
 # Install gcc, clang, bazel and cmake
-RUN apt-get update && apt-get install -y gcc llvm ninja-build && \
+RUN apt-get update && apt-get install -y snap curl gcc llvm ninja-build && \
 curl --proto '=https' https://github.com/bazelbuild/bazel/releases/download/6.4.0/bazel-6.4.0-installer-linux-x86_64.sh | sh && \
 snap install cmake –classic
 
