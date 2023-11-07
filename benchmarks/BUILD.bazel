@@ -1,0 +1,65 @@
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
+
+cc_binary(
+    name = "indirect_benchmark",
+    srcs = [
+        "indirect_benchmark.cc",
+    ],
+    deps = [
+        "//:indirect",
+        "@com_google_benchmark//:benchmark_main",
+    ],
+)
+
+build_test(
+    name = "indirect_benchmark_build_test",
+    targets = ["indirect_benchmark"],
+)
+
+cc_binary(
+    name = "polymorphic_benchmark",
+    srcs = [
+        "polymorphic_benchmark.cc",
+    ],
+    deps = [
+        "//:polymorphic",
+        "@com_google_benchmark//:benchmark_main",
+    ],
+)
+
+build_test(
+    name = "polymorphic_benchmark_build_test",
+    targets = ["polymorphic_benchmark"],
+)
+
+cc_binary(
+    name = "polymorphic_inline_vtable_benchmark",
+    srcs = [
+        "polymorphic_benchmark.cc",
+    ],
+    deps = [
+        "//:polymorphic_inline_vtable",
+        "@com_google_benchmark//:benchmark_main",
+    ],
+)
+
+build_test(
+    name = "polymorphic_inline_vtable_benchmark_build_test",
+    targets = ["polymorphic_inline_vtable_benchmark"],
+)
+
+cc_binary(
+    name = "polymorphic_sbo_benchmark",
+    srcs = [
+        "polymorphic_benchmark.cc",
+    ],
+    deps = [
+        "//:polymorphic_sbo",
+        "@com_google_benchmark//:benchmark_main",
+    ],
+)
+
+build_test(
+    name = "polymorphic_sbo_benchmark_build_test",
+    targets = ["polymorphic_sbo_benchmark"],
+)
