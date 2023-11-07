@@ -14,23 +14,23 @@ jobs:
       matrix:
         settings:
           - {
-              name: "debug",
+              name: "bazel debug test",
               flags: "-c dbg",
           }
           - {
-              name: "optimized",
+              name: "bazel optimized test",
               flags: "-c opt",
           }
           - {
-              name: "address sanitizer",
+              name: "bazel address sanitizer test",
               flags: "--config=asan",
           }
           - {
-              name: "undefined behaviour sanitizer",
+              name: "bazel undefined behaviour sanitizer test",
               flags: "--config=ubsan",
           }
           - {
-              name: "thread sanitizer",
+              name: "bazel thread sanitizer test",
               flags: "--config=tsan",
           }
     steps:
