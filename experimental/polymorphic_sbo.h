@@ -439,6 +439,7 @@ class polymorphic {
 
     switch (static_cast<idx>(storage_.index())) {
       case BUFFER:
+      case BUFFER:
         switch (static_cast<idx>(other.storage_.index())) {
           case BUFFER: {
             auto& buf = get<BUFFER>();
@@ -520,6 +521,19 @@ class polymorphic {
     p_ = nullptr;
   }
 
+  template <idx type_index>
+  constexpr auto& get() {
+    return std::get<type_index>(storage_);
+  }
+
+  template <idx type_index>
+  constexpr const auto& get() const {
+    return std::get<type_index>(storage_);
+  }
+
+  template <idx type_index, typename... Ts>
+  constexpr decltype(auto) emplace(Ts&&... ts) {
+    return storage_.template emplace<type_index>(std::forward<Ts>(ts)...);
   template <idx type_index>
   constexpr auto& get() {
     return std::get<type_index>(storage_);
