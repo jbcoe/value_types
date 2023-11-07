@@ -195,6 +195,26 @@ TEST(PolymorphicTest, CopyAssignmentWithSBO) {
   EXPECT_NE(&*a, &*b);
 }
 
+TEST(PolymorphicTest, CopyAssignmentWithSBOAndATriviallyCopyableType) {
+  class TriviallyCoyable {
+   public:
+    TriviallyCoyable(int value) : value_(value) {}
+    int value() const { return value_; }
+
+   private:
+    int value_;
+  };
+  xyz::polymorphic<TriviallyCoyable> a(std::in_place_type<TriviallyCoyable>,
+                                       42);
+  xyz::polymorphic<TriviallyCoyable> b(std::in_place_type<TriviallyCoyable>,
+                                       101);
+  EXPECT_EQ(a->value(), 42);
+  a = b;
+
+  EXPECT_EQ(a->value(), 101);
+  EXPECT_NE(&*a, &*b);
+}
+
 TEST(PolymorphicTest, MoveAssignment) {
   xyz::polymorphic<Base> a(std::in_place_type<Derived_NoSBO>, 42);
   xyz::polymorphic<Base> b(std::in_place_type<Derived_NoSBO>, 101);
