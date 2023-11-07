@@ -24,13 +24,13 @@ _Jonathan B. Coe, Antony Peacock & Sean Parent_
 We propose adding two new class templates to the C++ Standard Library.
 
 ```c++
-template <T, Allocator = std::allocator<T>>
+template <typename T, typename Allocator = std::allocator<T>>
 class indirect;
 ```
 
 
 ```c++
-template <T, Allocator = std::allocator<T>>
+template <typename T, typename Allocator = std::allocator<T>>
 class polymorphic;
 ```
 
@@ -65,7 +65,7 @@ Vocabulary types can be used to express common idioms.
 | An instance of an object `T` | `T` |
 | A nullable instance of an object `T` | `std::optional<T>` |
 | An instance of one of a closed-set of types `Ts...`| `std::variant<Ts...>`|
-| Fixed-count, multiple instances of a type `T`| `std::array<T>`|
+| `N` instances of a type `T`| `std::array<T, N>`|
 | Variable-count, multiple instances of a type `T`| `std::vector<T>`|
 | Unique, variable-count, instances of a type `T`| `std::set<T>`|
 | Key-accessed, instances of a type `T`| `std::map<Key, T>`|
@@ -127,13 +127,13 @@ We can combine vocabulary types to express combined idioms:
 
 # Incomplete types
 
-We may want a composite to contain an instance of an incomplete type, either directly or though the use of existing vocabulary types.
+We may want a composite to contain an instance of an incomplete type, either directly or through the use of existing vocabulary types.
 
 Incomplete type support is needed for defining recursive data structures, supporting open-set polymorphism, and hiding implementation detail.
 
 Incomplete types are supported by storing the object of the incomplete type outside of the composite object.
 
-Stroring an object outside of a composite type can also be used to optimize use of cache (hot-cold-splitting).
+Storing an object outside of a composite type can also be used to optimize use of cache (hot-cold-splitting).
 
 ---
 
@@ -164,7 +164,7 @@ class Composite {
 }
 ```
 
-We don't need to implement move construction, move assignment or destruction. The compiler will implicitly delete the copy constructor and copy assignement operator; either the composite is non-copyable or we implement the copy constructor and assignment ourselves.
+We don't need to implement move construction, move assignment or destruction. The compiler will implicitly delete the copy constructor and copy assignment operator; either the composite is non-copyable or we implement the copy constructor and copy assignment operator ourselves.
 
 Const does not propagate through `std::unique_ptr`, we must manually check const-qualified methods for correctness.
 
@@ -205,7 +205,7 @@ are immutable.
 
 If our hierarchy of composites is const-correct, immutability will hide the fact that data is shared.
 
-We can't call non-const qualified member function on our component `ptr_`.
+We can't call non-const qualified member function on our component accessed though `ptr_`.
 
 ---
 
