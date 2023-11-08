@@ -42,3 +42,10 @@ target_link_libraries(my_program
         value_types::value_types
 )
 ```
+
+# Contributing
+
+We use GitHub actions to ensure that all changes have test coverage and that
+source code is formatted with clang-format (v17).
+
+We use CMake and Bazel. New targets are manually added to both.
