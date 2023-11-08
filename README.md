@@ -54,8 +54,8 @@ class Composite {
   xyz::indirect<B> b_; // b_ owns an object of type B
 public:
   Composite(const A& a, const B& b) :
-    a_(std::in_place, a),
-    b_(std::in_place, b) {}
+    a_(a),
+    b_(b) {}
 
   // ...
 };
