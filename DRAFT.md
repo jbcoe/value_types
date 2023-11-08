@@ -30,8 +30,8 @@ member of type `indirect<T>` and is accessed through a const access path,
 `const`ness will propagate from the parent object to the instance of `T` owned
 by the `indirect` member.
 
-The class template `polymorphic` confers value-like semantics on a free-store
-allocated object.  A `polymorphic<T>` may hold an object of a class publicly
+The class template `polymorphic` confers value-like semantics on a free-store-allocated 
+object.  A `polymorphic<T>` may hold an object of a class publicly
 derived from `T`. Copying the `polymorphic<T>` will copy the object of the
 derived type. When a parent object contains a member of type `polymorphic<T>`
 and is accessed through a const access path, `const`ness will propagate from the
@@ -50,11 +50,11 @@ open-set polymorphism.
 
 We propose the addition of two new class templates to the standard library to 
 represent indirectly stored values: `indirect` and `polymorphic`. Both class 
-templates represent free-store allocated objects with value-like semantics. 
+templates represent free-store-allocated objects with value-like semantics. 
 `polymorphic<T>` can own any object of a type publicly derived from `T`, allowing 
 composite classes to contain polymorphic components. We require the addition of 
 two classes to avoid the cost of virtual dispatch (calling the copy constructor 
-of a potentially derived-type object through type-erasure) when copying of 
+of a potentially derived-type object through type erasure) when copying of 
 polymorphic objects is not needed.
 
 ## Design requirements
@@ -145,7 +145,7 @@ int main() {
 ### Value semantics
 
 Both `indirect` and `polymorphic` are value types whose owned object is
-free-store-allocated (or some other memory-resource controlled by the specified
+free-store-allocated (or some other memory resource controlled by the specified
 allocator).
 
 When a value type is copied it gives rise to two independent objects that can be
