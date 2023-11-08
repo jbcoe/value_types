@@ -272,6 +272,8 @@ class indirect {
  public:
   using value_type = T;
   using allocator_type = Allocator;
+  using pointer       = typename allocator_traits<Allocator>::pointer;
+  using const_pointer = typename allocator_traits<Allocator>::const_pointer;
 
   constexpr indirect();
 
@@ -302,9 +304,9 @@ class indirect {
 
   constexpr T& operator*() noexcept;
 
-  constexpr const T* operator->() const noexcept;
+  constexpr const_pointer operator->() const noexcept;
 
-  constexpr T* operator->() noexcept;
+  constexpr pointer operator->() noexcept;
 
   constexpr bool valueless_after_move() const noexcept;
 
@@ -500,8 +502,8 @@ constexpr T& operator*() noexcept;
 * _Remarks_: These functions are constexpr functions.
 
 ```c++
-constexpr const T* operator->() const noexcept;
-constexpr T* operator->() noexcept;
+constexpr const_pointer operator->() const noexcept;
+constexpr pointer operator->() noexcept;
 ```
 
 * _Preconditions_: `*this` is not valueless.
@@ -760,6 +762,8 @@ class polymorphic {
  public:
   using value_type = T;
   using allocator_type = Allocator;
+  using pointer       = typename allocator_traits<Allocator>::pointer;
+  using const_pointer = typename allocator_traits<Allocator>::const_pointer;
 
   constexpr polymorphic();
 
@@ -790,9 +794,9 @@ class polymorphic {
 
   constexpr T& operator*() noexcept;
 
-  constexpr const T* operator->() const noexcept;
+  constexpr const_pointer operator->() const noexcept;
 
-  constexpr T* operator->() noexcept;
+  constexpr pointer operator->() noexcept;
 
   constexpr bool valueless_after_move() const noexcept;
 
@@ -949,8 +953,8 @@ constexpr T& operator*() noexcept;
 * _Remarks_: These functions are constexpr functions.
 
 ```c++
-constexpr const T* operator->() const noexcept;
-constexpr T* operator->() noexcept;
+constexpr const_pointer operator->() const noexcept;
+constexpr pointer operator->() noexcept;
 ```
 
 * _Preconditions_: `*this` is not valueless.
