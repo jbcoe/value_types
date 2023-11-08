@@ -41,7 +41,10 @@ struct NoPolymorphicSBO {};
 namespace detail {
 template <class T, class A>
 struct control_block {
-  T* p_;
+  using allocator_traits = std::allocator_traits<A>;
+
+  typename allocator_traits::pointer p_;
+
   virtual constexpr ~control_block() = default;
   virtual constexpr void destroy(A& alloc) = 0;
   virtual constexpr control_block<T, A>* clone(A& alloc) = 0;
@@ -64,7 +67,7 @@ class direct_control_block final : public control_block<T, A> {
         A>::template rebind_alloc<direct_control_block<T, U, A>>;
     cb_allocator cb_alloc(alloc);
     using cb_alloc_traits = std::allocator_traits<cb_allocator>;
-    auto* mem = cb_alloc_traits::allocate(cb_alloc, 1);
+    auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
     try {
       cb_alloc_traits::construct(cb_alloc, mem, u_);
       return mem;
@@ -101,6 +104,8 @@ class polymorphic {
  public:
   using value_type = T;
   using allocator_type = A;
+  using pointer = typename allocator_traits::pointer;
+  using const_pointer = typename allocator_traits::const_pointer;
 
   constexpr polymorphic() {
     static_assert(std::is_default_constructible_v<T>);
@@ -108,7 +113,7 @@ class polymorphic {
         A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
     using cb_traits = std::allocator_traits<cb_allocator>;
     cb_allocator cb_alloc(alloc_);
-    auto* mem = cb_traits::allocate(cb_alloc, 1);
+    auto mem = cb_traits::allocate(cb_alloc, 1);
     try {
       cb_traits::construct(cb_alloc, mem);
       cb_ = mem;
@@ -127,7 +132,7 @@ class polymorphic {
         A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
     using cb_traits = std::allocator_traits<cb_allocator>;
     cb_allocator cb_alloc(alloc_);
-    auto* mem = cb_traits::allocate(cb_alloc, 1);
+    auto mem = cb_traits::allocate(cb_alloc, 1);
     try {
       cb_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
       cb_ = mem;
@@ -148,7 +153,7 @@ class polymorphic {
         A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
     using cb_traits = std::allocator_traits<cb_allocator>;
     cb_allocator cb_alloc(alloc_);
-    auto* mem = cb_traits::allocate(cb_alloc, 1);
+    auto mem = cb_traits::allocate(cb_alloc, 1);
     try {
       cb_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
       cb_ = mem;
@@ -221,12 +226,12 @@ class polymorphic {
     return *this;
   }
 
-  constexpr T* operator->() noexcept {
+  constexpr pointer operator->() noexcept {
     assert(cb_ != nullptr);  // LCOV_EXCL_LINE
     return cb_->p_;
   }
 
-  constexpr const T* operator->() const noexcept {
+  constexpr const_pointer operator->() const noexcept {
     assert(cb_ != nullptr);  // LCOV_EXCL_LINE
     return cb_->p_;
   }
