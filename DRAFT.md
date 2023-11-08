@@ -16,10 +16,10 @@ _Sean Parent \<<sparent@adobe.com>\>_
 
 ## Abstract
 
-We propose the addition of two new class-templates to the C++ Standard Library:
+We propose the addition of two new class templates to the C++ Standard Library:
 `indirect<T>` and `polymorphic<T>`.
 
-These class-templates have value semantics and compose well with other standard
+These class templates have value semantics and compose well with other standard
 library types (such as vector) allowing the compiler to correctly generate
 special member functions.
 
@@ -38,7 +38,7 @@ and is accessed through a const access path, `const`ness will propagate from the
 parent object to the instance of `T` owned by the `polymorphic` member.
 
 This proposal is a fusion of two older individual proposals, P1950 and P0201.
-The design of the two class-templates is sufficiently similar that they should
+The design of the two class templates is sufficiently similar that they should
 not be considered in isolation.
 
 ## Motivation
