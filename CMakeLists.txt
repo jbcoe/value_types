@@ -18,7 +18,6 @@ include(CMakePackageConfigHelpers)
 
 # Ensure code coverage is switched off for Mac OS until the code coverage library addresses the AppleClang issue
 cmake_dependent_option(ENABLE_CODE_COVERAGE "Enable code coverage" ON "\"${CMAKE_CXX_COMPILER_ID}\" STREQUAL \"Clang\" OR \"${CMAKE_CXX_COMPILER_ID}\" STREQUAL \"GNU\"" OFF)
-cmake_dependent_option(ENABLE_INCLUDE_NATVIS "Enable inclusion of a natvis file for debugging" ON "\"${CMAKE_CXX_COMPILER_ID}\" STREQUAL \"MSVC\"" OFF)
 option(ENABLE_SANITIZERS "Enable Address Sanitizer and Undefined Behaviour Sanitizer if available" OFF)
 
 add_library(value_types INTERFACE)
@@ -31,13 +30,10 @@ target_sources(value_types
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect.h>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h>
-        # Only include natvis files in Visual Studio
-    #    $<BUILD_INTERFACE:$<$<CXX_COMPILER_ID:MSVC>:${CMAKE_CURRENT_SOURCE_DIR}/indirect_value.natvis>>
-    #    $<INSTALL_INTERFACE:$<$<BOOL:${ENABLE_INCLUDE_NATVIS}>:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/indirect_value.natvis>>
 )
 target_compile_features(value_types
     INTERFACE
-        cxx_std_23
+        cxx_std_20
 )
 
 add_library(indirect INTERFACE)
@@ -52,7 +48,7 @@ target_sources(indirect
 )
 target_compile_features(indirect
     INTERFACE
-        cxx_std_23
+        cxx_std_20
 )
 
 add_library(polymorphic INTERFACE)
@@ -67,7 +63,7 @@ target_sources(polymorphic
 )
 target_compile_features(polymorphic
     INTERFACE
-        cxx_std_23
+        cxx_std_20
 )
 
 add_library(polymorphic_inline_vtable INTERFACE)
@@ -83,7 +79,7 @@ target_sources(polymorphic_inline_vtable
 )
 target_compile_features(polymorphic_inline_vtable
     INTERFACE
-        cxx_std_23
+        cxx_std_20
 )
 target_compile_definitions(polymorphic_inline_vtable
     INTERFACE
@@ -103,7 +99,7 @@ target_sources(polymorphic_sbo
 )
 target_compile_features(polymorphic_sbo
     INTERFACE
-        cxx_std_23
+        cxx_std_20
 )
 target_compile_definitions(polymorphic_sbo
     INTERFACE
@@ -289,7 +285,6 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
         FILES
             "${CMAKE_CURRENT_SOURCE_DIR}/indirect.h"
             "${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h"
-            "${CMAKE_CURRENT_SOURCE_DIR}/value_types.natvis"
         DESTINATION
             ${CMAKE_INSTALL_INCLUDEDIR}
     )

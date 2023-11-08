@@ -551,7 +551,7 @@ TEST(IndirectTest, InteractionWithMap) {
   for (int i = 0; i < 16; ++i) {
     as.emplace(i, xyz::indirect<int>(i));
   }
-  for (auto [k, v] : as) {
+  for (const auto& [k, v] : as) {
     EXPECT_EQ(*v, k);
   }
 }
@@ -561,7 +561,7 @@ TEST(IndirectTest, InteractionWithUnorderedMap) {
   for (int i = 0; i < 16; ++i) {
     as.emplace(i, xyz::indirect<int>(i));
   }
-  for (auto [k, v] : as) {
+  for (const auto& [k, v] : as) {
     EXPECT_EQ(*v, k);
   }
 }
