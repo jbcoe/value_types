@@ -47,8 +47,7 @@ consteval bool indirect_construction() {
   auto i = xyz::indirect<int>(42);
   return true;
 }
-static_assert(indirect_construction(),
-              "constexpr function call failed");
+static_assert(indirect_construction(), "constexpr function call failed");
 
 consteval bool indirect_allocator_construction() {
   auto i = xyz::indirect<int>(std::allocator_arg, std::allocator<int>{}, 42);
