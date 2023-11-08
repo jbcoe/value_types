@@ -85,8 +85,8 @@ target_compile_features(polymorphic_inline_vtable
     INTERFACE
         cxx_std_23
 )
-target_compile_definitions(polymorphic_inline_vtable 
-    INTERFACE 
+target_compile_definitions(polymorphic_inline_vtable
+    INTERFACE
         XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
 )
 
@@ -104,8 +104,8 @@ target_compile_features(polymorphic_sbo
     INTERFACE
         cxx_std_23
 )
-target_compile_definitions(polymorphic_sbo 
-    INTERFACE 
+target_compile_definitions(polymorphic_sbo
+    INTERFACE
         XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
 )
 
@@ -147,7 +147,7 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
             CXX_STANDARD_REQUIRED YES
             CXX_EXTENSIONS NO
         )
-        
+
         add_executable(indirect_test "")
         target_sources(indirect_test
             PRIVATE
@@ -191,7 +191,7 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
         )
         target_compile_options(polymorphic_sbo_test
             PRIVATE
-                $<$<CXX_COMPILER_ID:Clang>:-ftemplate-backtrace-limit=0> 
+                $<$<CXX_COMPILER_ID:Clang>:-ftemplate-backtrace-limit=0>
         )
         target_link_libraries(polymorphic_sbo_test
             PRIVATE

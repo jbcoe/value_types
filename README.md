@@ -53,8 +53,8 @@ class Composite {
   xyz::indirect<A> a_; // a_ owns an object of type A
   xyz::indirect<B> b_; // b_ owns an object of type B
 public:
-  Composite(const A& a, const B& b) : 
-    a_(std::in_place, a), 
+  Composite(const A& a, const B& b) :
+    a_(std::in_place, a),
     b_(std::in_place, b) {}
 
   // ...
@@ -69,8 +69,8 @@ class CompositeWithPolymorphicMembers {
   xyz::polymorphic<Y> y_; // y_ owns an object of type Y or derived from Y
 public:
   template <typename Tx, typename Ty>
-  Composite(const Tx& x, const Ty& y) : 
-    a_(std::in_place_type<Tx>, x), 
+  Composite(const Tx& x, const Ty& y) :
+    a_(std::in_place_type<Tx>, x),
     b_(std::in_place_type<Ty>, y) {}
 
     // ...
@@ -94,11 +94,15 @@ This code is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 ## Talks and presentations
 
 We spoke about an earlier draft at [C++ on
-Sea](https://www.youtube.com/watch?v=sjLRX4WMvlU) in 2022. 
+Sea](https://www.youtube.com/watch?v=sjLRX4WMvlU) in 2022.
 
-There are some significant design changes since this talk was given (after feedback 
-and discussion at a C++ London meetup). We've pared down the number of constructors 
+There are some significant design changes since this talk was given (after feedback
+and discussion at a C++ London meetup). We've pared down the number of constructors
 and made the null state unobservable.
+
+## Developer Guide
+
+For building and working with the project, please see the [developer guide](docs/developer-guide.md).
 
 ## References
 
