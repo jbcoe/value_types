@@ -114,6 +114,10 @@ add_library(value_types::value_types ALIAS value_types)
 
 if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
 
+    add_subdirectory(benchmarks)
+    # Currently we do compile_checks only with bazel.
+    # add_subdirectory(compile_checks)
+
     if (${BUILD_TESTING})
         FetchContent_Declare(
           googletest
@@ -193,44 +197,6 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
             PRIVATE
                 polymorphic_sbo
                 GTest::gtest_main
-                common_compiler_settings
-        )
-
-        add_executable(value_types_benchmark "")
-        target_sources(value_types_benchmark
-            PRIVATE
-                indirect_benchmark.cc
-                polymorphic_benchmark.cc
-        )
-        target_link_libraries(value_types_benchmark
-            PRIVATE
-                polymorphic
-                indirect
-                benchmark::benchmark_main
-                common_compiler_settings
-        )
-
-        add_executable(polymorphic_benchmark "")
-        target_sources(polymorphic_benchmark
-            PRIVATE
-                polymorphic_benchmark.cc
-        )
-        target_link_libraries(polymorphic_benchmark
-            PRIVATE
-                polymorphic
-                benchmark::benchmark_main
-                common_compiler_settings
-        )
-
-        add_executable(polymorphic_inline_vtable_benchmark "")
-        target_sources(polymorphic_inline_vtable_benchmark
-            PRIVATE
-                polymorphic_benchmark.cc
-        )
-        target_link_libraries(polymorphic_inline_vtable_benchmark
-            PRIVATE
-                polymorphic_inline_vtable
-                benchmark::benchmark_main
                 common_compiler_settings
         )
 
