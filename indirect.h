@@ -45,19 +45,13 @@ inline constexpr bool is_indirect_v<indirect<T, A>> = true;
 
 template <class T, class A = std::allocator<T>>
 class indirect {
-  T* p_;
-
-#if defined(_MSC_VER)
-  [[msvc::no_unique_address]] A alloc_;
-#else
-  [[no_unique_address]] A alloc_;
-#endif
-
   using allocator_traits = std::allocator_traits<A>;
 
  public:
   using value_type = T;
   using allocator_type = A;
+  using pointer = typename allocator_traits::pointer;
+  using const_pointer = typename allocator_traits::const_pointer;
 
   constexpr indirect() {
     static_assert(std::is_default_constructible_v<T>);
@@ -75,7 +69,7 @@ class indirect {
   explicit constexpr indirect(std::in_place_t, Ts&&... ts)
     requires std::constructible_from<T, Ts&&...>
   {
-    T* mem = allocator_traits::allocate(alloc_, 1);
+    auto mem = allocator_traits::allocate(alloc_, 1);
     try {
       allocator_traits::construct(alloc_, mem, std::forward<Ts>(ts)...);
       p_ = mem;
@@ -90,7 +84,7 @@ class indirect {
                      Ts&&... ts)
     requires std::constructible_from<T, Ts&&...>
       : alloc_(alloc) {
-    T* mem = allocator_traits::allocate(alloc_, 1);
+    auto mem = allocator_traits::allocate(alloc_, 1);
     try {
       allocator_traits::construct(alloc_, mem, std::forward<Ts>(ts)...);
       p_ = mem;
@@ -105,7 +99,7 @@ class indirect {
             other.alloc_)) {
     static_assert(std::is_copy_constructible_v<T>);
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
-    T* mem = allocator_traits::allocate(alloc_, 1);
+    auto mem = allocator_traits::allocate(alloc_, 1);
     try {
       allocator_traits::construct(alloc_, mem, *other);
       p_ = mem;
@@ -120,7 +114,7 @@ class indirect {
       : alloc_(alloc) {
     static_assert(std::is_copy_constructible_v<T>);
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
-    T* mem = allocator_traits::allocate(alloc_, 1);
+    auto mem = allocator_traits::allocate(alloc_, 1);
     try {
       allocator_traits::construct(alloc_, mem, *other);
       p_ = mem;
@@ -213,12 +207,12 @@ class indirect {
     return *p_;
   }
 
-  constexpr const T* operator->() const noexcept {
+  constexpr const_pointer operator->() const noexcept {
     assert(p_ != nullptr);  // LCOV_EXCL_LINE
     return p_;
   }
 
-  constexpr T* operator->() noexcept {
+  constexpr pointer operator->() noexcept {
     assert(p_ != nullptr);  // LCOV_EXCL_LINE
     return p_;
   }
@@ -323,6 +317,14 @@ class indirect {
   }
 
  private:
+  pointer p_;
+
+#if defined(_MSC_VER)
+  [[msvc::no_unique_address]] A alloc_;
+#else
+  [[no_unique_address]] A alloc_;
+#endif
+
   constexpr void reset() noexcept {
     if (p_ == nullptr) return;
     allocator_traits::destroy(alloc_, p_);
