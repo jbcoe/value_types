@@ -34,8 +34,7 @@ template <typename T, typename Allocator = std::allocator<T>>
 class polymorphic;
 ```
 
-These fill an existing gap in the suite of existing standard library vocabulary
-types.
+These fill a gap in the suite of existing standard library vocabulary types.
 
 ---
 
