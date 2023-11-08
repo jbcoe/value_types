@@ -254,9 +254,18 @@ the standard library header `<memory>`.
 
 An _indirect value_ is an object that manages the lifetime of an owned object.
 An indirect value object is _valueless_ if it has no owned object. An indirect
-value may only become valueless after it has been moved from. Every object of
-type `indirect<T, Allocator>` uses an object of type `Allocator` to allocate and
-free storage for the owned `T` object as needed.
+value may only become valueless after it has been moved from.
+
+In every specialization `indirect<T, Allocator>`, the type
+`allocator_traits<Allocator>::value_type` shall be the same type as `T`. Every
+object of type `indirect<T, Allocator>` uses an object of type `Allocator` to
+allocate and free storage for the owned object as needed. The owned object shall
+be constructed using the function
+`allocator_traits<allocator_type>::rebind_traits<U>::construct` and destroyed
+ using the function
+`allocator_traits<allocator_type>::rebind_traits<U>::destroy`, where `U` is
+either `allocator_type::value_type` or an internal type used by the indirect
+value.
 
 The template parameter `T` of `indirect` must be a non-union class type.
 
@@ -743,8 +752,18 @@ A _polymorphic value_ is an object that manages the lifetime of an owned object.
 A polymorphic value object may own objects of different types at different
 points in its lifetime. A polymorphic value object is _valueless_ if it has no
 owned object. A polymorphic value may only become valueless after it has been
-moved from. Every object of type `polymorphic<T, Allocator>` uses an object of
-type `Allocator` to allocate and free storage for the owned object as needed.
+moved from.
+
+In every specialization `polymorphic<T, Allocator>`, the type
+`allocator_traits<Allocator>::value_type` shall be the same type as `T`. Every
+object of type `polymorphic<T, Allocator>` uses an object of type `Allocator` to
+allocate and free storage for the owned object as needed. The owned object shall
+be constructed using the function
+`allocator_traits<allocator_type>::rebind_traits<U>::construct` and destroyed
+ using the function
+`allocator_traits<allocator_type>::rebind_traits<U>::destroy`, where `U` is
+either `allocator_type::value_type` or an internal type used by the polymorphic
+value.
 
 The template parameter `T` of `polymorphic` must be a non-union class type.
 
