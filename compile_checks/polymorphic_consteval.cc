@@ -23,7 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "polymorphic.h"
 
-namespace {
+namespace xyz::testing {
 
 class A {
   int value_ = 0;
@@ -155,4 +155,4 @@ consteval bool polymorphic_valueless_after_move() {
 }
 static_assert(polymorphic_valueless_after_move(),
               "constexpr function call failed");
-}  // namespace
+}  // namespace xyz::testing
