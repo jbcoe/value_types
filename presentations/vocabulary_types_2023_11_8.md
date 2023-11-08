@@ -34,19 +34,25 @@ template <typename T, typename Allocator = std::allocator<T>>
 class polymorphic;
 ```
 
-These fill an existing gap in the suite of existing standard library vocabulary types.
+These fill an existing gap in the suite of existing standard library vocabulary
+types.
 
 ---
 
 # Vocabulary Types
 
-We refer to standard library types such as `std::array`, `std::map`, `std::optional`,  `std::variant` and `std::vector` as _vocabulary types_.
+We refer to standard library types such as `std::array`, `std::map`,
+`std::optional`,  `std::variant` and `std::vector` as _vocabulary types_.
 
-We postulate that an arbitrary piece of C++ library or application code would make use of some of these types.
+We postulate that an arbitrary piece of C++ library or application code would
+make use of some of these types.
 
-Standardizing vocabulary types is important as it allows different libraries to easily interoperate and for users to build applications.
+Standardizing vocabulary types is important as it allows different libraries to
+easily interoperate and for users to build applications.
 
-The standard library contains other, non-vocabulary types to do specific jobs such as interacting with the filesystem, formatting text for output, or dealing with concurrency.
+The standard library contains other, non-vocabulary types to do specific jobs
+such as interacting with the filesystem, formatting text for output, or dealing
+with concurrency.
 
 We probably want to standardize both sorts of library type.
 
@@ -54,7 +60,8 @@ We probably want to standardize both sorts of library type.
 
 # Composite classes
 
-We define composite classes as classes with other class instances as member data.
+We define composite classes as classes with other class instances as member
+data.
 
 Vocabulary types can be used to express common idioms.
 
@@ -74,8 +81,8 @@ Vocabulary types can be used to express common idioms.
 
 # Special member functions
 
-The compiler can generate special member functions. 
-Each special member function can be compiler-generated if it is supported by all component objects.
+The compiler can generate special member functions. Each special member function
+can be compiler-generated if it is supported by all component objects.
 
 | Special member(s) | Signature(s) |
 |----|---|
@@ -88,16 +95,18 @@ Each special member function can be compiler-generated if it is supported by all
 
 # Const propagation
 
-The compiler will only allow const-qualified member functions to be called 
-on components when they are accessed through a const-access path.
+The compiler will only allow const-qualified member functions to be called on
+components when they are accessed through a const-access path.
 
 We call this _const-propagation_.
 
-Standard library vocabulary types provide const-qualified and non-const-qualified overloads of accessors to owned objects to enforce const propagation:
+Standard library vocabulary types provide const-qualified and
+non-const-qualified overloads of accessors to owned objects to enforce const
+propagation:
 
 ```c++
-const T& std::vector<T>::operator[](size_t index) const; 
-T& std::vector<T>::operator[](size_t index); 
+const T& std::vector<T>::operator[](size_t index) const;
+T& std::vector<T>::operator[](size_t index);
 ```
 
 ---
@@ -108,9 +117,11 @@ Composite classes built with vocabulary types should be composable:
 
 * const propagates.
 
-* The compiler can generate all special member functions where they are defined for an owned type `T`.
+* The compiler can generate all special member functions where they are defined
+  for an owned type `T`.
 
-These requirements make working with C++ easier - classes should do business logic or resource management, not both.
+These requirements make working with C++ easier - classes should do business
+logic or resource management, not both.
 
 ---
 
@@ -127,20 +138,24 @@ We can combine vocabulary types to express combined idioms:
 
 # Incomplete types
 
-We may want a composite to contain an instance of an incomplete type, either directly or through the use of existing vocabulary types.
+We may want a composite to contain an instance of an incomplete type, either
+directly or through the use of existing vocabulary types.
 
-Incomplete type support is needed for defining recursive data structures, supporting open-set polymorphism, and hiding implementation detail.
+Incomplete type support is needed for defining recursive data structures,
+supporting open-set polymorphism, and hiding implementation detail.
 
-Incomplete types are supported by storing the object of the incomplete type outside of the composite object.
+Incomplete types are supported by storing the object of the incomplete type
+outside of the composite object.
 
-Storing an object outside of a composite type can also be used to optimize use of cache (hot/cold splitting).
+Storing an object outside of a composite type can also be used to optimize use
+of cache (hot/cold splitting).
 
 ---
 
 ## Incomplete types using pointers
 
-Since we want to store the object of incomplete type outside of our composite type,
-pointers are the first thing we may reach for:
+Since we want to store the object of incomplete type outside of our composite
+type, pointers are the first thing we may reach for:
 
 ```c++
 class Composite {
@@ -149,7 +164,10 @@ class Composite {
 }
 ```
 
-Pointers are a poor fit for owned data as we need to implement all special member functions and manually check const-qualified methods (const does not propagate to a pointee when the pointer is accessed through a const-access path).
+Pointers are a poor fit for owned data as we need to implement all special
+member functions and manually check const-qualified methods (const does not
+propagate to a pointee when the pointer is accessed through a const-access
+path).
 
 ---
 
@@ -164,9 +182,13 @@ class Composite {
 }
 ```
 
-We do not need to implement move construction, move assignment or destruction. The compiler will implicitly delete the copy constructor and copy assignment operator; either the composite is non-copyable or we implement the copy constructor and copy assignment operator ourselves.
+We do not need to implement move construction, move assignment or destruction.
+The compiler will implicitly delete the copy constructor and copy assignment
+operator; either the composite is non-copyable or we implement the copy
+constructor and copy assignment operator ourselves.
 
-Const does not propagate through `std::unique_ptr`, we must manually check const-qualified methods for correctness.
+Const does not propagate through `std::unique_ptr`, we must manually check
+const-qualified methods for correctness.
 
 ---
 
@@ -181,11 +203,12 @@ class Composite {
 }
 ```
 
-We do not need to implement any special member functions, but we have other issues.
+The compiler-generated copy constructor and assignment operator will give rise
+to multiple composite objects that share the same components: that is not
+ownership.
 
-The compiler-generated copy constructor and assignment operator will give rise to multiple composite objects that share the same components: that is not ownership.
-
-Const does not propagate through `std::shared_ptr<T>`, we must manually check const-qualified methods for correctness.
+Const does not propagate through `std::shared_ptr<T>`, we must manually check
+const-qualified methods for correctness.
 
 ---
 
@@ -200,12 +223,12 @@ class Composite {
 }
 ```
 
-Again, the compiler-generated copy constructor and assignment operator will give rise to multiple composite objects that share the same components, _but_ the shared components 
-are immutable. 
+Again, the compiler-generated copy constructor and assignment operator will give
+rise to multiple composite objects that share the same components, _but_ the
+shared components are immutable.
 
-If our hierarchy of composites is const-correct, immutability will hide the fact that data is shared.
-
-We cannot call non-const qualified member function on our component accessed though `ptr_`.
+We cannot call non-const qualified member functions accessed though `ptr_`, part
+of our composite is immutable.
 
 ---
 
@@ -232,10 +255,18 @@ Both of the proposed types, `indirect` and `polymorphic`, need:
 
 * Indirectly allocated object storage.
 
---- 
+---
 
  # Further details
 
-* Our proposal, with design discussion and proposed formal wording: <https://wg21.link/p3019r0>
+* Our proposal, with design discussion and proposed formal wording:
+  <https://wg21.link/p3019r0>
 
-* Our (header-only, C++20) reference implementation with tests and benchmarks: <https://github.com/jbcoe/value_types>
+* Our (header-only, C++20) reference implementation with tests and benchmarks:
+  <https://github.com/jbcoe/value_types>
+
+---
+
+# Acknowledgements
+
+Thanks to @nbx8 and @Ukilele for short-notice review of this material.
