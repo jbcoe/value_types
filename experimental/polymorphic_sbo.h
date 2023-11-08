@@ -50,8 +50,6 @@ constexpr bool is_sbo_compatible() {
 
 template <class T, class A>
 struct control_block {
-  using allocator_type = A;
-
   virtual constexpr T* ptr() noexcept = 0;
   virtual constexpr ~control_block() = default;
   virtual constexpr void destroy(A& alloc) = 0;

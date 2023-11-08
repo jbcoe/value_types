@@ -16,10 +16,10 @@ _Sean Parent \<<sparent@adobe.com>\>_
 
 ## Abstract
 
-We propose the addition of two new class-templates to the C++ Standard Library:
+We propose the addition of two new class templates to the C++ Standard Library:
 `indirect<T>` and `polymorphic<T>`.
 
-These class-templates have value semantics and compose well with other standard
+These class templates have value semantics and compose well with other standard
 library types (such as vector) allowing the compiler to correctly generate
 special member functions.
 
@@ -38,7 +38,7 @@ and is accessed through a const access path, `const`ness will propagate from the
 parent object to the instance of `T` owned by the `polymorphic` member.
 
 This proposal is a fusion of two older individual proposals, P1950 and P0201.
-The design of the two class-templates is sufficiently similar that they should
+The design of the two class templates is sufficiently similar that they should
 not be considered in isolation.
 
 ## Motivation
@@ -254,9 +254,18 @@ the standard library header `<memory>`.
 
 An _indirect value_ is an object that manages the lifetime of an owned object.
 An indirect value object is _valueless_ if it has no owned object. An indirect
-value may only become valueless after it has been moved from. Every object of
-type `indirect<T, Allocator>` uses an object of type `Allocator` to allocate and
-free storage for the owned `T` object as needed.
+value may only become valueless after it has been moved from.
+
+In every specialization `indirect<T, Allocator>`, the type
+`allocator_traits<Allocator>::value_type` shall be the same type as `T`. Every
+object of type `indirect<T, Allocator>` uses an object of type `Allocator` to
+allocate and free storage for the owned object as needed. The owned object shall
+be constructed using the function
+`allocator_traits<allocator_type>::rebind_traits<U>::construct` and destroyed
+ using the function
+`allocator_traits<allocator_type>::rebind_traits<U>::destroy`, where `U` is
+either `allocator_type::value_type` or an internal type used by the indirect
+value.
 
 The template parameter `T` of `indirect` must be a non-union class type.
 
@@ -272,6 +281,8 @@ class indirect {
  public:
   using value_type = T;
   using allocator_type = Allocator;
+  using pointer        = typename allocator_traits<Allocator>::pointer;
+  using const_pointer  = typename allocator_traits<Allocator>::const_pointer;
 
   constexpr indirect();
 
@@ -302,9 +313,9 @@ class indirect {
 
   constexpr T& operator*() noexcept;
 
-  constexpr const T* operator->() const noexcept;
+  constexpr const_pointer operator->() const noexcept;
 
-  constexpr T* operator->() noexcept;
+  constexpr pointer operator->() noexcept;
 
   constexpr bool valueless_after_move() const noexcept;
 
@@ -500,8 +511,8 @@ constexpr T& operator*() noexcept;
 * _Remarks_: These functions are constexpr functions.
 
 ```c++
-constexpr const T* operator->() const noexcept;
-constexpr T* operator->() noexcept;
+constexpr const_pointer operator->() const noexcept;
+constexpr pointer operator->() noexcept;
 ```
 
 * _Preconditions_: `*this` is not valueless.
@@ -520,9 +531,7 @@ constexpr bool valueless_after_move() const noexcept;
 constexpr allocator_type get_allocator() const noexcept;
 ```
 
-* _Returns_: A copy of the Allocator object used to construct the owned object
-  or, if that allocator has been replaced, a copy of the most recent
-  replacement.
+* _Returns_: A copy of the Allocator object used to construct the owned object.
 
 #### X.Y.7 Swap [indirect.swap]
 
@@ -743,8 +752,18 @@ A _polymorphic value_ is an object that manages the lifetime of an owned object.
 A polymorphic value object may own objects of different types at different
 points in its lifetime. A polymorphic value object is _valueless_ if it has no
 owned object. A polymorphic value may only become valueless after it has been
-moved from. Every object of type `polymorphic<T, Allocator>` uses an object of
-type `Allocator` to allocate and free storage for the owned object as needed.
+moved from.
+
+In every specialization `polymorphic<T, Allocator>`, the type
+`allocator_traits<Allocator>::value_type` shall be the same type as `T`. Every
+object of type `polymorphic<T, Allocator>` uses an object of type `Allocator` to
+allocate and free storage for the owned object as needed. The owned object shall
+be constructed using the function
+`allocator_traits<allocator_type>::rebind_traits<U>::construct` and destroyed
+ using the function
+`allocator_traits<allocator_type>::rebind_traits<U>::destroy`, where `U` is
+either `allocator_type::value_type` or an internal type used by the polymorphic
+value.
 
 The template parameter `T` of `polymorphic` must be a non-union class type.
 
@@ -760,6 +779,8 @@ class polymorphic {
  public:
   using value_type = T;
   using allocator_type = Allocator;
+  using pointer        = typename allocator_traits<Allocator>::pointer;
+  using const_pointer  = typename allocator_traits<Allocator>::const_pointer;
 
   constexpr polymorphic();
 
@@ -790,9 +811,9 @@ class polymorphic {
 
   constexpr T& operator*() noexcept;
 
-  constexpr const T* operator->() const noexcept;
+  constexpr const_pointer operator->() const noexcept;
 
-  constexpr T* operator->() noexcept;
+  constexpr pointer operator->() noexcept;
 
   constexpr bool valueless_after_move() const noexcept;
 
@@ -949,8 +970,8 @@ constexpr T& operator*() noexcept;
 * _Remarks_: These functions are constexpr functions.
 
 ```c++
-constexpr const T* operator->() const noexcept;
-constexpr T* operator->() noexcept;
+constexpr const_pointer operator->() const noexcept;
+constexpr pointer operator->() noexcept;
 ```
 
 * _Preconditions_: `*this` is not valueless.
@@ -969,9 +990,7 @@ constexpr bool valueless_after_move() const noexcept;
 constexpr allocator_type get_allocator() const noexcept;
 ```
 
-* _Returns_: A copy of the Allocator object used to construct the owned object
-  or, if that allocator has been replaced, a copy of the most recent
-  replacement.
+* _Returns_: A copy of the Allocator object used to construct the owned object.
 
 #### X.Z.7 Swap [polymorphic.swap]
 
@@ -1029,7 +1048,7 @@ Otherwise, the interface of the specialization is as defined in [optional].
 Add a new feature-test macro:
 
 ```c++
-#define __cpp_lib_value_types 2023XXL
+#define __cpp_lib_polymorphic 2023XXL
 ```
 
 ## Reference implementation

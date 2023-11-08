@@ -1,35 +1,8 @@
-load("@bazel_skylib//rules:build_test.bzl", "build_test")
-
 cc_library(
     name = "indirect",
     hdrs = ["indirect.h"],
     copts = ["-Iexternal/value_types/"],
-)
-
-cc_library(
-    name = "polymorphic",
-    hdrs = ["polymorphic.h"],
-    copts = ["-Iexternal/value_types/"],
-)
-
-cc_library(
-    name = "polymorphic_inline_vtable",
-    hdrs = [
-        "experimental/polymorphic_inline_vtable.h",
-        "polymorphic.h",
-    ],
-    copts = ["-Iexternal/value_types/"],
-    defines = ["XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE"],
-)
-
-cc_library(
-    name = "polymorphic_sbo",
-    hdrs = [
-        "experimental/polymorphic_sbo.h",
-        "polymorphic.h",
-    ],
-    copts = ["-Iexternal/value_types/"],
-    defines = ["XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION"],
+    visibility = ["//visibility:public"],
 )
 
 cc_test(
@@ -43,18 +16,10 @@ cc_test(
 )
 
 cc_library(
-    name = "indirect_consteval",
-    srcs = ["indirect_consteval.cc"],
-    deps = [
-        "indirect",
-    ],
-)
-
-build_test(
-    name = "indirect_consteval_build_test",
-    targets = [
-        "indirect_consteval",
-    ],
+    name = "polymorphic",
+    hdrs = ["polymorphic.h"],
+    copts = ["-Iexternal/value_types/"],
+    visibility = ["//visibility:public"],
 )
 
 cc_test(
@@ -68,52 +33,14 @@ cc_test(
 )
 
 cc_library(
-    name = "polymorphic_consteval",
-    srcs = ["polymorphic_consteval.cc"],
-    deps = [
-        "polymorphic",
+    name = "polymorphic_inline_vtable",
+    hdrs = [
+        "experimental/polymorphic_inline_vtable.h",
+        "polymorphic.h",
     ],
-)
-
-build_test(
-    name = "polymorphic_consteval_build_test",
-    targets = [
-        "polymorphic_consteval",
-    ],
-)
-
-cc_binary(
-    name = "value_types_benchmark",
-    srcs = [
-        "indirect_benchmark.cc",
-        "polymorphic_benchmark.cc",
-    ],
-    deps = [
-        ":indirect",
-        ":polymorphic",
-        "@com_google_benchmark//:benchmark_main",
-    ],
-)
-
-cc_binary(
-    name = "polymorphic_benchmark",
-    srcs = [
-        "polymorphic_benchmark.cc",
-    ],
-    deps = [
-        ":polymorphic",
-        "@com_google_benchmark//:benchmark_main",
-    ],
-)
-
-cc_test(
-    name = "polymorphic_sbo_test",
-    size = "small",
-    srcs = ["polymorphic_test.cc"],
-    deps = [
-        "polymorphic_sbo",
-        "@com_google_googletest//:gtest_main",
-    ],
+    copts = ["-Iexternal/value_types/"],
+    defines = ["XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE"],
+    visibility = ["//visibility:public"],
 )
 
 cc_test(
@@ -127,57 +54,22 @@ cc_test(
 )
 
 cc_library(
-    name = "polymorphic_consteval_inline_vtable",
-    srcs = ["polymorphic_consteval.cc"],
+    name = "polymorphic_sbo",
+    hdrs = [
+        "experimental/polymorphic_sbo.h",
+        "polymorphic.h",
+    ],
+    copts = ["-Iexternal/value_types/"],
+    defines = ["XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION"],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "polymorphic_sbo_test",
+    size = "small",
+    srcs = ["polymorphic_test.cc"],
     deps = [
-        "polymorphic_inline_vtable",
+        "polymorphic_sbo",
+        "@com_google_googletest//:gtest_main",
     ],
-)
-
-build_test(
-    name = "polymorphic_consteval_inline_vtable_build_test",
-    targets = [
-        "polymorphic_consteval",
-    ],
-)
-
-cc_binary(
-    name = "polymorphic_benchmark_inline_vtable",
-    srcs = [
-        "polymorphic_benchmark.cc",
-    ],
-    deps = [
-        ":polymorphic_inline_vtable",
-        "@com_google_benchmark//:benchmark_main",
-    ],
-)
-
-cc_library(
-    name = "indirect_pimpl",
-    srcs = [
-        "indirect_pimpl.cc",
-        "indirect_pimpl_use.cc",
-    ],
-    hdrs = ["indirect_pimpl.h"],
-    deps = ["indirect"],
-)
-
-build_test(
-    name = "indirect_pimpl_build_test",
-    targets = ["indirect_pimpl"],
-)
-
-cc_library(
-    name = "polymorphic_pimpl",
-    srcs = [
-        "polymorphic_pimpl.cc",
-        "polymorphic_pimpl_use.cc",
-    ],
-    hdrs = ["polymorphic_pimpl.h"],
-    deps = ["polymorphic"],
-)
-
-build_test(
-    name = "polymorphic_pimpl_build_test",
-    targets = ["polymorphic_pimpl"],
 )
