@@ -23,17 +23,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "indirect.h"
 
-namespace {
+namespace xyz::testing {
 struct ConstexprHashable {};
-}  // namespace
+}  // namespace xyz::testing
 template <>
-struct std::hash<ConstexprHashable> {
-  constexpr std::size_t operator()(const ConstexprHashable& key) const {
+struct std::hash<xyz::testing::ConstexprHashable> {
+  constexpr std::size_t operator()(const xyz::testing::ConstexprHashable& key) const {
     return 0;
   }
 };
 
-namespace {
+namespace xyz::testing {
 
 consteval bool indirect_default_construction() {
   auto i = xyz::indirect<int>{};
@@ -207,4 +207,4 @@ consteval bool indirect_hash() {
 }
 static_assert(indirect_hash(), "constexpr function call failed");
 
-}  // namespace
+}  // namespace xyz::testing
