@@ -1,8 +1,8 @@
 # Dockerfile for Ubuntu 22.04 with C++ development tools.
- 
+
 # Set the base image.
 FROM ubuntu:22.04
- 
+
 # Install gcc, clang and some supporting tools for downloading/installing later tools.
 RUN apt-get update && apt-get install -y wget g++ lcov llvm git gpg ninja-build software-properties-common unzip
 
