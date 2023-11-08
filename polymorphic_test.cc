@@ -41,6 +41,7 @@ class Base {
   virtual int value() const = 0;
   virtual void set_value(int) = 0;
 };
+
 class Derived_NoSBO : public Base, public xyz::NoPolymorphicSBO {
  private:
   int value_;
@@ -777,9 +778,6 @@ TEST(PolymorphicTest, MultipleBases) {
 }
 
 #if (__cpp_lib_memory_resource >= 201603L)
-// TODO: Fix compilation issues with pmr allocators and SBO.
-// https://github.com/jbcoe/value_types/issues/112
-#ifndef XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
 TEST(PolymorphicTest, InteractionWithPMRAllocators) {
   std::array<std::byte, 1024> buffer;
   std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
@@ -806,7 +804,6 @@ TEST(PolymorphicTest, InteractionWithPMRAllocatorsWhenCopyThrows) {
   std::pmr::vector<PolymorphicType> values{pa};
   EXPECT_THROW(values.push_back(a), ThrowsOnCopyConstruction::Exception);
 }
-#endif  // XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
 #endif  // (__cpp_lib_memory_resource >= 201603L)
 
 }  // namespace
