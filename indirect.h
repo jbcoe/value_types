@@ -53,16 +53,9 @@ class indirect {
   using pointer = typename allocator_traits::pointer;
   using const_pointer = typename allocator_traits::const_pointer;
 
-<<<<<<< HEAD
-  constexpr indirect()
-    requires std::default_initializable<T>
-  {
-    auto mem = allocator_traits::allocate(alloc_, 1);
-=======
   constexpr indirect() {
     static_assert(std::is_default_constructible_v<T>);
     T* mem = allocator_traits::allocate(alloc_, 1);
->>>>>>> main
     try {
       allocator_traits::construct(alloc_, mem);
       p_ = mem;

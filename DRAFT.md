@@ -1029,11 +1029,7 @@ Otherwise, the interface of the specialization is as defined in [optional].
 Add a new feature-test macro:
 
 ```c++
-<<<<<<< HEAD
 #define __cpp_lib_polymorphic 2023XXL
-=======
-#define __cpp_lib_value_types 2023XXL
->>>>>>> main
 ```
 
 ## Reference implementation
