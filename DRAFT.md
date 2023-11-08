@@ -522,7 +522,7 @@ constexpr bool valueless_after_move() const noexcept;
 constexpr allocator_type get_allocator() const noexcept;
 ```
 
-* _Returns_: A copy of the Allocator object used to construct the owned object
+* _Returns_: A copy of the Allocator object used to construct this object
   or, if that allocator has been replaced, a copy of the most recent
   replacement.
 
@@ -973,7 +973,7 @@ constexpr bool valueless_after_move() const noexcept;
 constexpr allocator_type get_allocator() const noexcept;
 ```
 
-* _Returns_: A copy of the Allocator object used to construct the owned object
+* _Returns_: A copy of the Allocator object used to construct this object
   or, if that allocator has been replaced, a copy of the most recent
   replacement.
 
