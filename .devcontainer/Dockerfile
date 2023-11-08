@@ -7,7 +7,7 @@ FROM ubuntu:22.04
 LABEL maintainer="Your Name <your@email.com>"
  
 # Install gcc, clang and some supporting tools for downloading/installing later tools.
-RUN apt update && apt install -y wget g++ llvm ninja-build software-properties-common unzip
+RUN apt update && apt install -y wget g++ lcov llvm gcov git ninja-build software-properties-common unzip
 
 # Install newer CMake from kitware.
 RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null \
