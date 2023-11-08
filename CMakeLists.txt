@@ -33,7 +33,7 @@ target_sources(value_types
 )
 target_compile_features(value_types
     INTERFACE
-        cxx_std_23
+        cxx_std_20
 )
 
 add_library(indirect INTERFACE)
@@ -48,7 +48,7 @@ target_sources(indirect
 )
 target_compile_features(indirect
     INTERFACE
-        cxx_std_23
+        cxx_std_20
 )
 
 add_library(polymorphic INTERFACE)
@@ -63,7 +63,7 @@ target_sources(polymorphic
 )
 target_compile_features(polymorphic
     INTERFACE
-        cxx_std_23
+        cxx_std_20
 )
 
 add_library(polymorphic_inline_vtable INTERFACE)
@@ -79,7 +79,7 @@ target_sources(polymorphic_inline_vtable
 )
 target_compile_features(polymorphic_inline_vtable
     INTERFACE
-        cxx_std_23
+        cxx_std_20
 )
 target_compile_definitions(polymorphic_inline_vtable
     INTERFACE
@@ -98,7 +98,7 @@ target_sources(polymorphic_sbo
 )
 target_compile_features(polymorphic_sbo
     INTERFACE
-        cxx_std_23
+        cxx_std_20
 )
 target_compile_definitions(polymorphic_sbo
     INTERFACE
