@@ -272,8 +272,8 @@ class indirect {
  public:
   using value_type = T;
   using allocator_type = Allocator;
-  using pointer       = typename allocator_traits<Allocator>::pointer;
-  using const_pointer = typename allocator_traits<Allocator>::const_pointer;
+  using pointer        = typename allocator_traits<Allocator>::pointer;
+  using const_pointer  = typename allocator_traits<Allocator>::const_pointer;
 
   constexpr indirect();
 
@@ -762,8 +762,8 @@ class polymorphic {
  public:
   using value_type = T;
   using allocator_type = Allocator;
-  using pointer       = typename allocator_traits<Allocator>::pointer;
-  using const_pointer = typename allocator_traits<Allocator>::const_pointer;
+  using pointer        = typename allocator_traits<Allocator>::pointer;
+  using const_pointer  = typename allocator_traits<Allocator>::const_pointer;
 
   constexpr polymorphic();
 
