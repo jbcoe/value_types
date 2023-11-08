@@ -155,7 +155,8 @@ static void Polymorphic_BM_ArrayCopy_RawPointer(benchmark::State& state) {
   }
 }
 
-static void Polymorphic_BM_VectorAccumulate_RawPointer(benchmark::State& state) {
+static void Polymorphic_BM_VectorAccumulate_RawPointer(
+    benchmark::State& state) {
   std::vector<Base*> v(LARGE_VECTOR_SIZE);
   for (size_t i = 0; i < LARGE_VECTOR_SIZE; ++i) {
     if (i % 2 == 0) {
