@@ -37,7 +37,7 @@ class Circle {
     std::string colour_;
 
 public:
-    std::string_view colour() const; 
+    std::string_view colour() const;
     double area() const;
 };
 ```
@@ -69,10 +69,10 @@ We can define special member functions to create, copy, move or destroy instance
 ```cpp
 class Circle {
     Circle(std::string_view colour, double radius, Point position);
-    
+
     Circle(const Circle&);
     Circle& operator=(const Circle&);
-    
+
     Circle(Circle&&);
     Circle& operator=(Circle&&);
 
@@ -88,8 +88,8 @@ class Circle {
 
 * The compiler will (sometimes) generate special member functions for us.
 
-* Generated special member functions are member-by-member calls to the appropriate 
-  special member function of each member object. 
+* Generated special member functions are member-by-member calls to the appropriate
+  special member function of each member object.
 
 ---
 
@@ -121,7 +121,7 @@ Member functions in C++ can be const-qualified:
 ```cpp
 struct A {
     void foo() const;
-    void foo(); 
+    void foo();
     void bar();
 };
 ```
@@ -268,7 +268,7 @@ We might require a member of our composite class to be one of a number of types.
 
 Our class will need to reserve storage for our polymorphic data member.
 
---- 
+---
 
 # Closed-set polymorphism
 
@@ -285,7 +285,7 @@ class Taco {
 
 Storing a closed-set polymorphic member directly is possible as `variant` and `optional` reserve enough memory for the largest possible type.
 
---- 
+---
 
 # Open-set polymorphism
 
@@ -324,7 +324,7 @@ class A {
 or the base type in a class heirarchy:
 
 ```
-struct Shape { 
+struct Shape {
     virtual void Draw() const = 0;
 };
 
@@ -423,7 +423,7 @@ class A {
 };
 ```
 
-With `shared_ptr` members, the compiler can generate all special member functions for us. 
+With `shared_ptr` members, the compiler can generate all special member functions for us.
 
 Sadly this is not much of an improvement as the copy constructor and assignment operator will not copy the `B` object that we point to, only add references to it.
 
@@ -439,7 +439,7 @@ class A {
 };
 ```
 
-Again, the compiler can generate all special member functions for us. 
+Again, the compiler can generate all special member functions for us.
 
 Copy and assignement will add references to the same `B` object but seeing as it's immutable that could be ok (so long as it's not mutable by another route).
 
@@ -541,14 +541,14 @@ class polymorphic {
   [[no_unique_address]] A alloc_;
 
  public:
-  // Constructors and assignment. 
+  // Constructors and assignment.
 
   constexpr T* operator->() noexcept { return *cb_->p_; }
   constexpr const T* operator->() const noexcept { return *cb_->p_; }
 
   constexpr T& operator*() noexcept { return **cb_->p_; }
-  constexpr const T& operator*() const noexcept { return **cb_->p_; } 
-  
+  constexpr const T& operator*() const noexcept { return **cb_->p_; }
+
   constexpr bool valueless_after_move() const noexcept { return bool(cb_); }
 };
 ```
@@ -728,9 +728,9 @@ jbcoe/value_types is licensed under the
 
 MIT License
 
-A short and simple permissive license with conditions only 
+A short and simple permissive license with conditions only
 requiring preservation of copyright and license notices.
-Licensed works, modifications, and larger works may be 
+Licensed works, modifications, and larger works may be
 distributed under different terms and without source code.
 ```
 
@@ -800,7 +800,7 @@ constexpr T& operator*() noexcept;
 constexpr T* operator->() noexcept;
 
 constexpr const T& operator*() const noexcept;
-constexpr const T* operator->() const noexcept; 
+constexpr const T* operator->() const noexcept;
 ```
 
 ---
@@ -825,7 +825,7 @@ class indirect {
     T* ptr_;
     [[no_unique_address]] Allocator a_;
   public:
-    // Constructors elided 
+    // Constructors elided
 
     constexpr T* operator->() noexcept { return ptr_; }
     constexpr const T* operator->() const noexcept { return ptr_; }
@@ -847,9 +847,9 @@ jbcoe/value_types is licensed under the
 
 MIT License
 
-A short and simple permissive license with conditions only 
+A short and simple permissive license with conditions only
 requiring preservation of copyright and license notices.
-Licensed works, modifications, and larger works may be 
+Licensed works, modifications, and larger works may be
 distributed under different terms and without source code.
 ```
 ---

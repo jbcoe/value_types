@@ -128,7 +128,7 @@ struct A {
 
 class Composite {
     indirect<A> a_;
-    
+
     Constness foo() { return a_.foo(); }
     Constness foo() const { return a_.foo(); };
 };
@@ -268,7 +268,7 @@ The template parameter `T` of `indirect` may be an incomplete type.
 template <class T, class Allocator = std::allocator<T>>
 class indirect {
   T* p_; // exposition only
-  Allocator allocator_; // exposition only 
+  Allocator allocator_; // exposition only
  public:
   using value_type = T;
   using allocator_type = Allocator;
@@ -288,7 +288,7 @@ class indirect {
     std::allocator_arg_t, const Allocator& alloc, const indirect& other);
 
   constexpr indirect(indirect&& other) noexcept;
-  
+
   constexpr indirect(
     std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcept;
 
@@ -665,7 +665,7 @@ constexpr auto operator<=>(const U& lhs, const indirect<T, A>& rhs);
 * _Preconditions_: Alloc meets the _Cpp17Allocator_ requirements.
 
 #### X.Y.10 Hash support [indirect.hash]
-  
+
 ```c++
 template <class T, class Alloc>
 struct std::hash<indirect<T, Alloc>>;
@@ -756,7 +756,7 @@ The template parameter `T` of `polymorphic` may be an incomplete type.
 template <class T, class Allocator = std::allocator<T>>
 class polymorphic {
   control_block* control_block_; // exposition only
-  Allocator allocator_; // exposition only  
+  Allocator allocator_; // exposition only
  public:
   using value_type = T;
   using allocator_type = Allocator;
@@ -771,12 +771,12 @@ class polymorphic {
     std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
 
   constexpr polymorphic(const polymorphic& other);
-  
+
   constexpr polymorphic(
     std::allocator_arg_t, const Allocator& alloc, const polymorphic& other);
 
   constexpr polymorphic(polymorphic&& other) noexcept;
-  
+
   constexpr polymorphic(
     std::allocator_arg_t, const Allocator& alloc, polymorphic&& other) noexcept;
 
@@ -972,7 +972,7 @@ constexpr allocator_type get_allocator() const noexcept;
 * _Returns_: A copy of the Allocator object used to construct the owned object
   or, if that allocator has been replaced, a copy of the most recent
   replacement.
-  
+
 #### X.Z.7 Swap [polymorphic.swap]
 
 ```c++
@@ -1032,7 +1032,7 @@ Add a new feature-test macro:
 <<<<<<< HEAD
 #define __cpp_lib_polymorphic 2023XXL
 =======
-#define __cpp_lib_value_types 2023XXL 
+#define __cpp_lib_value_types 2023XXL
 >>>>>>> 5ccaf0258047213454eaec39d2a1fcc9cfe83dd6
 ```
 
@@ -1245,7 +1245,7 @@ class Class {
   Class& operator=(const Class&);
   Class(Class&&) noexcept;
   Class& operator=(Class&&) noexcept;
-  
+
   void do_something();
 };
 ```
@@ -1295,7 +1295,7 @@ class Class {
   Class& operator=(const Class&);
   Class(Class&&) noexcept;
   Class& operator=(Class&&) noexcept;
-  
+
   void do_something();
 };
 ```
@@ -1372,7 +1372,7 @@ class Picture {
 ```
 
 #### After, using `polymorphic`
-  
+
 ```c++
 class Canvas;
 
