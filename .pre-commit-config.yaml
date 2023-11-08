@@ -1,0 +1,29 @@
+# .pre-commit-config.yaml
+# ========================
+#
+# pre-commit clean
+# pre-commit install
+# pre-commit install-hooks
+#
+# precommit hooks installation
+#
+# - pre-commit autoupdate
+#
+# - pre-commit run black
+#
+# continuous integration
+# ======================
+#
+# - pre-commit run --all-files
+#
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+    -   id: check-yaml
+    -   id: end-of-file-fixer
+    -   id: forbid-submodules
+    -   id: requirements-txt-fixer
+    -   id: trailing-whitespace

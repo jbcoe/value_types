@@ -85,8 +85,8 @@ target_compile_features(polymorphic_inline_vtable
     INTERFACE
         cxx_std_23
 )
-target_compile_definitions(polymorphic_inline_vtable 
-    INTERFACE 
+target_compile_definitions(polymorphic_inline_vtable
+    INTERFACE
         XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
 )
 
@@ -104,8 +104,8 @@ target_compile_features(polymorphic_sbo
     INTERFACE
         cxx_std_23
 )
-target_compile_definitions(polymorphic_sbo 
-    INTERFACE 
+target_compile_definitions(polymorphic_sbo
+    INTERFACE
         XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
 )
 
@@ -113,6 +113,10 @@ target_compile_definitions(polymorphic_sbo
 add_library(value_types::value_types ALIAS value_types)
 
 if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
+
+    add_subdirectory(benchmarks)
+    # Currently we do compile_checks only with bazel.
+    # add_subdirectory(compile_checks)
 
     if (${BUILD_TESTING})
         FetchContent_Declare(
@@ -143,7 +147,7 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
             CXX_STANDARD_REQUIRED YES
             CXX_EXTENSIONS NO
         )
-        
+
         add_executable(indirect_test "")
         target_sources(indirect_test
             PRIVATE
@@ -187,50 +191,12 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
         )
         target_compile_options(polymorphic_sbo_test
             PRIVATE
-                $<$<CXX_COMPILER_ID:Clang>:-ftemplate-backtrace-limit=0> 
+                $<$<CXX_COMPILER_ID:Clang>:-ftemplate-backtrace-limit=0>
         )
         target_link_libraries(polymorphic_sbo_test
             PRIVATE
                 polymorphic_sbo
                 GTest::gtest_main
-                common_compiler_settings
-        )
-
-        add_executable(value_types_benchmark "")
-        target_sources(value_types_benchmark
-            PRIVATE
-                indirect_benchmark.cc
-                polymorphic_benchmark.cc
-        )
-        target_link_libraries(value_types_benchmark
-            PRIVATE
-                polymorphic
-                indirect
-                benchmark::benchmark_main
-                common_compiler_settings
-        )
-
-        add_executable(polymorphic_benchmark "")
-        target_sources(polymorphic_benchmark
-            PRIVATE
-                polymorphic_benchmark.cc
-        )
-        target_link_libraries(polymorphic_benchmark
-            PRIVATE
-                polymorphic
-                benchmark::benchmark_main
-                common_compiler_settings
-        )
-
-        add_executable(polymorphic_inline_vtable_benchmark "")
-        target_sources(polymorphic_inline_vtable_benchmark
-            PRIVATE
-                polymorphic_benchmark.cc
-        )
-        target_link_libraries(polymorphic_inline_vtable_benchmark
-            PRIVATE
-                polymorphic_inline_vtable
-                benchmark::benchmark_main
                 common_compiler_settings
         )
 
