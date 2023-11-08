@@ -98,6 +98,7 @@ target_include_directories(polymorphic_inline_vtable
 )
 target_sources(polymorphic_sbo
     INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/polymorphic_sbo.h>
 )
 target_compile_features(polymorphic_sbo
@@ -115,8 +116,7 @@ add_library(value_types::value_types ALIAS value_types)
 if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
 
     add_subdirectory(benchmarks)
-    # Currently we do compile_checks only with bazel.
-    # add_subdirectory(compile_checks)
+    add_subdirectory(compile_checks)
 
     if (${BUILD_TESTING})
         FetchContent_Declare(
