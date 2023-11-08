@@ -28,7 +28,8 @@ struct ConstexprHashable {};
 }  // namespace xyz::testing
 template <>
 struct std::hash<xyz::testing::ConstexprHashable> {
-  constexpr std::size_t operator()(const xyz::testing::ConstexprHashable& key) const {
+  constexpr std::size_t operator()(
+      const xyz::testing::ConstexprHashable& key) const {
     return 0;
   }
 };
