@@ -66,7 +66,7 @@ class indirect {
   }
 
   template <class... Ts>
-  explicit constexpr indirect(std::in_place_t, Ts&&... ts)
+  explicit constexpr indirect(Ts&&... ts)
     requires std::constructible_from<T, Ts&&...>
   {
     auto mem = allocator_traits::allocate(alloc_, 1);
@@ -80,8 +80,7 @@ class indirect {
   }
 
   template <class... Ts>
-  constexpr indirect(std::allocator_arg_t, const A& alloc, std::in_place_t,
-                     Ts&&... ts)
+  constexpr indirect(std::allocator_arg_t, const A& alloc, Ts&&... ts)
     requires std::constructible_from<T, Ts&&...>
       : alloc_(alloc) {
     auto mem = allocator_traits::allocate(alloc_, 1);

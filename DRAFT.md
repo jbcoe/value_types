@@ -287,11 +287,11 @@ class indirect {
   constexpr indirect();
 
   template <class... Ts>
-  explicit constexpr indirect(std::in_place_t, Ts&&... ts);
+  explicit constexpr indirect(Ts&&... ts);
 
   template <class... Ts>
   constexpr indirect(
-    std::allocator_arg_t, const Allocator& alloc, std::in_place_t, Ts&&... ts);
+    std::allocator_arg_t, const Allocator& alloc, Ts&&... ts);
 
   constexpr indirect(const indirect& other);
 
@@ -374,7 +374,7 @@ constexpr indirect()
 
 ```c++
 template <class... Ts>
-explicit constexpr indirect(std::in_place_t, Ts&&... ts);
+explicit constexpr indirect(Ts&&... ts);
 ```
 
 * _Constraints_: `is_constructible_v<T, Ts...>` is true.
@@ -387,7 +387,7 @@ explicit constexpr indirect(std::in_place_t, Ts&&... ts);
 ```c++
 template <class... Ts>
 constexpr indirect(
-  std::allocator_arg_t, const Allocator& alloc, std::in_place_t, Ts&&... ts);
+  std::allocator_arg_t, const Allocator& alloc, Ts&&... ts);
 ```
 
 * _Constraints_: `is_constructible_v<T, Ts...>` is true.
