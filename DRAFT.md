@@ -228,13 +228,52 @@ TODO
 
 TODO
 
-### Extra constructors and `emplace`
+### Supporting `operator()` `operator[]`
 
-TODO
+Neither `indirect` nor `polymorphic` support `operator()` or `operator[]`. These
+operators can't be implemented with `=default` and cannot, in general, be
+meaningfully implemented for a composite by aggregating over its components.
+These functions are not core to the design of either class template; both could
+be added as non-breaking changes in a later revision of the C++ standard if
+required.
 
-### Forwarding functions for indirect
+### Member function `emplace`
 
-TODO
+Neither `indirect` nor `emplace` support `emplace` as a member function.
+The member function `emplace` could be added as :
+
+```c++
+template <typename ...Ts>
+indirect::emplace(Ts&& ...ts);
+```
+
+```c++
+template <typename U, typename ...Ts>
+polymorphic::emplace(in_place_type<U>, Ts&& ...ts);
+```
+
+This would be API noise. It offers no efficiency improvement over:
+
+```c++
+some_indirect = indirect(/* arguments */);
+```
+
+```c++
+some_polymorphic = polymorphic(in_place_type<U>, /* arguments */);
+```
+
+If `emplace` was desirable to avoid repeating the type name, it might be better
+implemented as a non-member function:
+
+```c++
+template <typename T, typename ...Ts>
+void emplace(T& t, Ts&& ...ts) {
+  t = T(std::forward<Ts>... ts);
+}
+```
+
+We don't propose adding a `emplace` as a non-member function to the C++ standard
+libary as part of this proposal.
 
 ### Design for polymorphic types
 
@@ -1114,12 +1153,12 @@ A C++20 reference implementation of this proposal is available on GitHub at
 ## Acknowledgements
 
 The authors would like to thank Andrew Bennieston, Bengt Gustafsson, Casey
-Carter, Daniel Krügler, David Krauss, Ed Catmur, Geoff Romer, Germán Diago,
-Jonathan Wakely, Kilian Henneberger, LanguageLawyer, Louis Dionne, Maciej Bogus,
-Malcolm Parsons, Matthew Calabrese, Nathan Myers, Neelofer Banglawala, Nevin
-Liber, Nina Ranns, Patrice Roy, Roger Orr, Stephan T Lavavej, Stephen Kelly,
-Thomas Koeppe, Thomas Russell, Tom Hudson, Tomasz Kamiński, Tony van Eerd and
-Ville Voutilainen for suggestions and useful discussion.
+Carter, Rostislav Khlebnikov, Daniel Krügler, David Krauss, Ed Catmur, Geoff
+Romer, Germán Diago, Jonathan Wakely, Kilian Henneberger, LanguageLawyer, Louis
+Dionne, Maciej Bogus, Malcolm Parsons, Matthew Calabrese, Nathan Myers, Neelofer
+Banglawala, Nevin Liber, Nina Ranns, Patrice Roy, Roger Orr, Stephan T Lavavej,
+Stephen Kelly, Thomas Koeppe, Thomas Russell, Tom Hudson, Tomasz Kamiński, Tony
+van Eerd and Ville Voutilainen for suggestions and useful discussion.
 
 ## References
 
