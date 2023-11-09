@@ -2,7 +2,7 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-P3019R1
+D3019R2
 
 Working Group: Library Evolution, Library
 
@@ -40,6 +40,20 @@ parent object to the instance of `T` owned by the `polymorphic` member.
 This proposal is a fusion of two earlier individual proposals, P1950 and P0201.
 The design of the two proposed class templates is sufficiently similar that they
 should not be considered in isolation.
+
+## Changelog
+
+P3019R2
+
+  * TODO
+
+  * TODO
+
+P3019R1
+
+  * TODO
+
+  * TODO
 
 ## Motivation
 
@@ -202,6 +216,26 @@ Note: As the null state of `indirect` and `polymorphic` is not observable, and
 access to a moved-from object is erroneous, `std::optional` can be specialized
 by implementers to exchange pointers on move construction and assignment.
 
+### Noexcept
+
+TODO
+
+### Allocators as template arguments
+
+TODO
+
+## Differences between `indirect` and `polymorphic`
+
+TODO
+
+### Extra constructors and `emplace`
+
+TODO
+
+### Forwarding functions for indirect
+
+TODO
+
 ### Design for polymorphic types
 
 A type `PolymorphicInterface` used as a base class with `polymorphic`
@@ -299,10 +333,10 @@ class indirect {
   constexpr indirect(std::allocator_arg_t, const Allocator& alloc,
                      const indirect& other);
 
-  constexpr indirect(indirect&& other) noexcept;
+  constexpr indirect(indirect&& other) noexcept(see below);
 
   constexpr indirect(std::allocator_arg_t, const Allocator& alloc,
-                     indirect&& other) noexcept;
+                     indirect&& other) noexcept(see below);
 
   constexpr ~indirect();
 
@@ -327,11 +361,11 @@ class indirect {
   friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept(see below);
 
   template <class U, class AA>
-  friend constexpr bool operator==(
+  friend constexpr auto operator==(
     const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
 
   template <class U, class AA>
-  friend constexpr bool operator!=(
+  friend constexpr auto operator!=(
     const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
 
   template <class U, class AA>
@@ -339,16 +373,16 @@ class indirect {
     const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
 
   template <class U>
-  friend constexpr bool operator==(const indirect<T, A>& lhs, const U& rhs);
+  friend constexpr auto operator==(const indirect<T, A>& lhs, const U& rhs);
 
   template <class U>
-  friend constexpr bool operator==(const U& lhs, const indirect<T, A>& rhs);
+  friend constexpr auto operator==(const U& lhs, const indirect<T, A>& rhs);
 
   template <class U>
-  friend constexpr bool operator!=(const indirect<T, A>& lhs, const U& rhs);
+  friend constexpr auto operator!=(const indirect<T, A>& lhs, const U& rhs);
 
   template <class U>
-  friend constexpr bool operator!=(const U& lhs, const indirect<T, A>& rhs);
+  friend constexpr auto operator!=(const U& lhs, const indirect<T, A>& rhs);
 
   template <class U>
   friend constexpr auto operator<=>(const indirect<T, A>& lhs, const U& rhs);
@@ -796,10 +830,10 @@ class polymorphic {
   constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc,
                         const polymorphic& other);
 
-  constexpr polymorphic(polymorphic&& other) noexcept;
+  constexpr polymorphic(polymorphic&& other) noexcept(see below);
 
   constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc,
-                        polymorphic&& other) noexcept;
+                        polymorphic&& other) noexcept(see below);
 
   constexpr ~polymorphic();
 
