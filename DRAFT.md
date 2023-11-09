@@ -218,7 +218,7 @@ by implementers to exchange pointers on move construction and assignment.
 
 ### `noexcept` and narrow contracts
 
-There is a guideline for C++ library design that member functions with narrow
+C++ library design guidelines recommend that member functions with narrow
 contracts (runtime-preconditions) should not be marked `noexcept`. This is
 partially motivated by a non-vendor implementation of the C++ standard library
 that uses exceptions in a debug build to check for precondition violations by
