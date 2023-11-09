@@ -18,7 +18,6 @@ include(CMakePackageConfigHelpers)
 
 # Ensure code coverage is switched off for Mac OS until the code coverage library addresses the AppleClang issue
 cmake_dependent_option(ENABLE_CODE_COVERAGE "Enable code coverage" ON "\"${CMAKE_CXX_COMPILER_ID}\" STREQUAL \"Clang\" OR \"${CMAKE_CXX_COMPILER_ID}\" STREQUAL \"GNU\"" OFF)
-cmake_dependent_option(ENABLE_INCLUDE_NATVIS "Enable inclusion of a natvis file for debugging" ON "\"${CMAKE_CXX_COMPILER_ID}\" STREQUAL \"MSVC\"" OFF)
 option(ENABLE_SANITIZERS "Enable Address Sanitizer and Undefined Behaviour Sanitizer if available" OFF)
 
 add_library(value_types INTERFACE)
@@ -31,13 +30,10 @@ target_sources(value_types
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect.h>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h>
-        # Only include natvis files in Visual Studio
-    #    $<BUILD_INTERFACE:$<$<CXX_COMPILER_ID:MSVC>:${CMAKE_CURRENT_SOURCE_DIR}/indirect_value.natvis>>
-    #    $<INSTALL_INTERFACE:$<$<BOOL:${ENABLE_INCLUDE_NATVIS}>:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/indirect_value.natvis>>
 )
 target_compile_features(value_types
     INTERFACE
-        cxx_std_23
+        cxx_std_20
 )
 
 add_library(indirect INTERFACE)
@@ -52,7 +48,7 @@ target_sources(indirect
 )
 target_compile_features(indirect
     INTERFACE
-        cxx_std_23
+        cxx_std_20
 )
 
 add_library(polymorphic INTERFACE)
@@ -67,7 +63,7 @@ target_sources(polymorphic
 )
 target_compile_features(polymorphic
     INTERFACE
-        cxx_std_23
+        cxx_std_20
 )
 
 add_library(polymorphic_inline_vtable INTERFACE)
@@ -83,10 +79,10 @@ target_sources(polymorphic_inline_vtable
 )
 target_compile_features(polymorphic_inline_vtable
     INTERFACE
-        cxx_std_23
+        cxx_std_20
 )
-target_compile_definitions(polymorphic_inline_vtable 
-    INTERFACE 
+target_compile_definitions(polymorphic_inline_vtable
+    INTERFACE
         XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
 )
 
@@ -98,14 +94,15 @@ target_include_directories(polymorphic_inline_vtable
 )
 target_sources(polymorphic_sbo
     INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/polymorphic_sbo.h>
 )
 target_compile_features(polymorphic_sbo
     INTERFACE
-        cxx_std_23
+        cxx_std_20
 )
-target_compile_definitions(polymorphic_sbo 
-    INTERFACE 
+target_compile_definitions(polymorphic_sbo
+    INTERFACE
         XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
 )
 
@@ -113,6 +110,13 @@ target_compile_definitions(polymorphic_sbo
 add_library(value_types::value_types ALIAS value_types)
 
 if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
+
+    add_subdirectory(benchmarks)
+
+    if(!MSVC)
+        # There are issues with constexpr/consteval in MSVC 2019 and MSVC 2022.
+        add_subdirectory(compile_checks)
+    endif(MSVC)
 
     if (${BUILD_TESTING})
         FetchContent_Declare(
@@ -143,7 +147,7 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
             CXX_STANDARD_REQUIRED YES
             CXX_EXTENSIONS NO
         )
-        
+
         add_executable(indirect_test "")
         target_sources(indirect_test
             PRIVATE
@@ -187,50 +191,12 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
         )
         target_compile_options(polymorphic_sbo_test
             PRIVATE
-                $<$<CXX_COMPILER_ID:Clang>:-ftemplate-backtrace-limit=0> 
+                $<$<CXX_COMPILER_ID:Clang>:-ftemplate-backtrace-limit=0>
         )
         target_link_libraries(polymorphic_sbo_test
             PRIVATE
                 polymorphic_sbo
                 GTest::gtest_main
-                common_compiler_settings
-        )
-
-        add_executable(value_types_benchmark "")
-        target_sources(value_types_benchmark
-            PRIVATE
-                indirect_benchmark.cc
-                polymorphic_benchmark.cc
-        )
-        target_link_libraries(value_types_benchmark
-            PRIVATE
-                polymorphic
-                indirect
-                benchmark::benchmark_main
-                common_compiler_settings
-        )
-
-        add_executable(polymorphic_benchmark "")
-        target_sources(polymorphic_benchmark
-            PRIVATE
-                polymorphic_benchmark.cc
-        )
-        target_link_libraries(polymorphic_benchmark
-            PRIVATE
-                polymorphic
-                benchmark::benchmark_main
-                common_compiler_settings
-        )
-
-        add_executable(polymorphic_inline_vtable_benchmark "")
-        target_sources(polymorphic_inline_vtable_benchmark
-            PRIVATE
-                polymorphic_benchmark.cc
-        )
-        target_link_libraries(polymorphic_inline_vtable_benchmark
-            PRIVATE
-                polymorphic_inline_vtable
-                benchmark::benchmark_main
                 common_compiler_settings
         )
 
@@ -319,7 +285,6 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
         FILES
             "${CMAKE_CURRENT_SOURCE_DIR}/indirect.h"
             "${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h"
-            "${CMAKE_CURRENT_SOURCE_DIR}/value_types.natvis"
         DESTINATION
             ${CMAKE_INSTALL_INCLUDEDIR}
     )
