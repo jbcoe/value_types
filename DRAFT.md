@@ -2,11 +2,11 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-D3019R1
+P3019R1
 
 Working Group: Library Evolution, Library
 
-Date: 2023-09-16
+Date: 2023-11-08
 
 _Jonathan Coe \<<jonathanbcoe@gmail.com>\>_
 
@@ -30,7 +30,7 @@ member of type `indirect<T>` and is accessed through a const access path,
 `const`ness will propagate from the parent object to the instance of `T` owned
 by the `indirect` member.
 
-The class template `polymorphic` confers value-like semantics on a free-store-allocated 
+The class template `polymorphic` confers value-like semantics on a free-store-allocated
 object.  A `polymorphic<T>` may hold an object of a class publicly
 derived from `T`. Copying the `polymorphic<T>` will copy the object of the
 derived type. When a parent object contains a member of type `polymorphic<T>`
@@ -38,7 +38,7 @@ and is accessed through a const access path, `const`ness will propagate from the
 parent object to the instance of `T` owned by the `polymorphic` member.
 
 This proposal is a fusion of two earlier individual proposals, P1950 and P0201.
-The design of the two proposed class templates is sufficiently similar that they 
+The design of the two proposed class templates is sufficiently similar that they
 should not be considered in isolation.
 
 ## Motivation
@@ -48,13 +48,13 @@ with value semantics. When designing a composite class, we may need an object to
 be stored indirectly to support incomplete types, reduce object size or support
 open-set polymorphism.
 
-We propose the addition of two new class templates to the standard library to 
-represent indirectly stored values: `indirect` and `polymorphic`. Both class 
-templates represent free-store-allocated objects with value-like semantics. 
-`polymorphic<T>` can own any object of a type publicly derived from `T`, allowing 
-composite classes to contain polymorphic components. We require the addition of 
-two classes to avoid the cost of virtual dispatch (calling the copy constructor 
-of a potentially derived-type object through type erasure) when copying of 
+We propose the addition of two new class templates to the standard library to
+represent indirectly stored values: `indirect` and `polymorphic`. Both class
+templates represent free-store-allocated objects with value-like semantics.
+`polymorphic<T>` can own any object of a type publicly derived from `T`, allowing
+composite classes to contain polymorphic components. We require the addition of
+two classes to avoid the cost of virtual dispatch (calling the copy constructor
+of a potentially derived-type object through type erasure) when copying of
 polymorphic objects is not needed.
 
 ## Design requirements
@@ -185,10 +185,10 @@ move to be implemented cheaply without requiring the owned object to be
 moveable.
 
 Where a nullable `indirect` or `polymorphic` is required, using `std::optional`
-is recommended. This may become common practice, since `indirect` 
+is recommended. This may become common practice, since `indirect`
 and `polymorphic` can replace smart pointers in composite classes, where they
-are currently used to (mis)represent component objects. Putting `T` onto the 
-free store should not make it nullable. Nullability must be explicitly opted into 
+are currently used to (mis)represent component objects. Putting `T` onto the
+free store should not make it nullable. Nullability must be explicitly opted into
 by using `std::optional<indirect<T>>` or `std::optional<polymorphic<T>>`.
 
 `std::optional<>` is specialized for `indirect<>` and `polymorphic<>` so they
