@@ -12,7 +12,7 @@ _Jonathan B. Coe, Antony Peacock & Sean Parent_
 
 ## ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-## [P3019r0](https://wg21.link/p3019r0)
+## [P3019r1](https://wg21.link/p3019r1)
 
 ### Kona Hawaii 2023-11-8
 
@@ -259,7 +259,7 @@ Both of the proposed types, `indirect` and `polymorphic`, need:
  # Further details
 
 * Our proposal, with design discussion and proposed formal wording:
-  <https://wg21.link/p3019r0>
+  <https://wg21.link/p3019r1>
 
 * Our (header-only, C++20) reference implementation with tests and benchmarks:
   <https://github.com/jbcoe/value_types>
