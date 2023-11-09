@@ -344,9 +344,11 @@ class indirect {
 
   constexpr indirect& operator=(indirect&& other) noexcept(see below);
 
-  constexpr const T& operator*() const noexcept;
+  constexpr const T& operator*() const & noexcept;
 
-  constexpr T& operator*() noexcept;
+  constexpr T& operator*() & noexcept;
+
+  constexpr T&& operator*() && noexcept;
 
   constexpr const_pointer operator->() const noexcept;
 
@@ -534,8 +536,9 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 #### X.Y.6 Observers [indirect.observers]
 
 ```c++
-constexpr const T& operator*() const noexcept;
-constexpr T& operator*() noexcept;
+constexpr const T& operator*() const & noexcept;
+constexpr T& operator*() & noexcept;
+constexpr T&& operator*() && noexcept;
 ```
 
 * _Preconditions_: `*this` is not valueless.

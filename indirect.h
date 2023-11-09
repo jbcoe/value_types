@@ -196,14 +196,19 @@ class indirect {
     return *this;
   }
 
-  constexpr const T& operator*() const noexcept {
+  constexpr const T& operator*() const& noexcept {
     assert(p_ != nullptr);  // LCOV_EXCL_LINE
     return *p_;
   }
 
-  constexpr T& operator*() noexcept {
+  constexpr T& operator*() & noexcept {
     assert(p_ != nullptr);  // LCOV_EXCL_LINE
     return *p_;
+  }
+
+  constexpr T&& operator*() && noexcept {
+    assert(p_ != nullptr);  // LCOV_EXCL_LINE
+    return std::move(*p_);
   }
 
   constexpr const_pointer operator->() const noexcept {
