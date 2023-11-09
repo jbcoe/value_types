@@ -22,16 +22,18 @@ target_link_libraries(indirect_pimpl
         common_compiler_settings
 )
 
-add_library(polymorphic_consteval "")
-target_sources(polymorphic_consteval
-    PRIVATE
-        polymorphic_consteval.cc
-)
-target_link_libraries(polymorphic_consteval
-    PRIVATE
-        polymorphic
-        common_compiler_settings
-)
+if(NOT MSVC)
+    add_library(polymorphic_consteval "")
+    target_sources(polymorphic_consteval
+        PRIVATE
+            polymorphic_consteval.cc
+    )
+    target_link_libraries(polymorphic_consteval
+        PRIVATE
+            polymorphic
+            common_compiler_settings
+    )
+endif()
 
 add_library(polymorphic_inline_vtable_consteval "")
 target_sources(polymorphic_inline_vtable_consteval
