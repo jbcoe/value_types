@@ -597,8 +597,10 @@ constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
 
 ```c++
 template <class U, class AA>
-constexpr bool operator==(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+constexpr auto operator==(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
 ```
+
+* _Constaints_: TODO.
 
 * _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
 
@@ -609,8 +611,10 @@ constexpr bool operator==(const indirect<T, A>& lhs, const indirect<U, AA>& rhs)
 
 ```c++
 template <class U, class AA>
-constexpr bool operator!=(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+constexpr auto operator!=(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
 ```
+
+* _Constaints_: TODO.
 
 * _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
 
@@ -624,6 +628,8 @@ template <class U, class AA>
 constexpr auto operator<=>(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
 ```
 
+* _Constaints_: TODO.
+
 * _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
 
 * _Effects_: Returns `*lhs <=> *rhs`.
@@ -635,8 +641,10 @@ constexpr auto operator<=>(const indirect<T, A>& lhs, const indirect<U, AA>& rhs
 
 ```c++
 template <class T, class A, class U>
-constexpr bool operator==(const indirect<T, A>& lhs, const U& rhs);
+constexpr auto operator==(const indirect<T, A>& lhs, const U& rhs);
 ```
+
+* _Constaints_: TODO.
 
 * _Preconditions_: `lhs` is not valueless.
 
@@ -647,8 +655,10 @@ constexpr bool operator==(const indirect<T, A>& lhs, const U& rhs);
 
 ```c++
 template <class T, class A, class U>
-constexpr bool operator==(const U& lhs, const indirect<T, A>& rhs);
+constexpr auto operator==(const U& lhs, const indirect<T, A>& rhs);
 ```
+
+* _Constaints_: TODO.
 
 * _Preconditions_: `rhs` is not valueless.
 
@@ -659,8 +669,10 @@ constexpr bool operator==(const U& lhs, const indirect<T, A>& rhs);
 
 ```c++
 template <class T, class A, class U>
-constexpr bool operator!=(const indirect<T, A>& lhs, const U& rhs)
+constexpr auto operator!=(const indirect<T, A>& lhs, const U& rhs)
 ```
+
+* _Constaints_: TODO.
 
 * _Preconditions_: `lhs` is not valueless.
 
@@ -671,8 +683,10 @@ constexpr bool operator!=(const indirect<T, A>& lhs, const U& rhs)
 
 ```c++
 template <class T, class A, class U>
-constexpr bool operator!=(const U& lhs, const indirect<T, A>& rhs);
+constexpr auto operator!=(const U& lhs, const indirect<T, A>& rhs);
 ```
+
+* _Constaints_: TODO.
 
 * _Preconditions_: `rhs` is not valueless.
 
@@ -686,6 +700,8 @@ template <class T, class A, class U>
 constexpr auto operator<=>(const indirect<T, A>& lhs, const U& rhs);
 ```
 
+* _Constaints_: TODO.
+
 * _Preconditions_: `lhs` is not valueless.
 
 * _Effects_: Returns `*lhs <=> rhs`.
@@ -697,6 +713,8 @@ constexpr auto operator<=>(const indirect<T, A>& lhs, const U& rhs);
 template <class T, class A, class U>
 constexpr auto operator<=>(const U& lhs, const indirect<T, A>& rhs);
 ```
+
+* _Constaints_: TODO.
 
 * _Preconditions_: `rhs` is not valueless.
 
