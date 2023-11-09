@@ -231,59 +231,67 @@ for consistency with existing library types, not innovation.
 The class template `indirect` owns an object of known type, permits copies,
 propagates const and is allocator aware.
 
-Like `optional` and `unique_ptr`, `indirect` can be in a valueless state;
-`indirect` can only get into the valueless state after move. Both `unique_ptr`
-and `optional` have preconditions for `operator->` and `operator*`: the behavior
-is undefined if `*this` does not contain a value. Both `unique_ptr` and
-`optional` mark `operator->` and `operator*` as noexcept: `indirect` does the
-same. Both `optional` and `indirect` know the underlying type of the owned
-object so can implement r-value qualified versions of `operator*`. For
-`unique_ptr` the underlying type is not know (it could be an instance of a
-derived class) so r-value qualified versions of `operator*` are not provided.
+* Like `optional` and `unique_ptr`, `indirect` can be in a valueless state;
+  `indirect` can only get into the valueless state after move.
 
-Like `vector`, `indirect` owns an object created by an allocator. The move
-constructor, move assignment operator, member swap, and non-member swap for
-`vector` are conditionally noexcept on properties of the allocator. Thus for
-`indirect`, the move constructor, move assignment operator, member swap, and
-non-member swap for `indirect` are conditionally noexcept on properties of the
-allocator (Allocator instances may have different underlying memory resources,
-it's not possible for an allocator with one memory resource to delete an object
-in another memory resource. When allocators have different underlying memory
-resources, move and swap necessitate the allocation of memory and cannot be
-marked noexcept.).
+* `unique_ptr` and `optional` have preconditions for `operator->` and
+  `operator*`: the behavior is undefined if `*this` does not contain a value.
 
-Like `optional`, `indirect` knows the type of the owned object so forwards
-comparison operators, hash to the underlying object.
+* `unique_ptr` and `optional` mark `operator->` and `operator*` as noexcept:
+  `indirect` does the same.
 
-Unlike `optional`, `indirect` is not observably valueless: use after move is
-erroneous. Formatting is supported by `indirect` by forwarding to the owned
-object.
+* `optional` and `indirect` know the underlying type of the owned object so can
+  implement r-value qualified versions of `operator*`. For `unique_ptr` the
+  underlying type is not know (it could be an instance of a derived class) so
+  r-value qualified versions of `operator*` are not provided.
+
+* Like `vector`, `indirect` owns an object created by an allocator. The move
+  constructor, move assignment operator, member swap, and non-member swap for
+  `vector` are conditionally noexcept on properties of the allocator. Thus for
+  `indirect`, the move constructor, move assignment operator, member swap, and
+  non-member swap for `indirect` are conditionally noexcept on properties of the
+  allocator (Allocator instances may have different underlying memory resources,
+  it's not possible for an allocator with one memory resource to delete an
+  object in another memory resource. When allocators have different underlying
+  memory resources, move and swap necessitate the allocation of memory and
+  cannot be marked noexcept.).
+
+* Like `optional`, `indirect` knows the type of the owned object so forwards
+  comparison operators, hash to the underlying object.
+
+* Unlike `optional`, `indirect` is not observably valueless: use after move is
+  erroneous. Formatting is supported by `indirect` by forwarding to the owned
+  object.
 
 #### Modelled types for `polymorphic`
 
 The class template `polymorphic` owns an object of known type, requires copies,
 propagates const and is allocator aware.
 
-Like `optional` and `unique_ptr`, `polymorphic` can be in a valueless state;
-`polymorphic` can only get into the valueless state after move. Both
-`unique_ptr` and `optional` have preconditions for `operator->` and `operator*`:
-the behavior is undefined if `*this` does not contain a value. Both `unique_ptr`
-and `optional` mark `operator->` and `operator*` as noexcept: `polymorphic` does
-the same. Neither `unique_ptr` nor `polymorphic` know the underlying type of the
-owned object so cannot implement r-value qualified versions of `operator*`. For
-`optional` the underlying type is know so r-value qualified versions of
-`operator*` are provided.
+* Like `optional` and `unique_ptr`, `polymorphic` can be in a valueless state;
+  `polymorphic` can only get into the valueless state after move.
 
-Like `vector`, `polymorphic` owns an object created by an allocator. The move
-constructor, move assignment operator, member swap, and non-member swap for
-`vector` are conditionally noexcept on properties of the allocator. Thus for
-`polymorphic`, the move constructor, move assignment operator, member swap, and
-non-member swap for `polymorphic` are conditionally noexcept on properties of
-the allocator.
+* `unique_ptr` and `optional` have preconditions for `operator->` and
+  `operator*`: the behavior is undefined if `*this` does not contain a value.
 
-Like `unique_ptr`, `polymorphic` does not know the type of the owned object (it
-could be an instance of a derived type). As a result `polymorphic` cannot
-forward comparison operators, hash or formatting to the owned object.
+* `unique_ptr` and `optional` mark `operator->` and `operator*` as noexcept:
+  `polymorphic` does the same.
+
+* Neither `unique_ptr` nor `polymorphic` know the underlying type of the owned
+  object so cannot implement r-value qualified versions of `operator*`. For
+  `optional` the underlying type is known so r-value qualified versions of
+  `operator*` are provided.
+
+* Like `vector`, `polymorphic` owns an object created by an allocator. The move
+  constructor, move assignment operator, member swap, and non-member swap for
+  `vector` are conditionally noexcept on properties of the allocator. Thus for
+  `polymorphic`, the move constructor, move assignment operator, member swap,
+  and non-member swap for `polymorphic` are conditionally noexcept on properties
+  of the allocator.
+
+* Like `unique_ptr`, `polymorphic` does not know the type of the owned object
+  (it could be an instance of a derived type). As a result `polymorphic` cannot
+  forward comparison operators, hash or formatting to the owned object.
 
 ### `noexcept` and narrow contracts
 
