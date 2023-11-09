@@ -296,13 +296,13 @@ class indirect {
 
   constexpr indirect(const indirect& other);
 
-  constexpr indirect(
-    std::allocator_arg_t, const Allocator& alloc, const indirect& other);
+  constexpr indirect(std::allocator_arg_t, const Allocator& alloc,
+                     const indirect& other);
 
   constexpr indirect(indirect&& other) noexcept;
 
-  constexpr indirect(
-    std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcept;
+  constexpr indirect(std::allocator_arg_t, const Allocator& alloc,
+                     indirect&& other) noexcept;
 
   constexpr ~indirect();
 
@@ -387,8 +387,7 @@ explicit constexpr indirect(Ts&&... ts);
 
 ```c++
 template <class... Ts>
-constexpr indirect(
-  std::allocator_arg_t, const Allocator& alloc, Ts&&... ts);
+constexpr indirect(std::allocator_arg_t, const Allocator& alloc, Ts&&... ts);
 ```
 
 * _Constraints_: `is_constructible_v<T, Ts...>` is true.
@@ -414,8 +413,8 @@ constexpr indirect(const indirect& other);
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-constexpr indirect(
-  std::allocator_arg_t, const Allocator& alloc, const indirect& other);
+constexpr indirect(std::allocator_arg_t, const Allocator& alloc,
+                   const indirect& other);
 ```
 
 * _Mandates_: `is_copy_constructible_v<T>` is true.
@@ -442,8 +441,8 @@ constexpr indirect(indirect&& other) noexcept;
   is true.
 
 ```c++
-constexpr indirect(
-  std::allocator_arg_t, const Allocator& alloc, indirect&& other) noexcept;
+constexpr indirect(std::allocator_arg_t, const Allocator& alloc,
+                   indirect&& other) noexcept;
 ```
 
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
@@ -789,18 +788,18 @@ class polymorphic {
   explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts);
 
   template <class U, class... Ts>
-  constexpr polymorphic(
-    std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
+  constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc,
+                        std::in_place_type_t<U>, Ts&&... ts);
 
   constexpr polymorphic(const polymorphic& other);
 
-  constexpr polymorphic(
-    std::allocator_arg_t, const Allocator& alloc, const polymorphic& other);
+  constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc,
+                        const polymorphic& other);
 
   constexpr polymorphic(polymorphic&& other) noexcept;
 
-  constexpr polymorphic(
-    std::allocator_arg_t, const Allocator& alloc, polymorphic&& other) noexcept;
+  constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc,
+                        polymorphic&& other) noexcept;
 
   constexpr ~polymorphic();
 
@@ -854,8 +853,8 @@ explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts);
 
 ```c++
 template <class U, class... Ts>
-constexpr polymorphic(
-  std::allocator_arg_t, const Allocator& alloc, std::in_place_type_t<U>, Ts&&... ts);
+constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc,
+                      std::in_place_type_t<U>, Ts&&... ts);
 ```
 
 * _Constraints_: `is_base_of_v<T, U>` is true, `is_constructible_v<U, Ts...>` is
@@ -880,8 +879,8 @@ constexpr polymorphic(const polymorphic& other);
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-constexpr polymorphic(
-  std::allocator_arg_t, const Allocator& alloc, const polymorphic& other);
+constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc,
+                      const polymorphic& other);
 ```
 
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
@@ -907,8 +906,8 @@ constexpr polymorphic(polymorphic&& other) noexcept;
   is true.
 
 ```c++
-constexpr polymorphic(
-  std::allocator_arg_t, const Allocator& alloc, polymorphic&& other) noexcept;
+constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc,
+                      polymorphic&& other) noexcept;
 ```
 
 * _Preconditions_: `other` is not valueless and `Allocator` meets the
