@@ -30,7 +30,7 @@ member of type `indirect<T>` and is accessed through a const access path,
 `const`ness will propagate from the parent object to the instance of `T` owned
 by the `indirect` member.
 
-The class template `polymorphic` confers value-like semantics on a free-store-allocated 
+The class template `polymorphic` confers value-like semantics on a free-store-allocated
 object.  A `polymorphic<T>` may hold an object of a class publicly
 derived from `T`. Copying the `polymorphic<T>` will copy the object of the
 derived type. When a parent object contains a member of type `polymorphic<T>`
@@ -38,7 +38,7 @@ and is accessed through a const access path, `const`ness will propagate from the
 parent object to the instance of `T` owned by the `polymorphic` member.
 
 This proposal is a fusion of two earlier individual proposals, P1950 and P0201.
-The design of the two proposed class templates is sufficiently similar that they 
+The design of the two proposed class templates is sufficiently similar that they
 should not be considered in isolation.
 
 ## Motivation
@@ -48,13 +48,13 @@ with value semantics. When designing a composite class, we may need an object to
 be stored indirectly to support incomplete types, reduce object size or support
 open-set polymorphism.
 
-We propose the addition of two new class templates to the standard library to 
-represent indirectly stored values: `indirect` and `polymorphic`. Both class 
-templates represent free-store-allocated objects with value-like semantics. 
-`polymorphic<T>` can own any object of a type publicly derived from `T`, allowing 
-composite classes to contain polymorphic components. We require the addition of 
-two classes to avoid the cost of virtual dispatch (calling the copy constructor 
-of a potentially derived-type object through type erasure) when copying of 
+We propose the addition of two new class templates to the standard library to
+represent indirectly stored values: `indirect` and `polymorphic`. Both class
+templates represent free-store-allocated objects with value-like semantics.
+`polymorphic<T>` can own any object of a type publicly derived from `T`, allowing
+composite classes to contain polymorphic components. We require the addition of
+two classes to avoid the cost of virtual dispatch (calling the copy constructor
+of a potentially derived-type object through type erasure) when copying of
 polymorphic objects is not needed.
 
 ## Design requirements
@@ -185,10 +185,10 @@ move to be implemented cheaply without requiring the owned object to be
 moveable.
 
 Where a nullable `indirect` or `polymorphic` is required, using `std::optional`
-is recommended. This may become common practice, since `indirect` 
+is recommended. This may become common practice, since `indirect`
 and `polymorphic` can replace smart pointers in composite classes, where they
-are currently used to (mis)represent component objects. Putting `T` onto the 
-free store should not make it nullable. Nullability must be explicitly opted into 
+are currently used to (mis)represent component objects. Putting `T` onto the
+free store should not make it nullable. Nullability must be explicitly opted into
 by using `std::optional<indirect<T>>` or `std::optional<polymorphic<T>>`.
 
 `std::optional<>` is specialized for `indirect<>` and `polymorphic<>` so they
@@ -1049,6 +1049,276 @@ Add a new feature-test macro:
 
 ```c++
 #define __cpp_lib_polymorphic 2023XXL
+```
+
+### X.ZZ Class template unique_polymorphic [unique_polymorphic]
+
+#### X.ZZ.1 Class template unique_polymorphic general [unique_polymorphic.general]
+
+A _unique polymorphic value_ is an object that manages the lifetime of an owned object.
+A unique polymorphic value object may own objects of different types at different
+points in its lifetime. A unique polymorphic value object is _valueless_ if it has no
+owned object. A unique polymorphic value may only become valueless after it has been
+moved from.
+
+In every specialization `unique_polymorphic<T, Allocator>`, the type
+`allocator_traits<Allocator>::value_type` shall be the same type as `T`. Every
+object of type `unique_polymorphic<T, Allocator>` uses an object of type `Allocator` to
+allocate and free storage for the owned object as needed. The owned object shall
+be constructed using the function
+`allocator_traits<allocator_type>::rebind_traits<U>::construct` and destroyed
+ using the function
+`allocator_traits<allocator_type>::rebind_traits<U>::destroy`, where `U` is
+either `allocator_type::value_type` or an internal type used by the unique_polymorphic
+value.
+
+The template parameter `T` of `unique_polymorphic` must be a non-union class type.
+
+The template parameter `T` of `unique_polymorphic` may be an incomplete type.
+
+#### X.ZZ.2 Class template unique_polymorphic synopsis [unique_polymorphic.syn]
+
+```c++
+template <class T, class Allocator = std::allocator<T>>
+class unique_polymorphic {
+  control_block* control_block_; // exposition only
+  Allocator allocator_; // exposition only
+ public:
+  using value_type = T;
+  using allocator_type = Allocator;
+  using pointer        = typename allocator_traits<Allocator>::pointer;
+  using const_pointer  = typename allocator_traits<Allocator>::const_pointer;
+
+  constexpr unique_polymorphic();
+
+  template <class U, class... Ts>
+  explicit constexpr unique_polymorphic(std::in_place_type_t<U>, Ts&&... ts);
+
+  template <class U, class... Ts>
+  constexpr unique_polymorphic(std::allocator_arg_t, const Allocator& alloc,
+                        std::in_place_type_t<U>, Ts&&... ts);
+
+  constexpr unique_polymorphic(const unique_polymorphic& other) = delete;
+
+  constexpr unique_polymorphic(std::allocator_arg_t, const Allocator& alloc,
+                        const unique_polymorphic& other) = delete;
+
+  constexpr unique_polymorphic(unique_polymorphic&& other) noexcept;
+
+  constexpr unique_polymorphic(std::allocator_arg_t, const Allocator& alloc,
+                        unique_polymorphic&& other) noexcept;
+
+  constexpr ~unique_polymorphic();
+
+  constexpr unique_polymorphic& operator=(const unique_polymorphic& other) = delete;
+
+  constexpr unique_polymorphic& operator=(unique_polymorphic&& other) noexcept(see below);
+
+  constexpr const T& operator*() const noexcept;
+
+  constexpr T& operator*() noexcept;
+
+  constexpr const_pointer operator->() const noexcept;
+
+  constexpr pointer operator->() noexcept;
+
+  constexpr bool valueless_after_move() const noexcept;
+
+  constexpr allocator_type get_allocator() const noexcept;
+
+  constexpr void swap(unique_polymorphic& other) noexcept(see below);
+
+  friend constexpr void swap(unique_polymorphic& lhs, unique_polymorphic& rhs) noexcept(see below);
+};
+```
+
+#### X.ZZ.3 Constructors [unique_polymorphic.ctor]
+
+```c++
+constexpr unique_polymorphic()
+```
+
+* _Mandates_: `is_default_constructible_v<T>` is true.
+
+* _Effects_: Constructs a unique_polymorphic owning a default-constructed `T`.
+
+* _Postconditions_: `*this` is not valueless.
+
+```c++
+template <class U, class... Ts>
+explicit constexpr unique_polymorphic(std::in_place_type_t<U>, Ts&&... ts);
+```
+
+* _Constraints_: `is_base_of_v<T, U>` is true, `is_constructible_v<U, Ts...>` is
+  true.
+
+* _Effects_: Constructs a unique_polymorphic owning an instance of `U` created with the
+  arguments `Ts`.
+
+* _Postconditions_: `*this` is not valueless.
+
+```c++
+template <class U, class... Ts>
+constexpr unique_polymorphic(std::allocator_arg_t, const Allocator& alloc,
+                      std::in_place_type_t<U>, Ts&&... ts);
+```
+
+* _Constraints_: `is_base_of_v<T, U>` is true, `is_constructible_v<U, Ts...>` is
+  true.
+
+* _Preconditions_: `Allocator` meets the _Cpp17Allocator_ requirements.
+
+* _Effects_: Equivalent to the preceding constructor except that the allocator
+  is initialized with alloc.
+
+* _Postconditions_: `*this` is not valueless.
+
+```c++
+constexpr unique_polymorphic(unique_polymorphic&& other) noexcept;
+```
+
+* _Preconditions_: `other` is not valueless.
+
+* _Effects_: Constructs a unique_polymorphic that takes ownership of the object owned
+  by `other`.
+
+* _Postconditions_: `other` is valueless.
+
+* _Remarks_: This constructor does not require that `is_move_constructible_v<T>`
+  is true.
+
+```c++
+constexpr unique_polymorphic(std::allocator_arg_t, const Allocator& alloc,
+                      unique_polymorphic&& other) noexcept;
+```
+
+* _Preconditions_: `other` is not valueless and `Allocator` meets the
+  _Cpp17Allocator_ requirements.
+
+* _Effects_: Equivalent to the preceding constructor except that the allocator
+  is initialized with alloc.
+
+* _Postconditions_: `other` is valueless.
+
+* _Remarks_: This constructor does not require that `is_move_constructible_v<T>`
+  is true.
+
+#### X.ZZ.4 Destructor [unique_polymorphic.dtor]
+
+```c++
+constexpr ~unique_polymorphic();
+```
+
+* _Effects_: If `*this` is not valueless, destroys the owned object.
+
+#### X.ZZ.5 Assignment [unique_polymorphic.assign]
+
+```c++
+constexpr unique_polymorphic& operator=(unique_polymorphic&& other) noexcept(
+    allocator_traits<Allocator>::propagate_on_container_move_assignment::value ||
+    allocator_traits<Allocator>::is_always_equal::value);
+```
+
+* _Preconditions_: `other` is not valueless.
+
+* _Effects_: If `*this` is not valueless, destroys the owned object, then takes
+  ownership of the object owned by `other`.
+
+* _Postconditions_: `*this` is not valueless. `other` is valueless.
+
+#### X.ZZ.6 Observers [unique_polymorphic.observers]
+
+```c++
+constexpr const T& operator*() const noexcept;
+constexpr T& operator*() noexcept;
+```
+
+* _Preconditions_: `*this` is not valueless.
+
+* _Effects_: Returns a reference to the owned object.
+
+* _Remarks_: These functions are constexpr functions.
+
+```c++
+constexpr const_pointer operator->() const noexcept;
+constexpr pointer operator->() noexcept;
+```
+
+* _Preconditions_: `*this` is not valueless.
+
+* _Effects_: Returns a pointer to the owned object.
+
+* _Remarks_: These functions are constexpr functions.
+
+```c++
+constexpr bool valueless_after_move() const noexcept;
+```
+
+* _Returns_: `true` if `*this` is valueless, otherwise `false`.
+
+```c++
+constexpr allocator_type get_allocator() const noexcept;
+```
+
+* _Returns_: A copy of the Allocator object used to construct the owned object.
+
+#### X.ZZ.7 Swap [unique_polymorphic.swap]
+
+```c++
+constexpr void swap(unique_polymorphic& other) noexcept(
+    allocator_traits<Allocator>::propagate_on_container_swap::value ||
+    allocator_traits<Allocator>::is_always_equal::value);
+```
+
+* _Preconditions_: `*this` is not valueless, `other` is not valueless.
+
+* _Effects_: Swaps the objects owned by `*this` and `other`.
+
+* _Remarks_: Does not call `swap` on the owned objects directly.
+
+```c++
+constexpr void swap(unique_polymorphic& lhs, unique_polymorphic& rhs) noexcept(
+    allocator_traits<Allocator>::propagate_on_container_swap::value ||
+    allocator_traits<Allocator>::is_always_equal::value);
+```
+
+* _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
+
+* _Effects_: Swaps the objects owned by `lhs` and `rhs`.
+
+#### X.ZZ.8 Optional support [unique_polymorphic.optional]
+
+```c++
+template <class T, class Alloc>
+class std::optional<unique_polymorphic<T, Alloc>>;
+```
+
+The specialization `std::optional<unique_polymorphic<T, Alloc>>` guarantees
+`sizeof(std::optional<unique_polymorphic<T, Alloc>>) == sizeof(unique_polymorphic<T, Alloc>>)`.
+
+```c++
+// [optional.observe], observers
+constexpr const unique_polymorphic<T, Alloc>& operator->() const noexcept;
+constexpr unique_polymorphic<T, Alloc>& operator->() noexcept;
+```
+
+* _Preconditions_: `*this` is not valueless. The contained unique polymorphic value is
+  not valueless.
+
+* _Returns_: `val`.
+
+* _Remarks_: These functions are constexpr. The specialization
+  `std::optional<unique_polymorphic<T, Alloc>>` provides `operator->` that returns a
+  reference to the contained `unique_polymorphic`.
+
+Otherwise, the interface of the specialization is as defined in [optional].
+
+## Feature-test Macro [unique_polymorphic.predefined.ft]
+
+Add a new feature-test macro:
+
+```c++
+#define __cpp_lib_unique_polymorphic 2023XXL
 ```
 
 ## Reference implementation
