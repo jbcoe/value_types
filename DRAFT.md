@@ -216,15 +216,20 @@ Note: As the null state of `indirect` and `polymorphic` is not observable, and
 access to a moved-from object is erroneous, `std::optional` can be specialized
 by implementers to exchange pointers on move construction and assignment.
 
+### Allocator support
+
+Both `indirect` and `polymorphic` are allocator-aware types. They must suitable
+for use in allocator-aware composite types and containers. Existing
+allocator-aware types in the standard, such as `vector`, `map` and `tuple`, take
+an allocator type as a template parameter, provide `allocator_type`, and have
+constructor overloads taking an additional `allocator_type_t` and allocator
+instance as arguments. As `indirect` and `polymorphic` need to work with and in
+the same way as existing allocator-aware types, they too take an allocator type
+as a template parameter, provide `allocator_type`, and have constructor
+overloads taking an additional `allocator_type_t` and allocator instance as
+arguments.
+
 ### Noexcept
-
-TODO
-
-### Allocators as template arguments
-
-TODO
-
-## Differences between `indirect` and `polymorphic`
 
 TODO
 
