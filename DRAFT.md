@@ -348,6 +348,8 @@ class indirect {
 
   constexpr T& operator*() & noexcept;
 
+  constexpr const T&& operator*() const && noexcept;
+
   constexpr T&& operator*() && noexcept;
 
   constexpr const_pointer operator->() const noexcept;
@@ -538,6 +540,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 ```c++
 constexpr const T& operator*() const & noexcept;
 constexpr T& operator*() & noexcept;
+constexpr const T&& operator*() const && noexcept;
 constexpr T&& operator*() && noexcept;
 ```
 
