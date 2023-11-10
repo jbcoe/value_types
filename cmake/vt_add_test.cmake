@@ -70,7 +70,7 @@ function(vt_add_test)
     gtest_discover_tests(${VALUE_TYPES_NAME})
 
     if (ENABLE_CODE_COVERAGE)
-        add_coverage(indirect_test)
+        add_coverage(${VALUE_TYPES_NAME})
     endif()
 
 endfunction()
