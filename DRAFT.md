@@ -231,15 +231,15 @@ TODO
 ### Supporting `operator()` `operator[]`
 
 Neither `indirect` nor `polymorphic` support `operator()` or `operator[]`. These
-operators can't be implemented with `=default` and cannot, in general, be
-meaningfully implemented for a composite by aggregating over its components.
-These functions are not core to the design of either class template; both could
-be added as non-breaking changes in a later revision of the C++ standard if
-required.
+operators cannot be implemented by a class using `=default` and cannot, in
+general, be meaningfully implemented for a composite by aggregating over its
+components. These functions are not core to the design of either class template;
+both could be added as non-breaking changes in a later revision of the C++
+standard if required.
 
 ### Member function `emplace`
 
-Neither `indirect` nor `emplace` support `emplace` as a member function.
+Neither `indirect` nor `polymorphic` support `emplace` as a member function.
 The member function `emplace` could be added as :
 
 ```c++
@@ -272,7 +272,7 @@ void emplace(T& t, Ts&& ...ts) {
 }
 ```
 
-We don't propose adding a `emplace` as a non-member function to the C++ standard
+We do not propose adding a `emplace` as a non-member function to the C++ standard
 libary as part of this proposal.
 
 ### Design for polymorphic types
