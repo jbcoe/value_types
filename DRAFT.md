@@ -367,7 +367,7 @@ Copy constructors for an indirect value obtain an allocator by calling
 `allocator_traits<allocator_type>​::​select_on_container_copy_construction` on
 the allocator belonging to the indirect value being copied. Move constructors
 obtain an allocator by move construction from the allocator belonging to the
-container being moved. Such move construction of the allocator will not exit
+container being moved. Such move construction of the allocator shall not exit
 via an exception. All other constructors for these container types take a `const
 allocator_type& argument`. [Note 3: If an invocation of a constructor uses the
 default value of an optional allocator argument, then the allocator type must
@@ -967,7 +967,7 @@ Copy constructors for a polymorphic value obtain an allocator by calling
 `allocator_traits<allocator_type>​::​select_on_container_copy_construction` on
 the allocator belonging to the polymorphic value being copied. Move constructors
 obtain an allocator by move construction from the allocator belonging to the
-container being moved. Such move construction of the allocator will not exit
+container being moved. Such move construction of the allocator shall not exit
 via an exception. All other constructors for these container types take a `const
 allocator_type& argument`. [Note 3: If an invocation of a constructor uses the
 default value of an optional allocator argument, then the allocator type must
