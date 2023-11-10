@@ -1378,19 +1378,6 @@ Pointer-like accessors like `dynamic_pointer_cast` and `static_pointer_cast`,
 which are provided for `std::shared_ptr`, could be added in a later revision of
 the standard if required.
 
-### Comparisons and hashing
-
-We support comparisons and hashing for `indirect` but not `polymorphic`. This is
-because comparing and hashing polymorphic types is not a uniquely solved
-problem, though it could be implemented by adding suitable member functions
-to the base class. Rather than impose the signatures of these member functions
-on users of `polymorphic`, we decided to leave hashing and comparison
-unsupported but implementable by users.
-
-For `indirect`, in the case where the owned object `T` is hashable or
-comparable, `indirect<T>` is hashable or comparable by forwarding the hash or
-comparison to the owned object.
-
 ### Implicit conversions
 
 We decided that there should be no implicit conversion of a value `T` to an
