@@ -211,6 +211,11 @@ class indirect {
     return std::move(*p_);
   }
 
+  constexpr const T&& operator*() const&& noexcept {
+    assert(p_ != nullptr);  // LCOV_EXCL_LINE
+    return std::move(*p_);
+  }
+
   constexpr const_pointer operator->() const noexcept {
     assert(p_ != nullptr);  // LCOV_EXCL_LINE
     return p_;
