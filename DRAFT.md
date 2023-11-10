@@ -337,19 +337,6 @@ some_indirect = indirect(/* arguments */);
 some_polymorphic = polymorphic(in_place_type<U>, /* arguments */);
 ```
 
-If `emplace` was desirable to avoid repeating the type name, it might be better
-implemented as a non-member function:
-
-```c++
-template <typename T, typename ...Ts>
-void emplace(T& t, Ts&& ...ts) {
-  t = T(std::forward<Ts>... ts);
-}
-```
-
-We do not propose adding a `emplace` as a non-member function to the C++ standard
-libary as part of this proposal.
-
 ### `noexcept` and narrow contracts
 
 C++ library design guidelines recommend that member functions with narrow
