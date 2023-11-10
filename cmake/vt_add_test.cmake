@@ -42,6 +42,8 @@ function(vt_add_test)
 
     endif (NOT TARGET common_compiler_settings)
 
+    include(sanitizers)
+
     add_executable(${VALUE_TYPES_NAME} "")
     target_sources(${VALUE_TYPES_NAME}
        PRIVATE
@@ -52,6 +54,8 @@ function(vt_add_test)
             ${VALUE_LINK_LIBRARIES}
             GTest::gtest_main
             common_compiler_settings
+            $<$<BOOL:${COMPILER_SUPPORTS_ASAN}>:asan>
+            $<$<BOOL:${COMPILER_SUPPORTS_USAN}>:ubsan>
     )
 
     set_target_properties(${VALUE_TYPES_NAME} PROPERTIES
