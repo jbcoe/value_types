@@ -516,12 +516,13 @@ constexpr indirect& operator=(const indirect& other);
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: If `*this` is not valueless and `std::is_copy_assignable_v<T>` is
-  true, copy assigns owned object in `*this` from the owned object
-  in `other`. Otherwise if `*this` is not valueless and
+  true, copy assigns the owned object in `*this` from the owned object in
+  `other`. Otherwise if `*this` is not valueless and
   `std::is_copy_assignable_v<T>` is false, destroys the owned object, then
-  constructs a new owned object using the copy constructor of the object owned
-  by `other`. Otherwise if `*this` is valueless, constructs an owned object
-  using the copy constructor of the object owned by `other`.
+  performs allocator-construction with the stored allocator using the object
+  owned by `other`. Otherwise if `*this` is valueless, performs
+  allocator-construction using the copy constructor of the object owned by
+  `other`.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -534,7 +535,8 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: If `*this` is not valueless, destroys the owned object, then takes
-  ownership of the object owned by `other`.
+  ownership of the object owned by `other`. Otherwise, if this is valueless,
+  takes ownership of the object owned by `other`.
 
 * _Postconditions_: `*this` is not valueless. `other` is valueless.
 
@@ -998,8 +1000,8 @@ constexpr polymorphic& operator=(const polymorphic& other);
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: If `*this` is not valueless, destroys the owned object, then
-  constructs an owned object using the (possibly derived-type) copy constructor
-  of the object owned by `other`.
+  performs allocator-construction with the stored allocator using the (possibly
+  derived-type) object owned by `other`.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -1012,7 +1014,8 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: If `*this` is not valueless, destroys the owned object, then takes
-  ownership of the object owned by `other`.
+  ownership of the object owned by `other`. Otherwise, if this is valueless,
+  takes ownership of the object owned by `other`.
 
 * _Postconditions_: `*this` is not valueless. `other` is valueless.
 
