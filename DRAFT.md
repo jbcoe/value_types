@@ -216,10 +216,6 @@ Note: As the null state of `indirect` and `polymorphic` is not observable, and
 access to a moved-from object is erroneous, `std::optional` can be specialized
 by implementers to exchange pointers on move construction and assignment.
 
-### Noexcept
-
-TODO
-
 ### Allocator support
 
 Both `indirect` and `polymorphic` are allocator-aware types. They must be
@@ -314,6 +310,22 @@ TODO
 ### Forwarding functions for indirect
 
 TODO
+
+### `noexcept` and narrow contracts
+
+C++ library design guidelines recommend that member functions with narrow
+contracts (runtime-preconditions) should not be marked `noexcept`. This is
+partially motivated by a non-vendor implementation of the C++ standard library
+that uses exceptions in a debug build to check for precondition violations by
+throwing an exception. The `noexcept` status of `operator->` and `operator*` for
+`indirect` and `polymorphic` is identical to that of `optional` and
+`unique_ptr`. All have preconditions (`this` cannot be valueless), all are
+marked `noexcept`. Whatever strategy was used for testing `optional` and
+`unique_ptr` can be used for `indirect` and `polymorphic`.
+
+Not marking `operator->` and `operator*` as `noexcept` for `indirect` and
+`polymorphic` would make them strictly less useful than `unique_ptr` in contexts
+where they would otherwise be a valid replacement.
 
 ### Design for polymorphic types
 
