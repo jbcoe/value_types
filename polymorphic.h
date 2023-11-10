@@ -36,6 +36,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace xyz {
 
+[[noreturn]] inline void unreachable() { std::terminate(); }  // LCOV_EXCL_LINE
+
 struct NoPolymorphicSBO {};
 
 namespace detail {
@@ -254,9 +256,7 @@ class polymorphic {
 
   constexpr allocator_type get_allocator() const noexcept { return alloc_; }
 
-  constexpr void swap(polymorphic& other) noexcept(
-      allocator_traits::propagate_on_container_swap::value ||
-      allocator_traits::is_always_equal::value) {
+  constexpr void swap(polymorphic& other) noexcept {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
 
     if constexpr (allocator_traits::propagate_on_container_swap::value) {
@@ -268,24 +268,13 @@ class polymorphic {
     if (alloc_ == other.alloc_) {
       std::swap(cb_, other.cb_);
     } else {
-      // We need to create new control blocks that the respective allocators can
-      // delete.
-
-      // Use `this` just to make code layout nicer.
-      std::unique_ptr<cblock_t> new_this(other.cb_->clone(this->alloc_));
-      std::unique_ptr<cblock_t> new_other(this->cb_->clone(other.alloc_));
-
-      // Destroy the original control blocks with their original allocators.
-      this->cb_->destroy(this->alloc_);
-      other.cb_->destroy(other.alloc_);
-      this->cb_ = new_this.release();
-      other.cb_ = new_other.release();
+      assert(false &&
+             "Cannot swap polymorphic values with non-equal allocators");
+      unreachable();  // LCOV_EXCL_LINE
     }
   }
 
-  friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(
-      allocator_traits::propagate_on_container_swap::value ||
-      allocator_traits::is_always_equal::value) {
+  friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept {
     lhs.swap(rhs);
   }
 
