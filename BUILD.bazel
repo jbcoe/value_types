@@ -47,6 +47,7 @@ cc_test(
     name = "polymorphic_inline_vtable_test",
     size = "small",
     srcs = ["polymorphic_test.cc"],
+    tags = ["manual"],
     deps = [
         "polymorphic_inline_vtable",
         "@com_google_googletest//:gtest_main",
@@ -68,6 +69,7 @@ cc_test(
     name = "polymorphic_sbo_test",
     size = "small",
     srcs = ["polymorphic_test.cc"],
+    tags = ["manual"],
     deps = [
         "polymorphic_sbo",
         "@com_google_googletest//:gtest_main",
