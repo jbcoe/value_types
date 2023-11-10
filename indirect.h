@@ -124,7 +124,6 @@ class indirect {
     }
     reset();  // We may not have reset above and it's a no-op if valueless.
     allocator_construct_from(*other);
-
     return *this;
   }
 
