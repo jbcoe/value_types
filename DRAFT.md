@@ -463,9 +463,11 @@ class indirect {
   friend constexpr auto operator!=(
     const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
 
+  template <class U, class AA>
   friend constexpr auto operator<(
     const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
 
+  template <class U, class AA>
   friend constexpr auto operator<=(
     const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
 
@@ -744,22 +746,22 @@ constexpr auto operator!=(const indirect<T, A>& lhs, const indirect<U, AA>& rhs)
 
 ```c++
 template <class U, class AA>
-constexpr auto operator<const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+constexpr auto operator<(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
 ```
 
 ```c++
 template <class U, class AA>
-constexpr auto operator<=const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+constexpr auto operator<=(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
 ```
 
 ```c++
 template <class U, class AA>
-constexpr auto operator>const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+constexpr auto operator>(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
 ```
 
 ```c++
 template <class U, class AA>
-constexpr auto operator>=const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+constexpr auto operator>=(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
 ```
 
 ```c++
@@ -779,37 +781,37 @@ constexpr auto operator<=>(const indirect<T, A>& lhs, const indirect<U, AA>& rhs
 #### X.Y.9 Comparison with T [indirect.comp.with.t]
 
 ```c++
-template <class T, class A, class U>
+template <class U>
 constexpr auto operator==(const indirect<T, A>& lhs, const U& rhs);
 ```
 
 ```c++
-template <class T, class A, class U>
+template <class U>
 constexpr auto operator!=(const indirect<T, A>& lhs, const U& rhs);
 ```
 
 ```c++
-template <class T, class A, class U>
+template <class U>
 constexpr auto operator<(const indirect<T, A>& lhs, const U& rhs);
 ```
 
 ```c++
-template <class T, class A, class U>
+template <class U>
 constexpr auto operator<=(const indirect<T, A>& lhs, const U& rhs);
 ```
 
 ```c++
-template <class T, class A, class U>
+template <class U>
 constexpr auto operator>(const indirect<T, A>& lhs, const U& rhs);
 ```
 
 ```c++
-template <class T, class A, class U>
-constexpr auto operator>=const indirect<T, A>& lhs, const U& rhs);
+template <class U>
+constexpr auto operator>=(const indirect<T, A>& lhs, const U& rhs);
 ```
 
 ```c++
-template <class T, class A, class U>
+template <class U>
 constexpr auto operator<=>(const indirect<T, A>& lhs, const U& rhs);
 ```
 
@@ -823,37 +825,37 @@ constexpr auto operator<=>(const indirect<T, A>& lhs, const U& rhs);
   is a core constant expression, are constexpr functions.
 
 ```c++
-template <class T, class A, class U>
+template <class U>
 constexpr auto operator==(const U& lhs, const indirect<T, A>& rhs);
 ```
 
 ```c++
-template <class T, class A, class U>
+template <class U>
 constexpr auto operator!=(const U& lhs, const indirect<T, A>& rhs);
 ```
 
 ```c++
-template <class T, class A, class U>
+template <class U>
 constexpr auto operator<(const U& lhs, const indirect<T, A>& rhs);
 ```
 
 ```c++
-template <class T, class A, class U>
+template <class U>
 constexpr auto operator<=(const U& lhs, const indirect<T, A>& rhs);
 ```
 
 ```c++
-template <class T, class A, class U>
+template <class U>
 constexpr auto operator>(const U& lhs, const indirect<T, A>& rhs);
 ```
 
 ```c++
-template <class T, class A, class U>
+template <class U>
 constexpr auto operator>=const U& lhs, const indirect<T, A>& rhs);
 ```
 
 ```c++
-template <class T, class A, class U>
+template <class U>
 constexpr auto operator<=>(const U& lhs, const indirect<T, A>& rhs);
 ```
 
