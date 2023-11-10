@@ -193,83 +193,36 @@ class polymorphic {
 
   constexpr polymorphic& operator=(const polymorphic& other) {
     if (this == &other) return *this;
-    assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     if constexpr (allocator_traits::propagate_on_container_copy_assignment::
                       value) {
       if (alloc_ != other.alloc_) {
         reset();  // using current allocator.
-        alloc = other.alloc_;
-        T* mem = allocator_traits::allocate(alloc_, 1);
-        try {
-          allocator_traits::construct(alloc_, mem, *other);
-          p_ = mem;
-        } catch (...) {
-          allocator_traits::deallocate(alloc_, mem, 1);
-          throw;
-        }
-      } else {
-        reset();
-        T* mem = allocator_traits::allocate(alloc_, 1);
-        try {
-          allocator_traits::construct(alloc_, mem, *other);
-          p_ = mem;
-        } catch (...) {
-          allocator_traits::deallocate(alloc_, mem, 1);
-          throw;
-        }
-      }
-    } else /* constexpr*/ {
-      reset();
-      T* mem = allocator_traits::allocate(alloc_, 1);
-      try {
-        allocator_traits::construct(alloc_, mem, *other);
-        p_ = mem;
-      } catch (...) {
-        allocator_traits::deallocate(alloc_, mem, 1);
-        throw;
+        alloc_ = other.alloc_;
       }
     }
+    reset();  // We may not have reset above and it's a no-op if valueless.
+    cb_ = other.cb_->clone(alloc_);
     return *this;
   }
 
   constexpr polymorphic& operator=(polymorphic&& other) noexcept(
-      allocator_traits::propagate_on_container_move_assignment::value) {
+      allocator_traits::propagate_on_container_move_assignment::value ||
+      allocator_traits::is_always_equal::value) {
     if (this == &other) return *this;
-    assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     if constexpr (allocator_traits::propagate_on_container_move_assignment::
                       value) {
       if (alloc_ != other.alloc_) {
         reset();  // using current allocator.
-        alloc = other.alloc_;
-        T* mem = allocator_traits::allocate(alloc_, 1);
-        try {
-          allocator_traits::construct(alloc_, mem, std::move(*other));
-          p_ = mem;
-        } catch (...) {
-          allocator_traits::deallocate(alloc_, mem, 1);
-          throw;
-        }
-      } else {
-        reset();
-        T* mem = allocator_traits::allocate(alloc_, 1);
-        try {
-          allocator_traits::construct(alloc_, mem, std::move(*other));
-          p_ = mem;
-        } catch (...) {
-          allocator_traits::deallocate(alloc_, mem, 1);
-          throw;
-        }
+        alloc_ = other.alloc_;
       }
-    } else /* constexpr*/ {
-      reset();
-      T* mem = allocator_traits::allocate(alloc_, 1);
-      try {
-        allocator_traits::construct(alloc_, mem, std::move(*other));
-        p_ = mem;
-      } catch (...) {
-        allocator_traits::deallocate(alloc_, mem, 1);
-        throw;
-      }
+    }
+    reset();  // We may not have reset above and it's a no-op if valueless.
+    if (alloc_ == other.alloc_) {
+      std::swap(cb_, other.cb_);
+    } else {
+      cb_ = other.cb_->clone(alloc_);
     }
     return *this;
   }
