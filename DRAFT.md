@@ -1427,6 +1427,16 @@ outside of tests.
 
 A converting constructor could be added in a future version of the C++ standard.
 
+### Comparisons returning `auto`
+
+We opt to return `auto` from comparsion operators on `indirect<T>` so that the
+return type perfectly matches that of the underlying comparison for `T`. While
+deferring the return typ to the underlying type does support unusual
+user-defined comparsion operators, we prefer to do so rather than impose
+requirements on the user-defined operators for consistency. Adoption of indirect
+or moving an object onto the heap should not be impeded by unusual choices for
+the return type of comparison operators on user-defined types.
+
 ### Small Buffer Optimisation
 
 It is possible to implement `polymorphic` with a small buffer optimisation,
