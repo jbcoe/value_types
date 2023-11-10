@@ -1291,13 +1291,14 @@ A C++20 reference implementation of this proposal is available on GitHub at
 
 ## Acknowledgements
 
-The authors would like to thank Andrew Bennieston, Bengt Gustafsson, Casey
-Carter, Rostislav Khlebnikov, Daniel Krügler, David Krauss, Ed Catmur, Geoff
-Romer, Germán Diago, Jonathan Wakely, Kilian Henneberger, LanguageLawyer, Louis
-Dionne, Maciej Bogus, Malcolm Parsons, Matthew Calabrese, Nathan Myers, Neelofer
-Banglawala, Nevin Liber, Nina Ranns, Patrice Roy, Roger Orr, Stephan T Lavavej,
-Stephen Kelly, Thomas Koeppe, Thomas Russell, Tom Hudson, Tomasz Kamiński, Tony
-van Eerd and Ville Voutilainen for suggestions and useful discussion.
+The authors would like to thank Andrew Bennieston, Josh Berne, Bengt Gustafsson,
+Casey Carter, Rostislav Khlebnikov, Daniel Krügler, David Krauss, Ed Catmur,
+Geoff Romer, Germán Diago, Jonathan Wakely, Kilian Henneberger, LanguageLawyer,
+Louis Dionne, Maciej Bogus, Malcolm Parsons, Matthew Calabrese, Nathan Myers,
+Neelofer Banglawala, Nevin Liber, Nina Ranns, Patrice Roy, Roger Orr, Stephan T
+Lavavej, Stephen Kelly, Thomas Koeppe, Thomas Russell, Tom Hudson, Tomasz
+Kamiński, Tony van Eerd and Ville Voutilainen for suggestions and useful
+discussion.
 
 ## References
 
