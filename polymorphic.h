@@ -257,9 +257,24 @@ class polymorphic {
       allocator_traits::propagate_on_container_swap::value ||
       allocator_traits::is_always_equal::value) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
-    std::swap(cb_, other.cb_);
+
     if constexpr (allocator_traits::propagate_on_container_swap::value) {
-      std::swap(alloc_, other.alloc_);
+      if (alloc_ != other.alloc_) {
+        // Worst case - oh what do we do???
+        return;
+      }
+    }
+    if (alloc_ = other.alloc_) {
+      std::swap(cb_, other.cb_);
+    } else {
+      // use `this` just to make code layout nicer.
+      auto new_this = std::unique_ptr(other.cb_->clone(this->alloc_));
+      auto new_other = std::unique_ptr(this->cb_->clone(other.alloc_));
+
+      this->reset();
+      other.reset();
+      this->cb_ = new_this.release();
+      other.cb_ = new_other.release();
     }
   }
 
