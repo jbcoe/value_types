@@ -255,15 +255,16 @@ propagates const and is allocator aware.
   r-value qualified versions of `operator*` are not provided.
 
 * Like `vector`, `indirect` owns an object created by an allocator. The move
-  constructor, move assignment operator, member swap, and non-member swap for
-  `vector` are conditionally noexcept on properties of the allocator. Thus for
-  `indirect`, the move constructor, move assignment operator, member swap, and
-  non-member swap for `indirect` are conditionally noexcept on properties of the
-  allocator (Allocator instances may have different underlying memory resources,
-  it's not possible for an allocator with one memory resource to delete an
-  object in another memory resource. When allocators have different underlying
-  memory resources, move and swap necessitate the allocation of memory and
-  cannot be marked noexcept.).
+  constructor and move assignment operator for `vector` are conditionally
+  noexcept on properties of the allocator. Thus for `indirect`, the move
+  constructor and move assignment operator for `indirect` are conditionally
+  noexcept on properties of the allocator (Allocator instances may have
+  different underlying memory resources, it's not possible for an allocator with
+  one memory resource to delete an object in another memory resource. When
+  allocators have different underlying memory resources, move necessitates the
+  allocation of memory and cannot be marked noexcept.). Like `vector`,
+  `indirect` marks member and non-member swap as noexcept and requires
+  allocators to be equal.
 
 * Like `optional`, `indirect` knows the type of the owned object so forwards
   comparison operators, hash to the underlying object.
@@ -292,11 +293,11 @@ propagates const and is allocator aware.
   `operator*` are provided.
 
 * Like `vector`, `polymorphic` owns an object created by an allocator. The move
-  constructor, move assignment operator, member swap, and non-member swap for
-  `vector` are conditionally noexcept on properties of the allocator. Thus for
-  `polymorphic`, the move constructor, move assignment operator, member swap,
-  and non-member swap for `polymorphic` are conditionally noexcept on properties
-  of the allocator.
+  constructor and move assignment operator for `vector` are conditionally
+  noexcept on properties of the allocator. Thus for `polymorphic`, the move
+  constructor and move assignment operator for `polymorphic` are conditionally
+  noexcept on properties of the allocator. Like `vector`, `polymorphic` marks
+  member and non-member swap as noexcept and requires allocators to be equal.
 
 * Like `unique_ptr`, `polymorphic` does not know the type of the owned object
   (it could be an instance of a derived type). As a result `polymorphic` cannot
@@ -489,9 +490,9 @@ class indirect {
 
   constexpr allocator_type get_allocator() const noexcept;
 
-  constexpr void swap(indirect& other) noexcept(see below);
+  constexpr void swap(indirect& other) noexcept;
 
-  friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept(see below);
+  friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept;
 
   template <class U, class AA>
   friend constexpr auto operator==(
@@ -747,9 +748,7 @@ constexpr allocator_type get_allocator() const noexcept;
 #### X.Y.7 Swap [indirect.swap]
 
 ```c++
-constexpr void swap(indirect& other) noexcept(
-    allocator_traits<Allocator>::propagate_on_container_swap::value ||
-    allocator_traits<Allocator>::is_always_equal::value);
+constexpr void swap(indirect& other) noexcept;
 ```
 
 * _Preconditions_: `*this` is not valueless, `other` is not valueless.
@@ -759,9 +758,7 @@ constexpr void swap(indirect& other) noexcept(
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
 ```c++
-constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
-    allocator_traits<Allocator>::propagate_on_container_swap::value ||
-    allocator_traits<Allocator>::is_always_equal::value);
+constexpr void swap(indirect& lhs, indirect& rhs) noexcept;
 ```
 
 * _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
@@ -1052,9 +1049,9 @@ class polymorphic {
 
   constexpr allocator_type get_allocator() const noexcept;
 
-  constexpr void swap(polymorphic& other) noexcept(see below);
+  constexpr void swap(polymorphic& other) noexcept;
 
-  friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(see below);
+  friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept;
 };
 ```
 
@@ -1229,9 +1226,7 @@ constexpr allocator_type get_allocator() const noexcept;
 #### X.Z.7 Swap [polymorphic.swap]
 
 ```c++
-constexpr void swap(polymorphic& other) noexcept(
-    allocator_traits<Allocator>::propagate_on_container_swap::value ||
-    allocator_traits<Allocator>::is_always_equal::value);
+constexpr void swap(polymorphic& other) noexcept;
 ```
 
 * _Preconditions_: `*this` is not valueless, `other` is not valueless.
@@ -1241,9 +1236,7 @@ constexpr void swap(polymorphic& other) noexcept(
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
 ```c++
-constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(
-    allocator_traits<Allocator>::propagate_on_container_swap::value ||
-    allocator_traits<Allocator>::is_always_equal::value);
+constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept;
 ```
 
 * _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
