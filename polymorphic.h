@@ -264,22 +264,23 @@ class polymorphic {
       std::swap(alloc_, other.alloc_);
       std::swap(cb_, other.cb_);
       return;
-    }
-    if (alloc_ == other.alloc_) {
-      std::swap(cb_, other.cb_);
     } else {
-      // We need to create new control blocks that the respective allocators can
-      // delete.
+      if (alloc_ == other.alloc_) {
+        std::swap(cb_, other.cb_);
+      } else {
+        // We need to create new control blocks that the respective allocators
+        // can delete.
 
-      // Use `this` just to make code layout nicer.
-      std::unique_ptr<cblock_t> new_this(other.cb_->clone(this->alloc_));
-      std::unique_ptr<cblock_t> new_other(this->cb_->clone(other.alloc_));
+        // Use `this` just to make code layout nicer.
+        std::unique_ptr<cblock_t> new_this(other.cb_->clone(this->alloc_));
+        std::unique_ptr<cblock_t> new_other(this->cb_->clone(other.alloc_));
 
-      // Destroy the original control blocks with their original allocators.
-      this->cb_->destroy(this->alloc_);
-      other.cb_->destroy(other.alloc_);
-      this->cb_ = new_this.release();
-      other.cb_ = new_other.release();
+        // Destroy the original control blocks with their original allocators.
+        this->cb_->destroy(this->alloc_);
+        other.cb_->destroy(other.alloc_);
+        this->cb_ = new_this.release();
+        other.cb_ = new_other.release();
+      }
     }
   }
 

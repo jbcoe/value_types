@@ -195,22 +195,23 @@ class indirect {
       std::swap(alloc_, other.alloc_);
       std::swap(p_, other.p_);
       return;
-    }
-    if (alloc_ == other.alloc_) {
-      std::swap(p_, other.p_);
     } else {
-      // We need to create new p's that the respective allocators can
-      // delete.
+      if (alloc_ == other.alloc_) {
+        std::swap(p_, other.p_);
+      } else {
+        // We need to create new p's that the respective allocators can
+        // delete.
 
-      // Use `this` just to make code layout nicer.
-      std::unique_ptr<T> new_this(construct_from(this->alloc_, *other.p_));
-      std::unique_ptr<T> new_other(construct_from(other.alloc_, *this->p_));
+        // Use `this` just to make code layout nicer.
+        std::unique_ptr<T> new_this(construct_from(this->alloc_, *other.p_));
+        std::unique_ptr<T> new_other(construct_from(other.alloc_, *this->p_));
 
-      // Destroy the original p's with their original allocators.
-      destroy_with(this->alloc_, this->p_);
-      destroy_with(other.alloc_, other.p_);
-      this->p_ = new_this.release();
-      other.p_ = new_other.release();
+        // Destroy the original p's with their original allocators.
+        destroy_with(this->alloc_, this->p_);
+        destroy_with(other.alloc_, other.p_);
+        this->p_ = new_this.release();
+        other.p_ = new_other.release();
+      }
     }
   }
 
