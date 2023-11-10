@@ -34,6 +34,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace xyz {
 
+[[noreturn]] inline void unreachable() { std::terminate(); }  // LCOV_EXCL_LINE
+
 template <class T, class A>
 class indirect;
 
@@ -184,9 +186,7 @@ class indirect {
 
   constexpr allocator_type get_allocator() const noexcept { return alloc_; }
 
-  constexpr void swap(indirect& other) noexcept(
-      allocator_traits::propagate_on_container_swap::value ||
-      allocator_traits::is_always_equal::value) {
+  constexpr void swap(indirect& other) noexcept {
     assert(p_ != nullptr);        // LCOV_EXCL_LINE
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
 
@@ -199,24 +199,12 @@ class indirect {
     if (alloc_ == other.alloc_) {
       std::swap(p_, other.p_);
     } else {
-      // We need to create new p's that the respective allocators can
-      // delete.
-
-      // Use `this` just to make code layout nicer.
-      std::unique_ptr<T> new_this(construct_from(this->alloc_, *other.p_));
-      std::unique_ptr<T> new_other(construct_from(other.alloc_, *this->p_));
-
-      // Destroy the original p's with their original allocators.
-      destroy_with(this->alloc_, this->p_);
-      destroy_with(other.alloc_, other.p_);
-      this->p_ = new_this.release();
-      other.p_ = new_other.release();
+      assert(false && "Cannot swap indirect objects with non-equal allocators");
+      unreachable();  // LCOV_EXCL_LINE
     }
   }
 
-  friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
-      allocator_traits::propagate_on_container_swap::value ||
-      allocator_traits::is_always_equal::value) {
+  friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept {
     lhs.swap(rhs);
   }
 
