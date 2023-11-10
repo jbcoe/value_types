@@ -710,7 +710,9 @@ constexpr allocator_type get_allocator() const noexcept;
 #### X.Y.7 Swap [indirect.swap]
 
 ```c++
-constexpr void swap(indirect& other) noexcept;
+constexpr void swap(indirect& other) noexcept(
+  allocator_traits::propagate_on_container_swap::value
+  || allocator_traits::is_always_equal::value);
 ```
 
 * _Preconditions_: `*this` is not valueless, `other` is not valueless.
@@ -726,14 +728,10 @@ constexpr void swap(indirect& other) noexcept;
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
 ```c++
-constexpr void swap(indirect& lhs, indirect& rhs) noexcept;
+constexpr void swap(indirect& lhs, indirect& rhs);
 ```
 
-* _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
-
-* _Effects_: Swaps the objects owned by `lhs` and `rhs`.
-
-* _Remarks_: Does not call `swap` on the owned objects directly.
+* _Effects_: Equivalent to `lhs.swap(rhs)`.
 
 #### X.Y.8 Relational operators [indirect.rel]
 
@@ -1038,9 +1036,9 @@ class polymorphic {
 
   constexpr allocator_type get_allocator() const noexcept;
 
-  constexpr void swap(polymorphic& other) noexcept;
+  constexpr void swap(polymorphic& other) noexcept(see below);
 
-  friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept;
+  friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(see below);
 };
 ```
 
@@ -1225,7 +1223,9 @@ constexpr allocator_type get_allocator() const noexcept;
 #### X.Z.7 Swap [polymorphic.swap]
 
 ```c++
-constexpr void swap(polymorphic& other) noexcept;
+constexpr void swap(polymorphic& other) noexcept(
+  allocator_traits::propagate_on_container_swap::value
+  || allocator_traits::is_always_equal::value);
 ```
 
 * _Preconditions_: `*this` is not valueless, `other` is not valueless.
@@ -1241,12 +1241,10 @@ constexpr void swap(polymorphic& other) noexcept;
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
 ```c++
-constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept;
+constexpr void swap(polymorphic& lhs, polymorphic& rhs);
 ```
 
-* _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
-
-* _Effects_: Swaps the objects owned by `lhs` and `rhs`.
+* _Effects_: Equivalent to `lhs.swap(rhs)`.
 
 #### X.Z.8 Optional support [polymorphic.optional]
 
