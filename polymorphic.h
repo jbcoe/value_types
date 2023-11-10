@@ -36,7 +36,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace xyz {
 
-[[noreturn]] inline void unreachable() { std::terminate(); }  // LCOV_EXCL_LINE
+[[noreturn]] inline void unreachable() {  // LCOV_EXCL_LINE
+#if (__cpp_lib_unreachable >= 202202L)
+  std::unreachable();  // LCOV_EXCL_LINE
+#elif defined(_MSC_VER)
+  __assume(false);  // LCOV_EXCL_LINE
+#else
+  __builtin_unreachable();  // LCOV_EXCL_LINE
+#endif
+}
 
 struct NoPolymorphicSBO {};
 
@@ -264,13 +272,12 @@ class polymorphic {
       std::swap(alloc_, other.alloc_);
       std::swap(cb_, other.cb_);
       return;
-    }
-    if (alloc_ == other.alloc_) {
-      std::swap(cb_, other.cb_);
-    } else {
-      assert(false &&
-             "Cannot swap polymorphic values with non-equal allocators");
-      unreachable();  // LCOV_EXCL_LINE
+    } else /* constexpr */ {
+      if (alloc_ == other.alloc_) {
+        std::swap(cb_, other.cb_);
+      } else {
+        unreachable();  // LCOV_EXCL_LINE
+      }
     }
   }
 

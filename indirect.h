@@ -34,7 +34,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace xyz {
 
-[[noreturn]] inline void unreachable() { std::terminate(); }  // LCOV_EXCL_LINE
+[[noreturn]] inline void unreachable() {  // LCOV_EXCL_LINE
+#if (__cpp_lib_unreachable >= 202202L)
+  std::unreachable();  // LCOV_EXCL_LINE
+#elif defined(_MSC_VER)
+  __assume(false);  // LCOV_EXCL_LINE
+#else
+  __builtin_unreachable();  // LCOV_EXCL_LINE
+#endif
+}
 
 template <class T, class A>
 class indirect;
@@ -109,6 +117,7 @@ class indirect {
     if (this == &other) return *this;
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     static_assert(std::is_copy_constructible_v<T>);
+    static_assert(std::is_copy_assignable_v<T>);
     if constexpr (allocator_traits::propagate_on_container_copy_assignment::
                       value) {
       if (alloc_ != other.alloc_) {
@@ -117,11 +126,9 @@ class indirect {
       }
     }
     if (alloc_ == other.alloc_) {
-      if constexpr (std::is_copy_assignable_v<T>) {
-        if (p_ != nullptr) {
-          *p_ = *other.p_;
-          return *this;
-        }
+      if (p_ != nullptr) {
+        *p_ = *other.p_;
+        return *this;
       }
     }
     reset();  // We may not have reset above and it's a no-op if valueless.
@@ -195,12 +202,12 @@ class indirect {
       std::swap(alloc_, other.alloc_);
       std::swap(p_, other.p_);
       return;
-    }
-    if (alloc_ == other.alloc_) {
-      std::swap(p_, other.p_);
-    } else {
-      assert(false && "Cannot swap indirect values with non-equal allocators");
-      unreachable();  // LCOV_EXCL_LINE
+    } else /* constexpr */ {
+      if (alloc_ == other.alloc_) {
+        std::swap(p_, other.p_);
+      } else {
+        unreachable();  // LCOV_EXCL_LINE
+      }
     }
   }
 
