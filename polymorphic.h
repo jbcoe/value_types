@@ -91,8 +91,7 @@ class direct_control_block final : public control_block<T, A> {
 
 template <class T, class A = std::allocator<T>>
 class polymorphic {
-  using cblock_t = detail::control_block<T, A>;
-  cblock_t* cb_;
+  detail::control_block<T, A>* cb_;
 
 #if defined(_MSC_VER)
   [[msvc::no_unique_address]] A alloc_;
@@ -193,37 +192,36 @@ class polymorphic {
   constexpr ~polymorphic() { reset(); }
 
   constexpr polymorphic& operator=(const polymorphic& other) {
-    if (this == &other) return *this;
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
-    if constexpr (allocator_traits::propagate_on_container_copy_assignment::
-                      value) {
-      if (alloc_ != other.alloc_) {
-        reset();  // using current allocator.
+    if (this != &other) {
+      if constexpr (allocator_traits::propagate_on_container_copy_assignment::
+                        value) {
         alloc_ = other.alloc_;
+        polymorphic tmp(std::allocator_arg, alloc_, other);
+        swap(tmp);
+      } else {
+        polymorphic tmp(other);
+        this->swap(tmp);
       }
     }
-    reset();  // We may not have reset above and it's a no-op if valueless.
-    cb_ = other.cb_->clone(alloc_);
     return *this;
   }
 
   constexpr polymorphic& operator=(polymorphic&& other) noexcept(
-      allocator_traits::propagate_on_container_move_assignment::value ||
-      allocator_traits::is_always_equal::value) {
-    if (this == &other) return *this;
+      allocator_traits::propagate_on_container_move_assignment::value) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
+    reset();
     if constexpr (allocator_traits::propagate_on_container_move_assignment::
                       value) {
-      if (alloc_ != other.alloc_) {
-        reset();  // using current allocator.
-        alloc_ = other.alloc_;
-      }
-    }
-    reset();  // We may not have reset above and it's a no-op if valueless.
-    if (alloc_ == other.alloc_) {
-      std::swap(cb_, other.cb_);
+      alloc_ = other.alloc_;
+      cb_ = std::exchange(other.cb_, nullptr);
     } else {
-      cb_ = other.cb_->clone(alloc_);
+      if (alloc_ == other.alloc_) {
+        cb_ = std::exchange(other.cb_, nullptr);
+      } else {
+        cb_ = other.cb_->clone(alloc_);
+        other.reset();
+      }
     }
     return *this;
   }
@@ -258,28 +256,9 @@ class polymorphic {
       allocator_traits::propagate_on_container_swap::value ||
       allocator_traits::is_always_equal::value) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
-
+    std::swap(cb_, other.cb_);
     if constexpr (allocator_traits::propagate_on_container_swap::value) {
-      // If allocators move with their allocated objects we can swap both.
       std::swap(alloc_, other.alloc_);
-      std::swap(cb_, other.cb_);
-      return;
-    }
-    if (alloc_ == other.alloc_) {
-      std::swap(cb_, other.cb_);
-    } else {
-      // We need to create new control blocks that the respective allocators can
-      // delete.
-
-      // Use `this` just to make code layout nicer.
-      std::unique_ptr<cblock_t> new_this(other.cb_->clone(this->alloc_));
-      std::unique_ptr<cblock_t> new_other(this->cb_->clone(other.alloc_));
-
-      // Destroy the original control blocks with their original allocators.
-      this->cb_->destroy(this->alloc_);
-      other.cb_->destroy(other.alloc_);
-      this->cb_ = new_this.release();
-      other.cb_ = new_other.release();
     }
   }
 

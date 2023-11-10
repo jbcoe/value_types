@@ -55,21 +55,42 @@ class indirect {
 
   constexpr indirect() {
     static_assert(std::is_default_constructible_v<T>);
-    p_ = construct_from(alloc_);
+    T* mem = allocator_traits::allocate(alloc_, 1);
+    try {
+      allocator_traits::construct(alloc_, mem);
+      p_ = mem;
+    } catch (...) {
+      allocator_traits::deallocate(alloc_, mem, 1);
+      throw;
+    }
   }
 
   template <class... Ts>
   explicit constexpr indirect(Ts&&... ts)
     requires std::constructible_from<T, Ts&&...>
   {
-    p_ = construct_from(alloc_, std::forward<Ts>(ts)...);
+    auto mem = allocator_traits::allocate(alloc_, 1);
+    try {
+      allocator_traits::construct(alloc_, mem, std::forward<Ts>(ts)...);
+      p_ = mem;
+    } catch (...) {
+      allocator_traits::deallocate(alloc_, mem, 1);
+      throw;
+    }
   }
 
   template <class... Ts>
   constexpr indirect(std::allocator_arg_t, const A& alloc, Ts&&... ts)
     requires std::constructible_from<T, Ts&&...>
       : alloc_(alloc) {
-    p_ = construct_from(alloc_, std::forward<Ts>(ts)...);
+    auto mem = allocator_traits::allocate(alloc_, 1);
+    try {
+      allocator_traits::construct(alloc_, mem, std::forward<Ts>(ts)...);
+      p_ = mem;
+    } catch (...) {
+      allocator_traits::deallocate(alloc_, mem, 1);
+      throw;
+    }
   }
 
   constexpr indirect(const indirect& other)
@@ -77,7 +98,14 @@ class indirect {
             other.alloc_)) {
     static_assert(std::is_copy_constructible_v<T>);
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
-    p_ = construct_from(alloc_, *other);
+    auto mem = allocator_traits::allocate(alloc_, 1);
+    try {
+      allocator_traits::construct(alloc_, mem, *other);
+      p_ = mem;
+    } catch (...) {
+      allocator_traits::deallocate(alloc_, mem, 1);
+      throw;
+    }
   }
 
   constexpr indirect(std::allocator_arg_t, const A& alloc,
@@ -85,7 +113,14 @@ class indirect {
       : alloc_(alloc) {
     static_assert(std::is_copy_constructible_v<T>);
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
-    p_ = construct_from(alloc_, *other);
+    auto mem = allocator_traits::allocate(alloc_, 1);
+    try {
+      allocator_traits::construct(alloc_, mem, *other);
+      p_ = mem;
+    } catch (...) {
+      allocator_traits::deallocate(alloc_, mem, 1);
+      throw;
+    }
   }
 
   constexpr indirect(indirect&& other) noexcept
@@ -104,48 +139,59 @@ class indirect {
   constexpr ~indirect() { reset(); }
 
   constexpr indirect& operator=(const indirect& other) {
-    if (this == &other) return *this;
-    assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     static_assert(std::is_copy_constructible_v<T>);
-    if constexpr (allocator_traits::propagate_on_container_copy_assignment::
-                      value) {
-      if (alloc_ != other.alloc_) {
-        reset();  // using current allocator.
+    assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
+    if (this != &other) {
+      if constexpr (std::is_copy_assignable_v<T>) {
+        if (p_ == nullptr) {
+          T* mem = allocator_traits::allocate(alloc_, 1);
+          try {
+            allocator_traits::construct(alloc_, mem, *other);
+            p_ = mem;
+          } catch (...) {
+            allocator_traits::deallocate(alloc_, mem, 1);
+            throw;
+          }
+        } else {
+          *p_ = *other.p_;
+        }
+      } else {
+        indirect tmp(other);
+        this->swap(tmp);
+      }
+      if constexpr (allocator_traits::propagate_on_container_copy_assignment::
+                        value) {
         alloc_ = other.alloc_;
       }
     }
-    if (alloc_ == other.alloc_) {
-      if constexpr (std::is_copy_assignable_v<T>) {
-        if (p_ != nullptr) {
-          *p_ = *other.p_;
-          return *this;
-        }
-      }
-    }
-    reset();  // We may not have reset above and it's a no-op if valueless.
-    p_ = construct_from(alloc_, *other);
     return *this;
   }
 
   constexpr indirect& operator=(indirect&& other) noexcept(
       allocator_traits::propagate_on_container_move_assignment::value ||
       allocator_traits::is_always_equal::value) {
-    if (this == &other) return *this;
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
-    static_assert(std::is_copy_constructible_v<T>);
-
-    if constexpr (allocator_traits::propagate_on_container_move_assignment::
-                      value) {
-      if (alloc_ != other.alloc_) {
-        reset();  // using current allocator.
+    if (this != &other) {
+      reset();
+      if constexpr (allocator_traits::propagate_on_container_move_assignment::
+                        value) {
         alloc_ = other.alloc_;
+        p_ = std::exchange(other.p_, nullptr);
+      } else {
+        if (alloc_ == other.alloc_) {
+          p_ = std::exchange(other.p_, nullptr);
+        } else {
+          T* mem = allocator_traits::allocate(alloc_, 1);
+          try {
+            allocator_traits::construct(alloc_, mem, *other);
+            p_ = mem;
+            other.reset();
+          } catch (...) {
+            allocator_traits::deallocate(alloc_, mem, 1);
+            throw;
+          }
+        }
       }
-    }
-    reset();  // We may not have reset above and it's a no-op if valueless.
-    if (alloc_ == other.alloc_) {
-      std::swap(p_, other.p_);
-    } else {
-      p_ = construct_from(alloc_, std::move(*other));
     }
     return *this;
   }
@@ -189,28 +235,9 @@ class indirect {
       allocator_traits::is_always_equal::value) {
     assert(p_ != nullptr);        // LCOV_EXCL_LINE
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
-
+    std::swap(p_, other.p_);
     if constexpr (allocator_traits::propagate_on_container_swap::value) {
-      // If allocators move with their allocated objects we can swap both.
       std::swap(alloc_, other.alloc_);
-      std::swap(p_, other.p_);
-      return;
-    }
-    if (alloc_ == other.alloc_) {
-      std::swap(p_, other.p_);
-    } else {
-      // We need to create new p's that the respective allocators can
-      // delete.
-
-      // Use `this` just to make code layout nicer.
-      std::unique_ptr<T> new_this(construct_from(this->alloc_, *other.p_));
-      std::unique_ptr<T> new_other(construct_from(other.alloc_, *this->p_));
-
-      // Destroy the original p's with their original allocators.
-      destroy_with(this->alloc_, this->p_);
-      destroy_with(other.alloc_, other.p_);
-      this->p_ = new_this.release();
-      other.p_ = new_other.release();
     }
   }
 
@@ -309,25 +336,9 @@ class indirect {
 
   constexpr void reset() noexcept {
     if (p_ == nullptr) return;
-    destroy_with(alloc_, p_);
+    allocator_traits::destroy(alloc_, p_);
+    allocator_traits::deallocate(alloc_, p_, 1);
     p_ = nullptr;
-  }
-
-  template <typename... Ts>
-  static T* construct_from(A alloc, Ts&&... ts) {
-    T* mem = allocator_traits::allocate(alloc, 1);
-    try {
-      allocator_traits::construct(alloc, mem, std::forward<Ts>(ts)...);
-      return mem;
-    } catch (...) {
-      allocator_traits::deallocate(alloc, mem, 1);
-      throw;
-    }
-  }
-
-  static void destroy_with(A alloc, T* p) {
-    allocator_traits::destroy(alloc, p);
-    allocator_traits::deallocate(alloc, p, 1);
   }
 };
 
