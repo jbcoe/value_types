@@ -276,8 +276,6 @@ class polymorphic {
       if (alloc_ == other.alloc_) {
         std::swap(cb_, other.cb_);
       } else {
-        assert(false &&
-               "Cannot swap polymorphic values with non-equal allocators");
         unreachable();  // LCOV_EXCL_LINE
       }
     }
