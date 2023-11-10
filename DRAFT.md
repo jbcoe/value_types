@@ -230,12 +230,11 @@ TODO
 
 ### Supporting `operator()` `operator[]`
 
-Neither `indirect` nor `polymorphic` support `operator()` or `operator[]`. These
-operators cannot be implemented by a class using `=default` and cannot, in
-general, be meaningfully implemented for a composite by aggregating over its
-components. These functions are not core to the design of either class template;
-both could be added as non-breaking changes in a later revision of the C++
-standard if required.
+There's no need for `indirect` or `polymorphic` to provide a function call or an
+indexing operator. Users who wish to do that can just access the value and call
+its operator. Furthermore, unlike comparisons, function calls or indexing
+operators don't compose further; for example, a composite wouldn't be able to
+automatically generate a composited `operator()` or an `operator[]`.
 
 ### Member function `emplace`
 
