@@ -58,29 +58,23 @@ target_sources(polymorphic
 vt_add_library(
     NAME polymorphic_inline_vtable
     ALIAS value_types::polymorphic_inline_vtable
+    DEFINITIONS XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
 )
 target_sources(polymorphic_inline_vtable
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/polymorphic_inline_vtable.h>
 )
-target_compile_definitions(polymorphic_inline_vtable
-    INTERFACE
-        XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
-)
 
 vt_add_library(
     NAME polymorphic_sbo
     ALIAS value_types::polymorphic_sbo
+    DEFINITIONS XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
 )
 target_sources(polymorphic_sbo
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/polymorphic_sbo.h>
-)
-target_compile_definitions(polymorphic_sbo
-    INTERFACE
-        XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
 )
 
 if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})

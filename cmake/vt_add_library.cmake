@@ -15,6 +15,7 @@ and allows configuration for common optional settings
   vt_add_library(
       [NAME <name>]
       [ALIAS <alias>]
+      [DEFINITIONS <definitions...>]
   )
    -- Generates library targets with default build directories and install options.
 
@@ -23,6 +24,9 @@ and allows configuration for common optional settings
 
   ``ALIAS``
     The ``ALIAS`` option is required to provide the external name for the library.
+
+  ``DEFINITIONS``
+    The ``DEFINITIONS`` option provides a list of compile definitions.
 
 #]=======================================================================]
 function(vt_add_library)
@@ -48,4 +52,11 @@ function(vt_add_library)
         INTERFACE
             cxx_std_20
     )
+    if (VALUE_DEFINITIONS)
+        target_compile_definitions(polymorphic_sbo
+            INTERFACE
+                ${VALUE_DEFINITIONS}
+        )
+    endif (VALUE_DEFINITIONS)
+
 endfunction()
