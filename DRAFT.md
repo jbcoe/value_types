@@ -167,8 +167,8 @@ move. The null state is not intended to be observable to the user. There is no
 `operator bool` or `has_value` member function. Accessing the value of an
 `indirect` or `polymorphic` after it has been moved from is erroneous behaviour.
 We provide a `valueless_after_move` member function that returns `true` if an
-object is in a valueless state. This allows explicit checks for the valueless state
-in cases where it cannot be verified statically.
+object is in a valueless state. This allows explicit checks for the valueless
+state in cases where it cannot be verified statically.
 
 Without a null state, moving `indirect` or `polymorphic` would require
 allocation and moving from the owned object. This would be expensive and would
@@ -177,11 +177,11 @@ move to be implemented cheaply without requiring the owned object to be
 moveable.
 
 Where a nullable `indirect` or `polymorphic` is required, using `std::optional`
-is recommended. This may become common practice since `indirect`
-and `polymorphic` can replace smart pointers in composite classes, where they 
-are currently used to (mis)represent component objects. Putting `T` onto the
-free store should not make it nullable. Nullability must be explicitly opted into
-by using `std::optional<indirect<T>>` or `std::optional<polymorphic<T>>`.
+is recommended. This may become common practice since `indirect` and
+`polymorphic` can replace smart pointers in composite classes, where they are
+currently used to (mis)represent component objects. Putting `T` onto the free
+store should not make it nullable. Nullability must be explicitly opted into by
+using `std::optional<indirect<T>>` or `std::optional<polymorphic<T>>`.
 
 `std::optional<>` is specialized for `indirect<>` and `polymorphic<>` so they
 incur no additional overhead.
@@ -237,12 +237,12 @@ propagates const and is allocator aware.
   noexcept on properties of the allocator. Thus for `indirect`, the move
   constructor and move assignment operator for `indirect` are conditionally
   noexcept on properties of the allocator (Allocator instances may have
-  different underlying memory resources, it is not possible for an allocator with
-  one memory resource to delete an object in another memory resource. When
+  different underlying memory resources, it is not possible for an allocator
+  with one memory resource to delete an object in another memory resource. When
   allocators have different underlying memory resources, move necessitates the
-  allocation of memory and cannot be marked noexcept). Like `vector`,
-  `indirect` marks member and non-member swap as noexcept and requires
-  allocators to be equal.
+  allocation of memory and cannot be marked noexcept). Like `vector`, `indirect`
+  marks member and non-member swap as noexcept and requires allocators to be
+  equal.
 
 * Like `optional`, `indirect` knows the type of the owned object so forwards
   comparison operators and hash to the underlying object.
@@ -364,24 +364,24 @@ either `allocator_type::value_type` or an internal type used by the indirect
 value.
 
 Copy constructors for an indirect value obtain an allocator by calling
-`allocator_traits<allocator_type>​::​select_on_container_copy_construction` on
+`allocator_traits<allocator_type>::select_on_container_copy_construction` on
 the allocator belonging to the indirect value being copied. Move constructors
 obtain an allocator by move construction from the allocator belonging to the
 container being moved. Such move construction of the allocator shall not exit
 via an exception. All other constructors for these container types take a `const
-allocator_type& argument`. [Note 3: If an invocation of a constructor uses the
+allocator_type& argument`. [Note 3:If an invocation of a constructor uses the
 default value of an optional allocator argument, then the allocator type must
-support value-initialization. — end note] A copy of this allocator is used for
+support value-initialization.  end note] A copy of this allocator is used for
 any memory allocation and element construction performed by these constructors
 and by all member functions during the lifetime of each indirect value object,
 or until the allocator is replaced. The allocator may be replaced only via
 assignment or swap(). Allocator replacement is performed by copy assignment,
 move assignment, or swapping of the allocator only if (64.1)
-`allocator_traits<allocator_type>​::​propagate_on_container_copy_assignment​::​value`,
+`allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value`,
 (64.2)
-`allocator_traits<allocator_type>​::​propagate_on_container_move_assignment​::​value`,
+`allocator_traits<allocator_type>::propagate_on_container_move_assignment::value`,
 or (64.3)
-`allocator_traits<allocator_type>​::​propagate_on_container_swap​::​value` is
+`allocator_traits<allocator_type>::propagate_on_container_swap::value` is
 true within the implementation of the corresponding indirect value operation.
 
 The template parameter `T` of `indirect` must be a non-union class type.
@@ -641,7 +641,7 @@ constexpr indirect& operator=(const indirect& other);
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: If
-  `allocator_traits<allocator_type>​::​propagate_on_container_copy_assignment​::​value
+  `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value
   == true`, `allocator` is set to the allocator of `other`. If allocator is not
   changed, `std::is_copy_assignable_v<T>` is true, and `*this` is not valueless,
   copy assigns the owned object in `*this` from the owned object in `other`.
@@ -660,7 +660,7 @@ _Mandates_: `is_move_constructible_v<T>`is true.
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: If
-  `allocator_traits<allocator_type>​::​propagate_on_container_move_assignment​::​value
+  `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value
   == true`, `allocator` is set to the allocator of `other`. If allocator is
   propagated or is equal to the allocator of `other`, destroys the owned object,
   if any, then takes ownership of the object owned by `other`.  Otherwise,
@@ -718,7 +718,7 @@ constexpr void swap(indirect& other) noexcept(
 * _Preconditions_: `*this` is not valueless, `other` is not valueless.
 
 * _Effects_: Swaps the objects owned by `*this` and `other`. If
-  `allocator_traits<allocator_type>​::​propagate_on_container_swap​::​value` is
+  `allocator_traits<allocator_type>::propagate_on_container_swap::value` is
   `true`, then allocator_type shall meet the _Cpp17Swappable_ requirements and
   the allocators of `*this` and `other` shall also be exchanged by calling
   `swap` as described in [swappable.requirements]. Otherwise, the allocators
@@ -962,24 +962,24 @@ either `allocator_type::value_type` or an internal type used by the polymorphic
 value.
 
 Copy constructors for a polymorphic value obtain an allocator by calling
-`allocator_traits<allocator_type>​::​select_on_container_copy_construction` on
+`allocator_traits<allocator_type>::select_on_container_copy_construction` on
 the allocator belonging to the polymorphic value being copied. Move constructors
 obtain an allocator by move construction from the allocator belonging to the
 container being moved. Such move construction of the allocator shall not exit
 via an exception. All other constructors for these container types take a `const
-allocator_type& argument`. [Note 3: If an invocation of a constructor uses the
+allocator_type& argument`. [Note 3:If an invocation of a constructor uses the
 default value of an optional allocator argument, then the allocator type must
-support value-initialization. — end note] A copy of this allocator is used for
+support value-initialization.  end note] A copy of this allocator is used for
 any memory allocation and element construction performed by these constructors
 and by all member functions during the lifetime of each polymorphic value
 object, or until the allocator is replaced. The allocator may be replaced only
 via assignment or swap(). Allocator replacement is performed by copy assignment,
 move assignment, or swapping of the allocator only if (64.1)
-`allocator_traits<allocator_type>​::​propagate_on_container_copy_assignment​::​value`,
+`allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value`,
 (64.2)
-`allocator_traits<allocator_type>​::​propagate_on_container_move_assignment​::​value`,
+`allocator_traits<allocator_type>::propagate_on_container_move_assignment::value`,
 or (64.3)
-`allocator_traits<allocator_type>​::​propagate_on_container_swap​::​value` is
+`allocator_traits<allocator_type>::propagate_on_container_swap::value` is
 true within the implementation of the corresponding polymorphic value operation.
 
 The template parameter `T` of `polymorphic` must be a non-union class type.
@@ -1094,7 +1094,7 @@ constexpr polymorphic(const polymorphic& other);
 * _Effects_: Constructs a polymorphic owning an instance of `T` created with the
   copy constructor of the object owned by `other`. `allocator` is obtained by
   calling
-  `allocator_traits<allocator_type>​::​select_on_container_copy_construction `on
+  `allocator_traits<allocator_type>::select_on_container_copy_construction `on
   the allocator belonging to the object being copied.
 
 * _Postconditions_: `*this` is not valueless.
@@ -1175,7 +1175,7 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: If
-  `allocator_traits<allocator_type>​::​propagate_on_container_move_assignment​::​value
+  `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value
   == true`, `allocator` is set to the allocator of `other`. If allocator is
   propagated or is equal to the allocator of `other`, destroys the owned object,
   if any, then takes ownership of the object owned by `other`.  Otherwise,
@@ -1290,12 +1290,12 @@ A C++20 reference implementation of this proposal is available on GitHub at
 ## Acknowledgements
 
 The authors would like to thank Andrew Bennieston, Josh Berne, Bengt Gustafsson,
-Casey Carter, Rostislav Khlebnikov, Daniel Krügler, David Krauss, Ed Catmur,
-Geoff Romer, Germán Diago, Jonathan Wakely, Kilian Henneberger, LanguageLawyer,
+Casey Carter, Rostislav Khlebnikov, Daniel Krugler, David Krauss, Ed Catmur,
+Geoff Romer, German Diago, Jonathan Wakely, Kilian Henneberger, LanguageLawyer,
 Louis Dionne, Maciej Bogus, Malcolm Parsons, Matthew Calabrese, Nathan Myers,
 Neelofer Banglawala, Nevin Liber, Nina Ranns, Patrice Roy, Roger Orr, Stephan T
 Lavavej, Stephen Kelly, Thomas Koeppe, Thomas Russell, Tom Hudson, Tomasz
-Kamiński, Tony van Eerd and Ville Voutilainen for suggestions and useful
+Kaminski, Tony van Eerd and Ville Voutilainen for suggestions and useful
 discussion.
 
 ## References
@@ -1430,9 +1430,9 @@ the return type of comparison operators on user-defined types.
 
 ### Supporting `operator()` `operator[]`
 
-There is no need for `indirect` or `polymorphic` to provide a function call or an
-indexing operator. Users who wish to do that can just access the value and call
-its operator. Furthermore, unlike comparisons, function calls or indexing
+There is no need for `indirect` or `polymorphic` to provide a function call or
+an indexing operator. Users who wish to do that can just access the value and
+call its operator. Furthermore, unlike comparisons, function calls or indexing
 operators do not compose further; for example, a composite would not be able to
 automatically generate a composited `operator()` or an `operator[]`.
 
