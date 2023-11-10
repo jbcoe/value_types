@@ -314,7 +314,7 @@ class indirect {
   }
 
   template <typename... Ts>
-  static T* construct_from(A alloc, Ts&&... ts) {
+  constexpr static T* construct_from(A alloc, Ts&&... ts) {
     T* mem = allocator_traits::allocate(alloc, 1);
     try {
       allocator_traits::construct(alloc, mem, std::forward<Ts>(ts)...);
@@ -325,7 +325,7 @@ class indirect {
     }
   }
 
-  static void destroy_with(A alloc, T* p) {
+  constexpr static void destroy_with(A alloc, T* p) {
     allocator_traits::destroy(alloc, p);
     allocator_traits::deallocate(alloc, p, 1);
   }
