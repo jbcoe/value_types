@@ -173,15 +173,6 @@ logical state nor to the logical state of other object.
 is default constructible. Moving a value type onto the free store should not add
 or remove the ability to be default constructed.
 
-Pairwise-comparison operators, which are defined only for `indirect`, compare
-the owned objects where the owned objects can be compared: where `T` is ordered,
-`indirect<T>` is also ordered.
-
-The hash operation, which is defined only for `indirect`, hashes the owned
-object where the owned object can be hashed.
-
-We discuss why only `indirect` is comparable and hashable in an appendix.
-
 ### Unobservable null state and interaction with `std::optional`
 
 Both `indirect` and `polymorphic` have a null state that is used to implement
