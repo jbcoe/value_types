@@ -255,8 +255,9 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
         include(GoogleTest)
         gtest_discover_tests(indirect_test)
         gtest_discover_tests(polymorphic_test)
-        gtest_discover_tests(polymorphic_sbo_test)
-        gtest_discover_tests(polymorphic_inline_vtable_test)
+        # Don't run experimental tests automatically.
+        #gtest_discover_tests(polymorphic_sbo_test)
+        #gtest_discover_tests(polymorphic_inline_vtable_test)
 
         if (ENABLE_CODE_COVERAGE)
             FetchContent_Declare(
@@ -274,8 +275,9 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
             find_package(codecov)
             add_coverage(indirect_test)
             add_coverage(polymorphic_test)
-            add_coverage(polymorphic_sbo_test)
-            add_coverage(polymorphic_inline_vtable_test)
+            # Don't include experimental code in coverage.
+            # add_coverage(polymorphic_sbo_test)
+            # add_coverage(polymorphic_inline_vtable_test)
             list(APPEND LCOV_REMOVE_PATTERNS "'/usr/*'")
             coverage_evaluate()
         endif()
