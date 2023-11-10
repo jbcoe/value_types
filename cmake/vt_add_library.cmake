@@ -1,6 +1,30 @@
 include_guard(GLOBAL)
 
+#[=======================================================================[.rst:
+vt_add_library
+------------------
 
+Overview
+^^^^^^^^
+
+Project wrapper around add library which groups commonly associates patterns
+and allows configuration for common optional settings
+
+.. code-block:: cmake
+
+  vt_add_library(
+      [NAME <name>]
+      [ALIAS <alias>]
+  )
+   -- Generates library targets with default build directories and install options.
+
+  ``NAME``
+    The ``NAME`` option is required to provide the internal name for the library.
+
+  ``ALIAS``
+    The ``ALIAS`` option is required to provide the external name for the library.
+
+#]=======================================================================]
 function(vt_add_library)
     set(options)
     set(oneValueArgs NAME ALIAS)
