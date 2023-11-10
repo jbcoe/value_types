@@ -188,7 +188,7 @@ class buffer {
 
 template <class T, class A = std::allocator<T>>
 class polymorphic {
-  T* p_;
+  T* p_ = nullptr;
   std::variant<std::monostate, detail::buffer<T, A>,
                detail::control_block<T, A>*>
       storage_;
