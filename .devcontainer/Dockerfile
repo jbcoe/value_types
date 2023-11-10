@@ -4,7 +4,9 @@
 FROM ubuntu:22.04
 
 # Install gcc, clang and some supporting tools for downloading/installing later tools.
-RUN apt-get update && apt-get install -y --no-install-recommends wget g++ lcov llvm git gpg ninja-build software-properties-common unzip && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends wget lcov llvm git gpg ninja-build software-properties-common unzip && rm -rf /var/lib/apt/lists/*
+
+RUN add-apt-repository -y ppa:ubuntu-toolchain-r/test && apt-get install -y --no-install-recommends g++13
 
 # Install newer CMake from kitware.
 RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null \
