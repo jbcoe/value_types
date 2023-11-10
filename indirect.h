@@ -118,17 +118,13 @@ class indirect {
       if constexpr (std::is_copy_assignable_v<T>) {
         if (p_ != nullptr) {
           *p_ = *other.p_;
-        } else {
-          allocator_construct_from(*other);
+          return *this;
         }
-      } else /* constexpr */ {
-        reset();  // We may not have reset above and it's a no-op if valueless.
-        allocator_construct_from(*other);
       }
-    } else {
-      reset();  // We may not have reset above and it's a no-op if valueless.
-      allocator_construct_from(*other);
     }
+    reset();  // We may not have reset above and it's a no-op if valueless.
+    allocator_construct_from(*other);
+
     return *this;
   }
 
