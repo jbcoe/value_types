@@ -25,6 +25,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # Custom CMake Includes
 include(vt_add_library)
+include(vt_add_test)
 
 vt_add_library(
     NAME value_types
@@ -107,72 +108,6 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
         set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
         FetchContent_MakeAvailable(benchmark)
 
-        add_library(common_compiler_settings INTERFACE)
-        target_compile_options(common_compiler_settings
-            INTERFACE
-                $<$<CXX_COMPILER_ID:MSVC>:/EHsc>
-                $<$<CXX_COMPILER_ID:MSVC>:/W4>
-                $<$<CXX_COMPILER_ID:MSVC>:/bigobj>
-                $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:Clang>>:-Werror;-Wall;-Wno-self-assign-overloaded;-Wno-unknown-warning-option>
-        )
-        set_target_properties(common_compiler_settings PROPERTIES
-            CXX_STANDARD 20
-            CXX_STANDARD_REQUIRED YES
-            CXX_EXTENSIONS NO
-        )
-
-        add_executable(indirect_test "")
-        target_sources(indirect_test
-            PRIVATE
-                indirect_test.cc
-        )
-        target_link_libraries(indirect_test
-            PRIVATE
-                indirect
-                GTest::gtest_main
-                common_compiler_settings
-        )
-
-        add_executable(polymorphic_test "")
-        target_sources(polymorphic_test
-            PRIVATE
-                polymorphic_test.cc
-        )
-        target_link_libraries(polymorphic_test
-            PRIVATE
-                polymorphic
-                GTest::gtest_main
-                common_compiler_settings
-        )
-
-        add_executable(polymorphic_inline_vtable_test "")
-        target_sources(polymorphic_inline_vtable_test
-            PRIVATE
-                polymorphic_test.cc
-        )
-        target_link_libraries(polymorphic_inline_vtable_test
-            PRIVATE
-                polymorphic_inline_vtable
-                GTest::gtest_main
-                common_compiler_settings
-        )
-
-        add_executable(polymorphic_sbo_test "")
-        target_sources(polymorphic_sbo_test
-            PRIVATE
-                polymorphic_test.cc
-        )
-        target_compile_options(polymorphic_sbo_test
-            PRIVATE
-                $<$<CXX_COMPILER_ID:Clang>:-ftemplate-backtrace-limit=0>
-        )
-        target_link_libraries(polymorphic_sbo_test
-            PRIVATE
-                polymorphic_sbo
-                GTest::gtest_main
-                common_compiler_settings
-        )
-
         if (ENABLE_SANITIZERS)
             set(SANITIZER_FLAGS_ASAN "-fsanitize=address -fno-omit-frame-pointer")
             set(SANITIZER_FLAGS_UBSAN "-fsanitize=undefined")
@@ -215,21 +150,6 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
         endif(ENABLE_SANITIZERS)
 
         enable_testing()
-        add_test(
-            NAME indirect_test
-            COMMAND indirect_test
-            WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-        add_test(
-            NAME polymorphic_test
-            COMMAND polymorphic_test
-            WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-
-        list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/contrib)
-        include(GoogleTest)
-        gtest_discover_tests(indirect_test)
-        gtest_discover_tests(polymorphic_test)
-        gtest_discover_tests(polymorphic_sbo_test)
-        gtest_discover_tests(polymorphic_inline_vtable_test)
 
         if (ENABLE_CODE_COVERAGE)
             FetchContent_Declare(
@@ -245,13 +165,41 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
 
             set(ENABLE_COVERAGE ON CACHE BOOL "Enable coverage build." FORCE)
             find_package(codecov)
-            add_coverage(indirect_test)
-            add_coverage(polymorphic_test)
-            add_coverage(polymorphic_sbo_test)
-            add_coverage(polymorphic_inline_vtable_test)
             list(APPEND LCOV_REMOVE_PATTERNS "'/usr/*'")
+        endif()
+
+        vt_add_test(
+            NAME indirect_test
+            LINK_LIBRARIES indirect
+            FILES indirect_test.cc
+        )
+
+        vt_add_test(
+            NAME polymorphic_test
+            LINK_LIBRARIES polymorphic
+            FILES polymorphic_test.cc
+        )
+
+        vt_add_test(
+            NAME polymorphic_inline_vtable_test
+            LINK_LIBRARIES polymorphic_inline_vtable
+            FILES polymorphic_test.cc
+        )
+
+        vt_add_test(
+            NAME polymorphic_sbo_test
+            LINK_LIBRARIES polymorphic_sbo
+            FILES polymorphic_test.cc
+        )
+        target_compile_options(polymorphic_sbo_test
+            PRIVATE
+                $<$<CXX_COMPILER_ID:Clang>:-ftemplate-backtrace-limit=0>
+        )
+
+        if (ENABLE_CODE_COVERAGE)
             coverage_evaluate()
         endif()
+
     endif(${BUILD_TESTING})
 
     install(
