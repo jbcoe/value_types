@@ -216,9 +216,22 @@ Note: As the null state of `indirect` and `polymorphic` is not observable, and
 access to a moved-from object is erroneous, `std::optional` can be specialized
 by implementers to exchange pointers on move construction and assignment.
 
-### Allocators as template arguments
+### Noexcept
 
 TODO
+
+### Allocator support
+
+Both `indirect` and `polymorphic` are allocator-aware types. They must be
+suitable for use in allocator-aware composite types and containers. Existing
+allocator-aware types in the standard, such as `vector` and `map`, take an
+allocator type as a template parameter, provide `allocator_type`, and have
+constructor overloads taking an additional `allocator_type_t` and allocator
+instance as arguments. As `indirect` and `polymorphic` need to work with and in
+the same way as existing allocator-aware types, they too take an allocator type
+as a template parameter, provide `allocator_type`, and have constructor
+overloads taking an additional `allocator_type_t` and allocator instance as
+arguments.
 
 ### Modelled types
 
@@ -293,13 +306,6 @@ propagates const and is allocator aware.
   (it could be an instance of a derived type). As a result `polymorphic` cannot
   forward comparison operators, hash or formatting to the owned object.
 
-### `noexcept` and narrow contracts
-
-TODO
-
-### Operator [] and operator ()
-
-TODO
 
 ### Extra constructors and `emplace`
 
@@ -586,12 +592,13 @@ constexpr indirect& operator=(const indirect& other);
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: If `*this` is not valueless and `std::is_copy_assignable_v<T>` is
-  true, copy assigns owned object in `*this` from the owned object
-  in `other`. Otherwise if `*this` is not valueless and
+  true, copy assigns the owned object in `*this` from the owned object in
+  `other`. Otherwise if `*this` is not valueless and
   `std::is_copy_assignable_v<T>` is false, destroys the owned object, then
-  constructs a new owned object using the copy constructor of the object owned
-  by `other`. Otherwise if `*this` is valueless, constructs an owned object
-  using the copy constructor of the object owned by `other`.
+  performs allocator-construction with the stored allocator using the object
+  owned by `other`. Otherwise if `*this` is valueless, performs
+  allocator-construction using the copy constructor of the object owned by
+  `other`.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -604,7 +611,8 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: If `*this` is not valueless, destroys the owned object, then takes
-  ownership of the object owned by `other`.
+  ownership of the object owned by `other`. Otherwise, if this is valueless,
+  takes ownership of the object owned by `other`.
 
 * _Postconditions_: `*this` is not valueless. `other` is valueless.
 
@@ -1069,8 +1077,8 @@ constexpr polymorphic& operator=(const polymorphic& other);
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: If `*this` is not valueless, destroys the owned object, then
-  constructs an owned object using the (possibly derived-type) copy constructor
-  of the object owned by `other`.
+  performs allocator-construction with the stored allocator using the (possibly
+  derived-type) object owned by `other`.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -1083,7 +1091,8 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: If `*this` is not valueless, destroys the owned object, then takes
-  ownership of the object owned by `other`.
+  ownership of the object owned by `other`. Otherwise, if this is valueless,
+  takes ownership of the object owned by `other`.
 
 * _Postconditions_: `*this` is not valueless. `other` is valueless.
 
