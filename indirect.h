@@ -199,7 +199,7 @@ class indirect {
     if (alloc_ == other.alloc_) {
       std::swap(p_, other.p_);
     } else {
-      assert(false && "Cannot swap indirect objects with non-equal allocators");
+      assert(false && "Cannot swap indirect values with non-equal allocators");
       unreachable();  // LCOV_EXCL_LINE
     }
   }
