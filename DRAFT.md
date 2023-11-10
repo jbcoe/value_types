@@ -393,6 +393,27 @@ be constructed using the function
 either `allocator_type::value_type` or an internal type used by the indirect
 value.
 
+Copy constructors for an indirect value obtain an allocator by calling
+`allocator_traits<allocator_type>​::​select_on_container_copy_construction` on
+the allocator belonging to the indirect value being copied. Move constructors
+obtain an allocator by move construction from the allocator belonging to the
+container being moved. Such move construction of the allocator shall not exit
+via an exception. All other constructors for these container types take a `const
+allocator_type& argument`. [Note 3: If an invocation of a constructor uses the
+default value of an optional allocator argument, then the allocator type must
+support value-initialization. — end note] A copy of this allocator is used for
+any memory allocation and element construction performed, by these constructors
+and by all member functions, during the lifetime of each indirect value object
+or until the allocator is replaced. The allocator may be replaced only via
+assignment or swap(). Allocator replacement is performed by copy assignment,
+move assignment, or swapping of the allocator only if (64.1)
+`allocator_traits<allocator_type>​::​propagate_on_container_copy_assignment​::​value`,
+(64.2)
+`allocator_traits<allocator_type>​::​propagate_on_container_move_assignment​::​value`,
+or (64.3)
+`allocator_traits<allocator_type>​::​propagate_on_container_swap​::​value` is
+true within the implementation of the corresponding indirect value operation.
+
 The template parameter `T` of `indirect` must be a non-union class type.
 
 The template parameter `T` of `indirect` may be an incomplete type.
@@ -915,6 +936,27 @@ be constructed using the function
 `allocator_traits<allocator_type>::rebind_traits<U>::destroy`, where `U` is
 either `allocator_type::value_type` or an internal type used by the polymorphic
 value.
+
+Copy constructors for a polymorphic value obtain an allocator by calling
+`allocator_traits<allocator_type>​::​select_on_container_copy_construction` on
+the allocator belonging to the polymorphic value being copied. Move constructors
+obtain an allocator by move construction from the allocator belonging to the
+container being moved. Such move construction of the allocator shall not exit
+via an exception. All other constructors for these container types take a `const
+allocator_type& argument`. [Note 3: If an invocation of a constructor uses the
+default value of an optional allocator argument, then the allocator type must
+support value-initialization. — end note] A copy of this allocator is used for
+any memory allocation and element construction performed, by these constructors
+and by all member functions, during the lifetime of each polymorphic value
+object or until the allocator is replaced. The allocator may be replaced only
+via assignment or swap(). Allocator replacement is performed by copy assignment,
+move assignment, or swapping of the allocator only if (64.1)
+`allocator_traits<allocator_type>​::​propagate_on_container_copy_assignment​::​value`,
+(64.2)
+`allocator_traits<allocator_type>​::​propagate_on_container_move_assignment​::​value`,
+or (64.3)
+`allocator_traits<allocator_type>​::​propagate_on_container_swap​::​value` is
+true within the implementation of the corresponding polymorphic value operation.
 
 The template parameter `T` of `polymorphic` must be a non-union class type.
 
