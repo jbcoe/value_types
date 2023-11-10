@@ -294,40 +294,6 @@ propagates const and is allocator aware.
   (it could be an instance of a derived type). As a result `polymorphic` cannot
   forward comparison operators, hash or formatting to the owned object.
 
-
-### Supporting `operator()` `operator[]`
-
-There's no need for `indirect` or `polymorphic` to provide a function call or an
-indexing operator. Users who wish to do that can just access the value and call
-its operator. Furthermore, unlike comparisons, function calls or indexing
-operators don't compose further; for example, a composite wouldn't be able to
-automatically generate a composited `operator()` or an `operator[]`.
-
-### Member function `emplace`
-
-Neither `indirect` nor `polymorphic` support `emplace` as a member function.
-The member function `emplace` could be added as :
-
-```c++
-template <typename ...Ts>
-indirect::emplace(Ts&& ...ts);
-```
-
-```c++
-template <typename U, typename ...Ts>
-polymorphic::emplace(in_place_type<U>, Ts&& ...ts);
-```
-
-This would be API noise. It offers no efficiency improvement over:
-
-```c++
-some_indirect = indirect(/* arguments */);
-```
-
-```c++
-some_polymorphic = polymorphic(in_place_type<U>, /* arguments */);
-```
-
 ### `noexcept` and narrow contracts
 
 C++ library design guidelines recommend that member functions with narrow
@@ -1431,11 +1397,44 @@ A converting constructor could be added in a future version of the C++ standard.
 
 We opt to return `auto` from comparsion operators on `indirect<T>` so that the
 return type perfectly matches that of the underlying comparison for `T`. While
-deferring the return typ to the underlying type does support unusual
+deferring the return type to the underlying type does support unusual
 user-defined comparsion operators, we prefer to do so rather than impose
 requirements on the user-defined operators for consistency. Adoption of indirect
 or moving an object onto the heap should not be impeded by unusual choices for
 the return type of comparison operators on user-defined types.
+
+### Supporting `operator()` `operator[]`
+
+There's no need for `indirect` or `polymorphic` to provide a function call or an
+indexing operator. Users who wish to do that can just access the value and call
+its operator. Furthermore, unlike comparisons, function calls or indexing
+operators don't compose further; for example, a composite wouldn't be able to
+automatically generate a composited `operator()` or an `operator[]`.
+
+### Member function `emplace`
+
+Neither `indirect` nor `polymorphic` support `emplace` as a member function.
+The member function `emplace` could be added as :
+
+```c++
+template <typename ...Ts>
+indirect::emplace(Ts&& ...ts);
+```
+
+```c++
+template <typename U, typename ...Ts>
+polymorphic::emplace(in_place_type<U>, Ts&& ...ts);
+```
+
+This would be API noise. It offers no efficiency improvement over:
+
+```c++
+some_indirect = indirect(/* arguments */);
+```
+
+```c++
+some_polymorphic = polymorphic(in_place_type<U>, /* arguments */);
+```
 
 ### Small Buffer Optimisation
 
