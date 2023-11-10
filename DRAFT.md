@@ -2,7 +2,7 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-D3019R2
+D3019R3
 
 Working Group: Library Evolution, Library
 
@@ -571,7 +571,7 @@ constexpr indirect(const indirect& other);
 * _Effects_: Constructs an indirect owning an instance of `T` created with the
   copy constructor of the object owned by `other`. `allocator` is obtained by
   calling
-  `allocator_traits<allocator_type>​::​select_on_container_copy_construction `on
+  `allocator_traits<allocator_type>::select_on_container_copy_construction `on
   the allocator belonging to the object being copied.
 
 * _Postconditions_: `*this` is not valueless.
