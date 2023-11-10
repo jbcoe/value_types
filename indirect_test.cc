@@ -100,17 +100,28 @@ TEST(IndirectTest, MemberSwap) {
 
 TEST(IndirectTest, ConstPropagation) {
   struct SomeType {
-    enum class Constness { CONST, NON_CONST };
-    Constness member() { return Constness::NON_CONST; }
-    Constness member() const { return Constness::CONST; }
+    enum class Constness { LV_CONST, LV_NON_CONST, RV_CONST, RV_NON_CONST };
+    Constness member() & { return Constness::LV_NON_CONST; }
+    Constness member() const& { return Constness::LV_CONST; }
+    Constness member() && { return Constness::RV_NON_CONST; }
+    Constness member() const&& { return Constness::RV_CONST; }
   };
 
   xyz::indirect<SomeType> a;
-  EXPECT_EQ(a->member(), SomeType::Constness::NON_CONST);
-  EXPECT_EQ((*a).member(), SomeType::Constness::NON_CONST);
+  EXPECT_EQ(a->member(), SomeType::Constness::LV_NON_CONST);
+  EXPECT_EQ((*a).member(), SomeType::Constness::LV_NON_CONST);
   const auto& ca = a;
-  EXPECT_EQ(ca->member(), SomeType::Constness::CONST);
-  EXPECT_EQ((*ca).member(), SomeType::Constness::CONST);
+  EXPECT_EQ(ca->member(), SomeType::Constness::LV_CONST);
+  EXPECT_EQ((*ca).member(), SomeType::Constness::LV_CONST);
+
+  auto createConstRValueIndirect = [&]() -> auto const&& {
+    return std::move(a);
+  };
+
+  EXPECT_EQ((*xyz::indirect<SomeType>{}).member(),
+            SomeType::Constness::RV_NON_CONST);
+  EXPECT_EQ((*createConstRValueIndirect()).member(),
+            SomeType::Constness::RV_CONST);
 }
 
 TEST(IndirectTest, Hash) {
@@ -313,33 +324,6 @@ TEST(IndirectTest, CountAllocationsForCopyAssignment) {
   EXPECT_EQ(dealloc_counter, 2);
 }
 
-struct NonAssignable {
-  int value;
-  NonAssignable(int v) : value(v) {}
-  NonAssignable(const NonAssignable&) = default;
-  NonAssignable& operator=(const NonAssignable&) = delete;
-};
-
-TEST(IndirectTest, CountAllocationsForCopyAssignmentForNonAssignableT) {
-  unsigned alloc_counter = 0;
-  unsigned dealloc_counter = 0;
-  {
-    xyz::indirect<NonAssignable, TrackingAllocator<NonAssignable>> a(
-        std::allocator_arg,
-        TrackingAllocator<NonAssignable>(&alloc_counter, &dealloc_counter), 42);
-    xyz::indirect<NonAssignable, TrackingAllocator<NonAssignable>> b(
-        std::allocator_arg,
-        TrackingAllocator<NonAssignable>(&alloc_counter, &dealloc_counter),
-        101);
-    EXPECT_EQ(alloc_counter, 2);
-    EXPECT_EQ(dealloc_counter, 0);
-    b = a;  // Will allocate.
-    EXPECT_EQ(a->value, b->value);
-  }
-  EXPECT_EQ(alloc_counter, 3);
-  EXPECT_EQ(dealloc_counter, 3);
-}
-
 TEST(IndirectTest, CountAllocationsForMoveAssignment) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
@@ -361,6 +345,8 @@ TEST(IndirectTest, CountAllocationsForMoveAssignment) {
 template <typename T>
 struct NonEqualTrackingAllocator : TrackingAllocator<T> {
   using TrackingAllocator<T>::TrackingAllocator;
+  using propagate_on_container_move_assignment = std::true_type;
+
   friend bool operator==(const NonEqualTrackingAllocator&,
                          const NonEqualTrackingAllocator&) noexcept {
     return false;

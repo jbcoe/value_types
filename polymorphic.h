@@ -36,6 +36,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace xyz {
 
+[[noreturn]] inline void unreachable() {  // LCOV_EXCL_LINE
+#if (__cpp_lib_unreachable >= 202202L)
+  std::unreachable();  // LCOV_EXCL_LINE
+#elif defined(_MSC_VER)
+  __assume(false);  // LCOV_EXCL_LINE
+#else
+  __builtin_unreachable();  // LCOV_EXCL_LINE
+#endif
+}
+
 struct NoPolymorphicSBO {};
 
 namespace detail {
@@ -91,7 +101,8 @@ class direct_control_block final : public control_block<T, A> {
 
 template <class T, class A = std::allocator<T>>
 class polymorphic {
-  detail::control_block<T, A>* cb_;
+  using cblock_t = detail::control_block<T, A>;
+  cblock_t* cb_;
 
 #if defined(_MSC_VER)
   [[msvc::no_unique_address]] A alloc_;
@@ -192,36 +203,37 @@ class polymorphic {
   constexpr ~polymorphic() { reset(); }
 
   constexpr polymorphic& operator=(const polymorphic& other) {
+    if (this == &other) return *this;
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
-    if (this != &other) {
-      if constexpr (allocator_traits::propagate_on_container_copy_assignment::
-                        value) {
+    if constexpr (allocator_traits::propagate_on_container_copy_assignment::
+                      value) {
+      if (alloc_ != other.alloc_) {
+        reset();  // using current allocator.
         alloc_ = other.alloc_;
-        polymorphic tmp(std::allocator_arg, alloc_, other);
-        swap(tmp);
-      } else {
-        polymorphic tmp(other);
-        this->swap(tmp);
       }
     }
+    reset();  // We may not have reset above and it's a no-op if valueless.
+    cb_ = other.cb_->clone(alloc_);
     return *this;
   }
 
   constexpr polymorphic& operator=(polymorphic&& other) noexcept(
-      allocator_traits::propagate_on_container_move_assignment::value) {
+      allocator_traits::propagate_on_container_move_assignment::value ||
+      allocator_traits::is_always_equal::value) {
+    if (this == &other) return *this;
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
-    reset();
     if constexpr (allocator_traits::propagate_on_container_move_assignment::
                       value) {
-      alloc_ = other.alloc_;
-      cb_ = std::exchange(other.cb_, nullptr);
-    } else {
-      if (alloc_ == other.alloc_) {
-        cb_ = std::exchange(other.cb_, nullptr);
-      } else {
-        cb_ = other.cb_->clone(alloc_);
-        other.reset();
+      if (alloc_ != other.alloc_) {
+        reset();  // using current allocator.
+        alloc_ = other.alloc_;
       }
+    }
+    reset();  // We may not have reset above and it's a no-op if valueless.
+    if (alloc_ == other.alloc_) {
+      std::swap(cb_, other.cb_);
+    } else {
+      cb_ = other.cb_->clone(alloc_);
     }
     return *this;
   }
@@ -252,19 +264,24 @@ class polymorphic {
 
   constexpr allocator_type get_allocator() const noexcept { return alloc_; }
 
-  constexpr void swap(polymorphic& other) noexcept(
-      allocator_traits::propagate_on_container_swap::value ||
-      allocator_traits::is_always_equal::value) {
+  constexpr void swap(polymorphic& other) noexcept {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
-    std::swap(cb_, other.cb_);
+
     if constexpr (allocator_traits::propagate_on_container_swap::value) {
+      // If allocators move with their allocated objects we can swap both.
       std::swap(alloc_, other.alloc_);
+      std::swap(cb_, other.cb_);
+      return;
+    } else /* constexpr */ {
+      if (alloc_ == other.alloc_) {
+        std::swap(cb_, other.cb_);
+      } else {
+        unreachable();  // LCOV_EXCL_LINE
+      }
     }
   }
 
-  friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(
-      allocator_traits::propagate_on_container_swap::value ||
-      allocator_traits::is_always_equal::value) {
+  friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept {
     lhs.swap(rhs);
   }
 
