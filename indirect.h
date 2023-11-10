@@ -117,6 +117,7 @@ class indirect {
     if (this == &other) return *this;
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     static_assert(std::is_copy_constructible_v<T>);
+    static_assert(std::is_copy_assignable_v<T>);
     if constexpr (allocator_traits::propagate_on_container_copy_assignment::
                       value) {
       if (alloc_ != other.alloc_) {
@@ -125,11 +126,9 @@ class indirect {
       }
     }
     if (alloc_ == other.alloc_) {
-      if constexpr (std::is_copy_assignable_v<T>) {
-        if (p_ != nullptr) {
-          *p_ = *other.p_;
-          return *this;
-        }
+      if (p_ != nullptr) {
+        *p_ = *other.p_;
+        return *this;
       }
     }
     reset();  // We may not have reset above and it's a no-op if valueless.

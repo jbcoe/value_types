@@ -313,33 +313,6 @@ TEST(IndirectTest, CountAllocationsForCopyAssignment) {
   EXPECT_EQ(dealloc_counter, 2);
 }
 
-struct NonAssignable {
-  int value;
-  NonAssignable(int v) : value(v) {}
-  NonAssignable(const NonAssignable&) = default;
-  NonAssignable& operator=(const NonAssignable&) = delete;
-};
-
-TEST(IndirectTest, CountAllocationsForCopyAssignmentForNonAssignableT) {
-  unsigned alloc_counter = 0;
-  unsigned dealloc_counter = 0;
-  {
-    xyz::indirect<NonAssignable, TrackingAllocator<NonAssignable>> a(
-        std::allocator_arg,
-        TrackingAllocator<NonAssignable>(&alloc_counter, &dealloc_counter), 42);
-    xyz::indirect<NonAssignable, TrackingAllocator<NonAssignable>> b(
-        std::allocator_arg,
-        TrackingAllocator<NonAssignable>(&alloc_counter, &dealloc_counter),
-        101);
-    EXPECT_EQ(alloc_counter, 2);
-    EXPECT_EQ(dealloc_counter, 0);
-    b = a;  // Will allocate.
-    EXPECT_EQ(a->value, b->value);
-  }
-  EXPECT_EQ(alloc_counter, 3);
-  EXPECT_EQ(dealloc_counter, 3);
-}
-
 TEST(IndirectTest, CountAllocationsForMoveAssignment) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
