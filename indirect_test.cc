@@ -100,17 +100,28 @@ TEST(IndirectTest, MemberSwap) {
 
 TEST(IndirectTest, ConstPropagation) {
   struct SomeType {
-    enum class Constness { CONST, NON_CONST };
-    Constness member() { return Constness::NON_CONST; }
-    Constness member() const { return Constness::CONST; }
+    enum class Constness { LV_CONST, LV_NON_CONST, RV_CONST, RV_NON_CONST };
+    Constness member() & { return Constness::LV_NON_CONST; }
+    Constness member() const& { return Constness::LV_CONST; }
+    Constness member() && { return Constness::RV_NON_CONST; }
+    Constness member() const&& { return Constness::RV_CONST; }
   };
 
   xyz::indirect<SomeType> a;
-  EXPECT_EQ(a->member(), SomeType::Constness::NON_CONST);
-  EXPECT_EQ((*a).member(), SomeType::Constness::NON_CONST);
+  EXPECT_EQ(a->member(), SomeType::Constness::LV_NON_CONST);
+  EXPECT_EQ((*a).member(), SomeType::Constness::LV_NON_CONST);
   const auto& ca = a;
-  EXPECT_EQ(ca->member(), SomeType::Constness::CONST);
-  EXPECT_EQ((*ca).member(), SomeType::Constness::CONST);
+  EXPECT_EQ(ca->member(), SomeType::Constness::LV_CONST);
+  EXPECT_EQ((*ca).member(), SomeType::Constness::LV_CONST);
+
+  auto createConstRValueIndirect = [&]() -> auto const&& {
+    return std::move(a);
+  };
+
+  EXPECT_EQ((*xyz::indirect<SomeType>{}).member(),
+            SomeType::Constness::RV_NON_CONST);
+  EXPECT_EQ((*createConstRValueIndirect()).member(),
+            SomeType::Constness::RV_CONST);
 }
 
 TEST(IndirectTest, Hash) {
