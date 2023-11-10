@@ -1121,9 +1121,8 @@ constexpr polymorphic(polymorphic&& other) noexcept;
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: Constructs a polymorphic that takes ownership of the object owned
-  by `other`.
-  `allocator` is created by move construction from the allocator belonging to
-  the object being moved.
+  by `other`. `allocator` is created by move construction from the allocator
+  belonging to the object being moved.
 
 * _Postconditions_: `other` is valueless.
 
@@ -1231,7 +1230,13 @@ constexpr void swap(polymorphic& other) noexcept;
 
 * _Preconditions_: `*this` is not valueless, `other` is not valueless.
 
-* _Effects_: Swaps the objects owned by `*this` and `other`.
+* _Effects_: Swaps the objects owned by `*this` and `other`. If
+  `allocator_traits<allocator_type>​::​propagate_on_container_swap​::​value` is
+  `true`, then allocator_type shall meet the _Cpp17Swappable_ requirements and
+  the allocators of `*this` and `other` shall also be exchanged by calling
+  `swap` as described in [swappable.requirements]. Otherwise, the allocators
+  shall not be swapped, and the behavior is undefined unless
+  `*this.get_allocator() == other.get_allocator()`.
 
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
