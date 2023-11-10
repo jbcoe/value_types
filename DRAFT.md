@@ -463,6 +463,20 @@ class indirect {
   friend constexpr auto operator!=(
     const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
 
+  friend constexpr auto operator<(
+    const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+
+  friend constexpr auto operator<=(
+    const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+
+  template <class U, class AA>
+  friend constexpr auto operator>(
+    const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+
+  template <class U, class AA>
+  friend constexpr auto operator>=(
+    const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+
   template <class U, class AA>
   friend constexpr auto operator<=>(
     const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
@@ -478,6 +492,30 @@ class indirect {
 
   template <class U>
   friend constexpr auto operator!=(const U& lhs, const indirect<T, A>& rhs);
+
+  template <class U>
+  friend constexpr auto operator<(const indirect<T, A>& lhs, const U& rhs);
+
+  template <class U>
+  friend constexpr auto operator<(const U& lhs, const indirect<T, A>& rhs);
+
+  template <class U>
+  friend constexpr auto operator<=(const indirect<T, A>& lhs, const U& rhs);
+
+  template <class U>
+  friend constexpr auto operator<=(const U& lhs, const indirect<T, A>& rhs);
+
+  template <class U>
+  friend constexpr auto operator>(const indirect<T, A>& lhs, const U& rhs);
+
+  template <class U>
+  friend constexpr auto operator>(const U& lhs, const indirect<T, A>& rhs);
+
+  template <class U>
+  friend constexpr auto operator>=(const indirect<T, A>& lhs, const U& rhs);
+
+  template <class U>
+  friend constexpr auto operator>=(const U& lhs, const indirect<T, A>& rhs);
 
   template <class U>
   friend constexpr auto operator<=>(const indirect<T, A>& lhs, const U& rhs);
@@ -699,42 +737,44 @@ template <class U, class AA>
 constexpr auto operator==(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
 ```
 
-* _Constaints_: TODO.
-
-* _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
-
-* _Effects_: Returns `*lhs == *rhs`.
-
-* _Remarks_: Specializations of this function template for which `*lhs == *rhs`
-  is a core constant expression are constexpr functions.
-
 ```c++
 template <class U, class AA>
 constexpr auto operator!=(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
 ```
 
-* _Constaints_: TODO.
-
-* _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
-
-* _Effects_: Returns `*lhs != *rhs`.
-
-* _Remarks_: Specializations of this function template for which `*lhs != *rhs`
-  is a core constant expression, are constexpr functions.
+```c++
+template <class U, class AA>
+constexpr auto operator<const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+```
 
 ```c++
 template <class U, class AA>
-constexpr auto operator<=>(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+constexpr auto operator<=const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
 ```
 
-* _Constaints_: TODO.
+```c++
+template <class U, class AA>
+constexpr auto operator>const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+```
+
+```c++
+template <class U, class AA>
+constexpr auto operator>=const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+```
+
+```c++
+template <class U, class AA>
+constexpr auto operator<=>const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+```
+
+* _Constraints_: The operator `op` is defined for `T`.
 
 * _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
 
-* _Effects_: Returns `*lhs <=> *rhs`.
+* _Effects_: Returns `*lhs` _op_ `*rhs`.
 
-* _Remarks_: Specializations of this function template for which `*lhs <=> *rhs`
-  is a core constant expression, are constexpr functions.
+* _Remarks_: Specializations of this function template for which `*lhs` _op_ `*rhs`
+  is a core constant expression are constexpr functions.
 
 #### X.Y.9 Comparison with T [indirect.comp.with.t]
 
@@ -743,13 +783,43 @@ template <class T, class A, class U>
 constexpr auto operator==(const indirect<T, A>& lhs, const U& rhs);
 ```
 
-* _Constaints_: TODO.
+```c++
+template <class T, class A, class U>
+constexpr auto operator!=(const indirect<T, A>& lhs, const U& rhs);
+```
+
+```c++
+template <class T, class A, class U>
+constexpr auto operator<(const indirect<T, A>& lhs, const U& rhs);
+```
+
+```c++
+template <class T, class A, class U>
+constexpr auto operator<=(const indirect<T, A>& lhs, const U& rhs);
+```
+
+```c++
+template <class T, class A, class U>
+constexpr auto operator>(const indirect<T, A>& lhs, const U& rhs);
+```
+
+```c++
+template <class T, class A, class U>
+constexpr auto operator>=const indirect<T, A>& lhs, const U& rhs);
+```
+
+```c++
+template <class T, class A, class U>
+constexpr auto operator<=>(const indirect<T, A>& lhs, const U& rhs);
+```
+
+* _Constraints_: The operator `op` is defined for `T`.
 
 * _Preconditions_: `lhs` is not valueless.
 
-* _Effects_: Returns `*lhs == rhs`.
+* _Effects_: Returns `*lhs` _op_ `rhs`.
 
-* _Remarks_: Specializations of this function template for which `*lhs == *rhs`
+* _Remarks_: Specializations of this function template for which `*lhs` _op_ `rhs`
   is a core constant expression, are constexpr functions.
 
 ```c++
@@ -757,72 +827,44 @@ template <class T, class A, class U>
 constexpr auto operator==(const U& lhs, const indirect<T, A>& rhs);
 ```
 
-* _Constaints_: TODO.
-
-* _Preconditions_: `rhs` is not valueless.
-
-* _Effects_: Returns `lhs == *rhs`.
-
-* _Remarks_: Specializations of this function template for which `*lhs == *rhs`
-  is a core constant expression, are constexpr functions.
-
-```c++
-template <class T, class A, class U>
-constexpr auto operator!=(const indirect<T, A>& lhs, const U& rhs)
-```
-
-* _Constaints_: TODO.
-
-* _Preconditions_: `lhs` is not valueless.
-
-* _Effects_: Returns `*lhs != rhs`.
-
-* _Remarks_: Specializations of this function template for which `*lhs != *rhs`
-  is a core constant expression, are constexpr functions.
-
 ```c++
 template <class T, class A, class U>
 constexpr auto operator!=(const U& lhs, const indirect<T, A>& rhs);
 ```
 
-* _Constaints_: TODO.
-
-* _Preconditions_: `rhs` is not valueless.
-
-* _Effects_: Returns `lhs != *rhs`.
-
-* _Remarks_: Specializations of this function template for which `*lhs != *rhs`
-  is a core constant expression, are constexpr functions.
+```c++
+template <class T, class A, class U>
+constexpr auto operator<(const U& lhs, const indirect<T, A>& rhs);
+```
 
 ```c++
 template <class T, class A, class U>
-constexpr auto operator<=>(const indirect<T, A>& lhs, const U& rhs);
+constexpr auto operator<=(const U& lhs, const indirect<T, A>& rhs);
 ```
 
-* _Constaints_: TODO.
+```c++
+template <class T, class A, class U>
+constexpr auto operator>(const U& lhs, const indirect<T, A>& rhs);
+```
 
-* _Preconditions_: `lhs` is not valueless.
-
-* _Effects_: Returns `*lhs <=> rhs`.
-
-* _Remarks_: Specializations of this function template for which `*lhs <=> *rhs`
-  is a core constant expression, are constexpr functions.
+```c++
+template <class T, class A, class U>
+constexpr auto operator>=const U& lhs, const indirect<T, A>& rhs);
+```
 
 ```c++
 template <class T, class A, class U>
 constexpr auto operator<=>(const U& lhs, const indirect<T, A>& rhs);
 ```
 
-* _Constaints_: TODO.
+* _Constraints_: The operator `op` is defined for `T`.
 
 * _Preconditions_: `rhs` is not valueless.
 
-* _Effects_: Returns `lhs <=> *rhs`.
+* _Effects_: Returns `lhs` _op_ `*rhs`.
 
-* _Remarks_: Specializations of this function template for which `*lhs <=> *rhs`
+* _Remarks_: Specializations of this function template for which `lhs` _op_ `*rhs`
   is a core constant expression, are constexpr functions.
-
-* _Preconditions_: Alloc meets the _Cpp17Allocator_ requirements.
 
 #### X.Y.10 Hash support [indirect.hash]
 
