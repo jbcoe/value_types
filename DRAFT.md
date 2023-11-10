@@ -228,7 +228,7 @@ propagates const and is allocator aware.
 
 * `optional` and `indirect` know the underlying type of the owned object so can
   implement r-value qualified versions of `operator*`. For `unique_ptr` the
-  underlying type is not know (it could be an instance of a derived class) so
+  underlying type is not known (it could be an instance of a derived class) so
   r-value qualified versions of `operator*` are not provided.
 
 * Like `vector`, `indirect` owns an object created by an allocator. The move
