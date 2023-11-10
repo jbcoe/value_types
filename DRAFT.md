@@ -216,6 +216,101 @@ Note: As the null state of `indirect` and `polymorphic` is not observable, and
 access to a moved-from object is erroneous, `std::optional` can be specialized
 by implementers to exchange pointers on move construction and assignment.
 
+### Allocator support
+
+Both `indirect` and `polymorphic` are allocator-aware types. They must be
+suitable for use in allocator-aware composite types and containers. Existing
+allocator-aware types in the standard, such as `vector` and `map`, take an
+allocator type as a template parameter, provide `allocator_type`, and have
+constructor overloads taking an additional `allocator_type_t` and allocator
+instance as arguments. As `indirect` and `polymorphic` need to work with and in
+the same way as existing allocator-aware types, they too take an allocator type
+as a template parameter, provide `allocator_type`, and have constructor
+overloads taking an additional `allocator_type_t` and allocator instance as
+arguments.
+
+### Modelled types
+
+The class templates `indirect` and `polymorphic` have strong similarities to
+existing class templates. These similarities motivate much of the design, we aim
+for consistency with existing library types, not innovation.
+
+#### Modelled types for `indirect`
+
+The class template `indirect` owns an object of known type, permits copies,
+propagates const and is allocator aware.
+
+* Like `optional` and `unique_ptr`, `indirect` can be in a valueless state;
+  `indirect` can only get into the valueless state after move.
+
+* `unique_ptr` and `optional` have preconditions for `operator->` and
+  `operator*`: the behavior is undefined if `*this` does not contain a value.
+
+* `unique_ptr` and `optional` mark `operator->` and `operator*` as noexcept:
+  `indirect` does the same.
+
+* `optional` and `indirect` know the underlying type of the owned object so can
+  implement r-value qualified versions of `operator*`. For `unique_ptr` the
+  underlying type is not know (it could be an instance of a derived class) so
+  r-value qualified versions of `operator*` are not provided.
+
+* Like `vector`, `indirect` owns an object created by an allocator. The move
+  constructor, move assignment operator, member swap, and non-member swap for
+  `vector` are conditionally noexcept on properties of the allocator. Thus for
+  `indirect`, the move constructor, move assignment operator, member swap, and
+  non-member swap for `indirect` are conditionally noexcept on properties of the
+  allocator (Allocator instances may have different underlying memory resources,
+  it's not possible for an allocator with one memory resource to delete an
+  object in another memory resource. When allocators have different underlying
+  memory resources, move and swap necessitate the allocation of memory and
+  cannot be marked noexcept.).
+
+* Like `optional`, `indirect` knows the type of the owned object so forwards
+  comparison operators, hash to the underlying object.
+
+* Unlike `optional`, `indirect` is not observably valueless: use after move is
+  erroneous. Formatting is supported by `indirect` by forwarding to the owned
+  object.
+
+#### Modelled types for `polymorphic`
+
+The class template `polymorphic` owns an object of known type, requires copies,
+propagates const and is allocator aware.
+
+* Like `optional` and `unique_ptr`, `polymorphic` can be in a valueless state;
+  `polymorphic` can only get into the valueless state after move.
+
+* `unique_ptr` and `optional` have preconditions for `operator->` and
+  `operator*`: the behavior is undefined if `*this` does not contain a value.
+
+* `unique_ptr` and `optional` mark `operator->` and `operator*` as noexcept:
+  `polymorphic` does the same.
+
+* Neither `unique_ptr` nor `polymorphic` know the underlying type of the owned
+  object so cannot implement r-value qualified versions of `operator*`. For
+  `optional` the underlying type is known so r-value qualified versions of
+  `operator*` are provided.
+
+* Like `vector`, `polymorphic` owns an object created by an allocator. The move
+  constructor, move assignment operator, member swap, and non-member swap for
+  `vector` are conditionally noexcept on properties of the allocator. Thus for
+  `polymorphic`, the move constructor, move assignment operator, member swap,
+  and non-member swap for `polymorphic` are conditionally noexcept on properties
+  of the allocator.
+
+* Like `unique_ptr`, `polymorphic` does not know the type of the owned object
+  (it could be an instance of a derived type). As a result `polymorphic` cannot
+  forward comparison operators, hash or formatting to the owned object.
+
+
+### Extra constructors and `emplace`
+
+TODO
+
+### Forwarding functions for indirect
+
+TODO
+
 ### `noexcept` and narrow contracts
 
 C++ library design guidelines recommend that member functions with narrow
@@ -231,18 +326,6 @@ marked `noexcept`. Whatever strategy was used for testing `optional` and
 Not marking `operator->` and `operator*` as `noexcept` for `indirect` and
 `polymorphic` would make them strictly less useful than `unique_ptr` in contexts
 where they would otherwise be a valid replacement.
-
-### Operator [] and operator ()
-
-TODO
-
-### Extra constructors and `emplace`
-
-TODO
-
-### Forwarding functions for indirect
-
-TODO
 
 ### Design for polymorphic types
 
@@ -355,6 +438,8 @@ class indirect {
   constexpr const T& operator*() const & noexcept;
 
   constexpr T& operator*() & noexcept;
+
+  constexpr const T&& operator*() const && noexcept;
 
   constexpr T&& operator*() && noexcept;
 
@@ -519,12 +604,13 @@ constexpr indirect& operator=(const indirect& other);
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: If `*this` is not valueless and `std::is_copy_assignable_v<T>` is
-  true, copy assigns owned object in `*this` from the owned object
-  in `other`. Otherwise if `*this` is not valueless and
+  true, copy assigns the owned object in `*this` from the owned object in
+  `other`. Otherwise if `*this` is not valueless and
   `std::is_copy_assignable_v<T>` is false, destroys the owned object, then
-  constructs a new owned object using the copy constructor of the object owned
-  by `other`. Otherwise if `*this` is valueless, constructs an owned object
-  using the copy constructor of the object owned by `other`.
+  performs allocator-construction with the stored allocator using the object
+  owned by `other`. Otherwise if `*this` is valueless, performs
+  allocator-construction using the copy constructor of the object owned by
+  `other`.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -537,7 +623,8 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: If `*this` is not valueless, destroys the owned object, then takes
-  ownership of the object owned by `other`.
+  ownership of the object owned by `other`. Otherwise, if this is valueless,
+  takes ownership of the object owned by `other`.
 
 * _Postconditions_: `*this` is not valueless. `other` is valueless.
 
@@ -546,6 +633,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 ```c++
 constexpr const T& operator*() const & noexcept;
 constexpr T& operator*() & noexcept;
+constexpr const T&& operator*() const && noexcept;
 constexpr T&& operator*() && noexcept;
 ```
 
@@ -1001,8 +1089,8 @@ constexpr polymorphic& operator=(const polymorphic& other);
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: If `*this` is not valueless, destroys the owned object, then
-  constructs an owned object using the (possibly derived-type) copy constructor
-  of the object owned by `other`.
+  performs allocator-construction with the stored allocator using the (possibly
+  derived-type) object owned by `other`.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -1015,7 +1103,8 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: If `*this` is not valueless, destroys the owned object, then takes
-  ownership of the object owned by `other`.
+  ownership of the object owned by `other`. Otherwise, if this is valueless,
+  takes ownership of the object owned by `other`.
 
 * _Postconditions_: `*this` is not valueless. `other` is valueless.
 
