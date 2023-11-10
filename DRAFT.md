@@ -303,13 +303,51 @@ propagates const and is allocator aware.
   forward comparison operators, hash or formatting to the owned object.
 
 
-### Extra constructors and `emplace`
+### Supporting `operator()` `operator[]`
 
-TODO
+There's no need for `indirect` or `polymorphic` to provide a function call or an
+indexing operator. Users who wish to do that can just access the value and call
+its operator. Furthermore, unlike comparisons, function calls or indexing
+operators don't compose further; for example, a composite wouldn't be able to
+automatically generate a composited `operator()` or an `operator[]`.
 
-### Forwarding functions for indirect
+### Member function `emplace`
 
-TODO
+Neither `indirect` nor `polymorphic` support `emplace` as a member function.
+The member function `emplace` could be added as :
+
+```c++
+template <typename ...Ts>
+indirect::emplace(Ts&& ...ts);
+```
+
+```c++
+template <typename U, typename ...Ts>
+polymorphic::emplace(in_place_type<U>, Ts&& ...ts);
+```
+
+This would be API noise. It offers no efficiency improvement over:
+
+```c++
+some_indirect = indirect(/* arguments */);
+```
+
+```c++
+some_polymorphic = polymorphic(in_place_type<U>, /* arguments */);
+```
+
+If `emplace` was desirable to avoid repeating the type name, it might be better
+implemented as a non-member function:
+
+```c++
+template <typename T, typename ...Ts>
+void emplace(T& t, Ts&& ...ts) {
+  t = T(std::forward<Ts>... ts);
+}
+```
+
+We do not propose adding a `emplace` as a non-member function to the C++ standard
+libary as part of this proposal.
 
 ### `noexcept` and narrow contracts
 
@@ -1255,12 +1293,12 @@ A C++20 reference implementation of this proposal is available on GitHub at
 ## Acknowledgements
 
 The authors would like to thank Andrew Bennieston, Bengt Gustafsson, Casey
-Carter, Daniel Krügler, David Krauss, Ed Catmur, Geoff Romer, Germán Diago,
-Jonathan Wakely, Kilian Henneberger, LanguageLawyer, Louis Dionne, Maciej Bogus,
-Malcolm Parsons, Matthew Calabrese, Nathan Myers, Neelofer Banglawala, Nevin
-Liber, Nina Ranns, Patrice Roy, Roger Orr, Stephan T Lavavej, Stephen Kelly,
-Thomas Koeppe, Thomas Russell, Tom Hudson, Tomasz Kamiński, Tony van Eerd and
-Ville Voutilainen for suggestions and useful discussion.
+Carter, Rostislav Khlebnikov, Daniel Krügler, David Krauss, Ed Catmur, Geoff
+Romer, Germán Diago, Jonathan Wakely, Kilian Henneberger, LanguageLawyer, Louis
+Dionne, Maciej Bogus, Malcolm Parsons, Matthew Calabrese, Nathan Myers, Neelofer
+Banglawala, Nevin Liber, Nina Ranns, Patrice Roy, Roger Orr, Stephan T Lavavej,
+Stephen Kelly, Thomas Koeppe, Thomas Russell, Tom Hudson, Tomasz Kamiński, Tony
+van Eerd and Ville Voutilainen for suggestions and useful discussion.
 
 ## References
 
