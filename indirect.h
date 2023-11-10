@@ -139,11 +139,28 @@ class indirect {
   constexpr ~indirect() { reset(); }
 
   constexpr indirect& operator=(const indirect& other) {
-    static_assert(std::is_copy_constructible_v<T>);
+    if (this == &other) return *this;
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
-    if (this != &other) {
-      if constexpr (std::is_copy_assignable_v<T>) {
-        if (p_ == nullptr) {
+    static_assert(std::is_copy_constructible_v<T>);
+
+    if constexpr (allocator_traits::propagate_on_container_copy_assignment::
+                      value) {
+      if (alloc_ != other.alloc_) {
+        reset();  // using current allocator.
+        alloc = other.alloc_;
+        T* mem = allocator_traits::allocate(alloc_, 1);
+        try {
+          allocator_traits::construct(alloc_, mem, *other);
+          p_ = mem;
+        } catch (...) {
+          allocator_traits::deallocate(alloc_, mem, 1);
+          throw;
+        }
+      } else {
+        if constexpr (std::is_copy_assignable_v<T>) {
+          *p_ = *other.p_;
+        } else {
+          reset();
           T* mem = allocator_traits::allocate(alloc_, 1);
           try {
             allocator_traits::construct(alloc_, mem, *other);
@@ -152,16 +169,21 @@ class indirect {
             allocator_traits::deallocate(alloc_, mem, 1);
             throw;
           }
-        } else {
-          *p_ = *other.p_;
         }
-      } else {
-        indirect tmp(other);
-        this->swap(tmp);
       }
-      if constexpr (allocator_traits::propagate_on_container_copy_assignment::
-                        value) {
-        alloc_ = other.alloc_;
+    } else /* constexpr*/ {
+      if constexpr (std::is_copy_assignable_v<T>) {
+        *p_ = *other.p_;
+      } else {
+        reset();
+        T* mem = allocator_traits::allocate(alloc_, 1);
+        try {
+          allocator_traits::construct(alloc_, mem, *other);
+          p_ = mem;
+        } catch (...) {
+          allocator_traits::deallocate(alloc_, mem, 1);
+          throw;
+        }
       }
     }
     return *this;
@@ -170,26 +192,50 @@ class indirect {
   constexpr indirect& operator=(indirect&& other) noexcept(
       allocator_traits::propagate_on_container_move_assignment::value ||
       allocator_traits::is_always_equal::value) {
+    if (this == &other) return *this;
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
-    if (this != &other) {
-      reset();
-      if constexpr (allocator_traits::propagate_on_container_move_assignment::
-                        value) {
-        alloc_ = other.alloc_;
-        p_ = std::exchange(other.p_, nullptr);
+    static_assert(std::is_copy_constructible_v<T>);
+
+    if constexpr (allocator_traits::propagate_on_container_move_assignment::
+                      value) {
+      if (alloc_ != other.alloc_) {
+        reset();  // using current allocator.
+        alloc = other.alloc_;
+        T* mem = allocator_traits::allocate(alloc_, 1);
+        try {
+          allocator_traits::construct(alloc_, mem, std::move(*other));
+          p_ = mem;
+        } catch (...) {
+          allocator_traits::deallocate(alloc_, mem, 1);
+          throw;
+        }
       } else {
-        if (alloc_ == other.alloc_) {
-          p_ = std::exchange(other.p_, nullptr);
+        if constexpr (std::is_move_assignable_v<T>) {
+          *p_ = std::move(*other.p_);
         } else {
+          reset();
           T* mem = allocator_traits::allocate(alloc_, 1);
           try {
-            allocator_traits::construct(alloc_, mem, *other);
+            allocator_traits::construct(alloc_, mem, std::move(*other));
             p_ = mem;
-            other.reset();
           } catch (...) {
             allocator_traits::deallocate(alloc_, mem, 1);
             throw;
           }
+        }
+      }
+    } else /* constexpr*/ {
+      if constexpr (std::is_move_assignable_v<T>) {
+        *p_ = std::move(*other.p_);
+      } else {
+        reset();
+        T* mem = allocator_traits::allocate(alloc_, 1);
+        try {
+          allocator_traits::construct(alloc_, mem, std::move(*other));
+          p_ = mem;
+        } catch (...) {
+          allocator_traits::deallocate(alloc_, mem, 1);
+          throw;
         }
       }
     }
