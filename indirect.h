@@ -195,12 +195,14 @@ class indirect {
       std::swap(alloc_, other.alloc_);
       std::swap(p_, other.p_);
       return;
-    }
-    if (alloc_ == other.alloc_) {
-      std::swap(p_, other.p_);
-    } else {
-      assert(false && "Cannot swap indirect values with non-equal allocators");
-      unreachable();  // LCOV_EXCL_LINE
+    } else /* constexpr */ {
+      if (alloc_ == other.alloc_) {
+        std::swap(p_, other.p_);
+      } else {
+        assert(false &&
+               "Cannot swap indirect values with non-equal allocators");
+        unreachable();  // LCOV_EXCL_LINE
+      }
     }
   }
 
