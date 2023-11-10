@@ -34,7 +34,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace xyz {
 
-[[noreturn]] inline void unreachable() {
+[[noreturn]] inline void unreachable() {  // LCOV_EXCL_LINE
 #if (__cpp_lib_unreachable >= 202202L)
   std::unreachable();  // LCOV_EXCL_LINE
 #elif defined(_MSC_VER)
