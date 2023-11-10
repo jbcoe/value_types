@@ -41,20 +41,6 @@ This proposal is a fusion of two earlier individual proposals, P1950 and P0201.
 The design of the two proposed class templates is sufficiently similar that they
 should not be considered in isolation.
 
-## Changelog
-
-P3019R2
-
-  * TODO
-
-  * TODO
-
-P3019R1
-
-  * TODO
-
-  * TODO
-
 ## Motivation
 
 The standard library has no vocabulary type for a free-store-allocated object
