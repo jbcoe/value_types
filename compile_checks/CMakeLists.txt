@@ -1,4 +1,7 @@
-add_library(indirect_consteval "")
+vt_add_library(
+    NAME indirect_consteval
+    ALIAS value_types::indirect_consteval
+)
 target_sources(indirect_consteval
     PRIVATE
         indirect_consteval.cc
@@ -9,7 +12,10 @@ target_link_libraries(indirect_consteval
         common_compiler_settings
 )
 
-add_library(indirect_pimpl "")
+vt_add_library(
+    NAME indirect_pimpl
+    ALIAS value_types::indirect_pimpl
+)
 target_sources(indirect_pimpl
     PRIVATE
         indirect_pimpl.h
@@ -23,6 +29,10 @@ target_link_libraries(indirect_pimpl
 )
 
 if(NOT MSVC)
+    vt_add_library(
+        NAME polymorphic_consteval
+        ALIAS value_types::polymorphic_consteval
+    )
     add_library(polymorphic_consteval "")
     target_sources(polymorphic_consteval
         PRIVATE
@@ -35,7 +45,10 @@ if(NOT MSVC)
     )
 endif()
 
-add_library(polymorphic_inline_vtable_consteval "")
+vt_add_library(
+    NAME indirect_pimpl
+    ALIAS value_types::polymorphic_inline_vtable_consteval
+)
 target_sources(polymorphic_inline_vtable_consteval
     PRIVATE
         polymorphic_consteval.cc
@@ -46,7 +59,10 @@ target_link_libraries(polymorphic_inline_vtable_consteval
         common_compiler_settings
 )
 
-add_library(polymorphic_pimpl "")
+vt_add_library(
+    NAME polymorphic_pimpl
+    ALIAS value_types::polymorphic_pimpl
+)
 target_sources(polymorphic_pimpl
     PRIVATE
         polymorphic_pimpl.h
