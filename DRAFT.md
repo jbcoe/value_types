@@ -764,7 +764,7 @@ constexpr auto operator>=const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
 
 ```c++
 template <class U, class AA>
-constexpr auto operator<=>const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+constexpr auto operator<=>(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
 ```
 
 * _Constraints_: The operator `op` is defined for `T`.
