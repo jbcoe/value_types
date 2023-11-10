@@ -91,7 +91,8 @@ class direct_control_block final : public control_block<T, A> {
 
 template <class T, class A = std::allocator<T>>
 class polymorphic {
-  detail::control_block<T, A>* cb_;
+  using cblock_t = detail::control_block<T, A>;
+  cblock_t* cb_;
 
 #if defined(_MSC_VER)
   [[msvc::no_unique_address]] A alloc_;
@@ -259,20 +260,24 @@ class polymorphic {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
 
     if constexpr (allocator_traits::propagate_on_container_swap::value) {
-      if (alloc_ != other.alloc_) {
-        // Worst case - oh what do we do???
-        return;
-      }
+      // If allocators move with their allocated objects we can swap both.
+      std::swap(alloc_, other.alloc_);
+      std::swap(cb_, other.cb_);
+      return;
     }
-    if (alloc_ = other.alloc_) {
+    if (alloc_ == other.alloc_) {
       std::swap(cb_, other.cb_);
     } else {
-      // use `this` just to make code layout nicer.
-      auto new_this = std::unique_ptr(other.cb_->clone(this->alloc_));
-      auto new_other = std::unique_ptr(this->cb_->clone(other.alloc_));
+      // We need to create new control blocks that the respective allocators can
+      // delete.
 
-      this->reset();
-      other.reset();
+      // Use `this` just to make code layout nicer.
+      std::unique_ptr<cblock_t> new_this(other.cb_->clone(this->alloc_));
+      std::unique_ptr<cblock_t> new_other(this->cb_->clone(other.alloc_));
+
+      // Destroy the original control blocks with their original allocators.
+      this->cb_->destroy(this->alloc_);
+      other.cb_->destroy(other.alloc_);
       this->cb_ = new_this.release();
       other.cb_ = new_other.release();
     }
