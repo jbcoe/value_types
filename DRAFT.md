@@ -597,7 +597,7 @@ constexpr indirect()
 
 * _Mandates_: `is_default_constructible_v<T>` is true.
 
-* _Effects_: Constructs an indirect owning a default-constructed `T`.
+* _Effects_: Constructs an indirect owning a default-constructed `T`. `allocator_` is default constructed.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -609,7 +609,7 @@ explicit constexpr indirect(Ts&&... ts);
 * _Constraints_: `is_constructible_v<T, Ts...>` is true.
 
 * _Effects_: Constructs an indirect owning an instance of `T` created with the
-  arguments `Ts`.
+  arguments `Ts`. `allocator_` is default constructed.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -623,7 +623,7 @@ constexpr indirect(std::allocator_arg_t, const Allocator& alloc, Ts&&... ts);
 * _Preconditions_: `Allocator` meets the _Cpp17Allocator_ requirements.
 
 * _Effects_: Equivalent to the preceding constructor except that the allocator
-  is initialized with alloc.
+  is initialized with alloc. `allocator_` is initialized with `alloc`.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -636,7 +636,7 @@ constexpr indirect(const indirect& other);
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: Constructs an indirect owning an instance of `T` created with the
-  copy constructor of the object owned by `other`.
+  copy constructor of the object owned by `other`. `allocator` is obtained by calling `allocator_traits<allocator_type>​::​select_on_container_copy_construction `on the allocator belonging to the object being copied
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -661,7 +661,7 @@ constexpr indirect(indirect&& other) noexcept;
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: Constructs an `indirect` owning the object owned by `other`.
+* _Effects_: Constructs an `indirect` owning the object owned by `other`. `allocator` is created by move construction from the allocator belonging to the object being moved.
 
 * _Postconditions_: `other` is valueless.
 
@@ -698,19 +698,13 @@ constexpr ~indirect();
 constexpr indirect& operator=(const indirect& other);
 ```
 
-* _Mandates_: `is_copy_constructible_v<T>` is true.
+* _Mandates_: `is_copy_assignable_v<T>` and `is_copy_constructible_v<T>`is true.
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: If `*this` is not valueless and `std::is_copy_assignable_v<T>` is
-  true, copy assigns the owned object in `*this` from the owned object in
-  `other`. Otherwise if `*this` is not valueless and
-  `std::is_copy_assignable_v<T>` is false, destroys the owned object, then
-  performs allocator-construction with the stored allocator using the object
-  owned by `other`. Otherwise if `*this` is valueless, performs
-  allocator-construction using the copy constructor of the object owned by
-  `other`.
-
+* _Effects_: If `allocator_traits<allocator_type>​::​propagate_on_container_copy_assignment​::​value == true`, `allocator` is set to the allocator of `other`. If allocator is not changed, `std::is_copy_assignable_v<T>` is true, and `*this` is not valueless, copy assigns the owned object in `*this` from the owned object in
+  `other`. Otherwise, destroys the owned object, if any, then copy constructs a new object using the object owned by `other`. 
+  
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
@@ -718,13 +712,13 @@ constexpr indirect& operator=(indirect&& other) noexcept(
     allocator_traits<Allocator>::propagate_on_container_move_assignment::value ||
     allocator_traits<Allocator>::is_always_equal::value);
 ```
+_Mandates_: `is_move_constructible_v<T>`is true.
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: If `*this` is not valueless, destroys the owned object, then takes
-  ownership of the object owned by `other`. Otherwise, if this is valueless,
-  takes ownership of the object owned by `other`.
-
+* _Effects_: If `allocator_traits<allocator_type>​::​propagate_on_container_move_assignment​::​value == true`, `allocator` is set to the allocator of `other`. If allocator is propagated or is equal to the allocator of `other`, destroys the owned object, if any, then takes
+  ownership of the object owned by `other`.  Otherwise, destroys the owned object, if any, then move constructs an object from the object owned by `other`.
+  
 * _Postconditions_: `*this` is not valueless. `other` is valueless.
 
 #### X.Y.6 Observers [indirect.observers]
@@ -768,21 +762,17 @@ constexpr allocator_type get_allocator() const noexcept;
 #### X.Y.7 Swap [indirect.swap]
 
 ```c++
-constexpr void swap(indirect& other) noexcept(
-    allocator_traits<Allocator>::propagate_on_container_swap::value ||
-    allocator_traits<Allocator>::is_always_equal::value);
+constexpr void swap(indirect& other) noexcept(true);
 ```
 
 * _Preconditions_: `*this` is not valueless, `other` is not valueless.
 
-* _Effects_: Swaps the objects owned by `*this` and `other`.
+* _Effects_: Swaps the objects owned by `*this` and `other`. If  `allocator_traits<allocator_type>​::​propagate_on_container_swap​::​value` is `true`, then allocator_type shall meet the _Cpp17Swappable_ requirements and the allocators of `*this` and `other` shall also be exchanged by calling `swap` as described in [swappable.requirements]. Otherwise, the allocators shall not be swapped, and the behavior is undefined unless `*this.get_allocator() == other.get_allocator()`.
 
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
 ```c++
-constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
-    allocator_traits<Allocator>::propagate_on_container_swap::value ||
-    allocator_traits<Allocator>::is_always_equal::value);
+constexpr void swap(indirect& lhs, indirect& rhs) noexcept(noexcept(lhs.swap(rhs)));
 ```
 
 * _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
