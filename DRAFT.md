@@ -637,7 +637,7 @@ constexpr ~indirect();
 constexpr indirect& operator=(const indirect& other);
 ```
 
-* _Mandates_: `is_copy_constructible_v<T>` is true.
+* _Mandates_: `is_copy_assignable_v<T>` and `is_copy_constructible_v<T>`is true.
 
 * _Preconditions_: `other` is not valueless.
 
@@ -651,11 +651,12 @@ constexpr indirect& operator=(indirect&& other) noexcept(
     allocator_traits<Allocator>::propagate_on_container_move_assignment::value ||
     allocator_traits<Allocator>::is_always_equal::value);
 ```
+_Mandates_: `is_move_constructible_v<T>`is true.
 
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: If `allocator_traits<allocator_type>​::​propagate_on_container_move_assignment​::​value == true`, `allocator` is set to the allocator of `other`. If allocator is propagated or is equal to the allocator of `other`, destroys the owned object, if any, then takes
-  ownership of the object owned by `other`.  Otherwise, destroys the owned object, if any, the move constructs an object from the object owned by `other`.
+  ownership of the object owned by `other`.  Otherwise, destroys the owned object, if any, then move constructs an object from the object owned by `other`.
   
 * _Postconditions_: `*this` is not valueless. `other` is valueless.
 
@@ -700,21 +701,17 @@ constexpr allocator_type get_allocator() const noexcept;
 #### X.Y.7 Swap [indirect.swap]
 
 ```c++
-constexpr void swap(indirect& other) noexcept(
-    allocator_traits<Allocator>::propagate_on_container_swap::value ||
-    allocator_traits<Allocator>::is_always_equal::value);
+constexpr void swap(indirect& other) noexcept(true);
 ```
 
 * _Preconditions_: `*this` is not valueless, `other` is not valueless.
 
-* _Effects_: Swaps the objects owned by `*this` and `other`.
+* _Effects_: Swaps the objects owned by `*this` and `other`. If  `allocator_traits<allocator_type>​::​propagate_on_container_swap​::​value` is `true`, then allocator_type shall meet the _Cpp17Swappable_ requirements and the allocators of `*this` and `other` shall also be exchanged by calling `swap` as described in [swappable.requirements]. Otherwise, the allocators shall not be swapped, and the behavior is undefined unless `*this.get_allocator() == other.get_allocator()`.
 
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
 ```c++
-constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
-    allocator_traits<Allocator>::propagate_on_container_swap::value ||
-    allocator_traits<Allocator>::is_always_equal::value);
+constexpr void swap(indirect& lhs, indirect& rhs) noexcept(noexcept(lhs.swap(rhs)));
 ```
 
 * _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
