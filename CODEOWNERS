@@ -7,3 +7,6 @@ CMakeLists.txt @twon
 
 # Bazel
 *.bazel @jbcoe
+
+# Formal wording
+DRAFT.md @villevoutilainen
