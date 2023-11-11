@@ -932,7 +932,7 @@ underlying `T` supports specialisation of `std::formatter<T, charT>`.
 * Preconditions: `value` is not valueless. The specialization `formatter<T,
   charT>` meets the _Formatter_ requirements.
 
-## Feature-test Macro [indirect.predefined.ft]
+## Feature-test Macro [version.syn]
 
 Add a new feature-test macro:
 
@@ -1274,7 +1274,7 @@ constexpr polymorphic<T, Alloc>& operator->() noexcept;
 
 Otherwise, the interface of the specialization is as defined in [optional].
 
-## Feature-test Macro [polymorphic.predefined.ft]
+## Feature-test Macro [version.syn]
 
 Add a new feature-test macro:
 
