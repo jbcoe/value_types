@@ -183,16 +183,10 @@ currently used to (mis)represent component objects. Putting `T` onto the free
 store should not make it nullable. Nullability must be explicitly opted into by
 using `std::optional<indirect<T>>` or `std::optional<polymorphic<T>>`.
 
-`std::optional<>` is specialized for `indirect<>` and `polymorphic<>` so they
-incur no additional overhead.
-
-Access to a `std::optional<indirect<T>>` or `std::optional<polymorphic<T>>` can
-be done with double indirection, `(**v)`, or with a single arrow operator to
-access a member, `v->some_member`.
-
-Note: As the null state of `indirect` and `polymorphic` is not observable, and
-access to a moved-from object is erroneous, `std::optional` can be specialized
-by implementers to exchange pointers on move construction and assignment.
+We invite implementers to optimise their implementation of `optional<indirect>`
+and `optional<polymorphic>` to exploit the non-observable nature of the
+valueless state and minimise the size of an `optional<indirect>` or
+`optional<polymorphic>`.
 
 ### Allocator support
 
@@ -885,34 +879,7 @@ type `indirect<T, Alloc>`, then `hash<indirect<T, Alloc>>()(i)` evaluates to the
 same value as `hash<remove_const_t<T>>()(*i)`. The member functions are not
 guaranteed to be noexcept.
 
-#### X.Y.12 Optional support [indirect.optional]
-
-```c++
-template <class T, class Alloc>
-class std::optional<indirect<T, Alloc>>;
-```
-
-The specialization `std::optional<indirect<T, Alloc>>` guarantees
-`sizeof(std::optional<indirect<T, Alloc>>) == sizeof(indirect<T, Alloc>>)`.
-
-```c++
-// [optional.observe], observers
-constexpr const indirect<T, Alloc>& operator->() const noexcept;
-constexpr indirect<T, Alloc>& operator->() noexcept;
-```
-
-* _Preconditions_: `*this` contains a value. The contained indirect value is not
-  valueless.
-
-* _Returns_: `val`.
-
-* _Remarks_: These functions are constexpr. The specialization
-  `std::optional<indirect<T, Alloc>>` provides `operator->` that returns a
-  reference to the contained `indirect`.
-
-Otherwise, the interface of the specialization is as defined in [optional].
-
-#### X.Y.13 Formatter support [indirect.fmt]
+#### X.Y.11 Formatter support [indirect.fmt]
 
 ```c++
 // [indirect.fmt]
@@ -933,7 +900,7 @@ underlying `T` supports specialisation of `std::formatter<T, charT>`.
 * Preconditions: `value` is not valueless. The specialization `formatter<T,
   charT>` meets the _Formatter_ requirements.
 
-## Feature-test Macro [indirect.predefined.ft]
+## Feature-test Macro [version.syn]
 
 Add a new feature-test macro:
 
@@ -1249,35 +1216,7 @@ constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(
 
 * _Effects_: Equivalent to `lhs.swap(rhs)`.
 
-#### X.Z.8 Optional support [polymorphic.optional]
-
-```c++
-template <class T, class Alloc>
-class std::optional<polymorphic<T, Alloc>>;
-```
-
-The specialization `std::optional<polymorphic<T, Alloc>>` guarantees
-`sizeof(std::optional<polymorphic<T, Alloc>>) == sizeof(polymorphic<T,
-Alloc>>)`.
-
-```c++
-// [optional.observe], observers
-constexpr const polymorphic<T, Alloc>& operator->() const noexcept;
-constexpr polymorphic<T, Alloc>& operator->() noexcept;
-```
-
-* _Preconditions_: `*this` is not valueless. The contained polymorphic value is
-  not valueless.
-
-* _Returns_: `val`.
-
-* _Remarks_: These functions are constexpr. The specialization
-  `std::optional<polymorphic<T, Alloc>>` provides `operator->` that returns a
-  reference to the contained `polymorphic`.
-
-Otherwise, the interface of the specialization is as defined in [optional].
-
-## Feature-test Macro [polymorphic.predefined.ft]
+## Feature-test Macro [version.syn]
 
 Add a new feature-test macro:
 
