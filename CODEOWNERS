@@ -1,6 +1,5 @@
 # Global owners
-@jbcoe
-@twon
+* @jbcoe @twon
 
 # CMake
 CMakeLists.txt @twon
