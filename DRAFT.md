@@ -275,19 +275,19 @@ propagates const and is allocator aware.
   (it could be an instance of a derived type). As a result `polymorphic` cannot
   forward comparison operators, hash or formatting to the owned object.
 
-#### Dissimilarities with variant and the valueless state
+#### Similarities and dissimilarities with variant
 
-The sum type, `variant<Ts...>`, models one of several alternatives;
+The sum type `variant<Ts...>` models one of several alternatives;
 `indirect<T>` models a single type `T`, but with different storage constraints.
 
-A variant can, like `indirect`, get into a valueless state. For variant, this
+Like `indirect`, a variant can get into a valueless state. For variant, this
 valueless state is accessible when an exception is thrown when changing the
 type: variant has `bool valueless_by_exception()`. When all of the types, `Ts`,
 are comparable, `variant<Ts...>` supports comparison without preconditions: it
-is valid to compare variants when they are in a valueless state. Comparison of
-variant can account for the valueless state with zero-cost. A variant must check
-which type is the engaged type to perform comparison; valueless is one of the
-possible states it can be in. For `indirect`, allowing comparison when in a
+is valid to compare variants when they are in a valueless state. Variant
+comparisons can account for the valueless state with zero cost. A variant must
+check which type is the engaged type to perform comparison; valueless is one of
+the possible states it can be in. For `indirect`, allowing comparison when in a
 valueless state would necessitate the addition of an otherwise redundant check.
 Accessing a valueless `indirect` is erroneous, so we make it a precondition for
 comparison and hash that the instance of `indirect` is not valueless.
