@@ -264,7 +264,9 @@ class polymorphic {
 
   constexpr allocator_type get_allocator() const noexcept { return alloc_; }
 
-  constexpr void swap(polymorphic& other) noexcept {
+  constexpr void swap(polymorphic& other) noexcept(
+      std::allocator_traits<A>::propagate_on_container_swap::value ||
+      std::allocator_traits<A>::is_always_equal::value) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
 
     if constexpr (allocator_traits::propagate_on_container_swap::value) {
@@ -281,7 +283,8 @@ class polymorphic {
     }
   }
 
-  friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept {
+  friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(
+      noexcept(lhs.swap(rhs))) {
     lhs.swap(rhs);
   }
 

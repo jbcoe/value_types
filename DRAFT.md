@@ -442,9 +442,9 @@ class indirect {
 
   constexpr allocator_type get_allocator() const noexcept;
 
-  constexpr void swap(indirect& other) noexcept;
+  constexpr void swap(indirect& other) noexcept(see below);
 
-  friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept;
+  friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept(see below);
 
   template <class U, class AA>
   friend constexpr auto operator==(
@@ -728,7 +728,8 @@ constexpr void swap(indirect& other) noexcept(
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
 ```c++
-constexpr void swap(indirect& lhs, indirect& rhs);
+constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
+  noexcept(lhs.swap(rhs)));
 ```
 
 * _Effects_: Equivalent to `lhs.swap(rhs)`.
@@ -1038,7 +1039,8 @@ class polymorphic {
 
   constexpr void swap(polymorphic& other) noexcept(see below);
 
-  friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(see below);
+  friend constexpr void swap(polymorphic& lhs,
+                             polymorphic& rhs) noexcept(see below);
 };
 ```
 
@@ -1241,7 +1243,8 @@ constexpr void swap(polymorphic& other) noexcept(
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
 ```c++
-constexpr void swap(polymorphic& lhs, polymorphic& rhs);
+constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(
+  noexcept(lhs.swap(rhs)));
 ```
 
 * _Effects_: Equivalent to `lhs.swap(rhs)`.
