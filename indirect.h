@@ -193,7 +193,9 @@ class indirect {
 
   constexpr allocator_type get_allocator() const noexcept { return alloc_; }
 
-  constexpr void swap(indirect& other) noexcept {
+  constexpr void swap(indirect& other) noexcept(
+      std::allocator_traits<A>::propagate_on_container_swap::value ||
+      std::allocator_traits<A>::is_always_equal::value) {
     assert(p_ != nullptr);        // LCOV_EXCL_LINE
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
 
@@ -211,7 +213,8 @@ class indirect {
     }
   }
 
-  friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept {
+  friend constexpr void swap(indirect& lhs,
+                             indirect& rhs) noexcept(noexcept(lhs.swap(rhs))) {
     lhs.swap(rhs);
   }
 
