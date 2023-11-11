@@ -899,7 +899,7 @@ underlying `T` supports specialisation of `std::formatter<T, charT>`.
 * Preconditions: `value` is not valueless. The specialization `formatter<T,
   charT>` meets the _Formatter_ requirements.
 
-## Feature-test Macro [indirect.predefined.ft]
+## Feature-test Macro [version.syn]
 
 Add a new feature-test macro:
 
@@ -1213,7 +1213,7 @@ constexpr void swap(polymorphic& lhs, polymorphic& rhs);
 
 * _Effects_: Equivalent to `lhs.swap(rhs)`.
 
-## Feature-test Macro [polymorphic.predefined.ft]
+## Feature-test Macro [version.syn]
 
 Add a new feature-test macro:
 
