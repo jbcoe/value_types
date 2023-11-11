@@ -275,7 +275,7 @@ propagates const and is allocator aware.
   (it could be an instance of a derived type). As a result `polymorphic` cannot
   forward comparison operators, hash or formatting to the owned object.
 
-#### Disimilarites with variant and the valueless state
+#### Dissimilarities with variant and the valueless state
 
 The sum type, `variant<Ts...>`, models one of several alternatives;
 `indirect<T>` models a single type `T`, but with different storage constraints.
