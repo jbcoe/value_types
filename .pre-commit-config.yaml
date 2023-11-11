@@ -41,4 +41,4 @@ repos:
   rev: 3.0.0
   hooks:
   - id: require-ascii
-    types_or: [c++, c]
+    types_or: [c++, c, markdown]
