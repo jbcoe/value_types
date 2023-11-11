@@ -1309,9 +1309,6 @@ _A polymorphic value-type for C++_, J. B. Coe, S. Parent 2019
 _A Free-Store-Allocated Value Type for C++_, J. B. Coe, A. Peacock 2022
 [https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1950r2.html]
 
-A C++20 reference implementation is available on GitHub
-[https://www.github.com/jbcoe/value_types]
-
 ## Appendix A: Detailed design decisions
 
 We discuss some of the decisions that were made in the design of `indirect` and
