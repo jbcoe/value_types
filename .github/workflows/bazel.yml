@@ -3,9 +3,12 @@ name: Bazel test
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '**/*.md'
   pull_request:
     branches: [main]
-
+    paths-ignore:
+      - '**/*.md'
 jobs:
   build:
     name: ${{ matrix.settings.name }}
