@@ -421,7 +421,7 @@ class indirect {
 
   template <class U, class... Us>
   constexpr indirect(std::allocator_arg_t, const Allocator& alloc,
-                     U&&, Us&&... us);
+                     U&& u, Us&&... us);
 
   constexpr indirect(const indirect& other);
 
@@ -569,7 +569,7 @@ explicit constexpr indirect(U&& u, Us&&... us);
   `is_same_v<remove_cvref_t<U>, indirect>` is false.
 
 * _Effects_: Constructs an indirect owning an instance of `T` created with the
-  arguments `U`, `Us`. `allocator_` is default constructed.
+  arguments `u`, `us`. `allocator_` is default constructed.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -578,7 +578,8 @@ template <class U, class... Us>
 constexpr indirect(std::allocator_arg_t, const Allocator& alloc, U&& u, Us&& ...us);
 ```
 
-* _Constraints_: `is_constructible_v<T, Ts...>` is true.
+* _Constraints_: `is_constructible_v<T, U, Us...>` is true.
+  `is_same_v<remove_cvref_t<U>, indirect>` is false.
 
 * _Preconditions_: `Allocator` meets the _Cpp17Allocator_ requirements.
 
