@@ -160,7 +160,7 @@ or remove the ability to be default constructed.
 
 Note that, due to the requirement to support incomplete `T` types, the `indirect<T>`
 and `polymorphic<T>` types unconditionally have a default-constructor (according to
-`std::is_default_constructible_v<indirect<T>>`), however if `T` is not defalut
+`std::is_default_constructible_v<indirect<T>>`), however if `T` is not default
 constructible then attempting to odr-use the `indirect<T>` default constructor
 will be ill-formed.
 
