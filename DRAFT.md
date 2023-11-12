@@ -19,9 +19,9 @@ _Sean Parent \<<sparent@adobe.com>\>_
 We propose the addition of two new class templates to the C++ Standard Library:
 `indirect<T>` and `polymorphic<T>`.
 
-Specializations of these class templates have value semantics and compose well with other standard
-library types (such as vector) allowing the compiler to correctly generate
-special member functions.
+Specializations of these class templates have value semantics and compose well
+with other standard library types (such as vector) allowing the compiler to
+correctly generate special member functions.
 
 The class template `indirect` confers value-like semantics on a
 free-store-allocated object. An `indirect` may hold an object of a class `T`.
@@ -33,8 +33,8 @@ by the `indirect` member.
 The class template `polymorphic` confers value-like semantics on a
 dynamically-allocated object.  A `polymorphic<T>` may hold an object of a class
 publicly derived from `T`. Copying the `polymorphic<T>` will copy the object of
-the derived type. A const `polymorphic<T>` propagates the constness to the
-owned `T`.
+the derived type. A const `polymorphic<T>` propagates the constness to the owned
+`T`.
 
 This proposal is a fusion of two earlier individual proposals, P1950 and P0201.
 The design of the two proposed class templates is sufficiently similar that they
@@ -158,8 +158,9 @@ logical state nor to the logical state of other object.
 is default constructible. Moving a value type onto the free store should not add
 or remove the ability to be default constructed.
 
-Note that, due to the requirement to support incomplete `T` types, the `indirect<T>`
-and `polymorphic<T>` types unconditionally have a default-constructor (according to
+Note that, due to the requirement to support incomplete `T` types, the
+`indirect<T>` and `polymorphic<T>` types unconditionally have a
+default-constructor (according to
 `std::is_default_constructible_v<indirect<T>>`), however if `T` is not default
 constructible then attempting to odr-use the `indirect<T>` default constructor
 will be ill-formed.
@@ -281,8 +282,8 @@ propagates const and is allocator aware.
 
 #### Similarities and dissimilarities with variant
 
-The sum type `variant<Ts...>` models one of several alternatives;
-`indirect<T>` models a single type `T`, but with different storage constraints.
+The sum type `variant<Ts...>` models one of several alternatives; `indirect<T>`
+models a single type `T`, but with different storage constraints.
 
 Like `indirect`, a variant can get into a valueless state. For variant, this
 valueless state is accessible when an exception is thrown when changing the
@@ -379,10 +380,10 @@ either `allocator_type::value_type` or an internal type used by the indirect
 value.
 
 Copy constructors for an indirect value obtain an allocator by calling
-`allocator_traits<allocator_type>::select_on_container_copy_construction` on
-the allocator belonging to the indirect value being copied. Move constructors
-obtain an allocator by move construction from the allocator belonging to the
-container being moved. All other constructors for these container types take a `const
+`allocator_traits<allocator_type>::select_on_container_copy_construction` on the
+allocator belonging to the indirect value being copied. Move constructors obtain
+an allocator by move construction from the allocator belonging to the container
+being moved. All other constructors for these container types take a `const
 allocator_type& argument`. [Note 3:If an invocation of a constructor uses the
 default value of an optional allocator argument, then the allocator type must
 support value-initialization.  end note] A copy of this allocator is used for
@@ -394,9 +395,8 @@ move assignment, or swapping of the allocator only if (64.1)
 `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value`,
 (64.2)
 `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value`,
-or (64.3)
-`allocator_traits<allocator_type>::propagate_on_container_swap::value` is
-true within the implementation of the corresponding indirect value operation.
+or (64.3) `allocator_traits<allocator_type>::propagate_on_container_swap::value`
+is true within the implementation of the corresponding indirect value operation.
 
 The template parameter `T` of `indirect` must be a non-union class type.
 
@@ -967,8 +967,8 @@ either `allocator_type::value_type` or an internal type used by the polymorphic
 value.
 
 Copy constructors for a polymorphic value obtain an allocator by calling
-`allocator_traits<allocator_type>::select_on_container_copy_construction` on
-the allocator belonging to the polymorphic value being copied. Move constructors
+`allocator_traits<allocator_type>::select_on_container_copy_construction` on the
+allocator belonging to the polymorphic value being copied. Move constructors
 obtain an allocator by move construction from the allocator belonging to the
 container being moved. Such move construction of the allocator shall not exit
 via an exception. All other constructors for these container types take a `const
@@ -983,9 +983,9 @@ move assignment, or swapping of the allocator only if (64.1)
 `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value`,
 (64.2)
 `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value`,
-or (64.3)
-`allocator_traits<allocator_type>::propagate_on_container_swap::value` is
-true within the implementation of the corresponding polymorphic value operation.
+or (64.3) `allocator_traits<allocator_type>::propagate_on_container_swap::value`
+is true within the implementation of the corresponding polymorphic value
+operation.
 
 The template parameter `T` of `polymorphic` must be a non-union class type.
 
