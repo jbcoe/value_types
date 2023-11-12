@@ -307,6 +307,10 @@ struct TrackingAllocator {
   unsigned* alloc_counter_;
   unsigned* dealloc_counter_;
 
+  using value_type = T;
+  using propagate_on_container_move_assignment = std::true_type;
+  using propagate_on_container_copy_assignment = std::true_type;
+
   TrackingAllocator(unsigned* alloc_counter, unsigned* dealloc_counter)
       : alloc_counter_(alloc_counter), dealloc_counter_(dealloc_counter) {}
 
@@ -314,8 +318,6 @@ struct TrackingAllocator {
   TrackingAllocator(const TrackingAllocator<U>& other)
       : alloc_counter_(other.alloc_counter_),
         dealloc_counter_(other.dealloc_counter_) {}
-
-  using value_type = T;
 
   template <typename Other>
   struct rebind {
@@ -333,11 +335,17 @@ struct TrackingAllocator {
     default_allocator.deallocate(p, n);
   }
 
-  friend bool operator==(const TrackingAllocator& lhs,
-                         const TrackingAllocator& rhs) noexcept {
-    return lhs.alloc_counter_ == rhs.alloc_counter_ &&
-           lhs.dealloc_counter_ == rhs.dealloc_counter_;
+  template <typename... Ts>
+  constexpr void construct(T* p, Ts&&... ts) {
+    if constexpr (std::uses_allocator_v<T, TrackingAllocator<T>>) {
+      new (p) T(std::allocator_arg, *this, std::forward<Ts>(ts)...);
+    } else /* constexpr */ {
+      new (p) T(std::forward<Ts>(ts)...);
+    }
   }
+
+  friend bool operator==(const TrackingAllocator& lhs,
+                         const TrackingAllocator& rhs) noexcept = default;
 };
 
 TEST(PolymorphicTest, GetAllocator) {

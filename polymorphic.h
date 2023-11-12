@@ -63,15 +63,40 @@ struct control_block {
 template <class T, class U, class A>
 class direct_control_block final : public control_block<T, A> {
   std::aligned_storage_t<sizeof(U), alignof(U)> u_;
+  [[no_unique_address]] A alloc_;
+
+  using u_allocator = typename std::allocator_traits<A>::template rebind_alloc<
+      direct_control_block<T, U, A>>;
+  using u_alloc_traits = std::allocator_traits<u_allocator>;
 
  public:
+  using allocator_type = A;
+
+  allocator_type get_allocator() const { return alloc_; }
+
   constexpr ~direct_control_block() override {
-    reinterpret_cast<U*>(&u_)->~U();
+    u_allocator u_alloc(alloc_);
+    u_alloc_traits::destroy(u_alloc, reinterpret_cast<U*>(&u_));
   }
 
   template <class... Ts>
-  constexpr direct_control_block(Ts&&... ts) {
-    new (&u_) U(std::forward<Ts>(ts)...);
+  constexpr direct_control_block(std::allocator_arg_t, const A& alloc,
+                                 Ts&&... ts)
+      : alloc_(alloc) {
+    u_allocator u_alloc(alloc_);
+    u_alloc_traits::construct(u_alloc, reinterpret_cast<U*>(&u_),
+                              std::forward<Ts>(ts)...);
+    control_block<T, A>::p_ = reinterpret_cast<U*>(&u_);
+  }
+
+  template <class... Ts>
+  constexpr direct_control_block(Ts&&... ts)
+    requires(std::is_constructible_v<U, Ts...> &&
+             std::is_default_constructible_v<A>)
+  {
+    u_allocator u_alloc(alloc_);
+    u_alloc_traits::construct(u_alloc, reinterpret_cast<U*>(&u_),
+                              std::forward<Ts>(ts)...);
     control_block<T, A>::p_ = reinterpret_cast<U*>(&u_);
   }
 
