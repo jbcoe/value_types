@@ -160,20 +160,20 @@ logical state nor to the logical state of other object.
 is default constructible. Moving a value type onto the free store should not add
 or remove the ability to be default constructed.
 
-### Unobservable null state and interaction with `std::optional`
+### The valueless state and interaction with `std::optional`
 
-Both `indirect` and `polymorphic` have a null state that is used to implement
-move. The null state is not intended to be observable to the user. There is no
-`operator bool` or `has_value` member function. Accessing the value of an
-`indirect` or `polymorphic` after it has been moved from is erroneous behaviour.
-We provide a `valueless_after_move` member function that returns `true` if an
-object is in a valueless state. This allows explicit checks for the valueless
-state in cases where it cannot be verified statically.
+Both `indirect` and `polymorphic` have a valueless state that is used to
+implement move. The valueless state is not intended to be observable to the
+user. There is no `operator bool` or `has_value` member function. Accessing the
+value of an `indirect` or `polymorphic` after it has been moved from is
+erroneous behaviour. We provide a `valueless_after_move` member function that
+returns `true` if an object is in a valueless state. This allows explicit checks
+for the valueless state in cases where it cannot be verified statically.
 
-Without a null state, moving `indirect` or `polymorphic` would require
+Without a valueless state, moving `indirect` or `polymorphic` would require
 allocation and moving from the owned object. This would be expensive and would
-require the owned object to be moveable. The existence of a null state allows
-move to be implemented cheaply without requiring the owned object to be
+require the owned object to be moveable. The existence of a valueless state
+allows move to be implemented cheaply without requiring the owned object to be
 moveable.
 
 Where a nullable `indirect` or `polymorphic` is required, using `std::optional`
@@ -274,6 +274,23 @@ propagates const and is allocator aware.
 * Like `unique_ptr`, `polymorphic` does not know the type of the owned object
   (it could be an instance of a derived type). As a result `polymorphic` cannot
   forward comparison operators, hash or formatting to the owned object.
+
+#### Similarities and dissimilarities with variant
+
+The sum type `variant<Ts...>` models one of several alternatives;
+`indirect<T>` models a single type `T`, but with different storage constraints.
+
+Like `indirect`, a variant can get into a valueless state. For variant, this
+valueless state is accessible when an exception is thrown when changing the
+type: variant has `bool valueless_by_exception()`. When all of the types, `Ts`,
+are comparable, `variant<Ts...>` supports comparison without preconditions: it
+is valid to compare variants when they are in a valueless state. Variant
+comparisons can account for the valueless state with zero cost. A variant must
+check which type is the engaged type to perform comparison; valueless is one of
+the possible states it can be in. For `indirect`, allowing comparison when in a
+valueless state would necessitate the addition of an otherwise redundant check.
+Accessing a valueless `indirect` is erroneous, so we make it a precondition for
+comparison and hash that the instance of `indirect` is not valueless.
 
 ### `noexcept` and narrow contracts
 
@@ -392,17 +409,19 @@ class indirect {
  public:
   using value_type = T;
   using allocator_type = Allocator;
-  using pointer        = typename allocator_traits<Allocator>::pointer;
-  using const_pointer  = typename allocator_traits<Allocator>::const_pointer;
+  using pointer = typename allocator_traits<Allocator>::pointer;
+  using const_pointer = typename allocator_traits<Allocator>::const_pointer;
 
   constexpr indirect();
 
-  template <class... Ts>
-  explicit constexpr indirect(Ts&&... ts);
+  constexpr indirect(std::allocator_arg_t, const Allocator& alloc);
 
-  template <class... Ts>
-  constexpr indirect(
-    std::allocator_arg_t, const Allocator& alloc, Ts&&... ts);
+  template <class U, class... Us>
+  explicit constexpr indirect(U&& u, Us&&... us);
+
+  template <class U, class... Us>
+  constexpr indirect(std::allocator_arg_t, const Allocator& alloc,
+                     U&& u, Us&&... us);
 
   constexpr indirect(const indirect& other);
 
@@ -529,23 +548,38 @@ constexpr indirect()
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-template <class... Ts>
-explicit constexpr indirect(Ts&&... ts);
+constexpr indirect(std::allocator_arg_t, const Allocator& alloc);
 ```
 
-* _Constraints_: `is_constructible_v<T, Ts...>` is true.
+* _Mandates_: `is_default_constructible_v<T>` is true.
 
-* _Effects_: Constructs an indirect owning an instance of `T` created with the
-  arguments `Ts`. `allocator_` is default constructed.
+* _Preconditions_: `Allocator` meets the _Cpp17Allocator_ requirements.
+
+* _Effects_: Equivalent to the preceding constructor except that the allocator
+  is initialized with alloc. `allocator_` is initialized with `alloc`.
 
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-template <class... Ts>
-constexpr indirect(std::allocator_arg_t, const Allocator& alloc, Ts&&... ts);
+template <class U, class... Us>
+explicit constexpr indirect(U&& u, Us&&... us);
 ```
 
-* _Constraints_: `is_constructible_v<T, Ts...>` is true.
+* _Constraints_: `is_constructible_v<T, U, Us...>` is true.
+  `is_same_v<remove_cvref_t<U>, indirect>` is false.
+
+* _Effects_: Constructs an indirect owning an instance of `T` created with the
+  arguments `u`, `us`. `allocator_` is default constructed.
+
+* _Postconditions_: `*this` is not valueless.
+
+```c++
+template <class U, class... Us>
+constexpr indirect(std::allocator_arg_t, const Allocator& alloc, U&& u, Us&& ...us);
+```
+
+* _Constraints_: `is_constructible_v<T, U, Us...>` is true.
+  `is_same_v<remove_cvref_t<U>, indirect>` is false.
 
 * _Preconditions_: `Allocator` meets the _Cpp17Allocator_ requirements.
 
@@ -964,7 +998,7 @@ class polymorphic {
  public:
   using value_type = T;
   using allocator_type = Allocator;
-  using pointer        = typename allocator_traits<Allocator>::pointer;
+  using pointer = typename allocator_traits<Allocator>::pointer;
   using const_pointer  = typename allocator_traits<Allocator>::const_pointer;
 
   constexpr polymorphic();
@@ -1232,13 +1266,13 @@ A C++20 reference implementation of this proposal is available on GitHub at
 ## Acknowledgements
 
 The authors would like to thank Andrew Bennieston, Josh Berne, Bengt Gustafsson,
-Casey Carter, Rostislav Khlebnikov, Daniel Krugler, David Krauss, Ed Catmur,
-Geoff Romer, German Diago, Jonathan Wakely, Kilian Henneberger, LanguageLawyer,
-Louis Dionne, Maciej Bogus, Malcolm Parsons, Matthew Calabrese, Nathan Myers,
-Neelofer Banglawala, Nevin Liber, Nina Ranns, Patrice Roy, Roger Orr, Stephan T
-Lavavej, Stephen Kelly, Thomas Koeppe, Thomas Russell, Tom Hudson, Tomasz
-Kaminski, Tony van Eerd and Ville Voutilainen for suggestions and useful
-discussion.
+Casey Carter, Rostislav Khlebnikov, Daniel Krugler, David Krauss, David Stone,
+Ed Catmur, Geoff Romer, German Diago, Jonathan Wakely, Kilian Henneberger,
+LanguageLawyer, Louis Dionne, Maciej Bogus, Malcolm Parsons, Matthew Calabrese,
+Nathan Myers, Neelofer Banglawala, Nevin Liber, Nina Ranns, Patrice Roy, Roger
+Orr, Stephan T Lavavej, Stephen Kelly, Thomas Koeppe, Thomas Russell, Tom
+Hudson, Tomasz Kaminski, Tony van Eerd and Ville Voutilainen for suggestions and
+useful discussion.
 
 ## References
 
@@ -1359,10 +1393,10 @@ A converting constructor could be added in a future version of the C++ standard.
 
 ### Comparisons returning `auto`
 
-We opt to return `auto` from comparsion operators on `indirect<T>` so that the
+We opt to return `auto` from comparison operators on `indirect<T>` so that the
 return type perfectly matches that of the underlying comparison for `T`. While
 deferring the return type to the underlying type does support unusual
-user-defined comparsion operators, we prefer to do so rather than impose
+user-defined comparison operators, we prefer to do so rather than impose
 requirements on the user-defined operators for consistency. Adoption of indirect
 or moving an object onto the heap should not be impeded by unusual choices for
 the return type of comparison operators on user-defined types.
