@@ -231,7 +231,9 @@ class indirect {
   template <class U, class AA>
   friend constexpr bool operator==(const indirect<T, A>& lhs,
                                    const indirect<U, AA>& rhs)
-    requires std::equality_comparable_with<T, U>
+    requires requires(const indirect<T, A>& lhs, const indirect<U, AA>& rhs) {
+      *lhs == *rhs;
+    }
   {
     assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
     assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
@@ -241,7 +243,9 @@ class indirect {
   template <class U, class AA>
   friend constexpr bool operator!=(const indirect<T, A>& lhs,
                                    const indirect<U, AA>& rhs)
-    requires std::equality_comparable_with<T, U>
+    requires requires(const indirect<T, A>& lhs, const indirect<U, AA>& rhs) {
+      *lhs != *rhs;
+    }
   {
     assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
     assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
@@ -249,9 +253,35 @@ class indirect {
   }
 
   template <class U, class AA>
+  friend constexpr bool operator<(const indirect<T, A>& lhs,
+                                  const indirect<U, AA>& rhs)
+    requires requires(const indirect<T, A>& lhs, const indirect<U, AA>& rhs) {
+      *lhs < *rhs;
+    }
+  {
+    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
+    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    return *lhs < *rhs;
+  }
+
+  template <class U, class AA>
+  friend constexpr bool operator<=(const indirect<T, A>& lhs,
+                                   const indirect<U, AA>& rhs)
+    requires requires(const indirect<T, A>& lhs, const indirect<U, AA>& rhs) {
+      *lhs <= *rhs;
+    }
+  {
+    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
+    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    return *lhs <= *rhs;
+  }
+
+  template <class U, class AA>
   friend constexpr auto operator<=>(const indirect<T, A>& lhs,
                                     const indirect<U, AA>& rhs)
-    requires std::three_way_comparable_with<T, U>
+    requires requires(const indirect<T, A>& lhs, const indirect<U, AA>& rhs) {
+      *lhs <=> *rhs;
+    }
   {
     assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
     assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
@@ -260,7 +290,8 @@ class indirect {
 
   template <class U>
   friend constexpr bool operator==(const indirect<T, A>& lhs, const U& rhs)
-    requires(!is_indirect_v<U>)
+    requires((!is_indirect_v<U>) &&
+             requires(const indirect<T, A>& lhs, const U& rhs) { *lhs == rhs; })
   {
     assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
     return *lhs == rhs;
@@ -268,7 +299,8 @@ class indirect {
 
   template <class U>
   friend constexpr bool operator==(const U& lhs, const indirect<T, A>& rhs)
-    requires(!is_indirect_v<U>)
+    requires((!is_indirect_v<U>) &&
+             requires(const U& lhs, const indirect<T, A>& rhs) { lhs == *rhs; })
   {
     assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
     return lhs == *rhs;
@@ -276,7 +308,8 @@ class indirect {
 
   template <class U>
   friend constexpr bool operator!=(const indirect<T, A>& lhs, const U& rhs)
-    requires(!is_indirect_v<U>)
+    requires((!is_indirect_v<U>) &&
+             requires(const indirect<T, A>& lhs, const U& rhs) { *lhs != rhs; })
   {
     assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
     return *lhs != rhs;
@@ -284,15 +317,89 @@ class indirect {
 
   template <class U>
   friend constexpr bool operator!=(const U& lhs, const indirect<T, A>& rhs)
-    requires(!is_indirect_v<U>)
+    requires((!is_indirect_v<U>) &&
+             requires(const U& lhs, const indirect<T, A>& rhs) { lhs != *rhs; })
   {
     assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
     return lhs != *rhs;
   }
 
   template <class U>
+  friend constexpr bool operator<(const indirect<T, A>& lhs, const U& rhs)
+    requires((!is_indirect_v<U>) &&
+             requires(const indirect<T, A>& lhs, const U& rhs) { *lhs < rhs; })
+  {
+    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
+    return *lhs < rhs;
+  }
+
+  template <class U>
+  friend constexpr bool operator<(const U& lhs, const indirect<T, A>& rhs)
+    requires((!is_indirect_v<U>) &&
+             requires(const U& lhs, const indirect<T, A>& rhs) { lhs < *rhs; })
+  {
+    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    return lhs < *rhs;
+  }
+
+  template <class U>
+  friend constexpr bool operator<=(const indirect<T, A>& lhs, const U& rhs)
+    requires((!is_indirect_v<U>) &&
+             requires(const indirect<T, A>& lhs, const U& rhs) { *lhs <= rhs; })
+  {
+    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
+    return *lhs <= rhs;
+  }
+
+  template <class U>
+  friend constexpr bool operator<=(const U& lhs, const indirect<T, A>& rhs)
+    requires((!is_indirect_v<U>) &&
+             requires(const U& lhs, const indirect<T, A>& rhs) { lhs <= *rhs; })
+  {
+    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    return lhs <= *rhs;
+  }
+
+  template <class U>
+  friend constexpr bool operator>(const indirect<T, A>& lhs, const U& rhs)
+    requires((!is_indirect_v<U>) &&
+             requires(const indirect<T, A>& lhs, const U& rhs) { *lhs > rhs; })
+  {
+    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
+    return *lhs > rhs;
+  }
+
+  template <class U>
+  friend constexpr bool operator>(const U& lhs, const indirect<T, A>& rhs)
+    requires((!is_indirect_v<U>) &&
+             requires(const U& lhs, const indirect<T, A>& rhs) { lhs > *rhs; })
+  {
+    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    return lhs > *rhs;
+  }
+
+  template <class U>
+  friend constexpr bool operator>=(const indirect<T, A>& lhs, const U& rhs)
+    requires((!is_indirect_v<U>) &&
+             requires(const indirect<T, A>& lhs, const U& rhs) { *lhs >= rhs; })
+  {
+    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
+    return *lhs >= rhs;
+  }
+
+  template <class U>
+  friend constexpr bool operator>=(const U& lhs, const indirect<T, A>& rhs)
+    requires((!is_indirect_v<U>) &&
+             requires(const U& lhs, const indirect<T, A>& rhs) { lhs >= *rhs; })
+  {
+    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    return lhs >= *rhs;
+  }
+
+  template <class U>
   friend constexpr auto operator<=>(const indirect<T, A>& lhs, const U& rhs)
-    requires(!is_indirect_v<U>)
+    requires((!is_indirect_v<U>) && requires(const indirect<T, A>& lhs,
+                                             const U& rhs) { *lhs <=> rhs; })
   {
     assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
     return *lhs <=> rhs;
@@ -300,7 +407,10 @@ class indirect {
 
   template <class U>
   friend constexpr auto operator<=>(const U& lhs, const indirect<T, A>& rhs)
-    requires(!is_indirect_v<U>)
+    requires((!is_indirect_v<U>) &&
+             requires(const U& lhs, const indirect<T, A>& rhs) {
+               lhs <=> *rhs;
+             })
   {
     assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
     return lhs <=> *rhs;
