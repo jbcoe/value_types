@@ -272,8 +272,10 @@ class polymorphic {
       std::allocator_traits<A>::is_always_equal::value) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
 
-    if (this == &other) { return; }
-    
+    if (this == &other) {
+      return;
+    }
+
     if constexpr (allocator_traits::propagate_on_container_swap::value) {
       // If allocators move with their allocated objects we can swap both.
       std::swap(alloc_, other.alloc_);
