@@ -42,13 +42,13 @@ class guard {
   std::optional<F> f_;
 
  public:
-  guard(F f) : f_(f) {}
-  ~guard() {
+  constexpr guard(F f) : f_(f) {}
+  constexpr ~guard() {
     if (f_) {
       (*f_)();
     }
   }
-  void reset() { f_.reset(); }
+  constexpr void reset() { f_.reset(); }
 };
 template <typename F>
 guard(F) -> guard<F>;
@@ -71,8 +71,8 @@ class control_block {
  public:
   using allocator_traits = std::allocator_traits<A>;
 
-  allocator_traits::pointer ptr() { return p_; }
-  allocator_traits::const_pointer ptr() const { return p_; }
+  constexpr allocator_traits::pointer ptr() { return p_; }
+  constexpr allocator_traits::const_pointer ptr() const { return p_; }
 
   virtual constexpr ~control_block() = default;
   virtual constexpr void destroy(A& alloc) = 0;
@@ -84,7 +84,12 @@ class control_block {
 
 template <class T, class U, class A>
 class direct_control_block final : public control_block<T, A> {
-  std::aligned_storage_t<sizeof(U), alignof(U)> u_;
+  union storage_t {
+    char c_;
+    U u_;
+    constexpr storage_t() {}
+    constexpr ~storage_t() {}
+  } storage_;
   [[no_unique_address]] A alloc_;
 
   using u_allocator = typename std::allocator_traits<A>::template rebind_alloc<
@@ -98,7 +103,7 @@ class direct_control_block final : public control_block<T, A> {
 
   constexpr ~direct_control_block() override {
     u_allocator u_alloc(alloc_);
-    u_alloc_traits::destroy(u_alloc, reinterpret_cast<U*>(&u_));
+    u_alloc_traits::destroy(u_alloc, &storage_.u_);
   }
 
   template <class... Ts>
@@ -106,9 +111,8 @@ class direct_control_block final : public control_block<T, A> {
                                  Ts&&... ts)
       : alloc_(alloc) {
     u_allocator u_alloc(alloc_);
-    u_alloc_traits::construct(u_alloc, reinterpret_cast<U*>(&u_),
-                              std::forward<Ts>(ts)...);
-    control_block<T, A>::p_ = reinterpret_cast<U*>(&u_);
+    u_alloc_traits::construct(u_alloc, &storage_.u_, std::forward<Ts>(ts)...);
+    control_block<T, A>::p_ = &storage_.u_;
   }
 
   template <class... Ts>
@@ -117,9 +121,8 @@ class direct_control_block final : public control_block<T, A> {
              std::is_default_constructible_v<A>)
   {
     u_allocator u_alloc(alloc_);
-    u_alloc_traits::construct(u_alloc, reinterpret_cast<U*>(&u_),
-                              std::forward<Ts>(ts)...);
-    control_block<T, A>::p_ = reinterpret_cast<U*>(&u_);
+    u_alloc_traits::construct(u_alloc, &storage_.u_, std::forward<Ts>(ts)...);
+    control_block<T, A>::p_ = &storage_.u_;
   }
 
   constexpr control_block<T, A>* clone(A& alloc) override {
@@ -129,7 +132,7 @@ class direct_control_block final : public control_block<T, A> {
     using cb_alloc_traits = std::allocator_traits<cb_allocator>;
     auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
     guard mem_guard([&]() { cb_alloc_traits::deallocate(cb_alloc, mem, 1); });
-    cb_alloc_traits::construct(cb_alloc, mem, *reinterpret_cast<U*>(&u_));
+    cb_alloc_traits::construct(cb_alloc, mem, storage_.u_);
     mem_guard.reset();
     return mem;
   }
