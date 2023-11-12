@@ -277,8 +277,8 @@ propagates const and is allocator aware.
 
 #### Similarities and dissimilarities with variant
 
-The sum type `variant<Ts...>` models one of several alternatives;
-`indirect<T>` models a single type `T`, but with different storage constraints.
+The sum type `variant<Ts...>` models one of several alternatives; `indirect<T>`
+models a single type `T`, but with different storage constraints.
 
 Like `indirect`, a variant can get into a valueless state. For variant, this
 valueless state is accessible when an exception is thrown when changing the
@@ -375,11 +375,11 @@ either `allocator_type::value_type` or an internal type used by the indirect
 value.
 
 Copy constructors for an indirect value obtain an allocator by calling
-`allocator_traits<allocator_type>::select_on_container_copy_construction` on
-the allocator belonging to the indirect value being copied. Move constructors
-obtain an allocator by move construction from the allocator belonging to the
-container being moved. Such move construction of the allocator shall not exit
-via an exception. All other constructors for these container types take a `const
+`allocator_traits<allocator_type>::select_on_container_copy_construction` on the
+allocator belonging to the indirect value being copied. Move constructors obtain
+an allocator by move construction from the allocator belonging to the container
+being moved. Such move construction of the allocator shall not exit via an
+exception. All other constructors for these container types take a `const
 allocator_type& argument`. [Note 3:If an invocation of a constructor uses the
 default value of an optional allocator argument, then the allocator type must
 support value-initialization.  end note] A copy of this allocator is used for
@@ -391,9 +391,8 @@ move assignment, or swapping of the allocator only if (64.1)
 `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value`,
 (64.2)
 `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value`,
-or (64.3)
-`allocator_traits<allocator_type>::propagate_on_container_swap::value` is
-true within the implementation of the corresponding indirect value operation.
+or (64.3) `allocator_traits<allocator_type>::propagate_on_container_swap::value`
+is true within the implementation of the corresponding indirect value operation.
 
 The template parameter `T` of `indirect` must be a non-union class type.
 
@@ -668,7 +667,7 @@ constexpr indirect& operator=(const indirect& other);
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: If
+* _Effects_: If `this==&other`, then does nothing. Otherwise if
   `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value
   == true`, `allocator` is set to the allocator of `other`. If allocator is not
   changed, `std::is_copy_assignable_v<T>` is true, and `*this` is not valueless,
@@ -745,7 +744,8 @@ constexpr void swap(indirect& other) noexcept(
 
 * _Preconditions_: `*this` is not valueless, `other` is not valueless.
 
-* _Effects_: Swaps the objects owned by `*this` and `other`. If
+* _Effects_: If `this==&other`, then does nothing. Otherwise swaps the objects
+  owned by `*this` and `other`. If
   `allocator_traits<allocator_type>::propagate_on_container_swap::value` is
   `true`, then allocator_type shall meet the _Cpp17Swappable_ requirements and
   the allocators of `*this` and `other` shall also be exchanged by calling
@@ -964,8 +964,8 @@ either `allocator_type::value_type` or an internal type used by the polymorphic
 value.
 
 Copy constructors for a polymorphic value obtain an allocator by calling
-`allocator_traits<allocator_type>::select_on_container_copy_construction` on
-the allocator belonging to the polymorphic value being copied. Move constructors
+`allocator_traits<allocator_type>::select_on_container_copy_construction` on the
+allocator belonging to the polymorphic value being copied. Move constructors
 obtain an allocator by move construction from the allocator belonging to the
 container being moved. Such move construction of the allocator shall not exit
 via an exception. All other constructors for these container types take a `const
@@ -980,9 +980,9 @@ move assignment, or swapping of the allocator only if (64.1)
 `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value`,
 (64.2)
 `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value`,
-or (64.3)
-`allocator_traits<allocator_type>::propagate_on_container_swap::value` is
-true within the implementation of the corresponding polymorphic value operation.
+or (64.3) `allocator_traits<allocator_type>::propagate_on_container_swap::value`
+is true within the implementation of the corresponding polymorphic value
+operation.
 
 The template parameter `T` of `polymorphic` must be a non-union class type.
 
@@ -1162,8 +1162,9 @@ constexpr polymorphic& operator=(const polymorphic& other);
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: If `*this` is not valueless, destroys the owned object. If
-`allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value
+* _Effects_: If `this==&other`, then does nothing. Otherwise if `*this` is not
+valueless, destroys the owned object. If
+  `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value
   == true`, `allocator` is set to the allocator of `other`. Copy constructs a
   new object using the object owned by `other`.
 
@@ -1233,7 +1234,8 @@ constexpr void swap(polymorphic& other) noexcept(
 
 * _Preconditions_: `*this` is not valueless, `other` is not valueless.
 
-* _Effects_: Swaps the objects owned by `*this` and `other`. If
+* _Effects_: If `this==&other`, then does nothing. Otherwise swaps the objects
+  owned by `*this` and `other`. If
   `allocator_traits<allocator_type>::propagate_on_container_swap::value` is
   `true`, then allocator_type shall meet the _Cpp17Swappable_ requirements and
   the allocators of `*this` and `other` shall also be exchanged by calling
