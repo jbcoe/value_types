@@ -62,14 +62,17 @@ struct control_block {
 
 template <class T, class U, class A>
 class direct_control_block final : public control_block<T, A> {
-  U u_;
+  std::aligned_storage_t<sizeof(U), alignof(U)> u_;
 
  public:
-  constexpr ~direct_control_block() override = default;
+  constexpr ~direct_control_block() override {
+    reinterpret_cast<U*>(&u_)->~U();
+  }
 
   template <class... Ts>
-  constexpr direct_control_block(Ts&&... ts) : u_(std::forward<Ts>(ts)...) {
-    control_block<T, A>::p_ = &u_;
+  constexpr direct_control_block(Ts&&... ts) {
+    new (&u_) U(std::forward<Ts>(ts)...);
+    control_block<T, A>::p_ = reinterpret_cast<U*>(&u_);
   }
 
   constexpr control_block<T, A>* clone(A& alloc) override {
@@ -79,7 +82,7 @@ class direct_control_block final : public control_block<T, A> {
     using cb_alloc_traits = std::allocator_traits<cb_allocator>;
     auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
     try {
-      cb_alloc_traits::construct(cb_alloc, mem, u_);
+      cb_alloc_traits::construct(cb_alloc, mem, *reinterpret_cast<U*>(&u_));
       return mem;
     } catch (...) {
       cb_alloc_traits::deallocate(cb_alloc, mem, 1);
