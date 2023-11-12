@@ -1651,3 +1651,26 @@ class Picture {
   void draw(Canvas& canvas) const;
 };
 ```
+
+## Appendix C: Enhancements vs breaking changes
+
+This table shows significant design decisions, the option taken and the cost and
+nature of changing the design. Design as presented in this paper has been
+approved by LEWG; we have until C++26 is standardized to consider making any
+breaking changes. After C++26, breaking changes are possible but with
+potentially significant user-impact.
+
+|Design decision|Current decision|Change|Nature of change| Breaking|
+|--|--|--|--|--|
+|Member `emplace`| No member `emplace` | Add member `emplace` | Pure addition | N |
+|`operator bool`| No `operator bool` | Add `operator bool` | Changes semantics | N |
+|`indirect` comparsion preconditions | `indirect` must not be valueless | Allow comparsion of valueless objects | Runtime cost | N |
+|`indirect` hash preconditions| `indirect` must not be valueless | Allow hash of valueless objects | Runtime cost | N |
+|`indirect` format preconditions | `indirect` must not be valueless | Allow formatting of valueless objects | Runtime cost | N |
+|Copy and copy assign preconditions| Object must not be valueless | Allow copying of valueless objects | Runtime cost | N |
+|Move and move assign preconditions| Object must not be valueless | Allow moving of valueless objects | Runtime cost | N |
+|Requirements on `T` in `polymorphic<T>` | No requirement that `T` has virtual functions | Add _Mandates_ or _Constraints_ to require `T` to have virtual functions | Code becomes ill-formed | Y |
+|State of default constructed object| Default constructed object (where valid) has a value | Make default constructed object valueless | Changes semantics; necessitates adding `operator bool` and allowing move, copy and compare of valueless (empty) objects | Y |
+|Small buffer optimisation for polymorphic|SBO is not required, settings are hidden|Add buffer size and alignment as template parameters|Breaks ABI, forces implementers to use SBO | Y |
+|`noexcept` for accessors|Accessors are `noexcept` like `unique_ptr` and `optional`| Remove `noexcept` from accessors | User-functions marked `noexcept` could be broken | Y |
+|Specialization of optional|No specialization of optional|Specialize optional to use valueless state|ABI break; engaged but valueless optional would become indistinguishable from a disengaged optional| Y |
