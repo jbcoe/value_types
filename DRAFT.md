@@ -397,12 +397,14 @@ class indirect {
 
   constexpr indirect();
 
-  template <class... Ts>
-  explicit constexpr indirect(Ts&&... ts);
+  constexpr indirect(std::allocator_arg_t, const Allocator& alloc);
 
-  template <class... Ts>
-  constexpr indirect(
-    std::allocator_arg_t, const Allocator& alloc, Ts&&... ts);
+  template <class U, class... Us>
+  explicit constexpr indirect(U&& u, Us&&... us);
+
+  template <class U, class... Us>
+  constexpr indirect(std::allocator_arg_t, const Allocator& alloc,
+                     U&&, Us&&... us);
 
   constexpr indirect(const indirect& other);
 
@@ -529,20 +531,34 @@ constexpr indirect()
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-template <class... Ts>
-explicit constexpr indirect(Ts&&... ts);
+constexpr indirect(std::allocator_arg_t, const Allocator& alloc);
 ```
 
-* _Constraints_: `is_constructible_v<T, Ts...>` is true.
+* _Mandates_: `is_default_constructible_v<T>` is true.
 
-* _Effects_: Constructs an indirect owning an instance of `T` created with the
-  arguments `Ts`. `allocator_` is default constructed.
+* _Preconditions_: `Allocator` meets the _Cpp17Allocator_ requirements.
+
+* _Effects_: Equivalent to the preceding constructor except that the allocator
+  is initialized with alloc. `allocator_` is initialized with `alloc`.
 
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
-template <class... Ts>
-constexpr indirect(std::allocator_arg_t, const Allocator& alloc, Ts&&... ts);
+template <class U, class... Us>
+explicit constexpr indirect(U&& u, Us&&... us);
+```
+
+* _Constraints_: `is_constructible_v<T, U, Us...>` is true.
+  `is_same_v<remove_cvref_t<U>, indirect>` is false.
+
+* _Effects_: Constructs an indirect owning an instance of `T` created with the
+  arguments `U`, `Us`. `allocator_` is default constructed.
+
+* _Postconditions_: `*this` is not valueless.
+
+```c++
+template <class U, class... Us>
+constexpr indirect(std::allocator_arg_t, const Allocator& alloc, U&& u, Us&& ...us);
 ```
 
 * _Constraints_: `is_constructible_v<T, Ts...>` is true.
