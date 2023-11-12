@@ -614,4 +614,173 @@ TEST(IndirectTest, FormatNativeTypesPropagateFormatting) {
 
 #endif  // __cpp_lib_format >= 201907L
 
+template <class T>
+concept Taggable = requires(T& t, std::string s) {
+  t.tag(s);
+  { t.tag() } -> std::same_as<std::string_view>;
+};
+
+template <typename T>
+class TaggingAllocator {
+  std::string tag_;
+
+ public:
+  using propagate_on_container_swap = std::true_type;
+  using propagate_on_container_copy_assignment = std::true_type;
+  using propagate_on_container_move_assignment = std::true_type;
+
+  class TagMismatch : std::exception {
+    std::string message_;
+
+   public:
+    TagMismatch(std::string_view expected_tag, std::string_view observed_tag) {
+      message_ = std::string("Expected tag \"") + std::string(expected_tag) +
+                 std::string("\" but got \"") + std::string(observed_tag) +
+                 std::string("\".");
+    }
+    const char* what() const noexcept override { return message_.c_str(); }
+  };
+
+  template <typename U>
+  friend class TaggingAllocator;
+
+  template <typename U>
+  TaggingAllocator(const TaggingAllocator<U>& other) : tag_(other.tag_) {}
+
+  TaggingAllocator(std::string_view tag) : tag_(tag) {}
+  using value_type = T;
+  template <typename Other>
+  struct rebind {
+    using other = TaggingAllocator<Other>;
+  };
+
+  TaggingAllocator(const TaggingAllocator&) = default;
+
+  TaggingAllocator& operator=(const TaggingAllocator&) = default;
+
+  friend bool operator==(const TaggingAllocator& lhs,
+                         const TaggingAllocator& rhs) {
+    return lhs.tag_ == rhs.tag_;
+  }
+
+  T* allocate(std::size_t n) {
+    std::allocator<T> default_allocator{};
+    return default_allocator.allocate(n);
+  }
+
+  void deallocate(T* p, std::size_t n) {
+    std::allocator<T> default_allocator{};
+    default_allocator.deallocate(p, n);
+  }
+
+  template <typename... Ts>
+  void construct(T* p, Ts&&... ts) {
+    new (p) T(std::forward<Ts>(ts)...);
+    if constexpr (Taggable<T>) {
+      p->tag(tag_);
+    } else /* constexpr */ {
+    }
+  }
+
+  void destroy(T* p) {
+    if constexpr (Taggable<T>) {
+      if (p->tag() != tag_) {
+        throw TagMismatch(tag_, p->tag());
+      }
+    } else /* constexpr */ {
+    }
+    p->~T();
+  }
+};
+
+struct S {
+  using allocator_type = std::true_type;
+  std::string tag_;
+  template <typename A>
+  S(A) {}
+  S() {}
+  void tag(std::string tag) { tag_ = tag; }
+  std::string_view tag() const { return tag_; }
+};
+
+TEST(IndirectTest, TaggedAllocatorSwap) {
+  TaggingAllocator<S> red_block("RED");
+  xyz::indirect<S, TaggingAllocator<S>> red(std::allocator_arg, red_block);
+
+  EXPECT_EQ(red->tag(), "RED");
+
+  TaggingAllocator<S> blue_block("BLUE");
+  xyz::indirect<S, TaggingAllocator<S>> blue(std::allocator_arg, blue_block);
+
+  EXPECT_EQ(blue->tag(), "BLUE");
+
+  swap(red, blue);
+}
+
+TEST(IndirectTest, TaggedAllocatorAssign) {
+  TaggingAllocator<S> red_block("RED");
+  xyz::indirect<S, TaggingAllocator<S>> red(std::allocator_arg, red_block);
+
+  EXPECT_EQ(red->tag(), "RED");
+
+  TaggingAllocator<S> blue_block("BLUE");
+  xyz::indirect<S, TaggingAllocator<S>> blue(std::allocator_arg, blue_block);
+
+  EXPECT_EQ(blue->tag(), "BLUE");
+
+  red = blue;
+}
+
+TEST(IndirectTest, TaggedAllocatorMoveAssign) {
+  TaggingAllocator<S> red_block("RED");
+  xyz::indirect<S, TaggingAllocator<S>> red(std::allocator_arg, red_block);
+
+  EXPECT_EQ(red->tag(), "RED");
+
+  TaggingAllocator<S> blue_block("BLUE");
+  xyz::indirect<S, TaggingAllocator<S>> blue(std::allocator_arg, blue_block);
+
+  EXPECT_EQ(blue->tag(), "BLUE");
+
+  red = std::move(blue);
+}
+
+TEST(IndirectTest, TaggedAllocatorEqualAllocatorSwap) {
+  TaggingAllocator<S> red_block("RED");
+  xyz::indirect<S, TaggingAllocator<S>> red(std::allocator_arg, red_block);
+
+  EXPECT_EQ(red->tag(), "RED");
+
+  xyz::indirect<S, TaggingAllocator<S>> red2(std::allocator_arg, red_block);
+
+  EXPECT_EQ(red2->tag(), "RED");
+
+  swap(red, red2);
+}
+
+TEST(IndirectTest, TaggedAllocatorEqualAllocatorAssign) {
+  TaggingAllocator<S> red_block("RED");
+  xyz::indirect<S, TaggingAllocator<S>> red(std::allocator_arg, red_block);
+
+  EXPECT_EQ(red->tag(), "RED");
+
+  xyz::indirect<S, TaggingAllocator<S>> red2(std::allocator_arg, red_block);
+
+  EXPECT_EQ(red2->tag(), "RED");
+
+  red = red2;
+}
+
+TEST(IndirectTest, TaggedAllocatorEqualAllocatorMoveAssign) {
+  TaggingAllocator<S> red_block("RED");
+  xyz::indirect<S, TaggingAllocator<S>> red(std::allocator_arg, red_block);
+
+  EXPECT_EQ(red->tag(), "RED");
+
+  xyz::indirect<S, TaggingAllocator<S>> red2(std::allocator_arg, red_block);
+
+  EXPECT_EQ(red2->tag(), "RED");
+
+  red = std::move(red);  // -Wno-self-move
+}
 }  // namespace

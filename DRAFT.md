@@ -19,9 +19,9 @@ _Sean Parent \<<sparent@adobe.com>\>_
 We propose the addition of two new class templates to the C++ Standard Library:
 `indirect<T>` and `polymorphic<T>`.
 
-These class templates have value semantics and compose well with other standard
-library types (such as vector) allowing the compiler to correctly generate
-special member functions.
+Specializations of these class templates have value semantics and compose well
+with other standard library types (such as vector) allowing the compiler to
+correctly generate special member functions.
 
 The class template `indirect` confers value-like semantics on a
 free-store-allocated object. An `indirect` may hold an object of a class `T`.
@@ -31,12 +31,10 @@ member of type `indirect<T>` and is accessed through a const access path,
 by the `indirect` member.
 
 The class template `polymorphic` confers value-like semantics on a
-free-store-allocated object.  A `polymorphic<T>` may hold an object of a class
+dynamically-allocated object.  A `polymorphic<T>` may hold an object of a class
 publicly derived from `T`. Copying the `polymorphic<T>` will copy the object of
-the derived type. When a parent object contains a member of type
-`polymorphic<T>` and is accessed through a const access path, `const`ness will
-propagate from the parent object to the instance of `T` owned by the
-`polymorphic` member.
+the derived type. A const `polymorphic<T>` propagates the constness to the owned
+`T`.
 
 This proposal is a fusion of two earlier individual proposals, P1950 and P0201.
 The design of the two proposed class templates is sufficiently similar that they
@@ -44,14 +42,14 @@ should not be considered in isolation.
 
 ## Motivation
 
-The standard library has no vocabulary type for a free-store-allocated object
+The standard library has no vocabulary type for a dynamically-allocated object
 with value semantics. When designing a composite class, we may need an object to
 be stored indirectly to support incomplete types, reduce object size or support
 open-set polymorphism.
 
 We propose the addition of two new class templates to the standard library to
 represent indirectly stored values: `indirect` and `polymorphic`. Both class
-templates represent free-store-allocated objects with value-like semantics.
+templates represent dynamically-allocated objects with value-like semantics.
 `polymorphic<T>` can own any object of a type publicly derived from `T`,
 allowing composite classes to contain polymorphic components. We require the
 addition of two classes to avoid the cost of virtual dispatch (calling the copy
@@ -146,7 +144,7 @@ int main() {
 ### Value semantics
 
 Both `indirect` and `polymorphic` are value types whose owned object is
-free-store-allocated (or some other memory resource controlled by the specified
+dynamically-allocated (or some other memory resource controlled by the specified
 allocator).
 
 When a value type is copied it gives rise to two independent objects that can be
@@ -159,6 +157,13 @@ logical state nor to the logical state of other object.
 `indirect<T>` and `polymorphic<T>` are default constructible in cases where `T`
 is default constructible. Moving a value type onto the free store should not add
 or remove the ability to be default constructed.
+
+Note that, due to the requirement to support incomplete `T` types, the
+`indirect<T>` and `polymorphic<T>` types unconditionally have a
+default-constructor (according to
+`std::is_default_constructible_v<indirect<T>>`), however if `T` is not default
+constructible then attempting to odr-use the `indirect<T>` default constructor
+will be ill-formed.
 
 ### The valueless state and interaction with `std::optional`
 
@@ -235,7 +240,7 @@ propagates const and is allocator aware.
   with one memory resource to delete an object in another memory resource. When
   allocators have different underlying memory resources, move necessitates the
   allocation of memory and cannot be marked noexcept). Like `vector`, `indirect`
-  marks member and non-member swap as noexcept and requires allocators to be
+  marks member and non-member `swap` as noexcept and requires allocators to be
   equal.
 
 * Like `optional`, `indirect` knows the type of the owned object so forwards
@@ -269,7 +274,7 @@ propagates const and is allocator aware.
   noexcept on properties of the allocator. Thus for `polymorphic`, the move
   constructor and move assignment operator for `polymorphic` are conditionally
   noexcept on properties of the allocator. Like `vector`, `polymorphic` marks
-  member and non-member swap as noexcept and requires allocators to be equal.
+  member and non-member `swap` as noexcept and requires allocators to be equal.
 
 * Like `unique_ptr`, `polymorphic` does not know the type of the owned object
   (it could be an instance of a derived type). As a result `polymorphic` cannot
@@ -378,8 +383,7 @@ Copy constructors for an indirect value obtain an allocator by calling
 `allocator_traits<allocator_type>::select_on_container_copy_construction` on the
 allocator belonging to the indirect value being copied. Move constructors obtain
 an allocator by move construction from the allocator belonging to the container
-being moved. Such move construction of the allocator shall not exit via an
-exception. All other constructors for these container types take a `const
+being moved. All other constructors for these container types take a `const
 allocator_type& argument`. [Note 3:If an invocation of a constructor uses the
 default value of an optional allocator argument, then the allocator type must
 support value-initialization.  end note] A copy of this allocator is used for
