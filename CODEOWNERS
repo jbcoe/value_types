@@ -1,7 +1,3 @@
-# Global owners
-@jbcoe
-@twon
-
 # CMake
 CMakeLists.txt @twon
 
@@ -10,3 +6,6 @@ CMakeLists.txt @twon
 
 # Formal wording
 DRAFT.md @villevoutilainen
+
+# Global owners
+* @jbcoe @twon
