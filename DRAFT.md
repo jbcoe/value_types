@@ -799,7 +799,7 @@ template <class U, class AA>
 constexpr auto operator<=>(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
 ```
 
-* _Constraints_: The operator `op` is defined for `T`.
+* _Constraints_: `T op U` is well-defined.
 
 * _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
 
@@ -845,7 +845,7 @@ template <class U>
 constexpr auto operator<=>(const indirect<T, A>& lhs, const U& rhs);
 ```
 
-* _Constraints_: The operator `op` is defined for `T`.
+* _Constraints_: `T op U` is well-defined.
 
 * _Preconditions_: `lhs` is not valueless.
 
@@ -889,7 +889,7 @@ template <class U>
 constexpr auto operator<=>(const U& lhs, const indirect<T, A>& rhs);
 ```
 
-* _Constraints_: The operator `op` is defined for `T`.
+* _Constraints_: `U op T` is well-defined.
 
 * _Preconditions_: `rhs` is not valueless.
 
