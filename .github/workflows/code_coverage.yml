@@ -4,11 +4,19 @@ on:
   push:
     branches: [main]
     paths-ignore:
+      - requirements.txt
+      - LICENSE.txt
+      - .pre-commit-config.yaml
       - '**/*.md'
+      - '**/*.yml'
   pull_request:
     branches: [main]
     paths-ignore:
+      - requirements.txt
+      - LICENSE.txt
+      - .pre-commit-config.yaml
       - '**/*.md'
+      - '**/*.yml'
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
