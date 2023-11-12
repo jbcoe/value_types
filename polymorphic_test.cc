@@ -807,4 +807,34 @@ TEST(PolymorphicTest, InteractionWithPMRAllocatorsWhenCopyThrows) {
 }
 #endif  // (__cpp_lib_memory_resource >= 201603L)
 
+template <typename T>
+struct NonEqualAllocator : std::allocator<T> {
+  using propagate_on_container_swap = std::false_type;
+  using propagate_on_container_copy_assignment = std::false_type;
+  using propagate_on_container_move_assignment = std::false_type;
+
+  NonEqualAllocator() = default;
+  NonEqualAllocator(const NonEqualAllocator&) = default;
+  NonEqualAllocator& operator=(const NonEqualAllocator&) = default;
+
+  template <typename U>
+  NonEqualAllocator(const NonEqualAllocator<U>&) {}
+
+  friend bool operator==(const NonEqualAllocator&, const NonEqualAllocator) {
+    return false;
+  }
+};
+
+TEST(PolymorphicTest, AllocatorSwapUnreachable) {
+  NonEqualAllocator<Base> allocA;
+  NonEqualAllocator<Base> allocB;
+
+  xyz::polymorphic<Base, NonEqualAllocator<Base>> pA(
+      std::allocator_arg, allocA, std::in_place_type<Derived>, 10);
+  xyz::polymorphic<Base, NonEqualAllocator<Base>> pB(
+      std::allocator_arg, allocB, std::in_place_type<Derived>, 220);
+
+  EXPECT_DEATH([&]() { pA.swap(pB); }(), "");
+}
+
 }  // namespace

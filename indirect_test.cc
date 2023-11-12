@@ -783,4 +783,27 @@ TEST(IndirectTest, TaggedAllocatorEqualAllocatorMoveAssign) {
 
   red = std::move(red);  // -Wno-self-move
 }
+
+template <typename T>
+struct NonEqualAllocator : std::allocator<T> {
+  using propagate_on_container_swap = std::false_type;
+  using propagate_on_container_copy_assignment = std::false_type;
+  using propagate_on_container_move_assignment = std::false_type;
+
+  friend bool operator==(const NonEqualAllocator&, const NonEqualAllocator) {
+    return false;
+  }
+};
+
+TEST(IndirectTest, AllocatorSwapUnreachable) {
+  NonEqualAllocator<int> allocA;
+  NonEqualAllocator<int> allocB;
+
+  xyz::indirect<int, NonEqualAllocator<int>> iA(std::allocator_arg, allocA, 10);
+  xyz::indirect<int, NonEqualAllocator<int>> iB(std::allocator_arg, allocB,
+                                                220);
+
+  EXPECT_DEATH([&]() { iA.swap(iB); }(), "");
+}
+
 }  // namespace
