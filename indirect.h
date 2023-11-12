@@ -34,6 +34,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace xyz {
 
+#ifndef XYZ_UNREACHABLE_DEFINED
+#define XYZ_UNREACHABLE_DEFINED
 [[noreturn]] inline void unreachable() {  // LCOV_EXCL_LINE
 #if (__cpp_lib_unreachable >= 202202L)
   std::unreachable();  // LCOV_EXCL_LINE
@@ -43,6 +45,7 @@ namespace xyz {
   __builtin_unreachable();  // LCOV_EXCL_LINE
 #endif
 }
+#endif  // XYZ_UNREACHABLE_DEFINED
 
 template <class T, class A>
 class indirect;
