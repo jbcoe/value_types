@@ -158,6 +158,12 @@ logical state nor to the logical state of other object.
 is default constructible. Moving a value type onto the free store should not add
 or remove the ability to be default constructed.
 
+Note that, due to the requirement to support incomplete `T` types, the `indirect<T>`
+and `polymorphic<T>` types unconditionally have a default-constructor (according to
+`std::is_default_constructible_v<indirect<T>>`), however if `T` is not defalut
+constructible then attempting to odr-use the `indirect<T>` default constructor
+will be ill-formed.
+
 ### The valueless state and interaction with `std::optional`
 
 Both `indirect` and `polymorphic` have a valueless state that is used to
