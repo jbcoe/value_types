@@ -36,9 +36,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace xyz {
 
+#ifndef XYZ_HIDDEN_INLINED
+#if defined(_MSC_VER)
+#define XYZ_HIDDEN_INLINED
+#else
+#define XYZ_HIDDEN_INLINED \
+  __attribute__((__visibility__("hidden"))) __attribute__((__always_inline__))
+#endif  // defined(_MSC_VER)
+#endif  // XYZ_HIDDEN_INLINED
+
 #ifndef XYZ_UNREACHABLE_DEFINED
 #define XYZ_UNREACHABLE_DEFINED
-[[noreturn]] inline void unreachable() {  // LCOV_EXCL_LINE
+[[noreturn]] XYZ_HIDDEN_INLINED inline void unreachable() {  // LCOV_EXCL_LINE
 #if (__cpp_lib_unreachable >= 202202L)
   std::unreachable();  // LCOV_EXCL_LINE
 #elif defined(_MSC_VER)
@@ -68,14 +77,15 @@ class direct_control_block final : public control_block<T, A> {
   U u_;
 
  public:
-  constexpr ~direct_control_block() override = default;
+  XYZ_HIDDEN_INLINED constexpr ~direct_control_block() override = default;
 
   template <class... Ts>
-  constexpr direct_control_block(Ts&&... ts) : u_(std::forward<Ts>(ts)...) {
+  XYZ_HIDDEN_INLINED constexpr direct_control_block(Ts&&... ts)
+      : u_(std::forward<Ts>(ts)...) {
     control_block<T, A>::p_ = &u_;
   }
 
-  constexpr control_block<T, A>* clone(A& alloc) override {
+  XYZ_HIDDEN_INLINED constexpr control_block<T, A>* clone(A& alloc) override {
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<direct_control_block<T, U, A>>;
     cb_allocator cb_alloc(alloc);
@@ -90,7 +100,7 @@ class direct_control_block final : public control_block<T, A> {
     }
   }
 
-  constexpr void destroy(A& alloc) override {
+  XYZ_HIDDEN_INLINED constexpr void destroy(A& alloc) override {
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<direct_control_block<T, U, A>>;
     cb_allocator cb_alloc(alloc);
@@ -121,7 +131,7 @@ class polymorphic {
   using pointer = typename allocator_traits::pointer;
   using const_pointer = typename allocator_traits::const_pointer;
 
-  constexpr polymorphic() {
+  XYZ_HIDDEN_INLINED constexpr polymorphic() {
     static_assert(std::is_default_constructible_v<T>);
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
@@ -138,7 +148,8 @@ class polymorphic {
   }
 
   template <class U, class... Ts>
-  explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts)
+  XYZ_HIDDEN_INLINED explicit constexpr polymorphic(std::in_place_type_t<U>,
+                                                    Ts&&... ts)
     requires std::constructible_from<U, Ts&&...> &&
              std::copy_constructible<U> && std::derived_from<U, T>
   {
@@ -157,8 +168,8 @@ class polymorphic {
   }
 
   template <class U, class... Ts>
-  constexpr polymorphic(std::allocator_arg_t, const A& alloc,
-                        std::in_place_type_t<U>, Ts&&... ts)
+  XYZ_HIDDEN_INLINED constexpr polymorphic(std::allocator_arg_t, const A& alloc,
+                                           std::in_place_type_t<U>, Ts&&... ts)
     requires std::constructible_from<U, Ts&&...> &&
              std::copy_constructible<U> &&
              (std::derived_from<U, T> || std::same_as<U, T>)
@@ -177,35 +188,37 @@ class polymorphic {
     }
   }
 
-  constexpr polymorphic(const polymorphic& other)
+  XYZ_HIDDEN_INLINED constexpr polymorphic(const polymorphic& other)
       : alloc_(allocator_traits::select_on_container_copy_construction(
             other.alloc_)) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = other.cb_->clone(alloc_);
   }
 
-  constexpr polymorphic(std::allocator_arg_t, const A& alloc,
-                        const polymorphic& other)
+  XYZ_HIDDEN_INLINED constexpr polymorphic(std::allocator_arg_t, const A& alloc,
+                                           const polymorphic& other)
       : alloc_(alloc) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = other.cb_->clone(alloc_);
   }
 
-  constexpr polymorphic(polymorphic&& other) noexcept : alloc_(other.alloc_) {
+  XYZ_HIDDEN_INLINED constexpr polymorphic(polymorphic&& other) noexcept
+      : alloc_(other.alloc_) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = std::exchange(other.cb_, nullptr);
   }
 
-  constexpr polymorphic(std::allocator_arg_t, const A& alloc,
-                        polymorphic&& other) noexcept
+  XYZ_HIDDEN_INLINED constexpr polymorphic(std::allocator_arg_t, const A& alloc,
+                                           polymorphic&& other) noexcept
       : alloc_(alloc) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = std::exchange(other.cb_, nullptr);
   }
 
-  constexpr ~polymorphic() { reset(); }
+  XYZ_HIDDEN_INLINED constexpr ~polymorphic() { reset(); }
 
-  constexpr polymorphic& operator=(const polymorphic& other) {
+  XYZ_HIDDEN_INLINED constexpr polymorphic& operator=(
+      const polymorphic& other) {
     if (this == &other) return *this;
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     if constexpr (allocator_traits::propagate_on_container_copy_assignment::
@@ -220,7 +233,8 @@ class polymorphic {
     return *this;
   }
 
-  constexpr polymorphic& operator=(polymorphic&& other) noexcept(
+  XYZ_HIDDEN_INLINED constexpr polymorphic&
+  operator=(polymorphic&& other) noexcept(
       allocator_traits::propagate_on_container_move_assignment::value ||
       allocator_traits::is_always_equal::value) {
     if (this == &other) return *this;
@@ -241,33 +255,35 @@ class polymorphic {
     return *this;
   }
 
-  constexpr pointer operator->() noexcept {
+  XYZ_HIDDEN_INLINED constexpr pointer operator->() noexcept {
     assert(cb_ != nullptr);  // LCOV_EXCL_LINE
     return cb_->p_;
   }
 
-  constexpr const_pointer operator->() const noexcept {
+  XYZ_HIDDEN_INLINED constexpr const_pointer operator->() const noexcept {
     assert(cb_ != nullptr);  // LCOV_EXCL_LINE
     return cb_->p_;
   }
 
-  constexpr T& operator*() noexcept {
+  XYZ_HIDDEN_INLINED constexpr T& operator*() noexcept {
     assert(cb_ != nullptr);  // LCOV_EXCL_LINE
     return *cb_->p_;
   }
 
-  constexpr const T& operator*() const noexcept {
+  XYZ_HIDDEN_INLINED constexpr const T& operator*() const noexcept {
     assert(cb_ != nullptr);  // LCOV_EXCL_LINE
     return *cb_->p_;
   }
 
-  constexpr bool valueless_after_move() const noexcept {
+  XYZ_HIDDEN_INLINED constexpr bool valueless_after_move() const noexcept {
     return cb_ == nullptr;
   }
 
-  constexpr allocator_type get_allocator() const noexcept { return alloc_; }
+  XYZ_HIDDEN_INLINED constexpr allocator_type get_allocator() const noexcept {
+    return alloc_;
+  }
 
-  constexpr void swap(polymorphic& other) noexcept(
+  XYZ_HIDDEN_INLINED constexpr void swap(polymorphic& other) noexcept(
       std::allocator_traits<A>::propagate_on_container_swap::value ||
       std::allocator_traits<A>::is_always_equal::value) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
@@ -286,8 +302,8 @@ class polymorphic {
     }
   }
 
-  friend constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(
-      noexcept(lhs.swap(rhs))) {
+  XYZ_HIDDEN_INLINED friend constexpr void swap(
+      polymorphic& lhs, polymorphic& rhs) noexcept(noexcept(lhs.swap(rhs))) {
     lhs.swap(rhs);
   }
 
