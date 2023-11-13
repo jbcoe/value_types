@@ -693,24 +693,24 @@ class TaggingAllocator {
   }
 };
 
-struct S {
-  using allocator_type = std::true_type;
-  std::string tag_;
-  template <typename A>
-  S(A) {}
-  S() {}
+class TaggableData {
+  std::string tag_ = "UNTAGGED";
+
+ public:
   void tag(std::string tag) { tag_ = tag; }
   std::string_view tag() const { return tag_; }
 };
 
 TEST(IndirectTest, TaggedAllocatorSwap) {
-  TaggingAllocator<S> red_block("RED");
-  xyz::indirect<S, TaggingAllocator<S>> red(std::allocator_arg, red_block);
+  TaggingAllocator<TaggableData> red_block("RED");
+  xyz::indirect<TaggableData, TaggingAllocator<TaggableData>> red(
+      std::allocator_arg, red_block);
 
   EXPECT_EQ(red->tag(), "RED");
 
-  TaggingAllocator<S> blue_block("BLUE");
-  xyz::indirect<S, TaggingAllocator<S>> blue(std::allocator_arg, blue_block);
+  TaggingAllocator<TaggableData> blue_block("BLUE");
+  xyz::indirect<TaggableData, TaggingAllocator<TaggableData>> blue(
+      std::allocator_arg, blue_block);
 
   EXPECT_EQ(blue->tag(), "BLUE");
 
@@ -718,13 +718,15 @@ TEST(IndirectTest, TaggedAllocatorSwap) {
 }
 
 TEST(IndirectTest, TaggedAllocatorAssign) {
-  TaggingAllocator<S> red_block("RED");
-  xyz::indirect<S, TaggingAllocator<S>> red(std::allocator_arg, red_block);
+  TaggingAllocator<TaggableData> red_block("RED");
+  xyz::indirect<TaggableData, TaggingAllocator<TaggableData>> red(
+      std::allocator_arg, red_block);
 
   EXPECT_EQ(red->tag(), "RED");
 
-  TaggingAllocator<S> blue_block("BLUE");
-  xyz::indirect<S, TaggingAllocator<S>> blue(std::allocator_arg, blue_block);
+  TaggingAllocator<TaggableData> blue_block("BLUE");
+  xyz::indirect<TaggableData, TaggingAllocator<TaggableData>> blue(
+      std::allocator_arg, blue_block);
 
   EXPECT_EQ(blue->tag(), "BLUE");
 
@@ -732,13 +734,15 @@ TEST(IndirectTest, TaggedAllocatorAssign) {
 }
 
 TEST(IndirectTest, TaggedAllocatorMoveAssign) {
-  TaggingAllocator<S> red_block("RED");
-  xyz::indirect<S, TaggingAllocator<S>> red(std::allocator_arg, red_block);
+  TaggingAllocator<TaggableData> red_block("RED");
+  xyz::indirect<TaggableData, TaggingAllocator<TaggableData>> red(
+      std::allocator_arg, red_block);
 
   EXPECT_EQ(red->tag(), "RED");
 
-  TaggingAllocator<S> blue_block("BLUE");
-  xyz::indirect<S, TaggingAllocator<S>> blue(std::allocator_arg, blue_block);
+  TaggingAllocator<TaggableData> blue_block("BLUE");
+  xyz::indirect<TaggableData, TaggingAllocator<TaggableData>> blue(
+      std::allocator_arg, blue_block);
 
   EXPECT_EQ(blue->tag(), "BLUE");
 
@@ -746,12 +750,14 @@ TEST(IndirectTest, TaggedAllocatorMoveAssign) {
 }
 
 TEST(IndirectTest, TaggedAllocatorEqualAllocatorSwap) {
-  TaggingAllocator<S> red_block("RED");
-  xyz::indirect<S, TaggingAllocator<S>> red(std::allocator_arg, red_block);
+  TaggingAllocator<TaggableData> red_block("RED");
+  xyz::indirect<TaggableData, TaggingAllocator<TaggableData>> red(
+      std::allocator_arg, red_block);
 
   EXPECT_EQ(red->tag(), "RED");
 
-  xyz::indirect<S, TaggingAllocator<S>> red2(std::allocator_arg, red_block);
+  xyz::indirect<TaggableData, TaggingAllocator<TaggableData>> red2(
+      std::allocator_arg, red_block);
 
   EXPECT_EQ(red2->tag(), "RED");
 
@@ -759,12 +765,14 @@ TEST(IndirectTest, TaggedAllocatorEqualAllocatorSwap) {
 }
 
 TEST(IndirectTest, TaggedAllocatorEqualAllocatorAssign) {
-  TaggingAllocator<S> red_block("RED");
-  xyz::indirect<S, TaggingAllocator<S>> red(std::allocator_arg, red_block);
+  TaggingAllocator<TaggableData> red_block("RED");
+  xyz::indirect<TaggableData, TaggingAllocator<TaggableData>> red(
+      std::allocator_arg, red_block);
 
   EXPECT_EQ(red->tag(), "RED");
 
-  xyz::indirect<S, TaggingAllocator<S>> red2(std::allocator_arg, red_block);
+  xyz::indirect<TaggableData, TaggingAllocator<TaggableData>> red2(
+      std::allocator_arg, red_block);
 
   EXPECT_EQ(red2->tag(), "RED");
 
@@ -772,12 +780,14 @@ TEST(IndirectTest, TaggedAllocatorEqualAllocatorAssign) {
 }
 
 TEST(IndirectTest, TaggedAllocatorEqualAllocatorMoveAssign) {
-  TaggingAllocator<S> red_block("RED");
-  xyz::indirect<S, TaggingAllocator<S>> red(std::allocator_arg, red_block);
+  TaggingAllocator<TaggableData> red_block("RED");
+  xyz::indirect<TaggableData, TaggingAllocator<TaggableData>> red(
+      std::allocator_arg, red_block);
 
   EXPECT_EQ(red->tag(), "RED");
 
-  xyz::indirect<S, TaggingAllocator<S>> red2(std::allocator_arg, red_block);
+  xyz::indirect<TaggableData, TaggingAllocator<TaggableData>> red2(
+      std::allocator_arg, red_block);
 
   EXPECT_EQ(red2->tag(), "RED");
 
