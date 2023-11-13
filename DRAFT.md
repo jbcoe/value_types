@@ -1006,6 +1006,8 @@ class polymorphic {
 
   constexpr polymorphic();
 
+  constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc);
+
   template <class U, class... Ts>
   explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts);
 
@@ -1059,6 +1061,21 @@ constexpr polymorphic()
 
 * _Effects_: Constructs a polymorphic owning a default-constructed `T`.
   `allocator_` is default constructed.
+
+* _Postconditions_: `*this` is not valueless.
+
+```c++
+template <class U, class... Ts>
+constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc);
+```
+
+* _Mandates_: `is_default_constructible_v<T>` is true,
+  `is_copy_constructible_v<T>` is true.
+
+* _Preconditions_: `Allocator` meets the _Cpp17Allocator_ requirements.
+
+* _Effects_: Equivalent to the preceding constructor except that the
+  `allocator_` is initialized with `alloc`.
 
 * _Postconditions_: `*this` is not valueless.
 
