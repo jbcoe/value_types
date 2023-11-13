@@ -25,6 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <compare>
 #include <concepts>
 #include <memory>
+#include <optional>
 #include <type_traits>
 #include <utility>
 
@@ -33,6 +34,25 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #endif
 
 namespace xyz {
+#ifndef XYZ_GUARD_DEFINED
+#define XYZ_GUARD_DEFINED
+template <typename F>
+class guard {
+  std::optional<F> f_;
+
+ public:
+  constexpr guard(F f) : f_(f) {}
+  constexpr ~guard() {
+    if (f_) {
+      (*f_)();
+    }
+  }
+  constexpr void reset() { f_.reset(); }
+};
+
+template <typename F>
+guard(F) -> guard<F>;
+#endif  // XYZ_GUARD_DEFINED
 
 #ifndef XYZ_UNREACHABLE_DEFINED
 #define XYZ_UNREACHABLE_DEFINED
@@ -327,13 +347,10 @@ class indirect {
   template <typename... Ts>
   constexpr static T* construct_from(A alloc, Ts&&... ts) {
     T* mem = allocator_traits::allocate(alloc, 1);
-    try {
-      allocator_traits::construct(alloc, mem, std::forward<Ts>(ts)...);
-      return mem;
-    } catch (...) {
-      allocator_traits::deallocate(alloc, mem, 1);
-      throw;
-    }
+    guard mem_guard([&]() { allocator_traits::deallocate(alloc, mem, 1); });
+    allocator_traits::construct(alloc, mem, std::forward<Ts>(ts)...);
+    mem_guard.reset();
+    return mem;
   }
 
   constexpr static void destroy_with(A alloc, T* p) {
