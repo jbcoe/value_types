@@ -37,6 +37,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace xyz {
 
+#ifndef XYZ_GUARD_DEFINED
+#define XYZ_GUARD_DEFINED
 template <typename F>
 class guard {
   std::optional<F> f_;
@@ -50,9 +52,13 @@ class guard {
   }
   constexpr void reset() { f_.reset(); }
 };
+
 template <typename F>
 guard(F) -> guard<F>;
+#endif  // XYZ_GUARD_DEFINED
 
+#ifndef XYZ_UNREACHABLE_DEFINED
+#define XYZ_UNREACHABLE_DEFINED
 [[noreturn]] inline void unreachable() {  // LCOV_EXCL_LINE
 #if (__cpp_lib_unreachable >= 202202L)
   std::unreachable();  // LCOV_EXCL_LINE
@@ -62,6 +68,7 @@ guard(F) -> guard<F>;
   __builtin_unreachable();  // LCOV_EXCL_LINE
 #endif
 }
+#endif  // XYZ_UNREACHABLE_DEFINED
 
 struct NoPolymorphicSBO {};
 
