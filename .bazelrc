@@ -1,6 +1,8 @@
 test --test_output=errors
 
 build --cxxopt='-std=c++20'
+build --cxxopt='-Wno-delete-non-abstract-non-virtual-dtor'
+build --cxxopt='-Wno-self-move'
 
 build:asan --strip=never
 build:asan --copt -fsanitize=address
