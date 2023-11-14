@@ -16,6 +16,27 @@ cc_test(
 )
 
 cc_library(
+    name = "indirect_cxx11",
+    hdrs = [
+        "c++11/indirect_11.h",
+        "indirect.h",
+    ],
+    copts = ["-Iexternal/value_types/"],
+    defines = ["XYZ_INDIRECT_CXX_11"],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "indirect_cxx11_test",
+    size = "small",
+    srcs = ["indirect_test.cc"],
+    deps = [
+        "indirect_cxx11",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "polymorphic",
     hdrs = ["polymorphic.h"],
     copts = ["-Iexternal/value_types/"],
@@ -28,6 +49,27 @@ cc_test(
     srcs = ["polymorphic_test.cc"],
     deps = [
         "polymorphic",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "polymorphic_cxx11",
+    hdrs = [
+        "c++11/polymorphic_11.h",
+        "polymorphic.h",
+    ],
+    defines = ["XYZ_POLYMORPHIC_CXX_11"],
+    copts = ["-Iexternal/value_types/"],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "polymorphic_cxx11_test",
+    size = "small",
+    srcs = ["polymorphic_test.cc"],
+    deps = [
+        "polymorphic_cxx11",
         "@com_google_googletest//:gtest_main",
     ],
 )

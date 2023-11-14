@@ -1,5 +1,5 @@
-#ifndef XYZ_POLYMORPHIC_11_H
-#define XYZ_POLYMORPHIC_11_H
+#ifndef XYZ_POLYMORPHIC_H_
+#define XYZ_POLYMORPHIC_H_
 
 #include <cassert>
 #include <memory>
@@ -274,4 +274,4 @@ class polymorphic {
 
 }  // namespace xyz
 
-#endif  // XYZ_POLYMORPHIC_11_H
+#endif  // XYZ_POLYMORPHIC_H_
