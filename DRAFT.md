@@ -1656,8 +1656,8 @@ class Picture {
 ## Appendix C: Design choices, alternatives and breaking changes
 
 The table below shows the main design components considered, the design decisions made, and the cost and
-impact of alternative design choices. As presented in this paper, the design of class templates `indirect` 
-and `polymorphic` has been approved by LEWG. The authors have until C++26 is standardized to consider 
+impact of alternative design choices. As presented in this paper, the design of class templates `indirect`
+and `polymorphic` has been approved by the LEWG. The authors have until C++26 is standardized to consider
 making any breaking changes; after C++26, whilst breaking changes will still be possible, the impact
 of these changes on users could be potentially significant and unwelcome.
 
