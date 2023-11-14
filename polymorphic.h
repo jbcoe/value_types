@@ -196,8 +196,9 @@ class polymorphic {
     using cb_allocator_traits = std::allocator_traits<cb_allocator>;
     cb_allocator cb_alloc(alloc_);
     auto mem = cb_allocator_traits::allocate(cb_alloc, 1);
-    guard mem_guard(
-        [&]() { cb_allocator_traits::deallocate(cb_alloc, mem, 1); });
+    guard mem_guard([&]() {
+      cb_allocator_traits::deallocate(cb_alloc, mem, 1);  // LCOV_EXCL_LINE
+    });
     cb_allocator_traits::construct(cb_alloc, mem);
     cb_ = mem;
     mem_guard.reset();
