@@ -19,7 +19,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==============================================================================*/
 
 #ifdef XYZ_INDIRECT_CXX_11
-#include "c++11/indirect_11.h"
+#include "compatibility/indirect_cxx11.h"
 #endif  // XYZ_INDIRECT_CXX_11
 
 #ifndef XYZ_INDIRECT_H

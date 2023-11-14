@@ -19,7 +19,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==============================================================================*/
 
 #ifdef XYZ_POLYMORPHIC_CXX_11
-#include "c++11/polymorphic_11.h"
+#include "compatibility/polymorphic_cxx11.h"
 #endif  // XYZ_POLYMORPHIC_CXX_11
 
 #ifdef XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
