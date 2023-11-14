@@ -34,6 +34,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace xyz {
 
+#ifndef XYZ_UNREACHABLE_DEFINED
+#define XYZ_UNREACHABLE_DEFINED
 [[noreturn]] inline void unreachable() {  // LCOV_EXCL_LINE
 #if (__cpp_lib_unreachable >= 202202L)
   std::unreachable();  // LCOV_EXCL_LINE
@@ -43,6 +45,7 @@ namespace xyz {
   __builtin_unreachable();  // LCOV_EXCL_LINE
 #endif
 }
+#endif  // XYZ_UNREACHABLE_DEFINED
 
 template <class T, class A>
 class indirect;
@@ -63,23 +66,33 @@ class indirect {
   using pointer = typename allocator_traits::pointer;
   using const_pointer = typename allocator_traits::const_pointer;
 
-  constexpr indirect() {
+  constexpr indirect()
+    requires std::is_default_constructible_v<A>
+  {
     static_assert(std::is_default_constructible_v<T>);
     p_ = construct_from(alloc_);
   }
 
-  template <class... Ts>
-  explicit constexpr indirect(Ts&&... ts)
-    requires std::constructible_from<T, Ts&&...>
-  {
-    p_ = construct_from(alloc_, std::forward<Ts>(ts)...);
+  constexpr indirect(std::allocator_arg_t, const A& alloc) : alloc_(alloc) {
+    static_assert(std::is_default_constructible_v<T>);
+    p_ = construct_from(alloc_);
   }
 
-  template <class... Ts>
-  constexpr indirect(std::allocator_arg_t, const A& alloc, Ts&&... ts)
-    requires std::constructible_from<T, Ts&&...>
+  template <class U, class... Us>
+  explicit constexpr indirect(U&& u, Us&&... us)
+    requires(std::constructible_from<T, U &&, Us && ...> &&
+             std::is_default_constructible_v<A> &&
+             !std::is_same_v<std::remove_cvref_t<U>, indirect>)
+  {
+    p_ = construct_from(alloc_, std::forward<U>(u), std::forward<Us>(us)...);
+  }
+
+  template <class U, class... Us>
+  constexpr indirect(std::allocator_arg_t, const A& alloc, U&& u, Us&&... us)
+    requires(std::constructible_from<T, U &&, Us && ...> &&
+             !std::is_same_v<std::remove_cvref_t<U>, indirect>)
       : alloc_(alloc) {
-    p_ = construct_from(alloc_, std::forward<Ts>(ts)...);
+    p_ = construct_from(alloc_, std::forward<U>(u), std::forward<Us>(us)...);
   }
 
   constexpr indirect(const indirect& other)

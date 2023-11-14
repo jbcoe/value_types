@@ -3,9 +3,20 @@ name: Bazel test
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - requirements.txt
+      - LICENSE.txt
+      - .pre-commit-config.yaml
+      - '**/*.md'
+      - '**/*.yml'
   pull_request:
     branches: [main]
-
+    paths-ignore:
+      - requirements.txt
+      - LICENSE.txt
+      - .pre-commit-config.yaml
+      - '**/*.md'
+      - '**/*.yml'
 jobs:
   build:
     name: ${{ matrix.settings.name }}
