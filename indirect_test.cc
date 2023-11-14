@@ -797,7 +797,7 @@ struct NonEqualAllocator : std::allocator<T> {
 
 // `unreachable` only causes termination in debug mode.
 #ifndef NDEBUG
-#if defined(__has_feature) && !__has_feature(thread_sanitizer)
+#if defined(__has_feature) && !(__has_feature(thread_sanitizer))
 TEST(IndirectTest, AllocatorSwapUnreachable) {
   NonEqualAllocator<int> allocA;
   NonEqualAllocator<int> allocB;
