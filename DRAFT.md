@@ -1652,3 +1652,26 @@ class Picture {
   void draw(Canvas& canvas) const;
 };
 ```
+
+## Appendix C: Design choices, alternatives and breaking changes
+
+The table below shows the main design components considered, the design decisions made, and the cost and
+impact of alternative design choices. As presented in this paper, the design of class templates `indirect` 
+and `polymorphic` has been approved by LEWG. The authors have until C++26 is standardized to consider 
+making any breaking changes; after C++26, whilst breaking changes will still be possible, the impact
+of these changes on users could be potentially significant and unwelcome.
+
+| Component | Decision | Alternative | Change impact | Breaking change? |
+|--|--|--|--|--|
+|Member `emplace`| No member `emplace` | Add member `emplace` | Pure addition | No |
+|`operator bool`| No `operator bool` | Add `operator bool` | Changes semantics | No |
+|`indirect` comparsion preconditions | `indirect` must not be valueless | Allows comparsion of valueless objects | Runtime cost | No |
+|`indirect` hash preconditions| `indirect` must not be valueless | Allows hash of valueless objects | Runtime cost | No |
+|`indirect` format preconditions | `indirect` must not be valueless | Allows formatting of valueless objects | Runtime cost | No |
+|Copy and copy assign preconditions| Object must not be valueless | Allows copying of valueless objects | Runtime cost | No |
+|Move and move assign preconditions| Object must not be valueless | Allows moving of valueless objects | Runtime cost | No |
+|Requirements on `T` in `polymorphic<T>` | No requirement that `T` has virtual functions | Add _Mandates_ or _Constraints_ to require `T` to have virtual functions | Code becomes ill-formed | Yes |
+|State of default-constructed object| Default-constructed object (where valid) has a value | Make default-constructed object valueless | Changes semantics; necessitates adding `operator bool` and allowing move, copy and compare of valueless (empty) objects | Yes |
+|Small buffer optimisation for polymorphic|SBO is not required, settings are hidden|Add buffer size and alignment as template parameters| Breaks ABI; forces implementers to use SBO | Yes |
+|`noexcept` for accessors|Accessors are `noexcept` like `unique_ptr` and `optional`| Remove `noexcept` from accessors | User functions marked `noexcept` could be broken | Yes |
+|Specialization of optional|No specialization of optional|Specialize optional to use valueless state| Breaks ABI; engaged but valueless optional would become indistinguishable from a disengaged optional| Yes |
