@@ -78,8 +78,8 @@ class control_block {
  public:
   using allocator_traits = std::allocator_traits<A>;
 
-  constexpr allocator_traits::pointer ptr() { return p_; }
-  constexpr allocator_traits::const_pointer ptr() const { return p_; }
+  constexpr typename allocator_traits::pointer ptr() { return p_; }
+  constexpr typename allocator_traits::const_pointer ptr() const { return p_; }
 
   virtual constexpr ~control_block() = default;
   virtual constexpr void destroy(A& alloc) = 0;
