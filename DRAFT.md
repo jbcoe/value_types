@@ -1665,7 +1665,7 @@ of these changes on users could be potentially significant and unwelcome.
 |--|--|--|--|--|
 |Member `emplace`| No member `emplace` | Add member `emplace` | Pure addition | No |
 |`operator bool`| No `operator bool` | Add `operator bool` | Changes semantics | No |
-|`indirect` comparsion preconditions | `indirect` must not be valueless | Allows comparsion of valueless objects | Runtime cost | No |
+|`indirect` comparsion preconditions | `indirect` must not be valueless | Allows comparison of valueless objects | Runtime cost | No |
 |`indirect` hash preconditions| `indirect` must not be valueless | Allows hash of valueless objects | Runtime cost | No |
 |`indirect` format preconditions | `indirect` must not be valueless | Allows formatting of valueless objects | Runtime cost | No |
 |Copy and copy assign preconditions| Object must not be valueless | Allows copying of valueless objects | Runtime cost | No |
