@@ -838,6 +838,6 @@ TEST(PolymorphicTest, AllocatorSwapUnreachable) {
 
   EXPECT_DEATH([&]() { pA.swap(pB); }(), "");
 }
-#endif // NDEBUG
+#endif  // NDEBUG
 
 }  // namespace

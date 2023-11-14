@@ -807,6 +807,6 @@ TEST(IndirectTest, AllocatorSwapUnreachable) {
 
   EXPECT_DEATH([&]() { iA.swap(iB); }(), "");
 }
-#endif // NDEBUG
+#endif  // NDEBUG
 
 }  // namespace
