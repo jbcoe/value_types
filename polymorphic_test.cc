@@ -825,6 +825,8 @@ struct NonEqualAllocator : std::allocator<T> {
   }
 };
 
+// `unreachable` only causes termination in debug mode.
+#ifndef NDEBUG
 TEST(PolymorphicTest, AllocatorSwapUnreachable) {
   NonEqualAllocator<Base> allocA;
   NonEqualAllocator<Base> allocB;
@@ -836,5 +838,6 @@ TEST(PolymorphicTest, AllocatorSwapUnreachable) {
 
   EXPECT_DEATH([&]() { pA.swap(pB); }(), "");
 }
+#ifndef // NDEBUG
 
 }  // namespace
