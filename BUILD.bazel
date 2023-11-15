@@ -6,6 +6,13 @@ cc_library(
 )
 
 cc_library(
+    name = "empty_base_optimization",
+    hdrs = ["compatibility/empty_base_optimization.h"],
+    copts = ["-Iexternal/value_types/"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
     name = "indirect",
     hdrs = ["indirect.h"],
     copts = ["-Iexternal/value_types/"],
@@ -27,6 +34,9 @@ cc_library(
     hdrs = [
         "compatibility/indirect_cxx11.h",
         "indirect.h",
+    ],
+    deps = [
+        "empty_base_optimization",
     ],
     copts = ["-Iexternal/value_types/"],
     defines = ["XYZ_INDIRECT_CXX_11"],
@@ -67,7 +77,10 @@ cc_library(
         "compatibility/polymorphic_cxx11.h",
         "polymorphic.h",
     ],
-    deps = ["in_place_type",],
+    deps = [
+        "in_place_type",
+        "empty_base_optimization",
+    ],
     defines = ["XYZ_POLYMORPHIC_CXX_11"],
     copts = ["-Iexternal/value_types/"],
     visibility = ["//visibility:public"],

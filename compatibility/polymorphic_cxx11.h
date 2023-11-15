@@ -6,6 +6,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "compatibility/empty_base_optimization.h"
 #include "compatibility/in_place_type.h"
 
 namespace xyz {
@@ -77,13 +78,12 @@ class direct_control_block final : public control_block<T, A> {
 }  // namespace detail
 
 template <class T, class A = std::allocator<T>>
-class polymorphic {
+class polymorphic : private detail::empty_base_optimization<A> {
   using cblock_t = detail::control_block<T, A>;
   cblock_t* cb_;
 
-  A alloc_;  // TODO: Apply EBCO
-
   using allocator_traits = std::allocator_traits<A>;
+  using alloc_base = detail::empty_base_optimization<A>;
 
  public:
   using value_type = T;
@@ -96,7 +96,7 @@ class polymorphic {
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
     using cb_traits = std::allocator_traits<cb_allocator>;
-    cb_allocator cb_alloc(alloc_);
+    cb_allocator cb_alloc(alloc_base::get());
     auto mem = cb_traits::allocate(cb_alloc, 1);
     try {
       cb_traits::construct(cb_alloc, mem);
@@ -118,7 +118,7 @@ class polymorphic {
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
     using cb_traits = std::allocator_traits<cb_allocator>;
-    cb_allocator cb_alloc(alloc_);
+    cb_allocator cb_alloc(alloc_base::get());
     auto mem = cb_traits::allocate(cb_alloc, 1);
     try {
       cb_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
@@ -138,11 +138,11 @@ class polymorphic {
       typename std::enable_if<std::is_base_of<T, U>::value, int>::type = 0>
   polymorphic(std::allocator_arg_t, const A& alloc, in_place_type_t<U>,
               Ts&&... ts)
-      : alloc_(alloc) {
+      : alloc_base(alloc) {
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
     using cb_traits = std::allocator_traits<cb_allocator>;
-    cb_allocator cb_alloc(alloc_);
+    cb_allocator cb_alloc(alloc_base::get());
     auto mem = cb_traits::allocate(cb_alloc, 1);
     try {
       cb_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
@@ -154,19 +154,19 @@ class polymorphic {
   }
 
   polymorphic(const polymorphic& other)
-      : alloc_(allocator_traits::select_on_container_copy_construction(
-            other.alloc_)) {
+      : alloc_base(allocator_traits::select_on_container_copy_construction(
+            other.alloc_base::get())) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
-    cb_ = other.cb_->clone(alloc_);
+    cb_ = other.cb_->clone(alloc_base::get());
   }
 
   polymorphic(std::allocator_arg_t, const A& alloc, const polymorphic& other)
-      : alloc_(alloc) {
+      : alloc_base(alloc) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
-    cb_ = other.cb_->clone(alloc_);
+    cb_ = other.cb_->clone(alloc_base::get());
   }
 
-  polymorphic(polymorphic&& other) noexcept : alloc_(other.alloc_) {
+  polymorphic(polymorphic&& other) noexcept : alloc_base(other.alloc_base::get()) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = other.cb_;
     other.cb_ = nullptr;
@@ -174,7 +174,7 @@ class polymorphic {
 
   polymorphic(std::allocator_arg_t, const A& alloc,
               polymorphic&& other) noexcept
-      : alloc_(alloc) {
+      : alloc_base(alloc) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = other.cb_;
     other.cb_ = nullptr;
@@ -186,13 +186,13 @@ class polymorphic {
     if (this == &other) return *this;
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     if (allocator_traits::propagate_on_container_copy_assignment::value) {
-      if (alloc_ != other.alloc_) {
+      if (alloc_base::get() != other.alloc_base::get()) {
         reset();  // using current allocator.
-        alloc_ = other.alloc_;
+        alloc_base::get() = other.alloc_base::get();
       }
     }
     reset();  // We may not have reset above and it's a no-op if valueless.
-    cb_ = other.cb_->clone(alloc_);
+    cb_ = other.cb_->clone(alloc_base::get());
     return *this;
   }
 
@@ -202,16 +202,16 @@ class polymorphic {
     if (this == &other) return *this;
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     if (allocator_traits::propagate_on_container_move_assignment::value) {
-      if (alloc_ != other.alloc_) {
+      if (alloc_base::get() != other.alloc_base::get()) {
         reset();  // using current allocator.
-        alloc_ = other.alloc_;
+        alloc_base::get() = other.alloc_base::get();
       }
     }
     reset();  // We may not have reset above and it's a no-op if valueless.
-    if (alloc_ == other.alloc_) {
+    if (alloc_base::get() == other.alloc_base::get()) {
       std::swap(cb_, other.cb_);
     } else {
-      cb_ = other.cb_->clone(alloc_);
+      cb_ = other.cb_->clone(alloc_base::get());
     }
     return *this;
   }
@@ -238,7 +238,7 @@ class polymorphic {
 
   bool valueless_after_move() const noexcept { return cb_ == nullptr; }
 
-  allocator_type get_allocator() const noexcept { return alloc_; }
+  allocator_type get_allocator() const noexcept { return alloc_base::get(); }
 
   void swap(polymorphic& other) noexcept(
       std::allocator_traits<A>::propagate_on_container_swap::value ||
@@ -247,11 +247,11 @@ class polymorphic {
 
     if (allocator_traits::propagate_on_container_swap::value) {
       // If allocators move with their allocated objects we can swap both.
-      std::swap(alloc_, other.alloc_);
+      std::swap(alloc_base::get(), other.alloc_base::get());
       std::swap(cb_, other.cb_);
       return;
     } else /*  */ {
-      if (alloc_ == other.alloc_) {
+      if (alloc_base::get() == other.alloc_base::get()) {
         std::swap(cb_, other.cb_);
       } else {
         unreachable();  // LCOV_EXCL_LINE
@@ -267,7 +267,7 @@ class polymorphic {
  private:
   void reset() noexcept {
     if (cb_ != nullptr) {
-      cb_->destroy(alloc_);
+      cb_->destroy(alloc_base::get());
       cb_ = nullptr;
     }
   }

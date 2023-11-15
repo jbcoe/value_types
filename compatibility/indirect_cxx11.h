@@ -6,6 +6,8 @@
 #include <type_traits>
 #include <utility>
 
+#include "compatibility/empty_base_optimization.h"
+
 namespace xyz {
 
 #ifndef XYZ_UNREACHABLE_DEFINED
@@ -31,8 +33,9 @@ template <class T, class A>
 struct is_indirect<indirect<T, A>> : std::true_type {};
 
 template <class T, class A = std::allocator<T>>
-class indirect {
+class indirect : private detail::empty_base_optimization<A> {
   using allocator_traits = std::allocator_traits<A>;
+  using alloc_base = detail::empty_base_optimization<A>;
 
  public:
   using value_type = T;
@@ -45,12 +48,12 @@ class indirect {
                                     int>::type = 0>
   indirect() {
     static_assert(std::is_default_constructible<T>::value, "");
-    p_ = construct_from(alloc_);
+    p_ = construct_from(alloc_base::get());
   }
 
-  indirect(std::allocator_arg_t, const A& alloc) : alloc_(alloc) {
+  indirect(std::allocator_arg_t, const A& alloc) : alloc_base(alloc) {
     static_assert(std::is_default_constructible<T>::value, "");
-    p_ = construct_from(alloc_);
+    p_ = construct_from(alloc_base::get());
   }
 
   template <
@@ -66,7 +69,7 @@ class indirect {
                         indirect>::value,
           int>::type = 0>
   explicit indirect(U&& u, Us&&... us) {
-    p_ = construct_from(alloc_, std::forward<U>(u), std::forward<Us>(us)...);
+    p_ = construct_from(alloc_base::get(), std::forward<U>(u), std::forward<Us>(us)...);
   }
 
   template <
@@ -79,32 +82,32 @@ class indirect {
                         indirect>::value,
           int>::type = 0>
   indirect(std::allocator_arg_t, const A& alloc, U&& u, Us&&... us)
-      : alloc_(alloc) {
-    p_ = construct_from(alloc_, std::forward<U>(u), std::forward<Us>(us)...);
+      : alloc_base(alloc) {
+    p_ = construct_from(alloc_base::get(), std::forward<U>(u), std::forward<Us>(us)...);
   }
 
   indirect(const indirect& other)
-      : alloc_(allocator_traits::select_on_container_copy_construction(
-            other.alloc_)) {
+      : alloc_base(allocator_traits::select_on_container_copy_construction(
+            other.alloc_base::get())) {
     static_assert(std::is_copy_constructible<T>::value, "");
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
-    p_ = construct_from(alloc_, *other);
+    p_ = construct_from(alloc_base::get(), *other);
   }
 
   indirect(std::allocator_arg_t, const A& alloc, const indirect& other)
-      : alloc_(alloc) {
+      : alloc_base(alloc) {
     static_assert(std::is_copy_constructible<T>::value, "");
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
-    p_ = construct_from(alloc_, *other);
+    p_ = construct_from(alloc_base::get(), *other);
   }
 
-  indirect(indirect&& other) noexcept : p_(nullptr), alloc_(other.alloc_) {
+  indirect(indirect&& other) noexcept : p_(nullptr), alloc_base(other.alloc_base::get()) {
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     std::swap(p_, other.p_);
   }
 
   indirect(std::allocator_arg_t, const A& alloc, indirect&& other) noexcept
-      : p_(nullptr), alloc_(alloc) {
+      : p_(nullptr), alloc_base(alloc) {
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     std::swap(p_, other.p_);
   }
@@ -117,19 +120,19 @@ class indirect {
     static_assert(std::is_copy_constructible<T>::value, "");
     static_assert(std::is_copy_assignable<T>::value, "");
     if (allocator_traits::propagate_on_container_copy_assignment::value) {
-      if (alloc_ != other.alloc_) {
+      if (alloc_base::get() != other.alloc_base::get()) {
         reset();  // using current allocator.
-        alloc_ = other.alloc_;
+        alloc_base::get() = other.alloc_base::get();
       }
     }
-    if (alloc_ == other.alloc_) {
+    if (alloc_base::get() == other.alloc_base::get()) {
       if (p_ != nullptr) {
         *p_ = *other.p_;
         return *this;
       }
     }
     reset();  // We may not have reset above and it's a no-op if valueless.
-    p_ = construct_from(alloc_, *other);
+    p_ = construct_from(alloc_base::get(), *other);
     return *this;
   }
 
@@ -141,16 +144,16 @@ class indirect {
     static_assert(std::is_copy_constructible<T>::value, "");
 
     if (allocator_traits::propagate_on_container_move_assignment::value) {
-      if (alloc_ != other.alloc_) {
+      if (alloc_base::get() != other.alloc_base::get()) {
         reset();  // using current allocator.
-        alloc_ = other.alloc_;
+        alloc_base::get() = other.alloc_base::get();
       }
     }
     reset();  // We may not have reset above and it's a no-op if valueless.
-    if (alloc_ == other.alloc_) {
+    if (alloc_base::get() == other.alloc_base::get()) {
       std::swap(p_, other.p_);
     } else {
-      p_ = construct_from(alloc_, std::move(*other));
+      p_ = construct_from(alloc_base::get(), std::move(*other));
     }
     return *this;
   }
@@ -187,7 +190,7 @@ class indirect {
 
   bool valueless_after_move() const noexcept { return p_ == nullptr; }
 
-  allocator_type get_allocator() const noexcept { return alloc_; }
+  allocator_type get_allocator() const noexcept { return alloc_base::get(); }
 
   void swap(indirect& other) noexcept(
       std::allocator_traits<A>::propagate_on_container_swap::value ||
@@ -197,11 +200,11 @@ class indirect {
 
     if (allocator_traits::propagate_on_container_swap::value) {
       // If allocators move with their allocated objects we can swap both.
-      std::swap(alloc_, other.alloc_);
+      std::swap(alloc_base::get(), other.alloc_base::get());
       std::swap(p_, other.p_);
       return;
     } else /*  */ {
-      if (alloc_ == other.alloc_) {
+      if (alloc_base::get() == other.alloc_base::get()) {
         std::swap(p_, other.p_);
       } else {
         unreachable();  // LCOV_EXCL_LINE
@@ -347,11 +350,9 @@ class indirect {
  private:
   pointer p_;
 
-  A alloc_;  // TODO: Apply EBCO
-
   void reset() noexcept {
     if (p_ == nullptr) return;
-    destroy_with(alloc_, p_);
+    destroy_with(alloc_base::get(), p_);
     p_ = nullptr;
   }
 
