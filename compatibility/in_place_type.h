@@ -4,6 +4,7 @@
 namespace xyz {
 
 #if (__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+#include <utility>
 using std::in_place_type_t;
 #else
 template <class T>
