@@ -166,7 +166,8 @@ class polymorphic : private detail::empty_base_optimization<A> {
     cb_ = other.cb_->clone(alloc_base::get());
   }
 
-  polymorphic(polymorphic&& other) noexcept : alloc_base(other.alloc_base::get()) {
+  polymorphic(polymorphic&& other) noexcept
+      : alloc_base(other.alloc_base::get()) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = other.cb_;
     other.cb_ = nullptr;

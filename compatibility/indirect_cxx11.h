@@ -69,7 +69,8 @@ class indirect : private detail::empty_base_optimization<A> {
                         indirect>::value,
           int>::type = 0>
   explicit indirect(U&& u, Us&&... us) {
-    p_ = construct_from(alloc_base::get(), std::forward<U>(u), std::forward<Us>(us)...);
+    p_ = construct_from(alloc_base::get(), std::forward<U>(u),
+                        std::forward<Us>(us)...);
   }
 
   template <
@@ -83,7 +84,8 @@ class indirect : private detail::empty_base_optimization<A> {
           int>::type = 0>
   indirect(std::allocator_arg_t, const A& alloc, U&& u, Us&&... us)
       : alloc_base(alloc) {
-    p_ = construct_from(alloc_base::get(), std::forward<U>(u), std::forward<Us>(us)...);
+    p_ = construct_from(alloc_base::get(), std::forward<U>(u),
+                        std::forward<Us>(us)...);
   }
 
   indirect(const indirect& other)
@@ -101,7 +103,8 @@ class indirect : private detail::empty_base_optimization<A> {
     p_ = construct_from(alloc_base::get(), *other);
   }
 
-  indirect(indirect&& other) noexcept : p_(nullptr), alloc_base(other.alloc_base::get()) {
+  indirect(indirect&& other) noexcept
+      : p_(nullptr), alloc_base(other.alloc_base::get()) {
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     std::swap(p_, other.p_);
   }
