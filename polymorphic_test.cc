@@ -25,6 +25,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <array>
 #include <map>
 
+#include "compatibility/utility.h"  //Add this include to be able to use xyz::in_place_type_t also in C++20 mode
+
 #if __has_include(<memory_resource>)
 #include <memory_resource>
 #endif  // #if __has_include(<memory_resource>)
