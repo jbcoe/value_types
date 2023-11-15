@@ -6,6 +6,8 @@
 #include <type_traits>
 #include <utility>
 
+#include "utility.h"
+
 namespace xyz {
 
 #ifndef XYZ_UNREACHABLE_DEFINED
@@ -22,9 +24,6 @@ namespace xyz {
 #endif  // XYZ_UNREACHABLE_DEFINED
 
 struct NoPolymorphicSBO {};
-
-template <class T>
-struct in_place_type_t {};
 
 namespace detail {
 template <class T, class A>
