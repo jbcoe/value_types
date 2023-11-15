@@ -21,6 +21,8 @@ namespace xyz {
 }
 #endif  // XYZ_UNREACHABLE_DEFINED
 
+struct NoPolymorphicSBO {};
+
 template <class T>
 struct in_place_type_t {};
 
