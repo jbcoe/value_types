@@ -600,9 +600,7 @@ constexpr indirect(const indirect& other);
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: If `allocator_traits<allocator_type>::select_on_container_copy_construction` is `true`,
-  then equivalent to `indirect(allocator_arg, other.get_allocator(), *other)`,
-  otherwise equivalent to `indirect(*other)`.
+* _Effects_: Equivalent to `indirect(allocator_arg, allocator_traits<allocator_type>::select_on_container_copy_construction(other.get_allocator()), *other)`.
 `
 * _Postconditions_: `*this` is not valueless.
 
