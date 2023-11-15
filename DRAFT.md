@@ -399,9 +399,11 @@ move assignment, or swapping of the allocator only if (64.1)
 or (64.3) `allocator_traits<allocator_type>::propagate_on_container_swap::value`
 is true within the implementation of the corresponding indirect value operation.
 
-The template parameter `T` of `indirect` must be a non-union class type.
+The template parameter `T` of `indirect` shall be a non-union class type.
 
 The template parameter `T` of `indirect` may be an incomplete type.
+
+The template parameter `Allocator` of `indirect` shall meet the _Cpp17Allocator_ requirements.
 
 #### X.Y.2 Class template indirect synopsis [indirect.syn]
 
@@ -465,73 +467,73 @@ class indirect {
 
   template <class U, class AA>
   friend constexpr auto operator==(
-    const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+    const indirect& lhs, const indirect<U, AA>& rhs);
 
   template <class U, class AA>
   friend constexpr auto operator!=(
-    const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+    const indirect& lhs, const indirect<U, AA>& rhs);
 
   template <class U, class AA>
   friend constexpr auto operator<(
-    const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+    const indirect& lhs, const indirect<U, AA>& rhs);
 
   template <class U, class AA>
   friend constexpr auto operator<=(
-    const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+    const indirect& lhs, const indirect<U, AA>& rhs);
 
   template <class U, class AA>
   friend constexpr auto operator>(
-    const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+    const indirect& lhs, const indirect<U, AA>& rhs);
 
   template <class U, class AA>
   friend constexpr auto operator>=(
-    const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+    const indirect& lhs, const indirect<U, AA>& rhs);
 
   template <class U, class AA>
   friend constexpr auto operator<=>(
-    const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+    const indirect& lhs, const indirect<U, AA>& rhs);
 
   template <class U>
-  friend constexpr auto operator==(const indirect<T, A>& lhs, const U& rhs);
+  friend constexpr auto operator==(const indirect& lhs, const U& rhs);
 
   template <class U>
-  friend constexpr auto operator==(const U& lhs, const indirect<T, A>& rhs);
+  friend constexpr auto operator==(const U& lhs, const indirect& rhs);
 
   template <class U>
-  friend constexpr auto operator!=(const indirect<T, A>& lhs, const U& rhs);
+  friend constexpr auto operator!=(const indirect& lhs, const U& rhs);
 
   template <class U>
-  friend constexpr auto operator!=(const U& lhs, const indirect<T, A>& rhs);
+  friend constexpr auto operator!=(const U& lhs, const indirect& rhs);
 
   template <class U>
-  friend constexpr auto operator<(const indirect<T, A>& lhs, const U& rhs);
+  friend constexpr auto operator<(const indirect& lhs, const U& rhs);
 
   template <class U>
-  friend constexpr auto operator<(const U& lhs, const indirect<T, A>& rhs);
+  friend constexpr auto operator<(const U& lhs, const indirect& rhs);
 
   template <class U>
-  friend constexpr auto operator<=(const indirect<T, A>& lhs, const U& rhs);
+  friend constexpr auto operator<=(const indirect& lhs, const U& rhs);
 
   template <class U>
-  friend constexpr auto operator<=(const U& lhs, const indirect<T, A>& rhs);
+  friend constexpr auto operator<=(const U& lhs, const indirect& rhs);
 
   template <class U>
-  friend constexpr auto operator>(const indirect<T, A>& lhs, const U& rhs);
+  friend constexpr auto operator>(const indirect& lhs, const U& rhs);
 
   template <class U>
-  friend constexpr auto operator>(const U& lhs, const indirect<T, A>& rhs);
+  friend constexpr auto operator>(const U& lhs, const indirect& rhs);
 
   template <class U>
-  friend constexpr auto operator>=(const indirect<T, A>& lhs, const U& rhs);
+  friend constexpr auto operator>=(const indirect& lhs, const U& rhs);
 
   template <class U>
-  friend constexpr auto operator>=(const U& lhs, const indirect<T, A>& rhs);
+  friend constexpr auto operator>=(const U& lhs, const indirect& rhs);
 
   template <class U>
-  friend constexpr auto operator<=>(const indirect<T, A>& lhs, const U& rhs);
+  friend constexpr auto operator<=>(const indirect& lhs, const U& rhs);
 
   template <class U>
-  friend constexpr auto operator<=>(const U& lhs, const indirect<T, A>& rhs);
+  friend constexpr auto operator<=>(const U& lhs, const indirect& rhs);
 };
 
 template <class T, class Alloc>
@@ -556,8 +558,6 @@ constexpr indirect(std::allocator_arg_t, const Allocator& alloc);
 ```
 
 * _Mandates_: `is_default_constructible_v<T>` is true.
-
-* _Preconditions_: `Allocator` meets the _Cpp17Allocator_ requirements.
 
 * _Effects_: Equivalent to the preceding constructor except that the allocator
   is initialized with alloc. `allocator_` is initialized with `alloc`.
@@ -585,8 +585,6 @@ constexpr indirect(std::allocator_arg_t, const Allocator& alloc, U&& u, Us&& ...
 * _Constraints_: `is_constructible_v<T, U, Us...>` is true.
   `is_same_v<remove_cvref_t<U>, indirect>` is false.
 
-* _Preconditions_: `Allocator` meets the _Cpp17Allocator_ requirements.
-
 * _Effects_: Equivalent to the preceding constructor except that the allocator
   is initialized with alloc. `allocator_` is initialized with `alloc`.
 
@@ -600,12 +598,8 @@ constexpr indirect(const indirect& other);
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: Constructs an indirect owning an instance of `T` created with the
-  copy constructor of the object owned by `other`. `allocator` is obtained by
-  calling
-  `allocator_traits<allocator_type>::select_on_container_copy_construction `on
-  the allocator belonging to the object being copied.
-
+* _Effects_: Equivalent to `indirect(allocator_arg, allocator_traits<allocator_type>::select_on_container_copy_construction(other.get_allocator()), *other)`.
+`
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
@@ -615,11 +609,9 @@ constexpr indirect(std::allocator_arg_t, const Allocator& alloc,
 
 * _Mandates_: `is_copy_constructible_v<T>` is true.
 
-* _Preconditions_: `other` is not valueless and `Allocator` meets the
-  _Cpp17Allocator_ requirements.
+* _Preconditions_: `other` is not valueless.
 
-* _Effects_: Equivalent to the preceding constructor except that the allocator
-  is initialized with alloc.
+* _Effects_: Equivalent to `indirect(allocator_arg, alloc, *other)`.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -629,9 +621,8 @@ constexpr indirect(indirect&& other) noexcept;
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: Constructs an `indirect` owning the object owned by `other`.
-  `allocator` is created by move construction from the allocator belonging to
-  the object being moved.
+* _Effects_: Constructs an `indirect` that takes ownership of the `other`'s owned object.
+  `allocator_` is initialized by move construction from `other.allocator_`.
 
 * _Postconditions_: `other` is valueless.
 
@@ -640,14 +631,13 @@ constexpr indirect(indirect&& other) noexcept;
 
 ```c++
 constexpr indirect(std::allocator_arg_t, const Allocator& alloc,
-                   indirect&& other) noexcept;
+                   indirect&& other) noexcept(allocator_traits<Allocator>::is_always_equal);
 ```
 
-* _Preconditions_: `other` is not valueless and `Allocator` meets the
-  _Cpp17Allocator_ requirements.
+* _Preconditions_: `other` is not valueless.
 
-* _Effects_: Equivalent to the preceding constructors except that the allocator
-  is initialized with alloc.
+* _Effects_: If `alloc == other.get_allocator()` is `true` then equivalent to `indirect(std::move(other))`,
+  otherwise, equivalent to `indirect(allocator_arg, alloc, *std::move(other))`.
 
 * _Postconditions_: `other` is valueless.
 
@@ -770,40 +760,40 @@ constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
 
 ```c++
 template <class U, class AA>
-constexpr auto operator==(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+constexpr auto operator==(const indirect& lhs, const indirect<U, AA>& rhs);
 ```
 
 ```c++
 template <class U, class AA>
-constexpr auto operator!=(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+constexpr auto operator!=(const indirect& lhs, const indirect<U, AA>& rhs);
 ```
 
 ```c++
 template <class U, class AA>
-constexpr auto operator<(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+constexpr auto operator<(const indirect& lhs, const indirect<U, AA>& rhs);
 ```
 
 ```c++
 template <class U, class AA>
-constexpr auto operator<=(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+constexpr auto operator<=(const indirect& lhs, const indirect<U, AA>& rhs);
 ```
 
 ```c++
 template <class U, class AA>
-constexpr auto operator>(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+constexpr auto operator>(const indirect& lhs, const indirect<U, AA>& rhs);
 ```
 
 ```c++
 template <class U, class AA>
-constexpr auto operator>=(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+constexpr auto operator>=(const indirect& lhs, const indirect<U, AA>& rhs);
 ```
 
 ```c++
 template <class U, class AA>
-constexpr auto operator<=>(const indirect<T, A>& lhs, const indirect<U, AA>& rhs);
+constexpr auto operator<=>(const indirect& lhs, const indirect<U, AA>& rhs);
 ```
 
-* _Constraints_: `T op U` is well-defined.
+* _Constraints_: `*lhs` _op_ `*rhs` is well-formed.
 
 * _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
 
@@ -816,40 +806,40 @@ constexpr auto operator<=>(const indirect<T, A>& lhs, const indirect<U, AA>& rhs
 
 ```c++
 template <class U>
-constexpr auto operator==(const indirect<T, A>& lhs, const U& rhs);
+constexpr auto operator==(const indirect& lhs, const U& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator!=(const indirect<T, A>& lhs, const U& rhs);
+constexpr auto operator!=(const indirect& lhs, const U& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator<(const indirect<T, A>& lhs, const U& rhs);
+constexpr auto operator<(const indirect& lhs, const U& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator<=(const indirect<T, A>& lhs, const U& rhs);
+constexpr auto operator<=(const indirect& lhs, const U& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator>(const indirect<T, A>& lhs, const U& rhs);
+constexpr auto operator>(const indirect& lhs, const U& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator>=(const indirect<T, A>& lhs, const U& rhs);
+constexpr auto operator>=(const indirect& lhs, const U& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator<=>(const indirect<T, A>& lhs, const U& rhs);
+constexpr auto operator<=>(const indirect& lhs, const U& rhs);
 ```
 
-* _Constraints_: `T op U` is well-defined.
+* _Constraints_: `*lhs` _op_ `rhs` is well-formed.
 
 * _Preconditions_: `lhs` is not valueless.
 
@@ -860,40 +850,40 @@ constexpr auto operator<=>(const indirect<T, A>& lhs, const U& rhs);
 
 ```c++
 template <class U>
-constexpr auto operator==(const U& lhs, const indirect<T, A>& rhs);
+constexpr auto operator==(const U& lhs, const indirect& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator!=(const U& lhs, const indirect<T, A>& rhs);
+constexpr auto operator!=(const U& lhs, const indirect& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator<(const U& lhs, const indirect<T, A>& rhs);
+constexpr auto operator<(const U& lhs, const indirect& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator<=(const U& lhs, const indirect<T, A>& rhs);
+constexpr auto operator<=(const U& lhs, const indirect& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator>(const U& lhs, const indirect<T, A>& rhs);
+constexpr auto operator>(const U& lhs, const indirect& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator>=const U& lhs, const indirect<T, A>& rhs);
+constexpr auto operator>=const U& lhs, const indirect& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator<=>(const U& lhs, const indirect<T, A>& rhs);
+constexpr auto operator<=>(const U& lhs, const indirect& rhs);
 ```
 
-* _Constraints_: `U op T` is well-defined.
+* _Constraints_: `lhs` _op_ `*rhs` is well-formed.
 
 * _Preconditions_: `rhs` is not valueless.
 
@@ -988,9 +978,11 @@ or (64.3) `allocator_traits<allocator_type>::propagate_on_container_swap::value`
 is true within the implementation of the corresponding polymorphic value
 operation.
 
-The template parameter `T` of `polymorphic` must be a non-union class type.
+The template parameter `T` of `polymorphic` shall be a non-union class type.
 
 The template parameter `T` of `polymorphic` may be an incomplete type.
+
+The template parameter `Allocator` of `polymorphic` shall meet the requirements of _Cpp17Allocator_.
 
 #### X.Z.2 Class template polymorphic synopsis [polymorphic.syn]
 
@@ -1085,8 +1077,6 @@ constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc,
 * _Constraints_: `is_base_of_v<T, U>` is true, `is_constructible_v<U, Ts...>` is
   true, `is_copy_constructible_v<U>` is true.
 
-* _Preconditions_: `Allocator` meets the _Cpp17Allocator_ requirements.
-
 * _Effects_: Equivalent to the preceding constructor except that the
   `allocator_` is initialized with `alloc`.
 
@@ -1111,8 +1101,7 @@ constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc,
                       const polymorphic& other);
 ```
 
-* _Preconditions_: `other` is not valueless and `Allocator` meets the
-  _Cpp17Allocator_ requirements.
+* _Preconditions_: `other` is not valueless.
 
 * _Effects_: Equivalent to the preceding constructor except that the allocator
   is initialized with alloc.
@@ -1139,8 +1128,7 @@ constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc,
                       polymorphic&& other) noexcept;
 ```
 
-* _Preconditions_: `other` is not valueless and `Allocator` meets the
-  _Cpp17Allocator_ requirements.
+* _Preconditions_: `other` is not valueless.
 
 * _Effects_: Equivalent to the preceding constructor except that the allocator
   is initialized with alloc.
@@ -1652,3 +1640,26 @@ class Picture {
   void draw(Canvas& canvas) const;
 };
 ```
+
+## Appendix C: Design choices, alternatives and breaking changes
+
+The table below shows the main design components considered, the design decisions made, and the cost and
+impact of alternative design choices. As presented in this paper, the design of class templates `indirect`
+and `polymorphic` has been approved by the LEWG. The authors have until C++26 is standardized to consider
+making any breaking changes; after C++26, whilst breaking changes will still be possible, the impact
+of these changes on users could be potentially significant and unwelcome.
+
+| Component | Decision | Alternative | Change impact | Breaking change? |
+|--|--|--|--|--|
+|Member `emplace`| No member `emplace` | Add member `emplace` | Pure addition | No |
+|`operator bool`| No `operator bool` | Add `operator bool` | Changes semantics | No |
+|`indirect` comparsion preconditions | `indirect` must not be valueless | Allows comparison of valueless objects | Runtime cost | No |
+|`indirect` hash preconditions| `indirect` must not be valueless | Allows hash of valueless objects | Runtime cost | No |
+|`indirect` format preconditions | `indirect` must not be valueless | Allows formatting of valueless objects | Runtime cost | No |
+|Copy and copy assign preconditions| Object must not be valueless | Allows copying of valueless objects | Runtime cost | No |
+|Move and move assign preconditions| Object must not be valueless | Allows moving of valueless objects | Runtime cost | No |
+|Requirements on `T` in `polymorphic<T>` | No requirement that `T` has virtual functions | Add _Mandates_ or _Constraints_ to require `T` to have virtual functions | Code becomes ill-formed | Yes |
+|State of default-constructed object| Default-constructed object (where valid) has a value | Make default-constructed object valueless | Changes semantics; necessitates adding `operator bool` and allowing move, copy and compare of valueless (empty) objects | Yes |
+|Small buffer optimisation for polymorphic|SBO is not required, settings are hidden|Add buffer size and alignment as template parameters| Breaks ABI; forces implementers to use SBO | Yes |
+|`noexcept` for accessors|Accessors are `noexcept` like `unique_ptr` and `optional`| Remove `noexcept` from accessors | User functions marked `noexcept` could be broken | Yes |
+|Specialization of optional|No specialization of optional|Specialize optional to use valueless state| Breaks ABI; engaged but valueless optional would become indistinguishable from a disengaged optional| Yes |
