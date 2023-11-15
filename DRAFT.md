@@ -391,13 +391,13 @@ support value-initialization.  end note] A copy of this allocator is used for
 any memory allocation and element construction performed by these constructors
 and by all member functions during the lifetime of each indirect value object,
 or until the allocator is replaced. The allocator may be replaced only via
-assignment or swap(). Allocator replacement is performed by copy assignment,
+assignment or `swap()`. Allocator replacement is performed by copy assignment,
 move assignment, or swapping of the allocator only if (64.1)
 `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value`,
 (64.2)
 `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value`,
 or (64.3) `allocator_traits<allocator_type>::propagate_on_container_swap::value`
-is true within the implementation of the corresponding indirect value operation.
+is `true` within the implementation of the corresponding indirect value operation.
 
 The template parameter `T` of `indirect` shall be a non-union class type.
 
@@ -557,7 +557,7 @@ constexpr indirect()
 constexpr indirect(std::allocator_arg_t, const Allocator& alloc);
 ```
 
-* _Mandates_: `is_default_constructible_v<T>` is true.
+* _Mandates_: `is_default_constructible_v<T>` is `true`.
 
 * _Effects_: Equivalent to the preceding constructor except that the allocator
   is initialized with alloc. `allocator_` is initialized with `alloc`.
@@ -569,11 +569,11 @@ template <class U, class... Us>
 explicit constexpr indirect(U&& u, Us&&... us);
 ```
 
-* _Constraints_: `is_constructible_v<T, U, Us...>` is true.
-  `is_same_v<remove_cvref_t<U>, indirect>` is false.
+* _Constraints_: `is_constructible_v<T, U, Us...>` is `true`.
+  `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
 
 * _Effects_: Constructs an indirect owning an instance of `T` created with the
-  arguments `u`, `us`. `allocator_` is default constructed.
+  arguments `u`, `us...`. `allocator_` is default constructed.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -582,11 +582,10 @@ template <class U, class... Us>
 constexpr indirect(std::allocator_arg_t, const Allocator& alloc, U&& u, Us&& ...us);
 ```
 
-* _Constraints_: `is_constructible_v<T, U, Us...>` is true.
-  `is_same_v<remove_cvref_t<U>, indirect>` is false.
+* _Constraints_: `is_constructible_v<T, U, Us...>` is `true`.
+  `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
 
-* _Effects_: Equivalent to the preceding constructor except that the allocator
-  is initialized with alloc. `allocator_` is initialized with `alloc`.
+* _Effects_: Equivalent to the preceding constructor except that `allocator_` is initialized with `alloc`.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -594,7 +593,7 @@ constexpr indirect(std::allocator_arg_t, const Allocator& alloc, U&& u, Us&& ...
 constexpr indirect(const indirect& other);
 ```
 
-* _Mandates_: `is_copy_constructible_v<T>` is true.
+* _Mandates_: `is_copy_constructible_v<T>` is `true`.
 
 * _Preconditions_: `other` is not valueless.
 
@@ -607,7 +606,7 @@ constexpr indirect(std::allocator_arg_t, const Allocator& alloc,
                    const indirect& other);
 ```
 
-* _Mandates_: `is_copy_constructible_v<T>` is true.
+* _Mandates_: `is_copy_constructible_v<T>` is `true`.
 
 * _Preconditions_: `other` is not valueless.
 
@@ -627,7 +626,7 @@ constexpr indirect(indirect&& other) noexcept;
 * _Postconditions_: `other` is valueless.
 
 * _Remarks_: This constructor does not require that `is_move_constructible_v<T>`
-  is true.
+  is `true`.
 
 ```c++
 constexpr indirect(std::allocator_arg_t, const Allocator& alloc,
@@ -642,7 +641,7 @@ constexpr indirect(std::allocator_arg_t, const Allocator& alloc,
 * _Postconditions_: `other` is valueless.
 
 * _Remarks_: This constructor does not require that `is_move_constructible_v<T>`
-  is true.
+  is `true`.
 
 #### X.Y.4 Destructor [indirect.dtor]
 
@@ -658,7 +657,7 @@ constexpr ~indirect();
 constexpr indirect& operator=(const indirect& other);
 ```
 
-* _Mandates_: `is_copy_assignable_v<T>` and `is_copy_constructible_v<T>`is true.
+* _Mandates_: `is_copy_assignable_v<T>` and `is_copy_constructible_v<T>`is `true`.
 
 * _Preconditions_: `other` is not valueless.
 
@@ -677,13 +676,13 @@ constexpr indirect& operator=(indirect&& other) noexcept(
     allocator_traits<Allocator>::propagate_on_container_move_assignment::value ||
     allocator_traits<Allocator>::is_always_equal::value);
 ```
-_Mandates_: `is_move_constructible_v<T>`is true.
+_Mandates_: `is_move_constructible_v<T>` is `true`.
 
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: If
   `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value
-  == true`, `allocator` is set to the allocator of `other`. If allocator is
+  == true`, `allocator_` is set to the allocator of `other`. If allocator is
   propagated or is equal to the allocator of `other`, destroys the owned object,
   if any, then takes ownership of the object owned by `other`.  Otherwise,
   destroys the owned object, if any, then move constructs an object from the
@@ -727,7 +726,7 @@ constexpr bool valueless_after_move() const noexcept;
 constexpr allocator_type get_allocator() const noexcept;
 ```
 
-* _Returns_: A copy of the Allocator object used to construct the owned object.
+* _Returns_: A copy of the `Allocator` object used to construct the owned object.
 
 #### X.Y.7 Swap [indirect.swap]
 
@@ -741,11 +740,11 @@ constexpr void swap(indirect& other) noexcept(
 
 * _Effects_: Swaps the objects owned by `*this` and `other`. If
   `allocator_traits<allocator_type>::propagate_on_container_swap::value` is
-  `true`, then allocator_type shall meet the _Cpp17Swappable_ requirements and
+  `true`, then `allocator_type` shall meet the _Cpp17Swappable_ requirements and
   the allocators of `*this` and `other` shall also be exchanged by calling
   `swap` as described in [swappable.requirements]. Otherwise, the allocators
   shall not be swapped, and the behavior is undefined unless
-  `*this.get_allocator() == other.get_allocator()`.
+  `(*this).get_allocator() == other.get_allocator()`.
 
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
@@ -969,7 +968,7 @@ support value-initialization.  end note] A copy of this allocator is used for
 any memory allocation and element construction performed by these constructors
 and by all member functions during the lifetime of each polymorphic value
 object, or until the allocator is replaced. The allocator may be replaced only
-via assignment or swap(). Allocator replacement is performed by copy assignment,
+via assignment or `swap()`. Allocator replacement is performed by copy assignment,
 move assignment, or swapping of the allocator only if (64.1)
 `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value`,
 (64.2)
@@ -1047,8 +1046,8 @@ class polymorphic {
 constexpr polymorphic()
 ```
 
-* _Mandates_: `is_default_constructible_v<T>` is true,
-  `is_copy_constructible_v<T>` is true.
+* _Mandates_: `is_default_constructible_v<T>` is `true`,
+  `is_copy_constructible_v<T>` is `true`.
 
 * _Effects_: Constructs a polymorphic owning a default-constructed `T`.
   `allocator_` is default constructed.
@@ -1060,8 +1059,8 @@ template <class U, class... Ts>
 explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts);
 ```
 
-* _Constraints_: `is_base_of_v<T, U>` is true, `is_constructible_v<U, Ts...>` is
-  true, `is_copy_constructible_v<U>` is true.
+* _Constraints_: `is_base_of_v<T, U>` is `true`  and `is_constructible_v<U, Ts...>` is
+  `true` and `is_copy_constructible_v<U>` is `true`.
 
 * _Effects_: Constructs a polymorphic owning an instance of `U` created with the
   arguments `Ts`. `allocator_` is default constructed.
@@ -1089,7 +1088,7 @@ constexpr polymorphic(const polymorphic& other);
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: Constructs a polymorphic owning an instance of `T` created with the
-  copy constructor of the object owned by `other`. `allocator` is obtained by
+  copy constructor of the object owned by `other`. `allocator_` is obtained by
   calling
   `allocator_traits<allocator_type>::select_on_container_copy_construction `on
   the allocator belonging to the object being copied.
@@ -1104,7 +1103,7 @@ constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc,
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: Equivalent to the preceding constructor except that the allocator
-  is initialized with alloc.
+  is initialized with `alloc`.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -1115,13 +1114,13 @@ constexpr polymorphic(polymorphic&& other) noexcept;
 * _Preconditions_: `other` is not valueless.
 
 * _Effects_: Constructs a polymorphic that takes ownership of the object owned
-  by `other`. `allocator` is created by move construction from the allocator
+  by `other`. `allocator_` is created by move construction from the allocator
   belonging to the object being moved.
 
 * _Postconditions_: `other` is valueless.
 
 * _Remarks_: This constructor does not require that `is_move_constructible_v<T>`
-  is true.
+  is `true`.
 
 ```c++
 constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc,
@@ -1130,13 +1129,13 @@ constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc,
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: Equivalent to the preceding constructor except that the allocator
-  is initialized with alloc.
+* _Effects_: Equivalent to the preceding constructor except that `allocator_`
+  is initialized with `alloc`.
 
 * _Postconditions_: `other` is valueless.
 
 * _Remarks_: This constructor does not require that `is_move_constructible_v<T>`
-  is true.
+  is `true`.
 
 #### X.Z.4 Destructor [polymorphic.dtor]
 
@@ -1156,7 +1155,7 @@ constexpr polymorphic& operator=(const polymorphic& other);
 
 * _Effects_: If `*this` is not valueless, destroys the owned object. If
 `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value
-  == true`, `allocator` is set to the allocator of `other`. Copy constructs a
+  == true`, `allocator_` is set to the allocator of `other`. Copy constructs a
   new object using the object owned by `other`.
 
 * _Postconditions_: `*this` is not valueless.
@@ -1171,7 +1170,7 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
 
 * _Effects_: If
   `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value
-  == true`, `allocator` is set to the allocator of `other`. If allocator is
+  == true`, `allocator_` is set to the allocator of `other`. If allocator is
   propagated or is equal to the allocator of `other`, destroys the owned object,
   if any, then takes ownership of the object owned by `other`.  Otherwise,
   destroys the owned object, if any, then move constructs an object from the
@@ -1213,7 +1212,7 @@ constexpr bool valueless_after_move() const noexcept;
 constexpr allocator_type get_allocator() const noexcept;
 ```
 
-* _Returns_: A copy of the Allocator object used to construct the owned object.
+* _Returns_: A copy of the `Allocator` object used to construct the owned object.
 
 #### X.Z.7 Swap [polymorphic.swap]
 
@@ -1227,11 +1226,11 @@ constexpr void swap(polymorphic& other) noexcept(
 
 * _Effects_: Swaps the objects owned by `*this` and `other`. If
   `allocator_traits<allocator_type>::propagate_on_container_swap::value` is
-  `true`, then allocator_type shall meet the _Cpp17Swappable_ requirements and
+  `true`, then `allocator_type` shall meet the _Cpp17Swappable_ requirements and
   the allocators of `*this` and `other` shall also be exchanged by calling
   `swap` as described in [swappable.requirements]. Otherwise, the allocators
   shall not be swapped, and the behavior is undefined unless
-  `*this.get_allocator() == other.get_allocator()`.
+  `(*this).get_allocator() == other.get_allocator()`.
 
 * _Remarks_: Does not call `swap` on the owned objects directly.
 
