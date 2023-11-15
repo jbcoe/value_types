@@ -465,73 +465,73 @@ class indirect {
 
   template <class U, class AA>
   friend constexpr auto operator==(
-    const indirect<T, Allocator>& lhs, const indirect<U, AA>& rhs);
+    const indirect& lhs, const indirect<U, AA>& rhs);
 
   template <class U, class AA>
   friend constexpr auto operator!=(
-    const indirect<T, Allocator>& lhs, const indirect<U, AA>& rhs);
+    const indirect& lhs, const indirect<U, AA>& rhs);
 
   template <class U, class AA>
   friend constexpr auto operator<(
-    const indirect<T, Allocator>& lhs, const indirect<U, AA>& rhs);
+    const indirect& lhs, const indirect<U, AA>& rhs);
 
   template <class U, class AA>
   friend constexpr auto operator<=(
-    const indirect<T, Allocator>& lhs, const indirect<U, AA>& rhs);
+    const indirect& lhs, const indirect<U, AA>& rhs);
 
   template <class U, class AA>
   friend constexpr auto operator>(
-    const indirect<T, Allocator>& lhs, const indirect<U, AA>& rhs);
+    const indirect& lhs, const indirect<U, AA>& rhs);
 
   template <class U, class AA>
   friend constexpr auto operator>=(
-    const indirect<T, Allocator>& lhs, const indirect<U, AA>& rhs);
+    const indirect& lhs, const indirect<U, AA>& rhs);
 
   template <class U, class AA>
   friend constexpr auto operator<=>(
-    const indirect<T, Allocator>& lhs, const indirect<U, AA>& rhs);
+    const indirect& lhs, const indirect<U, AA>& rhs);
 
   template <class U>
-  friend constexpr auto operator==(const indirect<T, Allocator>& lhs, const U& rhs);
+  friend constexpr auto operator==(const indirect& lhs, const U& rhs);
 
   template <class U>
-  friend constexpr auto operator==(const U& lhs, const indirect<T, Allocator>& rhs);
+  friend constexpr auto operator==(const U& lhs, const indirect& rhs);
 
   template <class U>
-  friend constexpr auto operator!=(const indirect<T, Allocator>& lhs, const U& rhs);
+  friend constexpr auto operator!=(const indirect& lhs, const U& rhs);
 
   template <class U>
-  friend constexpr auto operator!=(const U& lhs, const indirect<T, Allocator>& rhs);
+  friend constexpr auto operator!=(const U& lhs, const indirect& rhs);
 
   template <class U>
-  friend constexpr auto operator<(const indirect<T, Allocator>& lhs, const U& rhs);
+  friend constexpr auto operator<(const indirect& lhs, const U& rhs);
 
   template <class U>
-  friend constexpr auto operator<(const U& lhs, const indirect<T, Allocator>& rhs);
+  friend constexpr auto operator<(const U& lhs, const indirect& rhs);
 
   template <class U>
-  friend constexpr auto operator<=(const indirect<T, Allocator>& lhs, const U& rhs);
+  friend constexpr auto operator<=(const indirect& lhs, const U& rhs);
 
   template <class U>
-  friend constexpr auto operator<=(const U& lhs, const indirect<T, Allocator>& rhs);
+  friend constexpr auto operator<=(const U& lhs, const indirect& rhs);
 
   template <class U>
-  friend constexpr auto operator>(const indirect<T, Allocator>& lhs, const U& rhs);
+  friend constexpr auto operator>(const indirect& lhs, const U& rhs);
 
   template <class U>
-  friend constexpr auto operator>(const U& lhs, const indirect<T, Allocator>& rhs);
+  friend constexpr auto operator>(const U& lhs, const indirect& rhs);
 
   template <class U>
-  friend constexpr auto operator>=(const indirect<T, Allocator>& lhs, const U& rhs);
+  friend constexpr auto operator>=(const indirect& lhs, const U& rhs);
 
   template <class U>
-  friend constexpr auto operator>=(const U& lhs, const indirect<T, Allocator>& rhs);
+  friend constexpr auto operator>=(const U& lhs, const indirect& rhs);
 
   template <class U>
-  friend constexpr auto operator<=>(const indirect<T, Allocator>& lhs, const U& rhs);
+  friend constexpr auto operator<=>(const indirect& lhs, const U& rhs);
 
   template <class U>
-  friend constexpr auto operator<=>(const U& lhs, const indirect<T, Allocator>& rhs);
+  friend constexpr auto operator<=>(const U& lhs, const indirect& rhs);
 };
 
 template <class T, class Alloc>
@@ -770,37 +770,37 @@ constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
 
 ```c++
 template <class U, class AA>
-constexpr auto operator==(const indirect<T, Allocator>& lhs, const indirect<U, AA>& rhs);
+constexpr auto operator==(const indirect& lhs, const indirect<U, AA>& rhs);
 ```
 
 ```c++
 template <class U, class AA>
-constexpr auto operator!=(const indirect<T, Allocator>& lhs, const indirect<U, AA>& rhs);
+constexpr auto operator!=(const indirect& lhs, const indirect<U, AA>& rhs);
 ```
 
 ```c++
 template <class U, class AA>
-constexpr auto operator<(const indirect<T, Allocator>& lhs, const indirect<U, AA>& rhs);
+constexpr auto operator<(const indirect& lhs, const indirect<U, AA>& rhs);
 ```
 
 ```c++
 template <class U, class AA>
-constexpr auto operator<=(const indirect<T, Allocator>& lhs, const indirect<U, AA>& rhs);
+constexpr auto operator<=(const indirect& lhs, const indirect<U, AA>& rhs);
 ```
 
 ```c++
 template <class U, class AA>
-constexpr auto operator>(const indirect<T, Allocator>& lhs, const indirect<U, AA>& rhs);
+constexpr auto operator>(const indirect& lhs, const indirect<U, AA>& rhs);
 ```
 
 ```c++
 template <class U, class AA>
-constexpr auto operator>=(const indirect<T, Allocator>& lhs, const indirect<U, AA>& rhs);
+constexpr auto operator>=(const indirect& lhs, const indirect<U, AA>& rhs);
 ```
 
 ```c++
 template <class U, class AA>
-constexpr auto operator<=>(const indirect<T, Allocator>& lhs, const indirect<U, AA>& rhs);
+constexpr auto operator<=>(const indirect& lhs, const indirect<U, AA>& rhs);
 ```
 
 * _Constraints_: `T op U` is well-defined.
@@ -816,37 +816,37 @@ constexpr auto operator<=>(const indirect<T, Allocator>& lhs, const indirect<U, 
 
 ```c++
 template <class U>
-constexpr auto operator==(const indirect<T, Allocator>& lhs, const U& rhs);
+constexpr auto operator==(const indirect& lhs, const U& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator!=(const indirect<T, Allocator>& lhs, const U& rhs);
+constexpr auto operator!=(const indirect& lhs, const U& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator<(const indirect<T, Allocator>& lhs, const U& rhs);
+constexpr auto operator<(const indirect& lhs, const U& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator<=(const indirect<T, Allocator>& lhs, const U& rhs);
+constexpr auto operator<=(const indirect& lhs, const U& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator>(const indirect<T, Allocator>& lhs, const U& rhs);
+constexpr auto operator>(const indirect& lhs, const U& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator>=(const indirect<T, Allocator>& lhs, const U& rhs);
+constexpr auto operator>=(const indirect& lhs, const U& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator<=>(const indirect<T, Allocator>& lhs, const U& rhs);
+constexpr auto operator<=>(const indirect& lhs, const U& rhs);
 ```
 
 * _Constraints_: `T op U` is well-defined.
@@ -860,37 +860,37 @@ constexpr auto operator<=>(const indirect<T, Allocator>& lhs, const U& rhs);
 
 ```c++
 template <class U>
-constexpr auto operator==(const U& lhs, const indirect<T, Allocator>& rhs);
+constexpr auto operator==(const U& lhs, const indirect& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator!=(const U& lhs, const indirect<T, Allocator>& rhs);
+constexpr auto operator!=(const U& lhs, const indirect& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator<(const U& lhs, const indirect<T, Allocator>& rhs);
+constexpr auto operator<(const U& lhs, const indirect& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator<=(const U& lhs, const indirect<T, Allocator>& rhs);
+constexpr auto operator<=(const U& lhs, const indirect& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator>(const U& lhs, const indirect<T, Allocator>& rhs);
+constexpr auto operator>(const U& lhs, const indirect& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator>=const U& lhs, const indirect<T, Allocator>& rhs);
+constexpr auto operator>=const U& lhs, const indirect& rhs);
 ```
 
 ```c++
 template <class U>
-constexpr auto operator<=>(const U& lhs, const indirect<T, Allocator>& rhs);
+constexpr auto operator<=>(const U& lhs, const indirect& rhs);
 ```
 
 * _Constraints_: `U op T` is well-defined.
