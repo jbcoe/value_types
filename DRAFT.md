@@ -403,6 +403,8 @@ The template parameter `T` of `indirect` shall be a non-union class type.
 
 The template parameter `T` of `indirect` may be an incomplete type.
 
+The template parameter `Allocator` of `indirect` shall meet the _Cpp17Allocator_ requirements.
+
 #### X.Y.2 Class template indirect synopsis [indirect.syn]
 
 ```c++
@@ -557,8 +559,6 @@ constexpr indirect(std::allocator_arg_t, const Allocator& alloc);
 
 * _Mandates_: `is_default_constructible_v<T>` is true.
 
-* _Preconditions_: `Allocator` meets the _Cpp17Allocator_ requirements.
-
 * _Effects_: Equivalent to the preceding constructor except that the allocator
   is initialized with alloc. `allocator_` is initialized with `alloc`.
 
@@ -584,8 +584,6 @@ constexpr indirect(std::allocator_arg_t, const Allocator& alloc, U&& u, Us&& ...
 
 * _Constraints_: `is_constructible_v<T, U, Us...>` is true.
   `is_same_v<remove_cvref_t<U>, indirect>` is false.
-
-* _Preconditions_: `Allocator` meets the _Cpp17Allocator_ requirements.
 
 * _Effects_: Equivalent to the preceding constructor except that the allocator
   is initialized with alloc. `allocator_` is initialized with `alloc`.
@@ -615,8 +613,7 @@ constexpr indirect(std::allocator_arg_t, const Allocator& alloc,
 
 * _Mandates_: `is_copy_constructible_v<T>` is true.
 
-* _Preconditions_: `other` is not valueless and `Allocator` meets the
-  _Cpp17Allocator_ requirements.
+* _Preconditions_: `other` is not valueless.
 
 * _Effects_: Equivalent to the preceding constructor except that the allocator
   is initialized with alloc.
@@ -643,8 +640,7 @@ constexpr indirect(std::allocator_arg_t, const Allocator& alloc,
                    indirect&& other) noexcept;
 ```
 
-* _Preconditions_: `other` is not valueless and `Allocator` meets the
-  _Cpp17Allocator_ requirements.
+* _Preconditions_: `other` is not valueless.
 
 * _Effects_: Equivalent to the preceding constructors except that the allocator
   is initialized with alloc.
@@ -992,6 +988,8 @@ The template parameter `T` of `polymorphic` shall be a non-union class type.
 
 The template parameter `T` of `polymorphic` may be an incomplete type.
 
+The template parameter `Allocator` of `polymorphic` shall meet the requirements of _Cpp17Allocator_.
+
 #### X.Z.2 Class template polymorphic synopsis [polymorphic.syn]
 
 ```c++
@@ -1085,8 +1083,6 @@ constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc,
 * _Constraints_: `is_base_of_v<T, U>` is true, `is_constructible_v<U, Ts...>` is
   true, `is_copy_constructible_v<U>` is true.
 
-* _Preconditions_: `Allocator` meets the _Cpp17Allocator_ requirements.
-
 * _Effects_: Equivalent to the preceding constructor except that the
   `allocator_` is initialized with `alloc`.
 
@@ -1111,8 +1107,7 @@ constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc,
                       const polymorphic& other);
 ```
 
-* _Preconditions_: `other` is not valueless and `Allocator` meets the
-  _Cpp17Allocator_ requirements.
+* _Preconditions_: `other` is not valueless.
 
 * _Effects_: Equivalent to the preceding constructor except that the allocator
   is initialized with alloc.
@@ -1139,8 +1134,7 @@ constexpr polymorphic(std::allocator_arg_t, const Allocator& alloc,
                       polymorphic&& other) noexcept;
 ```
 
-* _Preconditions_: `other` is not valueless and `Allocator` meets the
-  _Cpp17Allocator_ requirements.
+* _Preconditions_: `other` is not valueless.
 
 * _Effects_: Equivalent to the preceding constructor except that the allocator
   is initialized with alloc.
