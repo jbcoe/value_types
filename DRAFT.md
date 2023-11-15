@@ -399,7 +399,7 @@ move assignment, or swapping of the allocator only if (64.1)
 or (64.3) `allocator_traits<allocator_type>::propagate_on_container_swap::value`
 is true within the implementation of the corresponding indirect value operation.
 
-The template parameter `T` of `indirect` must be a non-union class type.
+The template parameter `T` of `indirect` shall be a non-union class type.
 
 The template parameter `T` of `indirect` may be an incomplete type.
 
@@ -988,7 +988,7 @@ or (64.3) `allocator_traits<allocator_type>::propagate_on_container_swap::value`
 is true within the implementation of the corresponding polymorphic value
 operation.
 
-The template parameter `T` of `polymorphic` must be a non-union class type.
+The template parameter `T` of `polymorphic` shall be a non-union class type.
 
 The template parameter `T` of `polymorphic` may be an incomplete type.
 
