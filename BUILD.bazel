@@ -57,6 +57,7 @@ cc_library(
     name = "polymorphic_cxx11",
     hdrs = [
         "compatibility/polymorphic_cxx11.h",
+        "compatibility/utility.h",
         "polymorphic.h",
     ],
     defines = ["XYZ_POLYMORPHIC_CXX_11"],
