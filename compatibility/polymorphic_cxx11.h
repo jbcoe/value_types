@@ -6,7 +6,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "utility.h"
+#include "compatibility/in_place_type.h"
 
 namespace xyz {
 
