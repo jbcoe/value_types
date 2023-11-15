@@ -598,12 +598,8 @@ constexpr indirect(const indirect& other);
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: Constructs an indirect owning an instance of `T` created with the
-  copy constructor of the object owned by `other`. `allocator` is obtained by
-  calling
-  `allocator_traits<allocator_type>::select_on_container_copy_construction `on
-  the allocator belonging to the object being copied.
-
+* _Effects_: Equivalent to `indirect(allocator_arg, allocator_traits<allocator_type>::select_on_container_copy_construction(other.get_allocator()), *other)`.
+`
 * _Postconditions_: `*this` is not valueless.
 
 ```c++
@@ -615,8 +611,7 @@ constexpr indirect(std::allocator_arg_t, const Allocator& alloc,
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: Equivalent to the preceding constructor except that the allocator
-  is initialized with alloc.
+* _Effects_: Equivalent to `indirect(allocator_arg, alloc, *other)`.
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -626,9 +621,8 @@ constexpr indirect(indirect&& other) noexcept;
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: Constructs an `indirect` owning the object owned by `other`.
-  `allocator` is created by move construction from the allocator belonging to
-  the object being moved.
+* _Effects_: Constructs an `indirect` that takes ownership of the `other`'s owned object.
+  `allocator_` is initialized by move construction from `other.allocator_`.
 
 * _Postconditions_: `other` is valueless.
 
@@ -637,13 +631,13 @@ constexpr indirect(indirect&& other) noexcept;
 
 ```c++
 constexpr indirect(std::allocator_arg_t, const Allocator& alloc,
-                   indirect&& other) noexcept;
+                   indirect&& other) noexcept(allocator_traits<Allocator>::is_always_equal);
 ```
 
 * _Preconditions_: `other` is not valueless.
 
-* _Effects_: Equivalent to the preceding constructors except that the allocator
-  is initialized with alloc.
+* _Effects_: If `alloc == other.get_allocator()` is `true` then equivalent to `indirect(std::move(other))`,
+  otherwise, equivalent to `indirect(allocator_arg, alloc, *std::move(other))`.
 
 * _Postconditions_: `other` is valueless.
 
