@@ -45,6 +45,9 @@ cc_library(
 
 cc_test(
     name = "polymorphic_test",
+    hdrs = [
+        "compatibility/utility.h",
+    ],
     size = "small",
     srcs = ["polymorphic_test.cc"],
     deps = [
