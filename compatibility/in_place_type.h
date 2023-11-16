@@ -21,17 +21,22 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef XYZ_IN_PLACE_TYPE_H
 #define XYZ_IN_PLACE_TYPE_H
 
-namespace xyz {
-
 #if (__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+
 #include <utility>
+
+namespace xyz {
 using std::in_place_type_t;
+}  // namespace xyz
+
 #else
+
+namespace xyz {
 template <class T>
 struct in_place_type_t {};
+}  // namespace xyz
+
 #endif  // (__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >=
         // 201703L)
-
-}  // namespace xyz
 
 #endif  // XYZ_IN_PLACE_TYPE_H
