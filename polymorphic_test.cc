@@ -25,12 +25,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <array>
 #include <map>
 
+#include "compatibility/feature_check.h"
 #include "compatibility/in_place_type.h"  //Add this include to be able to use xyz::in_place_type_t also in C++20 mode
 
-#if __has_include(<memory_resource>)
+#ifdef XYZ_HAS_STD_MEMORY_RESOURCE
 #include <memory_resource>
-#endif  // #if __has_include(<memory_resource>)
+#endif  // XYZ_HAS_STD_MEMORY_RESOURCE
+#ifdef XYZ_HAS_STD_OPTIONAL
 #include <optional>
+#endif  // XYZ_HAS_STD_OPTIONAL
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -710,6 +713,7 @@ TEST(PolymorphicTest, ConstructorWithExceptionsTrackingAllocations) {
   EXPECT_EQ(dealloc_counter, 1);
 }
 
+#ifdef XYZ_HAS_STD_OPTIONAL
 TEST(PolymorphicTest, InteractionWithOptional) {
   std::optional<xyz::polymorphic<Base>> a;
   EXPECT_FALSE(a.has_value());
@@ -717,6 +721,7 @@ TEST(PolymorphicTest, InteractionWithOptional) {
   EXPECT_TRUE(a.has_value());
   EXPECT_EQ((*a)->value(), 42);
 }
+#endif  // XYZ_HAS_STD_OPTIONAL
 
 TEST(PolymorphicTest, InteractionWithVector) {
   std::vector<xyz::polymorphic<Base>> as;
@@ -784,7 +789,7 @@ TEST(PolymorphicTest, MultipleBases) {
   EXPECT_EQ(b->b_value, 4);
 }
 
-#if (__cpp_lib_memory_resource >= 201603L)
+#ifdef XYZ_HAS_STD_MEMORY_RESOURCE
 TEST(PolymorphicTest, InteractionWithPMRAllocators) {
   std::array<std::byte, 1024> buffer;
   std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
@@ -811,6 +816,6 @@ TEST(PolymorphicTest, InteractionWithPMRAllocatorsWhenCopyThrows) {
   std::pmr::vector<PolymorphicType> values{pa};
   EXPECT_THROW(values.push_back(a), ThrowsOnCopyConstruction::Exception);
 }
-#endif  // (__cpp_lib_memory_resource >= 201603L)
+#endif  // XYZ_HAS_STD_MEMORY_RESOURCE
 
 }  // namespace

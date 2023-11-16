@@ -24,10 +24,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <array>
 #include <map>
-#if __has_include(<memory_resource>)
+
+#include "compatibility/feature_check.h"
+#ifdef XYZ_HAS_STD_MEMORY_RESOURCE
 #include <memory_resource>
-#endif  // #if __has_include(<memory_resource>)
+#endif  // XYZ_HAS_STD_MEMORY_RESOURCE
+#ifdef XYZ_HAS_STD_OPTIONAL
 #include <optional>
+#endif  // XYZ_HAS_STD_OPTIONAL
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -129,6 +133,7 @@ TEST(IndirectTest, Hash) {
   EXPECT_EQ(std::hash<xyz::indirect<int>>()(a), std::hash<int>()(*a));
 }
 
+#ifdef XYZ_HAS_STD_OPTIONAL
 TEST(IndirectTest, Optional) {
   std::optional<xyz::indirect<int>> a;
   EXPECT_FALSE(a.has_value());
@@ -136,6 +141,7 @@ TEST(IndirectTest, Optional) {
   EXPECT_TRUE(a.has_value());
   EXPECT_EQ(**a, 42);
 }
+#endif  // XYZ_HAS_STD_OPTIONAL
 
 TEST(IndirectTest, Equality) {
   xyz::indirect<int> a(42);
@@ -560,7 +566,7 @@ TEST(IndirectTest, InteractionWithSizedAllocators) {
             (sizeof(int*) + sizeof(TrackingAllocator<int>)));
 }
 
-#if (__cpp_lib_memory_resource >= 201603L)
+#ifdef XYZ_HAS_STD_MEMORY_RESOURCE
 TEST(IndirectTest, InteractionWithPMRAllocators) {
   std::array<std::byte, 1024> buffer;
   std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
@@ -593,7 +599,7 @@ TEST(IndirectTest, HashCustomAllocator) {
   IndirectType a(std::allocator_arg, pa, 42);
   EXPECT_EQ(std::hash<IndirectType>()(a), std::hash<int>()(*a));
 }
-#endif  // (__cpp_lib_memory_resource >= 201603L)
+#endif  // XYZ_HAS_STD_MEMORY_RESOURCE
 
 #if (__cpp_lib_format >= 201907L)
 

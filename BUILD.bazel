@@ -1,6 +1,16 @@
 cc_library(
+    name = "feature_check",
+    hdrs = ["compatibility/feature_check.h"],
+    copts = ["-Iexternal/value_types/"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
     name = "in_place_type",
     hdrs = ["compatibility/in_place_type.h"],
+    deps = [
+        "feature_check",
+    ],
     copts = ["-Iexternal/value_types/"],
     visibility = ["//visibility:public"],
 )
@@ -24,6 +34,7 @@ cc_test(
     size = "small",
     srcs = ["indirect_test.cc"],
     deps = [
+        "feature_check",
         "indirect",
         "@com_google_googletest//:gtest_main",
     ],
@@ -48,6 +59,7 @@ cc_test(
     size = "small",
     srcs = ["indirect_test.cc"],
     deps = [
+        "feature_check",
         "indirect_cxx11",
         "@com_google_googletest//:gtest_main",
     ],
@@ -66,6 +78,7 @@ cc_test(
     size = "small",
     srcs = ["polymorphic_test.cc"],
     deps = [
+        "feature_check",
         "in_place_type",
         "polymorphic",
         "@com_google_googletest//:gtest_main",
@@ -92,6 +105,7 @@ cc_test(
     size = "small",
     srcs = ["polymorphic_test.cc"],
     deps = [
+        "feature_check",
         "polymorphic_cxx11",
         "@com_google_googletest//:gtest_main",
     ],
@@ -115,6 +129,7 @@ cc_test(
     srcs = ["polymorphic_test.cc"],
     tags = ["manual"],
     deps = [
+        "feature_check",
         "polymorphic_inline_vtable",
         "@com_google_googletest//:gtest_main",
     ],
@@ -137,6 +152,7 @@ cc_test(
     srcs = ["polymorphic_test.cc"],
     tags = ["manual"],
     deps = [
+        "feature_check",
         "polymorphic_sbo",
         "@com_google_googletest//:gtest_main",
     ],

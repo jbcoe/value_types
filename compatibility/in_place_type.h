@@ -21,7 +21,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef XYZ_IN_PLACE_TYPE_H
 #define XYZ_IN_PLACE_TYPE_H
 
-#if (__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+#include "compatibility/feature_check.h"
+
+#ifdef XYZ_HAS_STD_IN_PLACE_TYPE_T
 
 #include <utility>
 
@@ -36,7 +38,6 @@ template <class T>
 struct in_place_type_t {};
 }  // namespace xyz
 
-#endif  // (__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >=
-        // 201703L)
+#endif  // XYZ_HAS_STD_IN_PLACE_TYPE_T
 
 #endif  // XYZ_IN_PLACE_TYPE_H
