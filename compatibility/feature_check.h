@@ -53,7 +53,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 //
 // XYZ_HAS_STD_MEMORY_RESOURCE
-// The macro is defined, when the header <memory_resource> and its content is available.
+// The macro is defined, when the header <memory_resource> and its content is
+// available.
 //
 
 #ifdef __has_include
