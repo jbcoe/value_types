@@ -675,7 +675,7 @@ constexpr indirect& operator=(const indirect& other);
   - `(allocator_traits<allocator_type>::destruct(alloc_, p_), allocator_traits<allocator_type>::construct(alloc_, p_, *other))`
 
 * _Postconditions_: `*this` is not valueless.
-  
+
 * _Returns_: A reference to `*this`.
 
 ```c++
