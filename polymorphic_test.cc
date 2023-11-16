@@ -327,12 +327,12 @@ struct TrackingAllocator {
     using other = TrackingAllocator<Other>;
   };
 
-  constexpr T* allocate(std::size_t n) {
+  T* allocate(std::size_t n) {
     ++(*alloc_counter_);
     std::allocator<T> default_allocator{};
     return default_allocator.allocate(n);
   }
-  constexpr void deallocate(T* p, std::size_t n) {
+  void deallocate(T* p, std::size_t n) {
     ++(*dealloc_counter_);
     std::allocator<T> default_allocator{};
     default_allocator.deallocate(p, n);
@@ -342,6 +342,11 @@ struct TrackingAllocator {
                          const TrackingAllocator& rhs) noexcept {
     return lhs.alloc_counter_ == rhs.alloc_counter_ &&
            lhs.dealloc_counter_ == rhs.dealloc_counter_;
+  }
+
+  friend bool operator!=(const TrackingAllocator& lhs,
+                         const TrackingAllocator& rhs) noexcept {
+    return !(lhs == rhs);
   }
 };
 
@@ -460,6 +465,11 @@ struct NonEqualTrackingAllocator : TrackingAllocator<T> {
   friend bool operator==(const NonEqualTrackingAllocator&,
                          const NonEqualTrackingAllocator&) noexcept {
     return false;
+  }
+
+  friend bool operator!=(const NonEqualTrackingAllocator&,
+                         const NonEqualTrackingAllocator&) noexcept {
+    return true;
   }
 };
 
@@ -740,8 +750,8 @@ TEST(PolymorphicTest, InteractionWithMap) {
     as.emplace(
         i, xyz::polymorphic<Base>(xyz::in_place_type_t<Derived_NoSBO>{}, i));
   }
-  for (const auto& [k, v] : as) {
-    EXPECT_EQ(v->value(), k);
+  for (const auto& kv : as) {
+    EXPECT_EQ(kv.second->value(), kv.first);
   }
 }
 
@@ -751,8 +761,8 @@ TEST(PolymorphicTest, InteractionWithUnorderedMap) {
     as.emplace(
         i, xyz::polymorphic<Base>(xyz::in_place_type_t<Derived_NoSBO>{}, i));
   }
-  for (const auto& [k, v] : as) {
-    EXPECT_EQ(v->value(), k);
+  for (const auto& kv : as) {
+    EXPECT_EQ(kv.second->value(), kv.first);
   }
 }
 
