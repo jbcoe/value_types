@@ -51,7 +51,7 @@ cc_test(
         "indirect_cxx11",
         "@com_google_googletest//:gtest_main",
     ],
-    copts = ["-std=c++11"],
+    copts = ["-std=c++14"],
 )
 
 cc_library(
@@ -95,7 +95,7 @@ cc_test(
         "polymorphic_cxx11",
         "@com_google_googletest//:gtest_main",
     ],
-    copts = ["-std=c++11"],
+    copts = ["-std=c++14"],
 )
 
 cc_library(
