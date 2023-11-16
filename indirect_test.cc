@@ -25,7 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <array>
 #include <map>
 
-#include "compatibility/feature_check.h"
+#include "feature_check.h"
 #ifdef XYZ_HAS_STD_MEMORY_RESOURCE
 #include <memory_resource>
 #endif  // XYZ_HAS_STD_MEMORY_RESOURCE

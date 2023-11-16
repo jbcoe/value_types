@@ -18,9 +18,9 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==============================================================================*/
 
-#ifdef XYZ_POLYMORPHIC_CXX_11
-#include "compatibility/polymorphic_cxx11.h"
-#endif  // XYZ_POLYMORPHIC_CXX_11
+#ifdef XYZ_POLYMORPHIC_CXX_14
+#include "compatibility/polymorphic_cxx14.h"
+#endif  // XYZ_POLYMORPHIC_CXX_14
 
 #ifdef XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
 #include "experimental/polymorphic_inline_vtable.h"

@@ -26,8 +26,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <type_traits>
 #include <utility>
 
-#include "compatibility/empty_base_optimization.h"
-
 namespace xyz {
 
 #ifndef XYZ_UNREACHABLE_DEFINED
@@ -42,6 +40,39 @@ namespace xyz {
 #endif
 }
 #endif  // XYZ_UNREACHABLE_DEFINED
+
+#ifndef XYZ_EMPTY_BASE_DEFINED
+#define XYZ_EMPTY_BASE_DEFINED
+// This is a helper class to allow empty base class optimization.
+// This implementation is duplicated in compatibility/polymorphic_cxx14.h.
+// These implementations must be kept in sync.
+// We duplicate implementations to allow this header to work as a single
+// include. https://godbolt.org needs single-file includes.
+// TODO: Add tests to keep implementations in sync.
+namespace detail {
+template <class T, bool CanBeEmptyBaseClass =
+                       std::is_empty<T>::value && !std::is_final<T>::value>
+class empty_base_optimization {
+ protected:
+  empty_base_optimization() = default;
+  empty_base_optimization(const T& t) : t_(t) {}
+  empty_base_optimization(T&& t) : t_(std::move(t)) {}
+  T& get() noexcept { return t_; }
+  const T& get() const noexcept { return t_; }
+  T t_;
+};
+
+template <class T>
+class empty_base_optimization<T, true> : private T {
+ protected:
+  empty_base_optimization() = default;
+  empty_base_optimization(const T& t) : T(t) {}
+  empty_base_optimization(T&& t) : T(std::move(t)) {}
+  T& get() noexcept { return *this; }
+  const T& get() const noexcept { return *this; }
+};
+}  // namespace detail
+#endif  // XYZ_EMPTY_BASE_DEFINED
 
 template <class T, class A>
 class indirect;

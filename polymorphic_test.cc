@@ -24,9 +24,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <array>
 #include <map>
+#include <utility>
 
-#include "compatibility/feature_check.h"
-#include "compatibility/in_place_type.h"  //Add this include to be able to use xyz::in_place_type_t also in C++20 mode
+#include "feature_check.h"
+
+#ifdef XYZ_HAS_STD_IN_PLACE_TYPE_T
+namespace xyz {
+using std::in_place_type_t;
+}  // namespace xyz
+#endif  // XYZ_HAS_STD_IN_PLACE_TYPE_T
 
 #ifdef XYZ_HAS_STD_MEMORY_RESOURCE
 #include <memory_resource>

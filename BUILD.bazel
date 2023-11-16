@@ -1,20 +1,6 @@
 cc_library(
     name = "feature_check",
-    hdrs = ["compatibility/feature_check.h"],
-    copts = ["-Iexternal/value_types/"],
-    visibility = ["//visibility:public"],
-)
-
-cc_library(
-    name = "in_place_type",
-    hdrs = ["compatibility/in_place_type.h"],
-    copts = ["-Iexternal/value_types/"],
-    visibility = ["//visibility:public"],
-)
-
-cc_library(
-    name = "empty_base_optimization",
-    hdrs = ["compatibility/empty_base_optimization.h"],
+    hdrs = ["feature_check.h"],
     copts = ["-Iexternal/value_types/"],
     visibility = ["//visibility:public"],
 )
@@ -38,26 +24,23 @@ cc_test(
 )
 
 cc_library(
-    name = "indirect_cxx11",
+    name = "indirect_cxx14",
     hdrs = [
-        "compatibility/indirect_cxx11.h",
+        "compatibility/indirect_cxx14.h",
         "indirect.h",
     ],
-    deps = [
-        "empty_base_optimization",
-    ],
     copts = ["-Iexternal/value_types/"],
-    defines = ["XYZ_INDIRECT_CXX_11"],
+    defines = ["XYZ_INDIRECT_CXX_14"],
     visibility = ["//visibility:public"],
 )
 
 cc_test(
-    name = "indirect_cxx11_test",
+    name = "indirect_cxx14_test",
     size = "small",
     srcs = ["indirect_test.cc"],
     deps = [
         "feature_check",
-        "indirect_cxx11",
+        "indirect_cxx14",
         "@com_google_googletest//:gtest_main",
     ],
     copts = ["-std=c++14"],
@@ -76,34 +59,29 @@ cc_test(
     srcs = ["polymorphic_test.cc"],
     deps = [
         "feature_check",
-        "in_place_type",
         "polymorphic",
         "@com_google_googletest//:gtest_main",
     ],
 )
 
 cc_library(
-    name = "polymorphic_cxx11",
+    name = "polymorphic_cxx14",
     hdrs = [
-        "compatibility/polymorphic_cxx11.h",
+        "compatibility/polymorphic_cxx14.h",
         "polymorphic.h",
     ],
-    deps = [
-        "in_place_type",
-        "empty_base_optimization",
-    ],
-    defines = ["XYZ_POLYMORPHIC_CXX_11"],
+    defines = ["XYZ_POLYMORPHIC_CXX_14"],
     copts = ["-Iexternal/value_types/"],
     visibility = ["//visibility:public"],
 )
 
 cc_test(
-    name = "polymorphic_cxx11_test",
+    name = "polymorphic_cxx14_test",
     size = "small",
     srcs = ["polymorphic_test.cc"],
     deps = [
         "feature_check",
-        "polymorphic_cxx11",
+        "polymorphic_cxx14",
         "@com_google_googletest//:gtest_main",
     ],
     copts = ["-std=c++14"],
