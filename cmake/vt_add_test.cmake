@@ -14,6 +14,9 @@ associates patterns and allows configuration for common optional settings
 
   vt_add_test(
       [NAME <name>]
+      [VERSION <version>]
+      [FILES <files...>]
+      [LINK_LIBRARIES <libraries...>]
   )
    -- Generates test executable targets with default build directories and settings.
 
@@ -23,11 +26,20 @@ associates patterns and allows configuration for common optional settings
 #]=======================================================================]
 function(vt_add_test)
     set(options)
-    set(oneValueArgs NAME)
+    set(oneValueArgs NAME VERSION)
     set(multiValueArgs LINK_LIBRARIES FILES)
     cmake_parse_arguments(VALUE_TYPES "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
     if (NOT VALUE_TYPES_NAME)
         message(FATAL_ERROR "NAME parameter must be supplied")
+    endif()
+    if (NOT VALUE_TYPES_VERSION)
+        set(VALUE_TYPES_VERSION 23)
+    else()
+        set(VALID_TARGET_VERSIONS 11 14 17 20 23)
+        list(FIND VALID_TARGET_VERSIONS ${VALUE_TYPES_VERSION} index)
+        if(index EQUAL -1)
+            message(FATAL_ERROR "TYPE must be one of <${VALID_TARGET_TYPES}>")
+        endif()
     endif()
 
     if (NOT TARGET common_compiler_settings)
@@ -51,7 +63,7 @@ function(vt_add_test)
     )
     target_link_libraries(${VALUE_TYPES_NAME}
         PRIVATE
-            ${VALUE_LINK_LIBRARIES}
+            ${VALUE_TYPES_LINK_LIBRARIES}
             GTest::gtest_main
             common_compiler_settings
             $<$<BOOL:${COMPILER_SUPPORTS_ASAN}>:asan>
@@ -59,7 +71,7 @@ function(vt_add_test)
     )
 
     set_target_properties(${VALUE_TYPES_NAME} PROPERTIES
-        CXX_STANDARD 20
+        CXX_STANDARD ${VALUE_TYPES_VERSION}
         CXX_STANDARD_REQUIRED YES
         CXX_EXTENSIONS NO
     )

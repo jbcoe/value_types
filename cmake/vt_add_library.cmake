@@ -32,7 +32,7 @@ and allows configuration for common optional settings
 function(vt_add_library)
     set(options)
     set(oneValueArgs NAME ALIAS)
-    set(multiValueArgs)
+    set(multiValueArgs DEFINITIONS)
     cmake_parse_arguments(VALUE_TYPES "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
     if (NOT VALUE_TYPES_NAME)
         message(FATAL_ERROR "NAME parameter must be supplied")
@@ -52,11 +52,11 @@ function(vt_add_library)
         INTERFACE
             cxx_std_20
     )
-    if (VALUE_DEFINITIONS)
-        target_compile_definitions(polymorphic_sbo
+    if (VALUE_TYPES_DEFINITIONS)
+        target_compile_definitions(${VALUE_TYPES_NAME}
             INTERFACE
-                ${VALUE_DEFINITIONS}
+                ${VALUE_TYPES_DEFINITIONS}
         )
-    endif (VALUE_DEFINITIONS)
+    endif (VALUE_TYPES_DEFINITIONS)
 
 endfunction()

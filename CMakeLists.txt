@@ -77,6 +77,8 @@ target_sources(polymorphic_sbo
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/polymorphic_sbo.h>
 )
 
+add_subdirectory(compatibility)
+
 if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
 
     add_subdirectory(benchmarks)
@@ -130,6 +132,20 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
         vt_add_test(
             NAME polymorphic_test
             LINK_LIBRARIES polymorphic
+            FILES polymorphic_test.cc
+        )
+
+        vt_add_test(
+            NAME indirect_test_cxx11
+            VERSION 11
+            LINK_LIBRARIES indirect_cxx11
+            FILES indirect_test.cc
+        )
+
+        vt_add_test(
+            NAME polymorphic_test_cxx11
+            VERSION 11
+            LINK_LIBRARIES polymorphic_cxx11
             FILES polymorphic_test.cc
         )
 
