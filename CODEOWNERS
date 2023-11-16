@@ -5,7 +5,7 @@ CMakeLists.txt @twon
 *.bazel @jbcoe
 
 # Formal wording
-DRAFT.md @villevoutilainen
+DRAFT.md @villevoutilainen @nbx8
 
 # Global owners
 * @jbcoe @twon
