@@ -8,9 +8,6 @@ cc_library(
 cc_library(
     name = "in_place_type",
     hdrs = ["compatibility/in_place_type.h"],
-    deps = [
-        "feature_check",
-    ],
     copts = ["-Iexternal/value_types/"],
     visibility = ["//visibility:public"],
 )
