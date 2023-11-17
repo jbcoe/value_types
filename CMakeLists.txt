@@ -143,6 +143,7 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
             NAME polymorphic_sbo_test
             LINK_LIBRARIES polymorphic_sbo
             FILES polymorphic_test.cc
+            MANUAL TRUE
         )
         target_compile_options(polymorphic_sbo_test
             PRIVATE

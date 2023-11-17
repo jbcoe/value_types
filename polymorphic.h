@@ -53,8 +53,6 @@ namespace xyz {
 }
 #endif  // XYZ_UNREACHABLE_DEFINED
 
-struct NoPolymorphicSBO {};
-
 namespace detail {
 template <class T, class A>
 struct control_block {

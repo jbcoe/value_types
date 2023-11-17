@@ -30,8 +30,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define XYZ_IN_PLACE_TYPE_DEFINED
 namespace xyz {
 
-struct NoPolymorphicSBO {};
-
 template <class T>
 struct in_place_type_t {};
 #endif  // XYZ_IN_PLACE_TYPE_DEFINED
