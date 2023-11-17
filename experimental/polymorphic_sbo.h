@@ -33,9 +33,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace xyz {
 
-[[noreturn]] inline void unreachable() { std::terminate(); }  // LCOV_EXCL_LINE
-
-struct NoPolymorphicSBO {};
+#ifndef XYZ_UNREACHABLE_DEFINED
+#define XYZ_UNREACHABLE_DEFINED
+[[noreturn]] inline void unreachable() {  // LCOV_EXCL_LINE
+#if (__cpp_lib_unreachable >= 202202L)
+  std::unreachable();  // LCOV_EXCL_LINE
+#elif defined(_MSC_VER)
+  __assume(false);  // LCOV_EXCL_LINE
+#else
+  __builtin_unreachable();  // LCOV_EXCL_LINE
+#endif
+}
+#endif  // XYZ_UNREACHABLE_DEFINED
 
 namespace detail {
 
@@ -43,8 +52,7 @@ static constexpr size_t PolymorphicBufferCapacity = 32;
 
 template <typename T>
 constexpr bool is_sbo_compatible() {
-  return !std::is_base_of_v<NoPolymorphicSBO, T> &&
-         std::is_nothrow_move_constructible_v<T> &&
+  return std::is_nothrow_move_constructible_v<T> &&
          (sizeof(T) <= PolymorphicBufferCapacity);
 }
 
