@@ -19,10 +19,13 @@ associates patterns and allows configuration for common optional settings
 
   ``NAME``
     The ``NAME`` option is required to provide the internal name for the library.
+  ``MANUAL``
+    The ``MANUAL`` option is optional and defaults to ``OFF``. If set to ``ON`` the
+    test will not be included in ctest and must be run manually.
 
 #]=======================================================================]
 function(vt_add_test)
-    set(options)
+    set(options MANUAL)
     set(oneValueArgs NAME)
     set(multiValueArgs LINK_LIBRARIES FILES)
     cmake_parse_arguments(VALUE_TYPES "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -64,16 +67,22 @@ function(vt_add_test)
         CXX_EXTENSIONS NO
     )
 
-    add_test(
-        NAME ${VALUE_TYPES_NAME}
-        COMMAND ${VALUE_TYPES_NAME}
-        WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-    )
+    if(${VALUE_TYPES_MANUAL})
+        message(STATUS "Manual test: ${VALUE_TYPES_NAME}")
+    else()
+        add_test(
+            NAME ${VALUE_TYPES_NAME}
+            COMMAND ${VALUE_TYPES_NAME}
+            WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+        )
+    endif()
 
     include(GoogleTest)
-    gtest_discover_tests(${VALUE_TYPES_NAME})
+    if(NOT ${VALUE_TYPES_MANUAL})
+        gtest_discover_tests(${VALUE_TYPES_NAME})
+    endif()
 
-    if (ENABLE_CODE_COVERAGE)
+    if (ENABLE_CODE_COVERAGE AND NOT ${VALUE_TYPES_NAME})
         add_coverage(${VALUE_TYPES_NAME})
     endif()
 
