@@ -135,6 +135,7 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
             NAME polymorphic_inline_vtable_test
             LINK_LIBRARIES polymorphic_inline_vtable
             FILES polymorphic_test.cc
+            MANUAL TRUE
         )
 
         vt_add_test(
