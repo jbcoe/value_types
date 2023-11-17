@@ -62,7 +62,6 @@ vt_add_library(
 )
 target_sources(polymorphic_inline_vtable
     INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/polymorphic_inline_vtable.h>
 )
 
@@ -73,7 +72,6 @@ vt_add_library(
 )
 target_sources(polymorphic_sbo
     INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/polymorphic_sbo.h>
 )
 
@@ -137,12 +135,14 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
             NAME polymorphic_inline_vtable_test
             LINK_LIBRARIES polymorphic_inline_vtable
             FILES polymorphic_test.cc
+            MANUAL TRUE
         )
 
         vt_add_test(
             NAME polymorphic_sbo_test
             LINK_LIBRARIES polymorphic_sbo
             FILES polymorphic_test.cc
+            MANUAL TRUE
         )
         target_compile_options(polymorphic_sbo_test
             PRIVATE

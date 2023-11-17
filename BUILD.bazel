@@ -1,4 +1,11 @@
 cc_library(
+    name = "feature_check",
+    hdrs = ["feature_check.h"],
+    copts = ["-Iexternal/value_types/"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
     name = "indirect",
     hdrs = ["indirect.h"],
     copts = ["-Iexternal/value_types/"],
@@ -10,9 +17,33 @@ cc_test(
     size = "small",
     srcs = ["indirect_test.cc"],
     deps = [
+        "feature_check",
         "indirect",
         "@com_google_googletest//:gtest_main",
     ],
+)
+
+cc_library(
+    name = "indirect_cxx14",
+    hdrs = [
+        "indirect_cxx14.h",
+        "indirect.h",
+    ],
+    copts = ["-Iexternal/value_types/"],
+    defines = ["XYZ_INDIRECT_CXX_14"],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "indirect_cxx14_test",
+    size = "small",
+    srcs = ["indirect_test.cc"],
+    deps = [
+        "feature_check",
+        "indirect_cxx14",
+        "@com_google_googletest//:gtest_main",
+    ],
+    copts = ["-std=c++14"],
 )
 
 cc_library(
@@ -27,17 +58,35 @@ cc_test(
     size = "small",
     srcs = ["polymorphic_test.cc"],
     deps = [
+        "feature_check",
         "polymorphic",
         "@com_google_googletest//:gtest_main",
     ],
 )
 
 cc_library(
-    name = "polymorphic_inline_vtable",
-    hdrs = [
-        "experimental/polymorphic_inline_vtable.h",
-        "polymorphic.h",
+    name = "polymorphic_cxx14",
+    hdrs = ["polymorphic_cxx14.h",],
+    defines = ["XYZ_POLYMORPHIC_CXX_14"],
+    copts = ["-Iexternal/value_types/"],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "polymorphic_cxx14_test",
+    size = "small",
+    srcs = ["polymorphic_test.cc"],
+    deps = [
+        "feature_check",
+        "polymorphic_cxx14",
+        "@com_google_googletest//:gtest_main",
     ],
+    copts = ["-std=c++14"],
+)
+
+cc_library(
+    name = "polymorphic_inline_vtable",
+    hdrs = ["experimental/polymorphic_inline_vtable.h"],
     copts = ["-Iexternal/value_types/"],
     defines = ["XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE"],
     visibility = ["//visibility:public"],
@@ -49,6 +98,7 @@ cc_test(
     srcs = ["polymorphic_test.cc"],
     tags = ["manual"],
     deps = [
+        "feature_check",
         "polymorphic_inline_vtable",
         "@com_google_googletest//:gtest_main",
     ],
@@ -56,10 +106,7 @@ cc_test(
 
 cc_library(
     name = "polymorphic_sbo",
-    hdrs = [
-        "experimental/polymorphic_sbo.h",
-        "polymorphic.h",
-    ],
+    hdrs = ["experimental/polymorphic_sbo.h"],
     copts = ["-Iexternal/value_types/"],
     defines = ["XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION"],
     visibility = ["//visibility:public"],
@@ -71,6 +118,7 @@ cc_test(
     srcs = ["polymorphic_test.cc"],
     tags = ["manual"],
     deps = [
+        "feature_check",
         "polymorphic_sbo",
         "@com_google_googletest//:gtest_main",
     ],
