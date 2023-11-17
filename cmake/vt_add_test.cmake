@@ -19,11 +19,14 @@ associates patterns and allows configuration for common optional settings
 
   ``NAME``
     The ``NAME`` option is required to provide the internal name for the library.
+  ``MANUAL``
+    The ``MANUAL`` option is optional and defaults to ``OFF``. If set to ``ON`` the
+    test will not be included in ctest and must be run manually.
 
 #]=======================================================================]
 function(vt_add_test)
     set(options MANUAL)
-    set(oneValueArgs NAME MANUAL)
+    set(oneValueArgs NAME)
     set(multiValueArgs LINK_LIBRARIES FILES)
     cmake_parse_arguments(VALUE_TYPES "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
     if (NOT VALUE_TYPES_NAME)
