@@ -716,7 +716,7 @@ _Mandates_: `is_move_constructible_v<T>` is `true`.
 
 6. _Preconditions_: `other` is not valueless.
 
-7. _Effects_: If
+7. _Effects_: If `&other == this`, then has no effects. Otherwise, if
   `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value
   == true`, `allocator_` is set to the allocator of `other`. If allocator is
   propagated or is equal to the allocator of `other`, destroys the owned object,
@@ -1154,8 +1154,9 @@ constexpr polymorphic& operator=(const polymorphic& other);
 
 1. _Preconditions_: `other` is not valueless.
 
-2. _Effects_: If `*this` is not valueless, destroys the owned object. If
-`allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value
+2. _Effects_: If `&other == this`, then has no effects. Otherwise, if `*this` is not
+valueless, destroys the owned object. If
+  `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value
   == true`, `allocator_` is set to the allocator of `other`. Copy constructs a
   new object using the object owned by `other`.
 
@@ -1169,7 +1170,7 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
 
 4. _Preconditions_: `other` is not valueless.
 
-5. _Effects_: If
+5. _Effects_: If `&other == this`, then has no effects. Otherwise, if
   `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value
   == true`, `allocator_` is set to the allocator of `other`. If allocator is
   propagated or is equal to the allocator of `other`, destroys the owned object,
