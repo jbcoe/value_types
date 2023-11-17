@@ -23,6 +23,16 @@ associates patterns and allows configuration for common optional settings
   ``NAME``
     The ``NAME`` option is required to provide the internal name for the library.
 
+  ``VERSION``
+    The ``VERSION`` option specifies the supported C++ version.
+
+  ``FILES``
+    The ``FILES`` parameter support a list of input files for the executable target.
+
+  ``LINK_LIBRARIES``
+    The ``LINK_LIBRARIES`` parameter support as list of libraries which the
+    target depends upon.
+
 #]=======================================================================]
 function(vt_add_test)
     set(options)
