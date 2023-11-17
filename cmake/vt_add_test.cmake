@@ -92,20 +92,16 @@ function(vt_add_test)
     if(${VALUE_TYPES_MANUAL})
         message(STATUS "Manual test: ${VALUE_TYPES_NAME}")
     else()
-        add_test(
-            NAME ${VALUE_TYPES_NAME}
-            COMMAND ${VALUE_TYPES_NAME}
+
+        include(GoogleTest)
+        gtest_discover_tests(${VALUE_TYPES_NAME}
             WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         )
+
+        if (ENABLE_CODE_COVERAGE)
+            add_coverage(${VALUE_TYPES_NAME})
+        endif()
     endif()
 
-    include(GoogleTest)
-    if(NOT ${VALUE_TYPES_MANUAL})
-        gtest_discover_tests(${VALUE_TYPES_NAME})
-    endif()
-
-    if (ENABLE_CODE_COVERAGE AND NOT ${VALUE_TYPES_NAME})
-        add_coverage(${VALUE_TYPES_NAME})
-    endif()
 
 endfunction()
