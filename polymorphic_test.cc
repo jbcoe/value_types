@@ -172,6 +172,13 @@ TEST(PolymorphicTest, MemberSwap) {
   EXPECT_EQ(b->value(), 42);
 }
 
+TEST(PolymorphicTest, MemberSwapWithSelf) {
+  xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
+
+  a.swap(a);
+  EXPECT_FALSE(a.valueless_after_move());
+}
+
 TEST(PolymorphicTest, ConstPropagation) {
   struct SomeType {
     enum class Constness { CONST, NON_CONST };

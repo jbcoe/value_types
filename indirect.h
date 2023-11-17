@@ -211,13 +211,8 @@ class indirect {
       std::allocator_traits<A>::is_always_equal::value) {
     assert(p_ != nullptr);        // LCOV_EXCL_LINE
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
-
-    if (this == &other) {
-      return;
-    }
-
     if constexpr (allocator_traits::propagate_on_container_swap::value) {
-      // If allocators move with their allocated objects we can swap both.
+      // If allocators move with their allocated objects, we can swap both.
       std::swap(alloc_, other.alloc_);
       std::swap(p_, other.p_);
       return;

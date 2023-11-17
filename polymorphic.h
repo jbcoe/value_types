@@ -260,14 +260,10 @@ class polymorphic {
   constexpr void swap(polymorphic& other) noexcept(
       std::allocator_traits<A>::propagate_on_container_swap::value ||
       std::allocator_traits<A>::is_always_equal::value) {
+    assert(cb_ != nullptr);        // LCOV_EXCL_LINE
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
-
-    if (this == &other) {
-      return;
-    }
-
     if constexpr (allocator_traits::propagate_on_container_swap::value) {
-      // If allocators move with their allocated objects we can swap both.
+      // If allocators move with their allocated objects, we can swap both.
       std::swap(alloc_, other.alloc_);
       std::swap(cb_, other.cb_);
       return;

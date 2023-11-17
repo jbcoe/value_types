@@ -108,6 +108,13 @@ TEST(IndirectTest, MemberSwap) {
   EXPECT_EQ(*b, 42);
 }
 
+TEST(IndirectTest, MemberSwapWithSelf) {
+  xyz::indirect<int> a(42);
+
+  a.swap(a);
+  EXPECT_FALSE(a.valueless_after_move());
+}
+
 TEST(IndirectTest, ConstPropagation) {
   struct SomeType {
     enum class Constness { LV_CONST, LV_NON_CONST, RV_CONST, RV_NON_CONST };
