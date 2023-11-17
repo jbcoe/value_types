@@ -78,9 +78,11 @@ function(vt_add_test)
     endif()
 
     include(GoogleTest)
-    gtest_discover_tests(${VALUE_TYPES_NAME})
+    if(NOT ${VALUE_TYPES_MANUAL})
+        gtest_discover_tests(${VALUE_TYPES_NAME})
+    endif()
 
-    if (ENABLE_CODE_COVERAGE)
+    if (ENABLE_CODE_COVERAGE AND NOT ${VALUE_TYPES_NAME})
         add_coverage(${VALUE_TYPES_NAME})
     endif()
 
