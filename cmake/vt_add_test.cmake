@@ -22,7 +22,7 @@ associates patterns and allows configuration for common optional settings
 
 #]=======================================================================]
 function(vt_add_test)
-    set(options)
+    set(options MANUAL)
     set(oneValueArgs NAME MANUAL)
     set(multiValueArgs LINK_LIBRARIES FILES)
     cmake_parse_arguments(VALUE_TYPES "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
