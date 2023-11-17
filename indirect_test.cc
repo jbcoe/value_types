@@ -18,16 +18,26 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==============================================================================*/
 
+#ifdef XYZ_INDIRECT_CXX_14
+#include "indirect_cxx14.h"
+#endif  // XYZ_INDIRECT_CXX_14
+
+#ifndef XYZ_INDIRECT_H
 #include "indirect.h"
+#endif  // XYZ_INDIRECT_H
 
 #include <gtest/gtest.h>
 
 #include <array>
 #include <map>
-#if __has_include(<memory_resource>)
+
+#include "feature_check.h"
+#ifdef XYZ_HAS_STD_MEMORY_RESOURCE
 #include <memory_resource>
-#endif  // #if __has_include(<memory_resource>)
+#endif  // XYZ_HAS_STD_MEMORY_RESOURCE
+#ifdef XYZ_HAS_STD_OPTIONAL
 #include <optional>
+#endif  // XYZ_HAS_STD_OPTIONAL
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -114,7 +124,7 @@ TEST(IndirectTest, ConstPropagation) {
   EXPECT_EQ(ca->member(), SomeType::Constness::LV_CONST);
   EXPECT_EQ((*ca).member(), SomeType::Constness::LV_CONST);
 
-  auto createConstRValueIndirect = [&]() -> auto const&& {
+  auto createConstRValueIndirect = [&]() -> xyz::indirect<SomeType> const&& {
     return std::move(a);
   };
 
@@ -129,6 +139,7 @@ TEST(IndirectTest, Hash) {
   EXPECT_EQ(std::hash<xyz::indirect<int>>()(a), std::hash<int>()(*a));
 }
 
+#ifdef XYZ_HAS_STD_OPTIONAL
 TEST(IndirectTest, Optional) {
   std::optional<xyz::indirect<int>> a;
   EXPECT_FALSE(a.has_value());
@@ -136,6 +147,7 @@ TEST(IndirectTest, Optional) {
   EXPECT_TRUE(a.has_value());
   EXPECT_EQ(**a, 42);
 }
+#endif  // XYZ_HAS_STD_OPTIONAL
 
 TEST(IndirectTest, Equality) {
   xyz::indirect<int> a(42);
@@ -244,12 +256,12 @@ struct TrackingAllocator {
     using other = TrackingAllocator<Other>;
   };
 
-  constexpr T* allocate(std::size_t n) {
+  T* allocate(std::size_t n) {
     ++(*alloc_counter_);
     std::allocator<T> default_allocator{};
     return default_allocator.allocate(n);
   }
-  constexpr void deallocate(T* p, std::size_t n) {
+  void deallocate(T* p, std::size_t n) {
     ++(*dealloc_counter_);
     std::allocator<T> default_allocator{};
     default_allocator.deallocate(p, n);
@@ -259,6 +271,11 @@ struct TrackingAllocator {
                          const TrackingAllocator& rhs) noexcept {
     return lhs.alloc_counter_ == rhs.alloc_counter_ &&
            lhs.dealloc_counter_ == rhs.dealloc_counter_;
+  }
+
+  friend bool operator!=(const TrackingAllocator& lhs,
+                         const TrackingAllocator& rhs) noexcept {
+    return !(lhs == rhs);
   }
 };
 
@@ -350,6 +367,11 @@ struct NonEqualTrackingAllocator : TrackingAllocator<T> {
   friend bool operator==(const NonEqualTrackingAllocator&,
                          const NonEqualTrackingAllocator&) noexcept {
     return false;
+  }
+
+  friend bool operator!=(const NonEqualTrackingAllocator&,
+                         const NonEqualTrackingAllocator&) noexcept {
+    return true;
   }
 };
 
@@ -514,6 +536,7 @@ TEST(IndirectTest, ConstructorWithExceptionsTrackingAllocations) {
   EXPECT_EQ(dealloc_counter, 1);
 }
 
+#ifdef XYZ_HAS_STD_OPTIONAL
 TEST(IndirectTest, InteractionWithOptional) {
   std::optional<xyz::indirect<int>> a;
   EXPECT_FALSE(a.has_value());
@@ -521,6 +544,7 @@ TEST(IndirectTest, InteractionWithOptional) {
   EXPECT_TRUE(a.has_value());
   EXPECT_EQ(**a, 42);
 }
+#endif  // XYZ_HAS_STD_OPTIONAL
 
 TEST(IndirectTest, InteractionWithVector) {
   std::vector<xyz::indirect<int>> as;
@@ -537,8 +561,8 @@ TEST(IndirectTest, InteractionWithMap) {
   for (int i = 0; i < 16; ++i) {
     as.emplace(i, xyz::indirect<int>(i));
   }
-  for (const auto& [k, v] : as) {
-    EXPECT_EQ(*v, k);
+  for (const auto& kv : as) {
+    EXPECT_EQ(*kv.second, kv.first);
   }
 }
 
@@ -547,8 +571,8 @@ TEST(IndirectTest, InteractionWithUnorderedMap) {
   for (int i = 0; i < 16; ++i) {
     as.emplace(i, xyz::indirect<int>(i));
   }
-  for (const auto& [k, v] : as) {
-    EXPECT_EQ(*v, k);
+  for (const auto& kv : as) {
+    EXPECT_EQ(*kv.second, kv.first);
   }
 }
 
@@ -560,7 +584,7 @@ TEST(IndirectTest, InteractionWithSizedAllocators) {
             (sizeof(int*) + sizeof(TrackingAllocator<int>)));
 }
 
-#if (__cpp_lib_memory_resource >= 201603L)
+#ifdef XYZ_HAS_STD_MEMORY_RESOURCE
 TEST(IndirectTest, InteractionWithPMRAllocators) {
   std::array<std::byte, 1024> buffer;
   std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
@@ -593,7 +617,7 @@ TEST(IndirectTest, HashCustomAllocator) {
   IndirectType a(std::allocator_arg, pa, 42);
   EXPECT_EQ(std::hash<IndirectType>()(a), std::hash<int>()(*a));
 }
-#endif  // (__cpp_lib_memory_resource >= 201603L)
+#endif  // XYZ_HAS_STD_MEMORY_RESOURCE
 
 #if (__cpp_lib_format >= 201907L)
 
@@ -614,12 +638,6 @@ TEST(IndirectTest, FormatNativeTypesPropagateFormatting) {
 
 #endif  // __cpp_lib_format >= 201907L
 
-template <class T>
-concept Taggable = requires(T& t, std::string s) {
-  t.tag(s);
-  { t.tag() } -> std::same_as<std::string_view>;
-};
-
 template <typename T>
 class TaggingAllocator {
   std::string tag_;
@@ -633,9 +651,9 @@ class TaggingAllocator {
     std::string message_;
 
    public:
-    TagMismatch(std::string_view expected_tag, std::string_view observed_tag) {
-      message_ = std::string("Expected tag \"") + std::string(expected_tag) +
-                 std::string("\" but got \"") + std::string(observed_tag) +
+    TagMismatch(std::string expected_tag, std::string observed_tag) {
+      message_ = std::string("Expected tag \"") + expected_tag +
+                 std::string("\" but got \"") + observed_tag +
                  std::string("\".");
     }
     const char* what() const noexcept override { return message_.c_str(); }
@@ -647,7 +665,7 @@ class TaggingAllocator {
   template <typename U>
   TaggingAllocator(const TaggingAllocator<U>& other) : tag_(other.tag_) {}
 
-  TaggingAllocator(std::string_view tag) : tag_(tag) {}
+  TaggingAllocator(std::string tag) : tag_(tag) {}
   using value_type = T;
   template <typename Other>
   struct rebind {
@@ -663,6 +681,11 @@ class TaggingAllocator {
     return lhs.tag_ == rhs.tag_;
   }
 
+  friend bool operator!=(const TaggingAllocator& lhs,
+                         const TaggingAllocator& rhs) {
+    return !(lhs == rhs);
+  }
+
   T* allocate(std::size_t n) {
     std::allocator<T> default_allocator{};
     return default_allocator.allocate(n);
@@ -676,18 +699,12 @@ class TaggingAllocator {
   template <typename... Ts>
   void construct(T* p, Ts&&... ts) {
     new (p) T(std::forward<Ts>(ts)...);
-    if constexpr (Taggable<T>) {
-      p->tag(tag_);
-    } else /* constexpr */ {
-    }
+    p->tag(tag_);
   }
 
   void destroy(T* p) {
-    if constexpr (Taggable<T>) {
-      if (p->tag() != tag_) {
-        throw TagMismatch(tag_, p->tag());
-      }
-    } else /* constexpr */ {
+    if (p->tag() != tag_) {
+      throw TagMismatch(tag_, p->tag());
     }
     p->~T();
   }
@@ -700,7 +717,7 @@ struct S {
   S(A) {}
   S() {}
   void tag(std::string tag) { tag_ = tag; }
-  std::string_view tag() const { return tag_; }
+  std::string tag() const { return tag_; }
 };
 
 TEST(IndirectTest, TaggedAllocatorSwap) {

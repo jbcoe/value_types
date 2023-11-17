@@ -28,8 +28,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace xyz {
 
-struct NoPolymorphicSBO {};
-
 namespace detail {
 template <class T, class A>
 struct control_block {
