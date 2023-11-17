@@ -23,7 +23,7 @@ associates patterns and allows configuration for common optional settings
 #]=======================================================================]
 function(vt_add_test)
     set(options)
-    set(oneValueArgs NAME)
+    set(oneValueArgs NAME MANUAL)
     set(multiValueArgs LINK_LIBRARIES FILES)
     cmake_parse_arguments(VALUE_TYPES "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
     if (NOT VALUE_TYPES_NAME)
@@ -64,11 +64,15 @@ function(vt_add_test)
         CXX_EXTENSIONS NO
     )
 
-    add_test(
-        NAME ${VALUE_TYPES_NAME}
-        COMMAND ${VALUE_TYPES_NAME}
-        WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-    )
+    if(${VALUE_TYPES_MANUAL})
+        message(STATUS "Manual test: ${VALUE_TYPES_NAME}")
+    else()
+        add_test(
+            NAME ${VALUE_TYPES_NAME}
+            COMMAND ${VALUE_TYPES_NAME}
+            WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+        )
+    endif()
 
     include(GoogleTest)
     gtest_discover_tests(${VALUE_TYPES_NAME})
