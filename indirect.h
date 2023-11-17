@@ -18,6 +18,10 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==============================================================================*/
 
+#ifdef XYZ_INDIRECT_CXX_14
+#include "compatibility/indirect_cxx14.h"
+#endif  // XYZ_INDIRECT_CXX_14
+
 #ifndef XYZ_INDIRECT_H
 #define XYZ_INDIRECT_H
 
