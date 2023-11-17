@@ -778,9 +778,7 @@ constexpr void swap(indirect& other) noexcept(
   the allocators of `*this` and `other` are exchanged by calling
   `swap` as described in [swappable.requirements]. Otherwise, the allocators
   are not swapped, and the behavior is undefined unless
-  `(*this).get_allocator() == other.get_allocator()`.
-
-3. _[Note: Does not call `swap` on the owned objects directly. --end note]_
+  `(*this).get_allocator() == other.get_allocator()`. _[Note: Does not call `swap` on the owned objects directly. --end note]_
 
 ```c++
 constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
