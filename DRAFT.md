@@ -665,14 +665,14 @@ constexpr indirect& operator=(const indirect& other);
 
 * _Effects_: If `this == &other` is `true`, then has no effects.
   Otherwise, if either:
-  - `is_copy_assignable_v<T>` is `false` and `is_nothrow_copy_constructible_v<T>` is `false`, or
-  - `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value` is `true` and
+  * `is_copy_assignable_v<T>` is `false` and `is_nothrow_copy_constructible_v<T>` is `false`, or
+  * `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value` is `true` and
     `allocator_ == other.allocator_` is `false`, or
-  - `*this` is valueless
+  * `*this` is valueless
   then, equivalent to `*this = indirect(std::allocator_arg, allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value ? other.allocator_ : allocator_, *other)`
   Otherwise, if `std::is_copy_assignable_v<T>` is `true`, then equivalent to `**this = *other`,
   Otherwise, equivalent to:
-  - `(allocator_traits<allocator_type>::destruct(alloc_, p_), allocator_traits<allocator_type>::construct(alloc_, p_, *other))`
+  * `(allocator_traits<allocator_type>::destruct(alloc_, p_), allocator_traits<allocator_type>::construct(alloc_, p_, *other))`
 
 * _Postconditions_: `*this` is not valueless.
 
@@ -1100,7 +1100,7 @@ constexpr polymorphic(const polymorphic& other);
 * _Effects_: Constructs a polymorphic owning an instance of `T` created with the
   copy constructor of the object owned by `other`. `allocator_` is obtained by
   calling
-  `allocator_traits<allocator_type>::select_on_container_copy_construction `on
+  `allocator_traits<allocator_type>::select_on_container_copy_construction` on
   the allocator belonging to the object being copied.
 
 * _Postconditions_: `*this` is not valueless.
