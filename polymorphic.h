@@ -18,18 +18,6 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==============================================================================*/
 
-#ifdef XYZ_POLYMORPHIC_CXX_14
-#include "compatibility/polymorphic_cxx14.h"
-#endif  // XYZ_POLYMORPHIC_CXX_14
-
-#ifdef XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
-#include "experimental/polymorphic_inline_vtable.h"
-#endif  // XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
-
-#ifdef XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
-#include "experimental/polymorphic_sbo.h"
-#endif  // XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
-
 #ifndef XYZ_POLYMORPHIC_H_
 #define XYZ_POLYMORPHIC_H_
 
