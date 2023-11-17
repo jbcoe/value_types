@@ -375,7 +375,7 @@ Note to editors: Add the following macros with editor provided values to [versio
   template<class Pointer = void, class Smart, class... Args>
     auto inout_ptr(Smart& s, Args&&... args);
 
-<ins> // (not sure how to typeset <ins> reasonably in markdown)
+<ins> // DRAFTING NOTE: not sure how to typeset <ins> reasonably in markdown
   // [indirect], class template indirect
   template<class T, class Allocator = allocator<T>>
     class indirect;
