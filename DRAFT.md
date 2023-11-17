@@ -606,7 +606,7 @@ template <class U, class... Us>
 explicit constexpr indirect(U&& u, Us&&... us);
 ```
 
-7. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(), u, us...)`.
+7. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(), std::forward<U>(u), std::forward<Us>(us)...)`.
 
 ```c++
 template <class U, class... Us>
