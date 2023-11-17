@@ -144,6 +144,13 @@ TEST(PolymorphicTest, CopyAssignment) {
   EXPECT_NE(&*a, &*b);
 }
 
+TEST(IndirectTest, CopyAssignmentToSelf) {
+  xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
+  a = a;
+
+  EXPECT_FALSE(a.valueless_after_move());
+}
+
 TEST(PolymorphicTest, MoveAssignment) {
   xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
   xyz::polymorphic<Base> b(xyz::in_place_type_t<Derived>{}, 101);

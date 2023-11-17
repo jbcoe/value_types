@@ -80,6 +80,13 @@ TEST(IndirectTest, CopyAssignment) {
   EXPECT_NE(&*a, &*b);
 }
 
+TEST(IndirectTest, CopyAssignmentToSelf) {
+  xyz::indirect<int> a(42);
+  a = a;
+
+  EXPECT_FALSE(a.valueless_after_move());
+}
+
 TEST(IndirectTest, MoveAssignment) {
   xyz::indirect<int> a(42);
   xyz::indirect<int> b(101);
