@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <cassert>
 #include <concepts>
 #include <memory>
+#include <optional>
 #include <utility>
 
 namespace xyz {
@@ -40,6 +41,26 @@ namespace xyz {
 #endif
 }
 #endif  // XYZ_UNREACHABLE_DEFINED
+
+#ifndef XYZ_GUARD_DEFINED
+#define XYZ_GUARD_DEFINED
+template <typename F>
+class guard {
+  std::optional<F> f_;
+
+ public:
+  constexpr guard(F f) : f_(f) {}
+  constexpr ~guard() {
+    if (f_) {
+      (*f_)();
+    }
+  }
+  constexpr void reset() { f_.reset(); }
+};
+
+template <typename F>
+guard(F) -> guard<F>;
+#endif  // XYZ_GUARD_DEFINED
 
 namespace detail {
 template <class T, class A>
@@ -71,13 +92,11 @@ class direct_control_block final : public control_block<T, A> {
     cb_allocator cb_alloc(alloc);
     using cb_alloc_traits = std::allocator_traits<cb_allocator>;
     auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
-    try {
-      cb_alloc_traits::construct(cb_alloc, mem, u_);
-      return mem;
-    } catch (...) {
-      cb_alloc_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
+    auto mem_guard =
+        xyz::guard([&] { cb_alloc_traits::deallocate(cb_alloc, mem, 1); });
+    cb_alloc_traits::construct(cb_alloc, mem, u_);
+    mem_guard.reset();
+    return mem;
   }
 
   constexpr void destroy(A& alloc) override {
@@ -115,16 +134,14 @@ class polymorphic {
     static_assert(std::is_default_constructible_v<T>);
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
-    using cb_traits = std::allocator_traits<cb_allocator>;
+    using cb_alloc_traits = std::allocator_traits<cb_allocator>;
     cb_allocator cb_alloc(alloc_);
-    auto mem = cb_traits::allocate(cb_alloc, 1);
-    try {
-      cb_traits::construct(cb_alloc, mem);
-      cb_ = mem;
-    } catch (...) {
-      cb_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
+    auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
+    auto mem_guard =
+        xyz::guard([&] { cb_alloc_traits::deallocate(cb_alloc, mem, 1); });
+    cb_alloc_traits::construct(cb_alloc, mem);
+    cb_ = mem;
+    mem_guard.reset();
   }
 
   template <class U, class... Ts>
@@ -134,16 +151,14 @@ class polymorphic {
   {
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
-    using cb_traits = std::allocator_traits<cb_allocator>;
+    using cb_alloc_traits = std::allocator_traits<cb_allocator>;
     cb_allocator cb_alloc(alloc_);
-    auto mem = cb_traits::allocate(cb_alloc, 1);
-    try {
-      cb_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
-      cb_ = mem;
-    } catch (...) {
-      cb_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
+    auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
+    auto mem_guard =
+        xyz::guard([&] { cb_alloc_traits::deallocate(cb_alloc, mem, 1); });
+    cb_alloc_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
+    cb_ = mem;
+    mem_guard.reset();
   }
 
   template <class U, class... Ts>
@@ -155,16 +170,14 @@ class polymorphic {
       : alloc_(alloc) {
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
-    using cb_traits = std::allocator_traits<cb_allocator>;
+    using cb_alloc_traits = std::allocator_traits<cb_allocator>;
     cb_allocator cb_alloc(alloc_);
-    auto mem = cb_traits::allocate(cb_alloc, 1);
-    try {
-      cb_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
-      cb_ = mem;
-    } catch (...) {
-      cb_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
+    auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
+    auto mem_guard =
+        xyz::guard([&] { cb_alloc_traits::deallocate(cb_alloc, mem, 1); });
+    cb_alloc_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
+    cb_ = mem;
+    mem_guard.reset();
   }
 
   constexpr polymorphic(const polymorphic& other)
