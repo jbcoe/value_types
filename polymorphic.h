@@ -179,8 +179,7 @@ class polymorphic {
   constexpr polymorphic(std::allocator_arg_t, const A& alloc,
                         std::in_place_type_t<U>, Ts&&... ts)
     requires std::constructible_from<U, Ts&&...> &&
-             std::copy_constructible<U> &&
-             (std::derived_from<U, T> || std::same_as<U, T>)
+             std::copy_constructible<U> && std::derived_from<U, T>
       : alloc_(alloc) {
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;

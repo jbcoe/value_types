@@ -123,3 +123,13 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "allocator_test",
+    size = "small",
+    srcs = ["allocator_test.cc"],
+    deps = [
+        "polymorphic",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
