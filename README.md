@@ -121,7 +121,7 @@ For building and working with the project, please see the [developer guide](docs
 
 ## Devcontainer
 
-Press '.' or visit [https://github.dev/jbcoe/value_types] to open the project in a
+Press `.` or visit [https://github.dev/jbcoe/value_types] to open the project in a
 devcontainer. We have a Dockerfile image that will build a container with the
 tools needed to work on the project.
 
