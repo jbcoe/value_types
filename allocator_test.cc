@@ -28,14 +28,27 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace xyz::allocator_testing {
 
+struct SimpleType {};
+
 struct FussyType {
   template <typename... Ts>
-  FussyType(Ts&&...) {
+  FussyType(Ts&&... ts) {
     throw std::runtime_error("FussyType must be allocator-constructed");
   }
 
+  // Allocator-extended constructor.
   template <typename Allocator, typename... Ts>
   FussyType(std::allocator_arg_t, const Allocator& a, Ts&&...) {}
+};
+
+struct FussyOldType {
+  FussyOldType(int i) {
+    throw std::runtime_error("FussyOldType must be allocator-constructed");
+  }
+
+  // Old-style allocator constructor.
+  template <typename Allocator>
+  FussyOldType(int i, const Allocator& a) {}
 };
 
 }  // namespace xyz::allocator_testing
@@ -43,6 +56,10 @@ struct FussyType {
 namespace std {
 template <typename Allocator>
 struct uses_allocator<xyz::allocator_testing::FussyType, Allocator>
+    : true_type {};
+
+template <typename Allocator>
+struct uses_allocator<xyz::allocator_testing::FussyOldType, Allocator>
     : true_type {};
 }  // namespace std
 
@@ -65,28 +82,66 @@ class TestAllocator {
 
 namespace xyz::allocator_testing {
 
+TEST(AllocatorTest, SimpleTypeUsesAllocator) {
+  static_assert(
+      !std::uses_allocator<SimpleType, std::allocator<SimpleType>>::value);
+}
+
 TEST(AllocatorTest, FussyTypeUsesAllocator) {
   static_assert(
-      std::uses_allocator<FussyType, TestAllocator<FussyType>>::value);
+      std::uses_allocator<FussyType, std::allocator<FussyType>>::value);
+}
+
+TEST(AllocatorTest, FussyOldTypeUsesAllocator) {
+  static_assert(
+      std::uses_allocator<FussyOldType, std::allocator<FussyOldType>>::value);
+  static_assert(
+      std::is_constructible_v<FussyOldType, int, std::allocator<FussyOldType>>);
+}
+
+TEST(AllocatorTest, SimpleTypeAllocatorConstruction) {
+  std::allocator<SimpleType> a;
+  [[maybe_unused]] auto f = std::make_obj_using_allocator<SimpleType>(a);
 }
 
 TEST(AllocatorTest, FussyTypeAllocatorConstruction) {
-  union Data {
-    char c;
-    FussyType f;
-    Data() : c(0) {}
-    ~Data() {}
-  } data;
-  TestAllocator<FussyType> a;
-  new (&data.f) FussyType(std::make_obj_using_allocator<FussyType>(a));
+  std::allocator<FussyType> a;
+  [[maybe_unused]] auto f = std::make_obj_using_allocator<FussyType>(a);
+}
+
+TEST(AllocatorTest, FussyOldTypeAllocatorConstruction) {
+  std::allocator<FussyOldType> a;
+  [[maybe_unused]] auto f = std::make_obj_using_allocator<FussyOldType>(a, 42);
+}
+
+TEST(AllocatorTestPolymorphic, SimpleTypeMustBeAllocatorConstructed) {
+  auto p = xyz::polymorphic<SimpleType>();
+  EXPECT_FALSE(p.valueless_after_move());
 }
 
 TEST(AllocatorTestPolymorphic, FussyTypeMustBeAllocatorConstructed) {
   auto p = xyz::polymorphic<FussyType>();
+  EXPECT_FALSE(p.valueless_after_move());
+}
+
+TEST(AllocatorTestPolymorphic, FussyOldTypeMustBeAllocatorConstructed) {
+  auto p = xyz::polymorphic<FussyOldType>(std::in_place_type<FussyOldType>, 42);
+  EXPECT_FALSE(p.valueless_after_move());
+}
+
+TEST(AllocatorTestIndirect, SimpleTypeMustBeAllocatorConstructed) {
+  auto p = xyz::indirect<SimpleType>();
+  EXPECT_FALSE(p.valueless_after_move());
 }
 
 TEST(AllocatorTestIndirect, FussyTypeMustBeAllocatorConstructed) {
   auto p = xyz::indirect<FussyType>();
+  EXPECT_FALSE(p.valueless_after_move());
+}
+
+TEST(AllocatorTestIndirect, FussyOldTypeMustBeAllocatorConstructed) {
+  auto p = xyz::indirect<FussyOldType>(42);
+  EXPECT_FALSE(p.valueless_after_move());
 }
 
 }  // namespace xyz::allocator_testing
