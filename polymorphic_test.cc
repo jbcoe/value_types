@@ -267,6 +267,21 @@ TEST(PolymorphicTest, GetAllocator) {
   EXPECT_EQ(dealloc_counter, *tracking_allocator.dealloc_counter_);
 }
 
+TEST(PolymorphicTest, TrackingAllocatorDefaultConstructor) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+
+  xyz::polymorphic<Derived, TrackingAllocator<Derived>> a(
+      std::allocator_arg,
+      TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter));
+  EXPECT_EQ(alloc_counter, 1);
+  EXPECT_EQ(dealloc_counter, 0);
+
+  auto tracking_allocator = a.get_allocator();
+  EXPECT_EQ(alloc_counter, *tracking_allocator.alloc_counter_);
+  EXPECT_EQ(dealloc_counter, *tracking_allocator.dealloc_counter_);
+}
+
 TEST(PolymorphicTest, CountAllocationsForInPlaceConstruction) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
@@ -494,6 +509,12 @@ struct ThrowsOnCopyConstruction {
 
 TEST(PolymorphicTest, DefaultConstructorWithExceptions) {
   EXPECT_THROW(xyz::polymorphic<ThrowsOnConstruction>(),
+               ThrowsOnConstruction::Exception);
+}
+
+TEST(PolymorphicTest, DefaultConstructorWithAllocatorsAndExceptions) {
+  EXPECT_THROW(xyz::polymorphic<ThrowsOnConstruction>(
+                   std::allocator_arg, std::allocator<ThrowsOnConstruction>()),
                ThrowsOnConstruction::Exception);
 }
 
