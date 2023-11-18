@@ -140,8 +140,8 @@ TEST(AllocatorTestIndirect, FussyTypeMustBeAllocatorConstructed) {
 }
 
 TEST(AllocatorTestIndirect, FussyOldTypeMustBeAllocatorConstructed) {
-  // auto p = xyz::indirect<FussyOldType>(42);
-  // EXPECT_FALSE(p.valueless_after_move());
+  auto p = xyz::indirect<FussyOldType>(42);
+  EXPECT_FALSE(p.valueless_after_move());
 }
 
 }  // namespace xyz::allocator_testing
