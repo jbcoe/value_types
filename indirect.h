@@ -401,8 +401,8 @@ class indirect {
   constexpr static T* construct_from(A alloc, Ts&&... ts) {
     T* mem = allocator_traits::allocate(alloc, 1);
     try {
-      std::construct_at(mem, std::make_obj_using_allocator<T>(
-                                 alloc, std::forward<Ts>(ts)...));
+      std::uninitialized_construct_using_allocator<T>(mem, alloc,
+                                                      std::forward<Ts>(ts)...);
       return mem;
     } catch (...) {
       allocator_traits::deallocate(alloc, mem, 1);
