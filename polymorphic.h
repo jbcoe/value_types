@@ -70,8 +70,8 @@ class direct_control_block final : public control_block<T, A> {
     using u_allocator =
         typename std::allocator_traits<A>::template rebind_alloc<U>;
     u_allocator u_alloc(alloc);
-    new (&storage_.u_)
-        U(std::make_obj_using_allocator<U>(u_alloc, std::forward<Ts>(ts)...));
+    std::construct_at(&storage_.u_, std::make_obj_using_allocator<U>(
+                                        u_alloc, std::forward<Ts>(ts)...));
     control_block<T, A>::p_ = &storage_.u_;
   }
 
