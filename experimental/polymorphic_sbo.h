@@ -244,6 +244,9 @@ class polymorphic {
     requires std::default_initializable<T> && std::default_initializable<A>
       : polymorphic(std::allocator_arg, A(), std::in_place_type<T>) {}
 
+  constexpr polymorphic(std::allocator_arg_t, const A& alloc)
+      : polymorphic(std::allocator_arg, alloc, std::in_place_type<T>) {}
+
   template <class U, class... Ts>
   explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts)
     requires std::default_initializable<A>

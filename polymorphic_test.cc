@@ -144,6 +144,13 @@ TEST(PolymorphicTest, CopyAssignment) {
   EXPECT_NE(&*a, &*b);
 }
 
+TEST(IndirectTest, CopyAssignmentSelf) {
+  xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
+  a = a;
+
+  EXPECT_FALSE(a.valueless_after_move());
+}
+
 TEST(PolymorphicTest, MoveAssignment) {
   xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
   xyz::polymorphic<Base> b(xyz::in_place_type_t<Derived>{}, 101);
@@ -152,6 +159,13 @@ TEST(PolymorphicTest, MoveAssignment) {
 
   EXPECT_TRUE(b.valueless_after_move());
   EXPECT_EQ(a->value(), 101);
+}
+
+TEST(IndirectTest, MoveAssignmentSelf) {
+  xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
+  a = std::move(a);
+
+  EXPECT_FALSE(a.valueless_after_move());
 }
 
 TEST(PolymorphicTest, NonMemberSwap) {
@@ -170,6 +184,13 @@ TEST(PolymorphicTest, MemberSwap) {
   a.swap(b);
   EXPECT_EQ(a->value(), 101);
   EXPECT_EQ(b->value(), 42);
+}
+
+TEST(PolymorphicTest, MemberSwapWithSelf) {
+  xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
+
+  a.swap(a);
+  EXPECT_FALSE(a.valueless_after_move());
 }
 
 TEST(PolymorphicTest, ConstPropagation) {
@@ -238,6 +259,21 @@ TEST(PolymorphicTest, GetAllocator) {
       std::allocator_arg,
       TrackingAllocator<Base>(&alloc_counter, &dealloc_counter),
       xyz::in_place_type_t<Derived>{}, 42);
+  EXPECT_EQ(alloc_counter, 1);
+  EXPECT_EQ(dealloc_counter, 0);
+
+  auto tracking_allocator = a.get_allocator();
+  EXPECT_EQ(alloc_counter, *tracking_allocator.alloc_counter_);
+  EXPECT_EQ(dealloc_counter, *tracking_allocator.dealloc_counter_);
+}
+
+TEST(PolymorphicTest, TrackingAllocatorDefaultConstructor) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+
+  xyz::polymorphic<Derived, TrackingAllocator<Derived>> a(
+      std::allocator_arg,
+      TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter));
   EXPECT_EQ(alloc_counter, 1);
   EXPECT_EQ(dealloc_counter, 0);
 
@@ -473,6 +509,12 @@ struct ThrowsOnCopyConstruction {
 
 TEST(PolymorphicTest, DefaultConstructorWithExceptions) {
   EXPECT_THROW(xyz::polymorphic<ThrowsOnConstruction>(),
+               ThrowsOnConstruction::Exception);
+}
+
+TEST(PolymorphicTest, DefaultConstructorWithAllocatorsAndExceptions) {
+  EXPECT_THROW(xyz::polymorphic<ThrowsOnConstruction>(
+                   std::allocator_arg, std::allocator<ThrowsOnConstruction>()),
                ThrowsOnConstruction::Exception);
 }
 
