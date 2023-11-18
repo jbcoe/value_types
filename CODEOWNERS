@@ -1,8 +1,11 @@
-# Global owner
-@jbcoe
-
-# CMake 
+# CMake
 CMakeLists.txt @twon
 
-# Bazel 
+# Bazel
 *.bazel @jbcoe
+
+# Formal wording
+DRAFT.md @villevoutilainen @nbx8
+
+# Global owners
+* @jbcoe @twon

@@ -26,7 +26,21 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <optional>
 #include <vector>
 
+#ifdef XYZ_POLYMORPHIC_CXX_14
+#include "compatibility/polymorphic_cxx14.h"
+#endif  // XYZ_POLYMORPHIC_CXX_14
+
+#ifdef XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
+#include "experimental/polymorphic_inline_vtable.h"
+#endif  // XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
+
+#ifdef XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
+#include "experimental/polymorphic_sbo.h"
+#endif  // XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
+
+#ifndef XYZ_POLYMORPHIC_H_
 #include "polymorphic.h"
+#endif  // XYZ_POLYMORPHIC_H_
 
 namespace {
 
@@ -155,7 +169,8 @@ static void Polymorphic_BM_ArrayCopy_RawPointer(benchmark::State& state) {
   }
 }
 
-static void Polymorphic_BM_VectorAccumulate_RawPointer(benchmark::State& state) {
+static void Polymorphic_BM_VectorAccumulate_RawPointer(
+    benchmark::State& state) {
   std::vector<Base*> v(LARGE_VECTOR_SIZE);
   for (size_t i = 0; i < LARGE_VECTOR_SIZE; ++i) {
     if (i % 2 == 0) {

@@ -3,8 +3,20 @@ name: CMake
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - requirements.txt
+      - LICENSE.txt
+      - .pre-commit-config.yaml
+      - '**/*.md'
+      - '**/*.yml'
   pull_request:
     branches: [main]
+    paths-ignore:
+      - requirements.txt
+      - LICENSE.txt
+      - .pre-commit-config.yaml
+      - '**/*.md'
+      - '**/*.yml'
 
 jobs:
   build:
@@ -37,9 +49,27 @@ jobs:
               lib: "libstdc++13",
             }
           - {
+              name: "Ubuntu Clang-17 + libc++",
+              os: ubuntu-22.04,
+              compiler:
+                {
+                  type: CLANG,
+                  version: 17,
+                  cc: "clang-17",
+                  cxx: "clang++-17",
+                  std: 20,
+                },
+              lib: "libc++17",
+            }
+          - {
               name: "Visual Studio 2019",
               os: windows-latest,
               compiler: { type: VISUAL, version: 16, cc: "cl", cxx: "cl" },
+            }
+          - {
+              name: "Visual Studio 2022",
+              os: windows-latest,
+              compiler: { type: VISUAL, version: 17, cc: "cl", cxx: "cl" },
             }
           - {
               name: "MacOS Apple Clang 14",

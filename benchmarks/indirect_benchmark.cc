@@ -170,7 +170,7 @@ static void Indirect_BM_VectorAccumulate_UniquePointer(
 }
 
 static void Indirect_BM_Copy_Indirect(benchmark::State& state) {
-  auto p = xyz::indirect<A>(std::in_place, 42);
+  auto p = xyz::indirect<A>(42);
   for (auto _ : state) {
     auto pp = p;
     benchmark::DoNotOptimize(pp);
@@ -181,7 +181,7 @@ static void Indirect_BM_VectorCopy_Indirect(benchmark::State& state) {
   std::vector<xyz::indirect<A>> v;
   v.reserve(LARGE_VECTOR_SIZE);
   for (size_t i = 0; i < LARGE_VECTOR_SIZE; ++i) {
-    v.push_back(xyz::indirect<A>(std::in_place, i));
+    v.push_back(xyz::indirect<A>(i));
   }
 
   for (auto _ : state) {
@@ -193,7 +193,7 @@ static void Indirect_BM_VectorCopy_Indirect(benchmark::State& state) {
 static void Indirect_BM_ArrayCopy_Indirect(benchmark::State& state) {
   std::array<std::optional<xyz::indirect<A>>, LARGE_ARRAY_SIZE> v;
   for (size_t i = 0; i < v.size(); ++i) {
-    v[i] = std::optional<xyz::indirect<A>>(xyz::indirect<A>(std::in_place, i));
+    v[i] = std::optional<xyz::indirect<A>>(xyz::indirect<A>(i));
   }
 
   for (auto _ : state) {
@@ -206,7 +206,7 @@ static void Indirect_BM_VectorAccumulate_Indirect(benchmark::State& state) {
   std::vector<xyz::indirect<A>> v;
   v.reserve(LARGE_VECTOR_SIZE);
   for (size_t i = 0; i < LARGE_VECTOR_SIZE; ++i) {
-    v.push_back(xyz::indirect<A>(std::in_place, i));
+    v.push_back(xyz::indirect<A>(i));
   }
 
   for (auto _ : state) {

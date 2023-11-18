@@ -3,9 +3,20 @@ name: Bazel test
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - requirements.txt
+      - LICENSE.txt
+      - .pre-commit-config.yaml
+      - '**/*.md'
+      - '**/*.yml'
   pull_request:
     branches: [main]
-
+    paths-ignore:
+      - requirements.txt
+      - LICENSE.txt
+      - .pre-commit-config.yaml
+      - '**/*.md'
+      - '**/*.yml'
 jobs:
   build:
     name: ${{ matrix.settings.name }}
@@ -14,23 +25,23 @@ jobs:
       matrix:
         settings:
           - {
-              name: "debug",
+              name: "Bazel test: debug",
               flags: "-c dbg",
           }
           - {
-              name: "optimized",
+              name: "Bazel test: optimized",
               flags: "-c opt",
           }
           - {
-              name: "address sanitizer",
+              name: "Bazel test: address sanitizer",
               flags: "--config=asan",
           }
           - {
-              name: "undefined behaviour sanitizer",
+              name: "Bazel test: undefined behaviour sanitizer",
               flags: "--config=ubsan",
           }
           - {
-              name: "thread sanitizer",
+              name: "Bazel test: thread sanitizer",
               flags: "--config=tsan",
           }
     steps:

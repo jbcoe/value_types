@@ -2,17 +2,20 @@
 
 [![codecov][badge.codecov]][codecov] [![language][badge.language]][language]
 [![license][badge.license]][license] [![issues][badge.issues]][issues]
+[![pre-commit][badge.pre-commit]][pre-commit]
 
 [badge.language]: https://img.shields.io/badge/language-C%2B%2B20-yellow.svg
 [badge.codecov]:
     https://img.shields.io/codecov/c/github/jbcoe/value_types/master.svg?logo=codecov
 [badge.license]: https://img.shields.io/badge/license-MIT-blue.svg
 [badge.issues]: https://img.shields.io/github/issues/jbcoe/value_types.svg
+[badge.pre-commit]: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit
 
 [codecov]: https://codecov.io/gh/jbcoe/value_types
 [language]: https://en.wikipedia.org/wiki/C%2B%2B20
 [license]: https://en.wikipedia.org/wiki/MIT_License
 [issues]: http://github.com/jbcoe/value_types/issues
+[pre-commit]: https://github.com/pre-commit/pre-commit
 
 This repository contains two class templates: `indirect` and `polymorphic`. Both
 templates are designed to be used for member data in composite types.
@@ -53,9 +56,9 @@ class Composite {
   xyz::indirect<A> a_; // a_ owns an object of type A
   xyz::indirect<B> b_; // b_ owns an object of type B
 public:
-  Composite(const A& a, const B& b) : 
-    a_(std::in_place, a), 
-    b_(std::in_place, b) {}
+  Composite(const A& a, const B& b) :
+    a_(a),
+    b_(b) {}
 
   // ...
 };
@@ -69,8 +72,8 @@ class CompositeWithPolymorphicMembers {
   xyz::polymorphic<Y> y_; // y_ owns an object of type Y or derived from Y
 public:
   template <typename Tx, typename Ty>
-  Composite(const Tx& x, const Ty& y) : 
-    a_(std::in_place_type<Tx>, x), 
+  Composite(const Tx& x, const Ty& y) :
+    a_(std::in_place_type<Tx>, x),
     b_(std::in_place_type<Ty>, y) {}
 
     // ...
@@ -87,6 +90,18 @@ by adding the includes:
 #include <https://raw.githubusercontent.com/jbcoe/value_types/main/polymorphic.h>
 ```
 
+### Compatibility
+
+We have C++14 implementations of `indirect` and `polymorphic` available as
+`indirect_cxx14.h` and `polymorphic_cxx14.h`.
+
+C++14 implementations can be tried out in compiler explorer by using the includes:
+
+```cpp
+#include <https://raw.githubusercontent.com/jbcoe/value_types/main/indirect_cxx14.h>
+#include <https://raw.githubusercontent.com/jbcoe/value_types/main/polymorphic_cxx14.h>
+```
+
 ## License
 
 This code is licensed under the MIT License. See [LICENSE](LICENSE) for details.
@@ -94,11 +109,15 @@ This code is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 ## Talks and presentations
 
 We spoke about an earlier draft at [C++ on
-Sea](https://www.youtube.com/watch?v=sjLRX4WMvlU) in 2022. 
+Sea](https://www.youtube.com/watch?v=sjLRX4WMvlU) in 2022.
 
-There are some significant design changes since this talk was given (after feedback 
-and discussion at a C++ London meetup). We've pared down the number of constructors 
+There are some significant design changes since this talk was given (after feedback
+and discussion at a C++ London meetup). We've pared down the number of constructors
 and made the null state unobservable.
+
+## Developer Guide
+
+For building and working with the project, please see the [developer guide](docs/developer-guide.md).
 
 ## References
 
