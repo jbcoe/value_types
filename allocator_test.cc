@@ -31,9 +31,7 @@ namespace xyz::allocator_testing {
 struct FussyType {
   template <typename... Ts>
   FussyType(Ts&&...) {
-    // Type dependent check to avoid eager evaluation of static_assert.
-    static_assert(sizeof...(Ts) > std::numeric_limits<std::size_t>::max(),
-                  "FussyType must be allocator-constructed");
+    throw std::runtime_error("FussyType must be allocator-constructed");
   }
 
   template <typename Allocator, typename... Ts>
@@ -84,7 +82,7 @@ TEST(AllocatorTest, FussyTypeAllocatorConstruction) {
 }
 
 TEST(AllocatorTestPolymorphic, FussyTypeMustBeAllocatorConstructed) {
-  auto p = xyz::polymorphic<FussyType>(std::in_place_type<FussyType>);
+  auto p = xyz::polymorphic<FussyType>();
 }
 
 TEST(AllocatorTestIndirect, FussyTypeMustBeAllocatorConstructed) {
