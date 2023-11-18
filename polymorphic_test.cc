@@ -144,7 +144,7 @@ TEST(PolymorphicTest, CopyAssignment) {
   EXPECT_NE(&*a, &*b);
 }
 
-TEST(IndirectTest, CopyAssignmentSelf) {
+TEST(PolymorphicTest, CopyAssignmentSelf) {
   xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
   a = a;
 
@@ -161,7 +161,7 @@ TEST(PolymorphicTest, MoveAssignment) {
   EXPECT_EQ(a->value(), 101);
 }
 
-TEST(IndirectTest, MoveAssignmentSelf) {
+TEST(PolymorphicTest, MoveAssignmentSelf) {
   xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
   a = std::move(a);
 
