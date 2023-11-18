@@ -144,6 +144,13 @@ TEST(PolymorphicTest, CopyAssignment) {
   EXPECT_NE(&*a, &*b);
 }
 
+TEST(IndirectTest, CopyAssignmentSelf) {
+  xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
+  a = a;
+
+  EXPECT_FALSE(a.valueless_after_move());
+}
+
 TEST(PolymorphicTest, MoveAssignment) {
   xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
   xyz::polymorphic<Base> b(xyz::in_place_type_t<Derived>{}, 101);
@@ -152,6 +159,13 @@ TEST(PolymorphicTest, MoveAssignment) {
 
   EXPECT_TRUE(b.valueless_after_move());
   EXPECT_EQ(a->value(), 101);
+}
+
+TEST(IndirectTest, MoveAssignmentSelf) {
+  xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
+  a = std::move(a);
+
+  EXPECT_FALSE(a.valueless_after_move());
 }
 
 TEST(PolymorphicTest, NonMemberSwap) {
@@ -170,6 +184,13 @@ TEST(PolymorphicTest, MemberSwap) {
   a.swap(b);
   EXPECT_EQ(a->value(), 101);
   EXPECT_EQ(b->value(), 42);
+}
+
+TEST(PolymorphicTest, MemberSwapWithSelf) {
+  xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
+
+  a.swap(a);
+  EXPECT_FALSE(a.valueless_after_move());
 }
 
 TEST(PolymorphicTest, ConstPropagation) {
