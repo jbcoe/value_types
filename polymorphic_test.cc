@@ -512,6 +512,12 @@ TEST(PolymorphicTest, DefaultConstructorWithExceptions) {
                ThrowsOnConstruction::Exception);
 }
 
+TEST(PolymorphicTest, DefaultConstructorWithAllocatorsAndExceptions) {
+  EXPECT_THROW(xyz::polymorphic<ThrowsOnConstruction>(
+                   std::allocator_arg, std::allocator<ThrowsOnConstruction>()),
+               ThrowsOnConstruction::Exception);
+}
+
 TEST(PolymorphicTest, ConstructorWithExceptions) {
   EXPECT_THROW(xyz::polymorphic<ThrowsOnConstruction>(
                    xyz::in_place_type_t<ThrowsOnConstruction>{}, "unused"),
