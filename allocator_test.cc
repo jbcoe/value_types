@@ -28,23 +28,36 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace xyz::allocator_testing {
 
-struct SimpleType {};
+struct SimpleType {
+  SimpleType(int) {}
+};
 
 struct FussyType {
-  template <typename... Ts>
-  FussyType(Ts&&...) {
+  FussyType(int i) {
     throw std::runtime_error("FussyType must be allocator-constructed");
   }
 
+  FussyType(const FussyType&) {}
+
+  // Allocator-extended copy-constructor.
+  template <typename Allocator>
+  FussyType(std::allocator_arg_t, const Allocator&, const FussyType&) {}
+
   // Allocator-extended constructor.
-  template <typename Allocator, typename... Ts>
-  FussyType(std::allocator_arg_t, const Allocator&, Ts&&...) {}
+  template <typename Allocator>
+  FussyType(std::allocator_arg_t, const Allocator&, int) {}
 };
 
 struct FussyOldType {
   FussyOldType(int) {
     throw std::runtime_error("FussyOldType must be allocator-constructed");
   }
+
+  FussyOldType(const FussyOldType&) {}
+
+  // Old-style allocator copy-constructor.
+  template <typename Allocator>
+  FussyOldType(const FussyOldType&, const Allocator&) {}
 
   // Old-style allocator constructor.
   template <typename Allocator>
@@ -63,26 +76,9 @@ struct uses_allocator<xyz::allocator_testing::FussyOldType, Allocator>
     : true_type {};
 }  // namespace std
 
-template <typename T>
-class TestAllocator {
- public:
-  using value_type = T;
-  using size_type = std::size_t;
-
-  T* allocate(std::size_t n) {
-    std::allocator<T> default_allocator{};
-    return default_allocator.allocate(n);
-  }
-
-  void deallocate(T* p, std::size_t n) {
-    std::allocator<T> default_allocator{};
-    default_allocator.deallocate(p, n);
-  }
-};
-
 namespace xyz::allocator_testing {
 
-TEST(AllocatorTest, SimpleTypeUsesAllocator) {
+TEST(AllocatorTest, SimpleTypeDoesNotUseAllocator) {
   static_assert(
       !std::uses_allocator<SimpleType, std::allocator<SimpleType>>::value);
 }
@@ -95,18 +91,16 @@ TEST(AllocatorTest, FussyTypeUsesAllocator) {
 TEST(AllocatorTest, FussyOldTypeUsesAllocator) {
   static_assert(
       std::uses_allocator<FussyOldType, std::allocator<FussyOldType>>::value);
-  static_assert(
-      std::is_constructible_v<FussyOldType, int, std::allocator<FussyOldType>>);
 }
 
 TEST(AllocatorTest, SimpleTypeAllocatorConstruction) {
   std::allocator<SimpleType> a;
-  [[maybe_unused]] auto f = std::make_obj_using_allocator<SimpleType>(a);
+  [[maybe_unused]] auto f = std::make_obj_using_allocator<SimpleType>(a, 42);
 }
 
 TEST(AllocatorTest, FussyTypeAllocatorConstruction) {
   std::allocator<FussyType> a;
-  [[maybe_unused]] auto f = std::make_obj_using_allocator<FussyType>(a);
+  [[maybe_unused]] auto f = std::make_obj_using_allocator<FussyType>(a, 42);
 }
 
 TEST(AllocatorTest, FussyOldTypeAllocatorConstruction) {
@@ -115,27 +109,27 @@ TEST(AllocatorTest, FussyOldTypeAllocatorConstruction) {
 }
 
 TEST(AllocatorTestPolymorphic, SimpleTypeMustBeAllocatorConstructed) {
-  auto p = xyz::polymorphic<SimpleType>();
+  auto p = xyz::polymorphic<SimpleType>(std::in_place_type<SimpleType>, 42);
   EXPECT_FALSE(p.valueless_after_move());
 }
 
 TEST(AllocatorTestPolymorphic, FussyTypeMustBeAllocatorConstructed) {
-  auto p = xyz::polymorphic<FussyType>();
+  auto p = xyz::polymorphic<FussyType>(std::in_place_type<FussyType>, 42);
   EXPECT_FALSE(p.valueless_after_move());
 }
 
 TEST(AllocatorTestPolymorphic, FussyOldTypeMustBeAllocatorConstructed) {
-  // auto p = xyz::polymorphic<FussyOldType>(std::in_place_type<FussyOldType>,
-  // 42); EXPECT_FALSE(p.valueless_after_move());
+  auto p = xyz::polymorphic<FussyOldType>(std::in_place_type<FussyOldType>, 42);
+  EXPECT_FALSE(p.valueless_after_move());
 }
 
 TEST(AllocatorTestIndirect, SimpleTypeMustBeAllocatorConstructed) {
-  auto p = xyz::indirect<SimpleType>();
+  auto p = xyz::indirect<SimpleType>(42);
   EXPECT_FALSE(p.valueless_after_move());
 }
 
 TEST(AllocatorTestIndirect, FussyTypeMustBeAllocatorConstructed) {
-  auto p = xyz::indirect<FussyType>();
+  auto p = xyz::indirect<FussyType>(42);
   EXPECT_FALSE(p.valueless_after_move());
 }
 
