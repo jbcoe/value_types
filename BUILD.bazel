@@ -26,8 +26,8 @@ cc_test(
 cc_library(
     name = "indirect_cxx14",
     hdrs = [
-        "indirect_cxx14.h",
         "indirect.h",
+        "indirect_cxx14.h",
     ],
     copts = ["-Iexternal/value_types/"],
     defines = ["XYZ_INDIRECT_CXX_14"],
@@ -38,12 +38,12 @@ cc_test(
     name = "indirect_cxx14_test",
     size = "small",
     srcs = ["indirect_test.cc"],
+    copts = ["-std=c++14"],
     deps = [
         "feature_check",
         "indirect_cxx14",
         "@com_google_googletest//:gtest_main",
     ],
-    copts = ["-std=c++14"],
 )
 
 cc_library(
@@ -66,9 +66,9 @@ cc_test(
 
 cc_library(
     name = "polymorphic_cxx14",
-    hdrs = ["polymorphic_cxx14.h",],
-    defines = ["XYZ_POLYMORPHIC_CXX_14"],
+    hdrs = ["polymorphic_cxx14.h"],
     copts = ["-Iexternal/value_types/"],
+    defines = ["XYZ_POLYMORPHIC_CXX_14"],
     visibility = ["//visibility:public"],
 )
 
@@ -76,12 +76,12 @@ cc_test(
     name = "polymorphic_cxx14_test",
     size = "small",
     srcs = ["polymorphic_test.cc"],
+    copts = ["-std=c++14"],
     deps = [
         "feature_check",
         "polymorphic_cxx14",
         "@com_google_googletest//:gtest_main",
     ],
-    copts = ["-std=c++14"],
 )
 
 cc_library(
@@ -129,6 +129,7 @@ cc_test(
     size = "small",
     srcs = ["allocator_test.cc"],
     deps = [
+        "indirect",
         "polymorphic",
         "@com_google_googletest//:gtest_main",
     ],
