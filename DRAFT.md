@@ -644,7 +644,8 @@ constexpr indirect(const indirect& other);
 
 12. _Preconditions_: `other` is not valueless.
 
-13. _Effects_: Equivalent to `indirect(allocator_arg, allocator_traits<allocator_type>::select_on_container_copy_construction(other.get_allocator()), *other)`.
+13. _Effects_: Equivalent to
+  `indirect(allocator_arg, allocator_traits<allocator_type>::select_on_container_copy_construction(other.get_allocator()), *other)`.
 `
 14. _Postconditions_: `*this` is not valueless.
 
@@ -674,8 +675,8 @@ constexpr indirect(indirect&& other) noexcept;
 21. _Postconditions_: `other` is valueless.
 
 ```c++
-constexpr indirect(allocator_arg_t, const Allocator& alloc,
-                   indirect&& other) noexcept(allocator_traits<Allocator>::is_always_equal);
+constexpr indirect(allocator_arg_t, const Allocator& alloc, indirect&& other)
+  noexcept(allocator_traits<Allocator>::is_always_equal);
 ```
 
 22. _Preconditions_: `other` is not valueless. _[Note: This constructor does not require that `is_move_constructible_v<T>`
@@ -1151,7 +1152,8 @@ constexpr polymorphic(allocator_arg_t, const Allocator& alloc,
 constexpr polymorphic(const polymorphic& other);
 ```
 
-11. _Effects_: Equivalent to `polymorphic(allocator_arg_t{}, allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc_), other)`.
+11. _Effects_: Equivalent to
+  `polymorphic(allocator_arg_t{}, allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc_), other)`.
 
 ```c++
 constexpr polymorphic(allocator_arg_t, const Allocator& alloc,
