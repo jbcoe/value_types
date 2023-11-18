@@ -41,6 +41,9 @@ namespace xyz {
 }
 #endif  // XYZ_UNREACHABLE_DEFINED
 
+struct polymorphic_tag_t {};
+static constexpr polymorphic_tag_t polymorphic_tag{};
+
 namespace detail {
 template <class T, class A>
 struct control_block {
@@ -64,7 +67,7 @@ class direct_control_block final : public control_block<T, A> {
   constexpr ~direct_control_block() override = default;
 
   template <class... Ts>
-  constexpr direct_control_block(const A& alloc, Ts&&... ts)
+  constexpr direct_control_block(polymorphic_tag_t, const A& alloc, Ts&&... ts)
       : u_(std::make_obj_using_allocator<U>(u_allocator(alloc),
                                             std::forward<Ts>(ts)...)) {
     control_block<T, A>::p_ = &u_;
@@ -77,7 +80,7 @@ class direct_control_block final : public control_block<T, A> {
     using cb_alloc_traits = std::allocator_traits<cb_allocator>;
     auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
     try {
-      cb_alloc_traits::construct(cb_alloc, mem, alloc, u_);
+      cb_alloc_traits::construct(cb_alloc, mem, polymorphic_tag, alloc, u_);
       return mem;
     } catch (...) {
       cb_alloc_traits::deallocate(cb_alloc, mem, 1);
@@ -124,7 +127,7 @@ class polymorphic {
     cb_allocator cb_alloc(alloc_);
     auto mem = cb_traits::allocate(cb_alloc, 1);
     try {
-      cb_traits::construct(cb_alloc, mem, alloc_);
+      cb_traits::construct(cb_alloc, mem, polymorphic_tag, alloc_);
       cb_ = mem;
     } catch (...) {
       cb_traits::deallocate(cb_alloc, mem, 1);
@@ -140,7 +143,7 @@ class polymorphic {
     cb_allocator cb_alloc(alloc_);
     auto mem = cb_traits::allocate(cb_alloc, 1);
     try {
-      cb_traits::construct(cb_alloc, mem, alloc_);
+      cb_traits::construct(cb_alloc, mem, polymorphic_tag, alloc_);
       cb_ = mem;
     } catch (...) {
       cb_traits::deallocate(cb_alloc, mem, 1);
@@ -159,7 +162,8 @@ class polymorphic {
     cb_allocator cb_alloc(alloc_);
     auto mem = cb_traits::allocate(cb_alloc, 1);
     try {
-      cb_traits::construct(cb_alloc, mem, alloc_, std::forward<Ts>(ts)...);
+      cb_traits::construct(cb_alloc, mem, polymorphic_tag, alloc_,
+                           std::forward<Ts>(ts)...);
       cb_ = mem;
     } catch (...) {
       cb_traits::deallocate(cb_alloc, mem, 1);
@@ -179,7 +183,8 @@ class polymorphic {
     cb_allocator cb_alloc(alloc_);
     auto mem = cb_traits::allocate(cb_alloc, 1);
     try {
-      cb_traits::construct(cb_alloc, mem, alloc_, std::forward<Ts>(ts)...);
+      cb_traits::construct(cb_alloc, mem, polymorphic_tag, alloc_,
+                           std::forward<Ts>(ts)...);
       cb_ = mem;
     } catch (...) {
       cb_traits::deallocate(cb_alloc, mem, 1);
