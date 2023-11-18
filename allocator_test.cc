@@ -32,23 +32,23 @@ struct SimpleType {};
 
 struct FussyType {
   template <typename... Ts>
-  FussyType(Ts&&... ts) {
+  FussyType(Ts&&...) {
     throw std::runtime_error("FussyType must be allocator-constructed");
   }
 
   // Allocator-extended constructor.
   template <typename Allocator, typename... Ts>
-  FussyType(std::allocator_arg_t, const Allocator& a, Ts&&...) {}
+  FussyType(std::allocator_arg_t, const Allocator&, Ts&&...) {}
 };
 
 struct FussyOldType {
-  FussyOldType(int i) {
+  FussyOldType(int) {
     throw std::runtime_error("FussyOldType must be allocator-constructed");
   }
 
   // Old-style allocator constructor.
   template <typename Allocator>
-  FussyOldType(int i, const Allocator& a) {}
+  FussyOldType(int, const Allocator&) {}
 };
 
 }  // namespace xyz::allocator_testing
