@@ -30,8 +30,10 @@ namespace xyz::allocator_testing {
 
 struct FussyType {
   template <typename... Ts>
-  FussyType(Ts&&... ts) {
-    static_assert(false, "FussyType must be allocator-constructed");
+  FussyType(Ts&&...) {
+    // Type dependent check to avoid eager evaluation of static_assert.
+    static_assert(sizeof...(Ts) > std::numeric_limits<std::size_t>::max(),
+                  "FussyType must be allocator-constructed");
   }
 
   template <typename Allocator, typename... Ts>
@@ -46,33 +48,47 @@ struct uses_allocator<xyz::allocator_testing::FussyType, Allocator>
     : true_type {};
 }  // namespace std
 
+template <typename T>
+class TestAllocator {
+ public:
+  using value_type = T;
+  using size_type = std::size_t;
+
+  T* allocate(std::size_t n) {
+    std::allocator<T> default_allocator{};
+    return default_allocator.allocate(n);
+  }
+
+  void deallocate(T* p, std::size_t n) {
+    std::allocator<T> default_allocator{};
+    default_allocator.deallocate(p, n);
+  }
+};
+
 namespace xyz::allocator_testing {
 
 TEST(AllocatorTest, FussyTypeUsesAllocator) {
   static_assert(
-      std::uses_allocator<FussyType, std::allocator<FussyType>>::value);
+      std::uses_allocator<FussyType, TestAllocator<FussyType>>::value);
 }
 
 TEST(AllocatorTest, FussyTypeAllocatorConstruction) {
   union Data {
     char c;
     FussyType f;
-    Data() {}
+    Data() : c(0) {}
     ~Data() {}
   } data;
-  std::allocator<FussyType> a;
-
-  // This should, to my understanding, compile as FussyType should be
-  // using-allocator-constructed.
-  std::allocator_traits<std::allocator<FussyType>>::construct(a, &data.f);
+  TestAllocator<FussyType> a;
+  new (&data.f) FussyType(std::make_obj_using_allocator<FussyType>(a));
 }
 
-// TEST(AllocatorTestPolymorphic, FussyTypeMustBeAllocatorConstructed) {
-//   auto p = xyz::polymorphic<FussyType>(std::in_place_type<FussyType>);
-// }
+TEST(AllocatorTestPolymorphic, FussyTypeMustBeAllocatorConstructed) {
+  auto p = xyz::polymorphic<FussyType>(std::in_place_type<FussyType>);
+}
 
-// TEST(AllocatorTestIndirect, FussyTypeMustBeAllocatorConstructed) {
-//   auto p = xyz::indirect<FussyType>();
-// }
+TEST(AllocatorTestIndirect, FussyTypeMustBeAllocatorConstructed) {
+  auto p = xyz::indirect<FussyType>();
+}
 
 }  // namespace xyz::allocator_testing
