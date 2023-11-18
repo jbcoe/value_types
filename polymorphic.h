@@ -55,24 +55,19 @@ struct control_block {
 
 template <class T, class U, class A>
 class direct_control_block final : public control_block<T, A> {
-  union storage_t {
-    char c_;
-    U u_;
-    constexpr storage_t() {}
-    constexpr ~storage_t() {}
-  } storage_;
+  U u_;
+
+  using u_allocator =
+      typename std::allocator_traits<A>::template rebind_alloc<U>;
 
  public:
   constexpr ~direct_control_block() override = default;
 
   template <class... Ts>
-  constexpr direct_control_block(const A& alloc, Ts&&... ts) {
-    using u_allocator =
-        typename std::allocator_traits<A>::template rebind_alloc<U>;
-    u_allocator u_alloc(alloc);
-    std::construct_at(&storage_.u_, std::make_obj_using_allocator<U>(
-                                        u_alloc, std::forward<Ts>(ts)...));
-    control_block<T, A>::p_ = &storage_.u_;
+  constexpr direct_control_block(const A& alloc, Ts&&... ts)
+      : u_(std::make_obj_using_allocator<U>(u_allocator(alloc),
+                                            std::forward<Ts>(ts)...)) {
+    control_block<T, A>::p_ = &u_;
   }
 
   constexpr control_block<T, A>* clone(A& alloc) override {
@@ -82,7 +77,7 @@ class direct_control_block final : public control_block<T, A> {
     using cb_alloc_traits = std::allocator_traits<cb_allocator>;
     auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
     try {
-      cb_alloc_traits::construct(cb_alloc, mem, alloc, storage_.u_);
+      cb_alloc_traits::construct(cb_alloc, mem, alloc, u_);
       return mem;
     } catch (...) {
       cb_alloc_traits::deallocate(cb_alloc, mem, 1);
