@@ -55,14 +55,25 @@ struct control_block {
 
 template <class T, class U, class A>
 class direct_control_block final : public control_block<T, A> {
-  U u_;
+  union storage_t {
+    char c_;
+    U u_;
+    constexpr storage_t() {}
+    constexpr ~storage_t() {}
+  } storage_;
 
  public:
   constexpr ~direct_control_block() override = default;
 
   template <class... Ts>
-  constexpr direct_control_block(Ts&&... ts) : u_(std::forward<Ts>(ts)...) {
-    control_block<T, A>::p_ = &u_;
+  constexpr direct_control_block(std::allocator_arg_t, const A& alloc,
+                                 Ts&&... ts) {
+    using u_allocator =
+        typename std::allocator_traits<A>::template rebind_alloc<U>;
+    u_allocator u_alloc(alloc);
+    using u_alloc_traits = std::allocator_traits<u_allocator>;
+    u_alloc_traits::construct(u_alloc, &storage_.u_, std::forward<Ts>(ts)...);
+    control_block<T, A>::p_ = &storage_.u_;
   }
 
   constexpr control_block<T, A>* clone(A& alloc) override {
@@ -72,7 +83,8 @@ class direct_control_block final : public control_block<T, A> {
     using cb_alloc_traits = std::allocator_traits<cb_allocator>;
     auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
     try {
-      cb_alloc_traits::construct(cb_alloc, mem, u_);
+      cb_alloc_traits::construct(cb_alloc, mem, std::allocator_arg, alloc,
+                                 storage_.u_);
       return mem;
     } catch (...) {
       cb_alloc_traits::deallocate(cb_alloc, mem, 1);
@@ -119,7 +131,7 @@ class polymorphic {
     cb_allocator cb_alloc(alloc_);
     auto mem = cb_traits::allocate(cb_alloc, 1);
     try {
-      cb_traits::construct(cb_alloc, mem);
+      cb_traits::construct(cb_alloc, mem, std::allocator_arg, alloc_);
       cb_ = mem;
     } catch (...) {
       cb_traits::deallocate(cb_alloc, mem, 1);
@@ -135,7 +147,7 @@ class polymorphic {
     cb_allocator cb_alloc(alloc_);
     auto mem = cb_traits::allocate(cb_alloc, 1);
     try {
-      cb_traits::construct(cb_alloc, mem);
+      cb_traits::construct(cb_alloc, mem, std::allocator_arg, alloc_);
       cb_ = mem;
     } catch (...) {
       cb_traits::deallocate(cb_alloc, mem, 1);
@@ -154,7 +166,8 @@ class polymorphic {
     cb_allocator cb_alloc(alloc_);
     auto mem = cb_traits::allocate(cb_alloc, 1);
     try {
-      cb_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
+      cb_traits::construct(cb_alloc, mem, std::allocator_arg, alloc_,
+                           std::forward<Ts>(ts)...);
       cb_ = mem;
     } catch (...) {
       cb_traits::deallocate(cb_alloc, mem, 1);
@@ -175,7 +188,8 @@ class polymorphic {
     cb_allocator cb_alloc(alloc_);
     auto mem = cb_traits::allocate(cb_alloc, 1);
     try {
-      cb_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
+      cb_traits::construct(cb_alloc, mem, std::allocator_arg, alloc_,
+                           std::forward<Ts>(ts)...);
       cb_ = mem;
     } catch (...) {
       cb_traits::deallocate(cb_alloc, mem, 1);
