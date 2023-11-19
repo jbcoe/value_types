@@ -55,6 +55,30 @@ TEST(IndirectTest, ValueAccessFromDefaultConstructedObject) {
   EXPECT_EQ(*a, 0);
 }
 
+template <typename Allocator = std::allocator<void>>
+struct AllocatorAwareType {
+  using allocator_type = typename std::allocator_traits<
+      Allocator>::template rebind_alloc<AllocatorAwareType>;
+
+  AllocatorAwareType(std::allocator_arg_t, const allocator_type& alloc)
+      : children(alloc) {}
+
+  std::vector<AllocatorAwareType, allocator_type> children;
+};
+
+TEST(IndirectTest, ConstructorDipatchesToAllocatorArgTOverload) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+
+  AllocatorAwareType<xyz::TrackingAllocator<void>>::allocator_type alloc(
+      &alloc_counter, &dealloc_counter);
+  xyz::indirect<AllocatorAwareType<xyz::TrackingAllocator<void>>> value(
+      std::allocator_arg, alloc);
+
+  EXPECT_EQ(alloc_counter, 2);  // 1 for indirect, and 1 for the children vector
+  EXPECT_EQ(dealloc_counter, 0);
+}
+
 TEST(IndirectTest, CopiesAreDistinct) {
   xyz::indirect<int> a(42);
   auto aa = a;
