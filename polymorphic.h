@@ -112,7 +112,7 @@ class polymorphic {
   using pointer = typename allocator_traits::pointer;
   using const_pointer = typename allocator_traits::const_pointer;
 
-  constexpr polymorphic() {
+  explicit constexpr polymorphic() {
     static_assert(std::is_default_constructible_v<T>);
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
@@ -128,7 +128,8 @@ class polymorphic {
     }
   }
 
-  constexpr polymorphic(std::allocator_arg_t, const A& alloc) : alloc_(alloc) {
+  explicit constexpr polymorphic(std::allocator_arg_t, const A& alloc)
+      : alloc_(alloc) {
     static_assert(std::is_default_constructible_v<T>);
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
@@ -164,8 +165,8 @@ class polymorphic {
   }
 
   template <class U, class... Ts>
-  constexpr polymorphic(std::allocator_arg_t, const A& alloc,
-                        std::in_place_type_t<U>, Ts&&... ts)
+  explicit constexpr polymorphic(std::allocator_arg_t, const A& alloc,
+                                 std::in_place_type_t<U>, Ts&&... ts)
     requires std::constructible_from<U, Ts&&...> &&
              std::copy_constructible<U> &&
              (std::derived_from<U, T> || std::same_as<U, T>)

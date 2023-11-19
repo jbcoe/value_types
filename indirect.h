@@ -66,14 +66,15 @@ class indirect {
   using pointer = typename allocator_traits::pointer;
   using const_pointer = typename allocator_traits::const_pointer;
 
-  constexpr indirect()
+  explicit constexpr indirect()
     requires std::is_default_constructible_v<A>
   {
     static_assert(std::is_default_constructible_v<T>);
     p_ = construct_from(alloc_);
   }
 
-  constexpr indirect(std::allocator_arg_t, const A& alloc) : alloc_(alloc) {
+  explicit constexpr indirect(std::allocator_arg_t, const A& alloc)
+      : alloc_(alloc) {
     static_assert(std::is_default_constructible_v<T>);
     p_ = construct_from(alloc_);
   }
@@ -89,7 +90,8 @@ class indirect {
   }
 
   template <class U, class... Us>
-  constexpr indirect(std::allocator_arg_t, const A& alloc, U&& u, Us&&... us)
+  explicit constexpr indirect(std::allocator_arg_t, const A& alloc, U&& u,
+                              Us&&... us)
     requires(std::constructible_from<T, U &&, Us && ...> &&
              !std::is_same_v<std::remove_cvref_t<U>, indirect>)
       : alloc_(alloc) {
