@@ -708,7 +708,9 @@ constexpr indirect(allocator_arg_t, const Allocator& alloc, indirect&& other)
 constexpr ~indirect();
 ```
 
-1. _Effects_: If `*this` is not valueless, destroys the owned object.
+1. _Effects_: If `*this` is not valueless, destroys the owned object using
+  `allocator_traits<allocator_type>::destroy` and then deallocates the storage
+  using `allocator_traits<allocator_type>::deallocate`.
 
 #### X.Y.5 Assignment [indirect.assign]
 
@@ -1217,7 +1219,9 @@ constexpr polymorphic(allocator_arg_t, const Allocator& alloc,
 constexpr ~polymorphic();
 ```
 
-1. _Effects_: If `*this` is not valueless, destroys the owned object.
+1. _Effects_: If `*this` is not valueless, destroys the owned object using
+  `allocator_traits<allocator_type>::destroy` and then deallocates the storage
+  using `allocator_traits<allocator_type>::deallocate`.
 
 #### X.Z.5 Assignment [polymorphic.assign]
 
