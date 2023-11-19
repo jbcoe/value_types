@@ -481,7 +481,6 @@ class indirect {
 
   constexpr ~indirect();
 
-  template<class U = T>
   constexpr indirect& operator=(const indirect& other);
 
   constexpr indirect& operator=(indirect&& other) noexcept(see below);
@@ -713,11 +712,10 @@ constexpr ~indirect();
 #### X.Y.5 Assignment [indirect.assign]
 
 ```c++
-template<class U = T>
 constexpr indirect& operator=(const indirect& other);
 ```
 
-1. _Constraints_: `is_copy_constructible_v<U>` is `true`.
+1. _Mandates_: `is_copy_constructible_v<T>` is `true`.
 
 2. _Preconditions_: `other` is not valueless.
 
