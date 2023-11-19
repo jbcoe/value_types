@@ -420,7 +420,8 @@ value.
 `allocator_traits<allocator_type>::select_on_container_copy_construction` on the
 allocator belonging to the indirect value being copied. Move constructors obtain
 an allocator by move construction from the allocator belonging to the container
-being moved. Such move construction of the allocator shall not exit via an exception.  All other constructors for these container types take a `const
+being moved. Such move construction of the allocator shall not exit via an exception.
+All other constructors for these container types take a `const
 allocator_type& argument`. _[Note 3: If an invocation of a constructor uses the
 default value of an optional allocator argument, then the allocator type must
 support value-initialization. --end note]_ A copy of this allocator is used for
@@ -449,6 +450,7 @@ move assignment, or swapping of the allocator only if
 ```c++
 template <class T, class Allocator = allocator<T>>
 class indirect {
+  pointer p_; // exposition only
   Allocator allocator_; // exposition only
  public:
   using value_type = T;
@@ -605,8 +607,8 @@ explicit constexpr indirect()
 
 1. _Mandates_: `is_default_constructible_v<T>` is true.
 
-2. _Effects_: Constructs an `indirect` owning a default-constructed `T` and stores the address in `p_`.
-  `allocator_` is default constructed.
+2. _Effects_: Constructs an `indirect` owning a uses-allocator constructed `T`
+  and stores the address in `p_`. `allocator_` is default constructed.
 
 3. _Postconditions_: `*this` is not valueless.
 
@@ -616,7 +618,8 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& alloc);
 
 4. _Mandates_: `is_default_constructible_v<T>` is `true`.
 
-5. _Effects_: Constructs an `indirect` owning a default-constructed `T` and stores the address in `p_`. `allocator_` is initialized with `alloc`.
+5. _Effects_: Constructs an `indirect` owning a uses-allocator constructed `T` and
+  stores the address in `p_`. `allocator_` is direct-non-list-initialized with `alloc`.
 
 6. _Postconditions_: `*this` is not valueless.
 
@@ -639,7 +642,8 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& alloc, U&& u, Us&&
 
     DRAFTING NOTE: based on https://eel.is/c++draft/func.wrap#func.con-6
 
-10. _Postconditions_: `*this` is not valueless.  `p_` targets an object of type `T` direct-non-list-initialized with `std::forward<U>(u)`, `std::forward<Us>(us)...`.
+10. _Postconditions_: `*this` is not valueless.  `p_` targets an object of type `T`
+  uses-allocator constructed with `std::forward<U>(u)`, `std::forward<Us>(us)...`.
 
 ```c++
 constexpr indirect(const indirect& other);
@@ -675,7 +679,7 @@ constexpr indirect(indirect&& other) noexcept;
   is `true` --end note]_
 
 20. _Effects_: Constructs an `indirect` that takes ownership of the `other`'s owned object and stores the address in `p_`.
-  `allocator_` is initialized by move construction from `other.allocator_`.
+  `allocator_` is initialized by construction from `other.allocator_`.
 
 21. _Postconditions_: `other` is valueless.
 
@@ -1118,7 +1122,7 @@ explicit constexpr polymorphic()
 1. _Mandates_: `is_default_constructible_v<T>` is `true`,
   `is_copy_constructible_v<T>` is `true`.
 
-2. _Effects_: Constructs a polymorphic owning a default-constructed `T`.
+2. _Effects_: Constructs a polymorphic owning a uses-allocator constructed `T`.
   `allocator_` is default constructed.
 
 3. _Postconditions_: `*this` is not valueless.
@@ -1130,7 +1134,7 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& alloc);
 4. _Mandates_: `is_default_constructible_v<T>` is `true`,
   `is_copy_constructible_v<T>` is `true`.
 
-5. _Effects_: Constructs a polymorphic owning a default-constructed `T`.
+5. _Effects_: Constructs a polymorphic owning a uses-allocator constructed `T`.
    `allocator_` is direct-non-list-initialized with alloc.
 
 6. _Postconditions_: `*this` is not valueless.
@@ -1153,7 +1157,8 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& alloc,
 
 9. _Effects_: `allocator_` is direct-non-list-initialized with alloc.
 
-10. _Postconditions_: `*this` is not valueless.  The owned instance targets an object of type `U` direct-non-list-initialized with `std::forward<Ts>(ts)...`.
+10. _Postconditions_: `*this` is not valueless.  The owned instance targets an object of type `U`
+  uses-allocator constructed  with `std::forward<Ts>(ts)...`.
 
 ```c++
 constexpr polymorphic(const polymorphic& other);
