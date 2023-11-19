@@ -459,13 +459,13 @@ class indirect {
 
   constexpr indirect();
 
-  constexpr indirect(allocator_arg_t, const Allocator& alloc);
+  explicit constexpr indirect(allocator_arg_t, const Allocator& alloc);
 
   template <class U, class... Us>
   explicit constexpr indirect(U&& u, Us&&... us);
 
   template <class U, class... Us>
-  constexpr indirect(allocator_arg_t, const Allocator& alloc,
+  explicit constexpr indirect(allocator_arg_t, const Allocator& alloc,
                      U&& u, Us&&... us);
 
   constexpr indirect(const indirect& other);
@@ -601,7 +601,7 @@ indirect(std::allocator_arg_t, Alloc, Value) -> indirect<
 #### X.Y.3 Constructors [indirect.ctor]
 
 ```c++
-constexpr indirect()
+explicit constexpr indirect()
 ```
 
 1. _Mandates_: `is_default_constructible_v<T>` is true.
@@ -612,7 +612,7 @@ constexpr indirect()
 3. _Postconditions_: `*this` is not valueless.
 
 ```c++
-constexpr indirect(allocator_arg_t, const Allocator& alloc);
+explicit constexpr indirect(allocator_arg_t, const Allocator& alloc);
 ```
 
 4. _Mandates_: `is_default_constructible_v<T>` is `true`.
@@ -630,7 +630,7 @@ explicit constexpr indirect(U&& u, Us&&... us);
 
 ```c++
 template <class U, class... Us>
-constexpr indirect(allocator_arg_t, const Allocator& alloc, U&& u, Us&& ...us);
+explicit constexpr indirect(allocator_arg_t, const Allocator& alloc, U&& u, Us&& ...us);
 ```
 
 8. _Constraints_: `is_constructible_v<T, U, Us...>` is `true`.
@@ -1064,13 +1064,15 @@ class polymorphic {
   using pointer = typename allocator_traits<Allocator>::pointer;
   using const_pointer  = typename allocator_traits<Allocator>::const_pointer;
 
-  constexpr polymorphic();
+  explicit constexpr polymorphic();
+
+  explicit constexpr polymorphic(allocator_arg_t, const Allocator& alloc);
 
   template <class U, class... Ts>
   explicit constexpr polymorphic(in_place_type_t<U>, Ts&&... ts);
 
   template <class U, class... Ts>
-  constexpr polymorphic(allocator_arg_t, const Allocator& alloc,
+  explicit constexpr polymorphic(allocator_arg_t, const Allocator& alloc,
                         in_place_type_t<U>, Ts&&... ts);
 
   constexpr polymorphic(const polymorphic& other);
@@ -1111,7 +1113,7 @@ class polymorphic {
 #### X.Z.3 Constructors [polymorphic.ctor]
 
 ```c++
-constexpr polymorphic()
+explicit constexpr polymorphic()
 ```
 
 1. _Mandates_: `is_default_constructible_v<T>` is `true`,
@@ -1123,7 +1125,7 @@ constexpr polymorphic()
 3. _Postconditions_: `*this` is not valueless.
 
 ```c++
-constexpr polymorphic(allocator_arg_t, const Allocator& alloc);
+explicit constexpr polymorphic(allocator_arg_t, const Allocator& alloc);
 ```
 
 4. _Mandates_: `is_default_constructible_v<T>` is `true`,
@@ -1143,7 +1145,7 @@ explicit constexpr polymorphic(in_place_type_t<U>, Ts&&... ts);
 
 ```c++
 template <class U, class... Ts>
-constexpr polymorphic(allocator_arg_t, const Allocator& alloc,
+explicit constexpr polymorphic(allocator_arg_t, const Allocator& alloc,
                       in_place_type_t<U>, Ts&&... ts);
 ```
 
