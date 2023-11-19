@@ -98,6 +98,7 @@ class polymorphic {
   cblock_t* cb_;
 
 #if defined(_MSC_VER)
+  // https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/#msvc-extensions-and-abi
   [[msvc::no_unique_address]] A alloc_;
 #else
   [[no_unique_address]] A alloc_;
