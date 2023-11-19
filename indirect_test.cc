@@ -71,10 +71,10 @@ template <typename T>
 struct DefaultConstructibleTrackingAllocator : xyz::TrackingAllocator<T> {
   using xyz::TrackingAllocator<T>::TrackingAllocator;
 
-  unsigned dummy = 0;
+  unsigned unused = 0;
 
   DefaultConstructibleTrackingAllocator()
-      : xyz::TrackingAllocator<T>(&dummy, &dummy) {}
+      : xyz::TrackingAllocator<T>(&unused, &unused) {}
 
   template <typename Other>
   struct rebind {
