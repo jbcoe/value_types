@@ -203,8 +203,9 @@ class polymorphic {
     cb_ = std::exchange(other.cb_, nullptr);
   }
 
-  constexpr polymorphic(std::allocator_arg_t, const A& alloc,
-                        polymorphic&& other) noexcept
+  constexpr polymorphic(
+      std::allocator_arg_t, const A& alloc,
+      polymorphic&& other) noexcept(allocator_traits::is_always_equal::value)
       : alloc_(alloc) {
     assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = std::exchange(other.cb_, nullptr);
