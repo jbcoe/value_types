@@ -60,22 +60,43 @@ struct AllocatorAwareType {
   using allocator_type = typename std::allocator_traits<
       Allocator>::template rebind_alloc<AllocatorAwareType>;
 
+  AllocatorAwareType() = default;
   AllocatorAwareType(std::allocator_arg_t, const allocator_type& alloc)
       : children(alloc) {}
 
   std::vector<AllocatorAwareType, allocator_type> children;
 };
 
+template <typename T>
+struct DefaultConstructibleTrackingAllocator : xyz::TrackingAllocator<T> {
+  using xyz::TrackingAllocator<T>::TrackingAllocator;
+
+  unsigned dummy = 0;
+
+  DefaultConstructibleTrackingAllocator()
+      : xyz::TrackingAllocator<T>(&dummy, &dummy) {}
+
+  template <typename Other>
+  struct rebind {
+    using other = DefaultConstructibleTrackingAllocator<Other>;
+  };
+};
+
 TEST(IndirectTest, ConstructorDipatchesToAllocatorArgTOverload) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
 
-  AllocatorAwareType<xyz::TrackingAllocator<void>>::allocator_type alloc(
-      &alloc_counter, &dealloc_counter);
-  xyz::indirect<AllocatorAwareType<xyz::TrackingAllocator<void>>> value(
-      std::allocator_arg, alloc);
+  AllocatorAwareType<DefaultConstructibleTrackingAllocator<void>>::
+      allocator_type alloc(&alloc_counter, &dealloc_counter);
+  using AllocatorAwareT =
+      AllocatorAwareType<DefaultConstructibleTrackingAllocator<void>>;
+  xyz::indirect<
+      AllocatorAwareT,
+      typename std::allocator_traits<DefaultConstructibleTrackingAllocator<
+          void>>::template rebind_alloc<AllocatorAwareT>>
+      value(std::allocator_arg, alloc);
 
-  EXPECT_EQ(alloc_counter, 2);  // 1 for indirect, and 1 for the children vector
+  EXPECT_EQ(alloc_counter, 1);
   EXPECT_EQ(dealloc_counter, 0);
 }
 
