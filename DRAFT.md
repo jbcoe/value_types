@@ -54,6 +54,18 @@ should not be considered in isolation.
 
  * Add `std::format` support for `std::indirect`
 
+ * Add Appendix B: Before and after examples.
+
+ * Add preconditions checking for types are not valueless.
+
+ * Add constexpr support.
+
+ * Allow quality of implentation support for small buffer optimization for Polymophic.
+
+ * Change constraints to mandate to enable support for imcomplete types.
+
+ * Change pointer usage to use allocator_traits pointer.
+
  * Remove `std::uses_allocator` specliazations.
 
  * Fix `sizeof` error.
