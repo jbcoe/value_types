@@ -445,6 +445,8 @@ move assignment, or swapping of the allocator only if
 
 6. The template parameter `Allocator` of `indirect` shall meet the _Cpp17Allocator_ requirements.
 
+7. If a program declares an explicit or partial specialization of `indirect`, the behavior is undefined.
+
 #### X.Y.2 Class template indirect synopsis [indirect.syn]
 
 ```c++
@@ -1060,6 +1062,8 @@ operation.
 5. The template parameter `T` of `polymorphic` may be an incomplete type.
 
 6. The template parameter `Allocator` of `polymorphic` shall meet the requirements of _Cpp17Allocator_.
+
+7. If a program declares an explicit or partial specialization of `polymorphic`, the behavior is undefined.
 
 #### X.Z.2 Class template polymorphic synopsis [polymorphic.syn]
 
@@ -1724,3 +1728,4 @@ of these changes on users could be potentially significant and unwelcome.
 |Small buffer optimisation for polymorphic|SBO is not required, settings are hidden|Add buffer size and alignment as template parameters| Breaks ABI; forces implementers to use SBO | Yes |
 |`noexcept` for accessors|Accessors are `noexcept` like `unique_ptr` and `optional`| Remove `noexcept` from accessors | User functions marked `noexcept` could be broken | Yes |
 |Specialization of optional|No specialization of optional|Specialize optional to use valueless state| Breaks ABI; engaged but valueless optional would become indistinguishable from a disengaged optional| Yes |
+|Permit user specialization|No user specialization is permitted|Permit specialization for user-defined types| Previously ill-formed code would become well-formed| No |
