@@ -114,6 +114,7 @@ class polymorphic {
 
   explicit constexpr polymorphic() {
     static_assert(std::is_default_constructible_v<T>);
+    static_assert(std::is_copy_constructible_v<T>);
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
     using cb_traits = std::allocator_traits<cb_allocator>;
@@ -131,6 +132,7 @@ class polymorphic {
   explicit constexpr polymorphic(std::allocator_arg_t, const A& alloc)
       : alloc_(alloc) {
     static_assert(std::is_default_constructible_v<T>);
+    static_assert(std::is_copy_constructible_v<T>);
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
     using cb_traits = std::allocator_traits<cb_allocator>;
