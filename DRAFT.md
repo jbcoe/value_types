@@ -46,17 +46,24 @@ should not be considered in isolation.
 
 * Add explicit to constructors
 
-* Add constructor indirect(U&& u, Us&&... us) overload.
+* Add constructor indirect(U&& u, Us&&... us) overload and requisite constraints.
 
 * Add discussion on similarities and dissimilarities with variant.
+
+* Add table of breaking and non-breaking change to appendix C.
 
 * Additions to acknowledgements.
 
 * Address wording for `swap()` relating to `noexcept`.
 
+* Address constraints wording for `std::indirect` comparison operators.
+
 * Move feature test macros to [version.syn].
 
 * Remove `std::optional` specializations.
+
+* Replace use of "erroneous" with "a programming error".
+
 
 ### Changes from R1
 
