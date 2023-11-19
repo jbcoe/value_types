@@ -32,6 +32,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <map>
 
 #include "feature_check.h"
+#include "tracking_allocator.h"
 #ifdef XYZ_HAS_STD_MEMORY_RESOURCE
 #include <memory_resource>
 #endif  // XYZ_HAS_STD_MEMORY_RESOURCE
@@ -52,6 +53,51 @@ TEST(IndirectTest, ValueAccessFromInPlaceConstructedObject) {
 TEST(IndirectTest, ValueAccessFromDefaultConstructedObject) {
   xyz::indirect<int> a;
   EXPECT_EQ(*a, 0);
+}
+
+template <typename Allocator = std::allocator<void>>
+struct AllocatorAwareType {
+  using allocator_type = typename std::allocator_traits<
+      Allocator>::template rebind_alloc<AllocatorAwareType>;
+
+  AllocatorAwareType() = default;
+  AllocatorAwareType(std::allocator_arg_t, const allocator_type& alloc)
+      : children(alloc) {}
+
+  std::vector<AllocatorAwareType, allocator_type> children;
+};
+
+template <typename T>
+struct DefaultConstructibleTrackingAllocator : xyz::TrackingAllocator<T> {
+  using xyz::TrackingAllocator<T>::TrackingAllocator;
+
+  unsigned unused = 0;
+
+  DefaultConstructibleTrackingAllocator()
+      : xyz::TrackingAllocator<T>(&unused, &unused) {}
+
+  template <typename Other>
+  struct rebind {
+    using other = DefaultConstructibleTrackingAllocator<Other>;
+  };
+};
+
+TEST(IndirectTest, ConstructorDipatchesToAllocatorArgTOverload) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+
+  AllocatorAwareType<DefaultConstructibleTrackingAllocator<void>>::
+      allocator_type alloc(&alloc_counter, &dealloc_counter);
+  using AllocatorAwareT =
+      AllocatorAwareType<DefaultConstructibleTrackingAllocator<void>>;
+  xyz::indirect<
+      AllocatorAwareT,
+      typename std::allocator_traits<DefaultConstructibleTrackingAllocator<
+          void>>::template rebind_alloc<AllocatorAwareT>>
+      value(std::allocator_arg, alloc);
+
+  EXPECT_EQ(alloc_counter, 1);
+  EXPECT_EQ(dealloc_counter, 0);
 }
 
 TEST(IndirectTest, CopiesAreDistinct) {
@@ -257,56 +303,13 @@ TEST(IndirectTest, ComparisonWithIndirectU) {
   EXPECT_LE(xyz::indirect<double>(42), xyz::indirect<int>(101));
 }
 
-template <typename T>
-struct TrackingAllocator {
-  unsigned* alloc_counter_;
-  unsigned* dealloc_counter_;
-
-  TrackingAllocator(unsigned* alloc_counter, unsigned* dealloc_counter)
-      : alloc_counter_(alloc_counter), dealloc_counter_(dealloc_counter) {}
-
-  template <typename U>
-  TrackingAllocator(const TrackingAllocator<U>& other)
-      : alloc_counter_(other.alloc_counter_),
-        dealloc_counter_(other.dealloc_counter_) {}
-
-  using value_type = T;
-
-  template <typename Other>
-  struct rebind {
-    using other = TrackingAllocator<Other>;
-  };
-
-  T* allocate(std::size_t n) {
-    ++(*alloc_counter_);
-    std::allocator<T> default_allocator{};
-    return default_allocator.allocate(n);
-  }
-  void deallocate(T* p, std::size_t n) {
-    ++(*dealloc_counter_);
-    std::allocator<T> default_allocator{};
-    default_allocator.deallocate(p, n);
-  }
-
-  friend bool operator==(const TrackingAllocator& lhs,
-                         const TrackingAllocator& rhs) noexcept {
-    return lhs.alloc_counter_ == rhs.alloc_counter_ &&
-           lhs.dealloc_counter_ == rhs.dealloc_counter_;
-  }
-
-  friend bool operator!=(const TrackingAllocator& lhs,
-                         const TrackingAllocator& rhs) noexcept {
-    return !(lhs == rhs);
-  }
-};
-
 TEST(IndirectTest, GetAllocator) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
-  TrackingAllocator<int> allocator(&alloc_counter, &dealloc_counter);
+  xyz::TrackingAllocator<int> allocator(&alloc_counter, &dealloc_counter);
 
-  xyz::indirect<int, TrackingAllocator<int>> a(std::allocator_arg, allocator,
-                                               42);
+  xyz::indirect<int, xyz::TrackingAllocator<int>> a(std::allocator_arg,
+                                                    allocator, 42);
   EXPECT_EQ(alloc_counter, 1);
   EXPECT_EQ(dealloc_counter, 0);
 
@@ -319,9 +322,9 @@ TEST(IndirectTest, CountAllocationsForInPlaceConstruction) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::indirect<int, TrackingAllocator<int>> a(
+    xyz::indirect<int, xyz::TrackingAllocator<int>> a(
         std::allocator_arg,
-        TrackingAllocator<int>(&alloc_counter, &dealloc_counter), 42);
+        xyz::TrackingAllocator<int>(&alloc_counter, &dealloc_counter), 42);
     EXPECT_EQ(alloc_counter, 1);
     EXPECT_EQ(dealloc_counter, 0);
   }
@@ -333,12 +336,12 @@ TEST(IndirectTest, CountAllocationsForCopyConstruction) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::indirect<int, TrackingAllocator<int>> a(
+    xyz::indirect<int, xyz::TrackingAllocator<int>> a(
         std::allocator_arg,
-        TrackingAllocator<int>(&alloc_counter, &dealloc_counter), 42);
+        xyz::TrackingAllocator<int>(&alloc_counter, &dealloc_counter), 42);
     EXPECT_EQ(alloc_counter, 1);
     EXPECT_EQ(dealloc_counter, 0);
-    xyz::indirect<int, TrackingAllocator<int>> b(a);
+    xyz::indirect<int, xyz::TrackingAllocator<int>> b(a);
   }
   EXPECT_EQ(alloc_counter, 2);
   EXPECT_EQ(dealloc_counter, 2);
@@ -348,12 +351,12 @@ TEST(IndirectTest, CountAllocationsForCopyAssignment) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::indirect<int, TrackingAllocator<int>> a(
+    xyz::indirect<int, xyz::TrackingAllocator<int>> a(
         std::allocator_arg,
-        TrackingAllocator<int>(&alloc_counter, &dealloc_counter), 42);
-    xyz::indirect<int, TrackingAllocator<int>> b(
+        xyz::TrackingAllocator<int>(&alloc_counter, &dealloc_counter), 42);
+    xyz::indirect<int, xyz::TrackingAllocator<int>> b(
         std::allocator_arg,
-        TrackingAllocator<int>(&alloc_counter, &dealloc_counter), 101);
+        xyz::TrackingAllocator<int>(&alloc_counter, &dealloc_counter), 101);
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
     b = a;  // Will not allocate as int is assignable.
@@ -366,12 +369,12 @@ TEST(IndirectTest, CountAllocationsForMoveAssignment) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::indirect<int, TrackingAllocator<int>> a(
+    xyz::indirect<int, xyz::TrackingAllocator<int>> a(
         std::allocator_arg,
-        TrackingAllocator<int>(&alloc_counter, &dealloc_counter), 42);
-    xyz::indirect<int, TrackingAllocator<int>> b(
+        xyz::TrackingAllocator<int>(&alloc_counter, &dealloc_counter), 42);
+    xyz::indirect<int, xyz::TrackingAllocator<int>> b(
         std::allocator_arg,
-        TrackingAllocator<int>(&alloc_counter, &dealloc_counter), 101);
+        xyz::TrackingAllocator<int>(&alloc_counter, &dealloc_counter), 101);
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
     b = std::move(a);
@@ -381,8 +384,8 @@ TEST(IndirectTest, CountAllocationsForMoveAssignment) {
 }
 
 template <typename T>
-struct NonEqualTrackingAllocator : TrackingAllocator<T> {
-  using TrackingAllocator<T>::TrackingAllocator;
+struct NonEqualTrackingAllocator : xyz::TrackingAllocator<T> {
+  using xyz::TrackingAllocator<T>::TrackingAllocator;
   using propagate_on_container_move_assignment = std::true_type;
 
   friend bool operator==(const NonEqualTrackingAllocator&,
@@ -419,19 +422,19 @@ TEST(IndirectTest, CountAllocationsForAssignmentToMovedFromObject) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::indirect<int, TrackingAllocator<int>> a(
+    xyz::indirect<int, xyz::TrackingAllocator<int>> a(
         std::allocator_arg,
-        TrackingAllocator<int>(&alloc_counter, &dealloc_counter), 42);
-    xyz::indirect<int, TrackingAllocator<int>> b(
+        xyz::TrackingAllocator<int>(&alloc_counter, &dealloc_counter), 42);
+    xyz::indirect<int, xyz::TrackingAllocator<int>> b(
         std::allocator_arg,
-        TrackingAllocator<int>(&alloc_counter, &dealloc_counter), 101);
+        xyz::TrackingAllocator<int>(&alloc_counter, &dealloc_counter), 101);
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
     b = std::move(a);
     EXPECT_EQ(dealloc_counter, 1);  // b's value is destroyed.
-    xyz::indirect<int, TrackingAllocator<int>> c(
+    xyz::indirect<int, xyz::TrackingAllocator<int>> c(
         std::allocator_arg,
-        TrackingAllocator<int>(&alloc_counter, &dealloc_counter), 404);
+        xyz::TrackingAllocator<int>(&alloc_counter, &dealloc_counter), 404);
     EXPECT_TRUE(a.valueless_after_move());
     a = c;  // This will cause an allocation as a is valueless.
     EXPECT_EQ(alloc_counter, 4);
@@ -445,20 +448,20 @@ TEST(IndirectTest, CountAllocationsForMoveConstruction) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::indirect<int, TrackingAllocator<int>> a(
+    xyz::indirect<int, xyz::TrackingAllocator<int>> a(
         std::allocator_arg,
-        TrackingAllocator<int>(&alloc_counter, &dealloc_counter), 42);
+        xyz::TrackingAllocator<int>(&alloc_counter, &dealloc_counter), 42);
     EXPECT_EQ(alloc_counter, 1);
     EXPECT_EQ(dealloc_counter, 0);
-    xyz::indirect<int, TrackingAllocator<int>> b(std::move(a));
+    xyz::indirect<int, xyz::TrackingAllocator<int>> b(std::move(a));
   }
   EXPECT_EQ(alloc_counter, 1);
   EXPECT_EQ(dealloc_counter, 1);
 }
 
 template <typename T>
-struct POCSTrackingAllocator : TrackingAllocator<T> {
-  using TrackingAllocator<T>::TrackingAllocator;
+struct POCSTrackingAllocator : xyz::TrackingAllocator<T> {
+  using xyz::TrackingAllocator<T>::TrackingAllocator;
   using propagate_on_container_swap = std::true_type;
 };
 
@@ -548,8 +551,8 @@ TEST(IndirectTest, ConstructorWithExceptionsTrackingAllocations) {
   unsigned dealloc_counter = 0;
   auto construct = [&]() {
     return xyz::indirect<ThrowsOnConstruction,
-                         TrackingAllocator<ThrowsOnConstruction>>(
-        std::allocator_arg, TrackingAllocator<ThrowsOnConstruction>(
+                         xyz::TrackingAllocator<ThrowsOnConstruction>>(
+        std::allocator_arg, xyz::TrackingAllocator<ThrowsOnConstruction>(
                                 &alloc_counter, &dealloc_counter));
   };
   EXPECT_THROW(construct(), ThrowsOnConstruction::Exception);
@@ -601,8 +604,8 @@ TEST(IndirectTest, InteractionWithSizedAllocators) {
   // Admit defeat... gtest does not seem to support STATIC_REQUIRES equivelent
   // functionality.
   EXPECT_EQ(sizeof(xyz::indirect<int>), sizeof(int*));
-  EXPECT_EQ(sizeof(xyz::indirect<int, TrackingAllocator<int>>),
-            (sizeof(int*) + sizeof(TrackingAllocator<int>)));
+  EXPECT_EQ(sizeof(xyz::indirect<int, xyz::TrackingAllocator<int>>),
+            (sizeof(int*) + sizeof(xyz::TrackingAllocator<int>)));
 }
 
 #ifdef XYZ_HAS_STD_MEMORY_RESOURCE
