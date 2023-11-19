@@ -15,8 +15,10 @@ cc_library(
 cc_test(
     name = "indirect_test",
     size = "small",
-    hdrs = ["tracking_allocator.h"],
-    srcs = ["indirect_test.cc"],
+    srcs = [
+        "indirect_test.cc",
+        "tracking_allocator.h"
+    ],
     deps = [
         "feature_check",
         "indirect",
@@ -38,8 +40,10 @@ cc_library(
 cc_test(
     name = "indirect_cxx14_test",
     size = "small",
-    hdrs = ["tracking_allocator.h"],
-    srcs = ["indirect_test.cc"],
+    srcs = [
+        "indirect_test.cc",
+        "tracking_allocator.h"
+    ],
     deps = [
         "feature_check",
         "indirect_cxx14",
@@ -58,8 +62,10 @@ cc_library(
 cc_test(
     name = "polymorphic_test",
     size = "small",
-    hdrs = ["tracking_allocator.h"],
-    srcs = ["polymorphic_test.cc"],
+    srcs = [
+        "polymorphic_test.cc",
+        "tracking_allocator.h"
+    ],
     deps = [
         "feature_check",
         "polymorphic",
@@ -78,8 +84,10 @@ cc_library(
 cc_test(
     name = "polymorphic_cxx14_test",
     size = "small",
-    hdrs = ["tracking_allocator.h"],
-    srcs = ["polymorphic_test.cc"],
+    srcs = [
+        "polymorphic_test.cc",
+        "tracking_allocator.h"
+    ],
     deps = [
         "feature_check",
         "polymorphic_cxx14",
@@ -99,8 +107,10 @@ cc_library(
 cc_test(
     name = "polymorphic_inline_vtable_test",
     size = "small",
-    hdrs = ["tracking_allocator.h"],
-    srcs = ["polymorphic_test.cc"],
+    srcs = [
+        "polymorphic_test.cc",
+        "tracking_allocator.h"
+    ],
     tags = ["manual"],
     deps = [
         "feature_check",
@@ -120,8 +130,10 @@ cc_library(
 cc_test(
     name = "polymorphic_sbo_test",
     size = "small",
-    hdrs = ["tracking_allocator.h"],
-    srcs = ["polymorphic_test.cc"],
+    srcs = [
+        "polymorphic_test.cc",
+        "tracking_allocator.h"
+    ],
     tags = ["manual"],
     deps = [
         "feature_check",
