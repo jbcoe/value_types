@@ -118,8 +118,10 @@ class indirect {
     std::swap(p_, other.p_);
   }
 
-  constexpr indirect(std::allocator_arg_t, const A& alloc,
-                     indirect&& other) noexcept
+  constexpr indirect(
+      std::allocator_arg_t, const A& alloc,
+      indirect&&
+          other) noexcept(allocator_traits<Allocator>::is_always_equal::value)
       : p_(nullptr), alloc_(alloc) {
     assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     std::swap(p_, other.p_);
