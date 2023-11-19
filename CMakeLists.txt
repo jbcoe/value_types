@@ -49,6 +49,8 @@ target_sources(indirect
 xyz_add_library(
     NAME indirect_cxx14
     ALIAS xyz_value_types::indirect_cxx14
+    DEFINITIONS XYZ_INDIRECT_CXX_14
+    VERSION 14
 )
 target_sources(indirect_cxx14
     INTERFACE
@@ -67,6 +69,8 @@ target_sources(polymorphic
 xyz_add_library(
     NAME polymorphic_cxx14
     ALIAS xyz_value_types::polymorphic_cxx14
+    DEFINITIONS XYZ_POLYMORPHIC_CXX_14
+    VERSION 14
 )
 target_sources(polymorphic_cxx14
     INTERFACE
