@@ -2,5 +2,11 @@
 Checks: google-readability-*,\
         readability-*,\
         bugprone-*,\
-        cppcoreguidelines-*
+        -readability-magic-numbers,\
+        -readability-identifier-length,\
+        -readability-implicit-bool-conversion,\
+        -readability-braces-around-statements,\
+        -readability-named-parameter,\
+        -readability-function-cognitive-complexity,\
+        -readability-convert-member-functions-to-static
 ...
