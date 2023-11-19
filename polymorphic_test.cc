@@ -41,7 +41,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <utility>
 
 #include "feature_check.h"
-
+#include "tracking_allocator.h"
 #ifdef XYZ_HAS_STD_IN_PLACE_TYPE_T
 namespace xyz {
 using std::in_place_type_t;
@@ -208,56 +208,13 @@ TEST(PolymorphicTest, ConstPropagation) {
   EXPECT_EQ((*ca).member(), SomeType::Constness::CONST);
 }
 
-template <typename T>
-struct TrackingAllocator {
-  unsigned* alloc_counter_;
-  unsigned* dealloc_counter_;
-
-  TrackingAllocator(unsigned* alloc_counter, unsigned* dealloc_counter)
-      : alloc_counter_(alloc_counter), dealloc_counter_(dealloc_counter) {}
-
-  template <typename U>
-  TrackingAllocator(const TrackingAllocator<U>& other)
-      : alloc_counter_(other.alloc_counter_),
-        dealloc_counter_(other.dealloc_counter_) {}
-
-  using value_type = T;
-
-  template <typename Other>
-  struct rebind {
-    using other = TrackingAllocator<Other>;
-  };
-
-  T* allocate(std::size_t n) {
-    ++(*alloc_counter_);
-    std::allocator<T> default_allocator{};
-    return default_allocator.allocate(n);
-  }
-  void deallocate(T* p, std::size_t n) {
-    ++(*dealloc_counter_);
-    std::allocator<T> default_allocator{};
-    default_allocator.deallocate(p, n);
-  }
-
-  friend bool operator==(const TrackingAllocator& lhs,
-                         const TrackingAllocator& rhs) noexcept {
-    return lhs.alloc_counter_ == rhs.alloc_counter_ &&
-           lhs.dealloc_counter_ == rhs.dealloc_counter_;
-  }
-
-  friend bool operator!=(const TrackingAllocator& lhs,
-                         const TrackingAllocator& rhs) noexcept {
-    return !(lhs == rhs);
-  }
-};
-
 TEST(PolymorphicTest, GetAllocator) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
 
-  xyz::polymorphic<Base, TrackingAllocator<Base>> a(
+  xyz::polymorphic<Base, xyz::TrackingAllocator<Base>> a(
       std::allocator_arg,
-      TrackingAllocator<Base>(&alloc_counter, &dealloc_counter),
+      xyz::TrackingAllocator<Base>(&alloc_counter, &dealloc_counter),
       xyz::in_place_type_t<Derived>{}, 42);
   EXPECT_EQ(alloc_counter, 1);
   EXPECT_EQ(dealloc_counter, 0);
@@ -271,9 +228,9 @@ TEST(PolymorphicTest, TrackingAllocatorDefaultConstructor) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
 
-  xyz::polymorphic<Derived, TrackingAllocator<Derived>> a(
+  xyz::polymorphic<Derived, xyz::TrackingAllocator<Derived>> a(
       std::allocator_arg,
-      TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter));
+      xyz::TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter));
   EXPECT_EQ(alloc_counter, 1);
   EXPECT_EQ(dealloc_counter, 0);
 
@@ -286,9 +243,9 @@ TEST(PolymorphicTest, CountAllocationsForInPlaceConstruction) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::polymorphic<Base, TrackingAllocator<Base>> a(
+    xyz::polymorphic<Base, xyz::TrackingAllocator<Base>> a(
         std::allocator_arg,
-        TrackingAllocator<Base>(&alloc_counter, &dealloc_counter),
+        xyz::TrackingAllocator<Base>(&alloc_counter, &dealloc_counter),
         xyz::in_place_type_t<Derived>{}, 42);
     EXPECT_EQ(alloc_counter, 1);
     EXPECT_EQ(dealloc_counter, 0);
@@ -301,9 +258,9 @@ TEST(PolymorphicTest, CountAllocationsForDerivedTypeConstruction) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::polymorphic<Base, TrackingAllocator<Base>> a(
+    xyz::polymorphic<Base, xyz::TrackingAllocator<Base>> a(
         std::allocator_arg,
-        TrackingAllocator<Base>(&alloc_counter, &dealloc_counter),
+        xyz::TrackingAllocator<Base>(&alloc_counter, &dealloc_counter),
         xyz::in_place_type_t<Derived>{}, 42);
     EXPECT_EQ(alloc_counter, 1);
     EXPECT_EQ(dealloc_counter, 0);
@@ -316,13 +273,13 @@ TEST(PolymorphicTest, CountAllocationsForCopyConstruction) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::polymorphic<Derived, TrackingAllocator<Derived>> a(
+    xyz::polymorphic<Derived, xyz::TrackingAllocator<Derived>> a(
         std::allocator_arg,
-        TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        xyz::TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
         xyz::in_place_type_t<Derived>{}, 42);
     EXPECT_EQ(alloc_counter, 1);
     EXPECT_EQ(dealloc_counter, 0);
-    xyz::polymorphic<Derived, TrackingAllocator<Derived>> b(a);
+    xyz::polymorphic<Derived, xyz::TrackingAllocator<Derived>> b(a);
   }
   EXPECT_EQ(alloc_counter, 2);
   EXPECT_EQ(dealloc_counter, 2);
@@ -332,13 +289,13 @@ TEST(PolymorphicTest, CountAllocationsForCopyAssignment) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::polymorphic<Derived, TrackingAllocator<Derived>> a(
+    xyz::polymorphic<Derived, xyz::TrackingAllocator<Derived>> a(
         std::allocator_arg,
-        TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        xyz::TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
         xyz::in_place_type_t<Derived>{}, 42);
-    xyz::polymorphic<Derived, TrackingAllocator<Derived>> b(
+    xyz::polymorphic<Derived, xyz::TrackingAllocator<Derived>> b(
         std::allocator_arg,
-        TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        xyz::TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
         xyz::in_place_type_t<Derived>{}, 101);
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
@@ -352,13 +309,13 @@ TEST(PolymorphicTest, CountAllocationsForMoveAssignment) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::polymorphic<Derived, TrackingAllocator<Derived>> a(
+    xyz::polymorphic<Derived, xyz::TrackingAllocator<Derived>> a(
         std::allocator_arg,
-        TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        xyz::TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
         xyz::in_place_type_t<Derived>{}, 42);
-    xyz::polymorphic<Derived, TrackingAllocator<Derived>> b(
+    xyz::polymorphic<Derived, xyz::TrackingAllocator<Derived>> b(
         std::allocator_arg,
-        TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        xyz::TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
         xyz::in_place_type_t<Derived>{}, 101);
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
@@ -369,8 +326,8 @@ TEST(PolymorphicTest, CountAllocationsForMoveAssignment) {
 }
 
 template <typename T>
-struct NonEqualTrackingAllocator : TrackingAllocator<T> {
-  using TrackingAllocator<T>::TrackingAllocator;
+struct NonEqualTrackingAllocator : xyz::TrackingAllocator<T> {
+  using xyz::TrackingAllocator<T>::TrackingAllocator;
   using propagate_on_container_move_assignment = std::true_type;
 
   template <typename Other>
@@ -414,21 +371,21 @@ TEST(PolymorphicTest, CountAllocationsForMoveConstruction) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::polymorphic<Derived, TrackingAllocator<Derived>> a(
+    xyz::polymorphic<Derived, xyz::TrackingAllocator<Derived>> a(
         std::allocator_arg,
-        TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
+        xyz::TrackingAllocator<Derived>(&alloc_counter, &dealloc_counter),
         xyz::in_place_type_t<Derived>{}, 42);
     EXPECT_EQ(alloc_counter, 1);
     EXPECT_EQ(dealloc_counter, 0);
-    xyz::polymorphic<Derived, TrackingAllocator<Derived>> b(std::move(a));
+    xyz::polymorphic<Derived, xyz::TrackingAllocator<Derived>> b(std::move(a));
   }
   EXPECT_EQ(alloc_counter, 1);
   EXPECT_EQ(dealloc_counter, 1);
 }
 
 template <typename T>
-struct POCSTrackingAllocator : TrackingAllocator<T> {
-  using TrackingAllocator<T>::TrackingAllocator;
+struct POCSTrackingAllocator : xyz::TrackingAllocator<T> {
+  using xyz::TrackingAllocator<T>::TrackingAllocator;
   using propagate_on_container_swap = std::true_type;
 
   template <typename Other>
@@ -538,10 +495,10 @@ TEST(PolymorphicTest, ConstructorWithExceptionsTrackingAllocations) {
   unsigned dealloc_counter = 0;
   auto construct = [&]() {
     return xyz::polymorphic<ThrowsOnConstruction,
-                            TrackingAllocator<ThrowsOnConstruction>>(
+                            xyz::TrackingAllocator<ThrowsOnConstruction>>(
         std::allocator_arg,
-        TrackingAllocator<ThrowsOnConstruction>(&alloc_counter,
-                                                &dealloc_counter),
+        xyz::TrackingAllocator<ThrowsOnConstruction>(&alloc_counter,
+                                                     &dealloc_counter),
         xyz::in_place_type_t<ThrowsOnConstruction>{}, "unused");
   };
   EXPECT_THROW(construct(), ThrowsOnConstruction::Exception);
@@ -590,8 +547,9 @@ TEST(PolymorphicTest, InteractionWithUnorderedMap) {
 }
 
 TEST(PolymorphicTest, InteractionWithSizedAllocators) {
-  EXPECT_EQ(sizeof(xyz::polymorphic<int, TrackingAllocator<int>>),
-            (sizeof(xyz::polymorphic<int>) + sizeof(TrackingAllocator<int>)));
+  EXPECT_EQ(
+      sizeof(xyz::polymorphic<int, xyz::TrackingAllocator<int>>),
+      (sizeof(xyz::polymorphic<int>) + sizeof(xyz::TrackingAllocator<int>)));
 }
 
 struct BaseA {
