@@ -450,6 +450,7 @@ move assignment, or swapping of the allocator only if
 ```c++
 template <class T, class Allocator = allocator<T>>
 class indirect {
+  pointer p_; // exposition only
   Allocator allocator_; // exposition only
  public:
   using value_type = T;
