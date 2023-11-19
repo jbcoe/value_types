@@ -44,32 +44,43 @@ should not be considered in isolation.
 
 ## Changes from R2
 
+* Move feature test macros to [version.syn]
+
 * Remove `std::optional` specializations.
 
 ## Changes from R1
 
+* Add discussion on returning `auto` for `std::indirect` comparison operators.
+
+* Add discussion of `emplace()` to appendix.
+
+* Update working to support allocator-awareness.
+
 ## Changes from R0
 
- * Add feature-test macros.
+* Add feature-test macros.
 
- * Add `std::format` support for `std::indirect`
+* Add `std::format` support for `std::indirect`
 
- * Add Appendix B: Before and after examples.
+* Add Appendix B: Before and after examples.
 
- * Add preconditions checking for types are not valueless.
+* Add preconditions checking for types are not valueless.
 
- * Add constexpr support.
+* Add constexpr support.
 
- * Allow quality of implentation support for small buffer optimization for Polymophic.
+* Allow quality of implentation support for small buffer optimization for Polymophic.
 
- * Change constraints to mandate to enable support for imcomplete types.
+* Extend wording for allocator support.
 
- * Change pointer usage to use allocator_traits pointer.
+* Change constraints to mandate to enable support for imcomplete types.
 
- * Remove `std::uses_allocator` specliazations.
+* Change pointer usage to use allocator_traits pointer.
 
- * Fix `sizeof` error.
+* Remove `std::uses_allocator` specliazations.
 
+* Remove `std::inplace_t` parameter in constructors for `std::indirect`.
+
+* Fix `sizeof` error.
 
 ## Motivation
 
