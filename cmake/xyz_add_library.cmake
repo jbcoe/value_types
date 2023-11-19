@@ -1,7 +1,7 @@
 include_guard(GLOBAL)
 
 #[=======================================================================[.rst:
-vt_add_library
+xyz_add_library
 ------------------
 
 Overview
@@ -12,7 +12,7 @@ and allows configuration for common optional settings
 
 .. code-block:: cmake
 
-  vt_add_library(
+  xyz_add_library(
       [NAME <name>]
       [ALIAS <alias>]
       [DEFINITIONS <definitions...>]
@@ -29,34 +29,34 @@ and allows configuration for common optional settings
     The ``DEFINITIONS`` option provides a list of compile definitions.
 
 #]=======================================================================]
-function(vt_add_library)
+function(xyz_add_library)
     set(options)
     set(oneValueArgs NAME ALIAS)
     set(multiValueArgs DEFINITIONS)
-    cmake_parse_arguments(VALUE_TYPES "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    if (NOT VALUE_TYPES_NAME)
+    cmake_parse_arguments(XYZ "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    if (NOT XYZ_NAME)
         message(FATAL_ERROR "NAME parameter must be supplied")
     endif()
-    if (NOT VALUE_TYPES_ALIAS)
+    if (NOT XYZ_ALIAS)
         message(FATAL_ERROR "ALIAS parameter must be supplied")
     endif()
 
-    add_library(${VALUE_TYPES_NAME} INTERFACE)
-    add_library(${VALUE_TYPES_ALIAS} ALIAS ${VALUE_TYPES_NAME})
-    target_include_directories(${VALUE_TYPES_NAME}
+    add_library(${XYZ_NAME} INTERFACE)
+    add_library(${XYZ_ALIAS} ALIAS ${XYZ_NAME})
+    target_include_directories(${XYZ_NAME}
         INTERFACE
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
             $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     )
-    target_compile_features(${VALUE_TYPES_NAME}
+    target_compile_features(${XYZ_NAME}
         INTERFACE
             cxx_std_20
     )
-    if (VALUE_TYPES_DEFINITIONS)
-        target_compile_definitions(${VALUE_TYPES_NAME}
+    if (XYZ_DEFINITIONS)
+        target_compile_definitions(${XYZ_NAME}
             INTERFACE
-                ${VALUE_TYPES_DEFINITIONS}
+                ${XYZ_DEFINITIONS}
         )
-    endif (VALUE_TYPES_DEFINITIONS)
+    endif (XYZ_DEFINITIONS)
 
 endfunction()

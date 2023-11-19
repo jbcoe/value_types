@@ -24,10 +24,10 @@ option(ENABLE_SANITIZERS "Enable Address Sanitizer and Undefined Behaviour Sanit
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # Custom CMake Includes
-include(vt_add_library)
-include(vt_add_test)
+include(xyz_add_library)
+include(xyz_add_test)
 
-vt_add_library(
+xyz_add_library(
     NAME value_types
     ALIAS value_types::value_types
 )
@@ -37,7 +37,7 @@ target_sources(value_types
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h>
 )
 
-vt_add_library(
+xyz_add_library(
     NAME indirect
     ALIAS value_types::indirect
 )
@@ -46,7 +46,7 @@ target_sources(indirect
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect.h>
 )
 
-vt_add_library(
+xyz_add_library(
     NAME polymorphic
     ALIAS value_types::polymorphic
 )
@@ -55,7 +55,7 @@ target_sources(polymorphic
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h>
 )
 
-vt_add_library(
+xyz_add_library(
     NAME polymorphic_inline_vtable
     ALIAS value_types::polymorphic_inline_vtable
     DEFINITIONS XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
@@ -65,7 +65,7 @@ target_sources(polymorphic_inline_vtable
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/polymorphic_inline_vtable.h>
 )
 
-vt_add_library(
+xyz_add_library(
     NAME polymorphic_sbo
     ALIAS value_types::polymorphic_sbo
     DEFINITIONS XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
@@ -119,26 +119,26 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
             list(APPEND LCOV_REMOVE_PATTERNS "'/usr/*'")
         endif()
 
-        vt_add_test(
+        xyz_add_test(
             NAME indirect_test
             LINK_LIBRARIES indirect
             FILES indirect_test.cc
         )
 
-        vt_add_test(
+        xyz_add_test(
             NAME polymorphic_test
             LINK_LIBRARIES polymorphic
             FILES polymorphic_test.cc
         )
 
-        vt_add_test(
+        xyz_add_test(
             NAME polymorphic_inline_vtable_test
             LINK_LIBRARIES polymorphic_inline_vtable
             FILES polymorphic_test.cc
             MANUAL TRUE
         )
 
-        vt_add_test(
+        xyz_add_test(
             NAME polymorphic_sbo_test
             LINK_LIBRARIES polymorphic_sbo
             FILES polymorphic_test.cc
