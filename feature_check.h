@@ -51,6 +51,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #endif  //(__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >=
         // 201703L)
 
+#if (__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+#define XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
+#endif  //(__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >=
+        // 201703L)
+
 //
 // XYZ_HAS_STD_MEMORY_RESOURCE
 // The macro is defined, when the header <memory_resource> and its content is
