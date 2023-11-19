@@ -82,7 +82,8 @@ class indirect {
   explicit constexpr indirect(U&& u, Us&&... us)
     requires(std::constructible_from<T, U &&, Us && ...> &&
              std::is_default_constructible_v<A> &&
-             !std::is_same_v<std::remove_cvref_t<U>, indirect>)
+             !std::is_same_v<std::remove_cvref_t<U>, indirect> &&
+             !std::is_same_v<std::remove_cvref_t<U>, std::allocator_arg_t>)
   {
     p_ = construct_from(alloc_, std::forward<U>(u), std::forward<Us>(us)...);
   }

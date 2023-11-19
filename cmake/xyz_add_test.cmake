@@ -22,6 +22,7 @@ associates patterns and allows configuration for common optional settings
 
   ``NAME``
     The ``NAME`` option is required to provide the internal name for the library.
+
   ``MANUAL``
     The ``MANUAL`` option is optional and defaults to ``OFF``. If set to ``ON`` the
     test will not be included in ctest and must be run manually.
@@ -51,7 +52,7 @@ function(xyz_add_test)
         set(VALID_TARGET_VERSIONS 11 14 17 20 23)
         list(FIND VALID_TARGET_VERSIONS ${XYZ_VERSION} index)
         if(index EQUAL -1)
-            message(FATAL_ERROR "TYPE must be one of <${VALID_TARGET_TYPES}>")
+            message(FATAL_ERROR "TYPE must be one of <${VALID_TARGET_VERSIONS}>")
         endif()
     endif()
 

@@ -15,6 +15,7 @@ and allows configuration for common optional settings
   xyz_add_library(
       [NAME <name>]
       [ALIAS <alias>]
+      [VERSION <version>]
       [DEFINITIONS <definitions...>]
   )
    -- Generates library targets with default build directories and install options.
@@ -25,13 +26,16 @@ and allows configuration for common optional settings
   ``ALIAS``
     The ``ALIAS`` option is required to provide the external name for the library.
 
+  ``VERSION``
+    The ``VERSION`` option specifies the supported C++ version.
+
   ``DEFINITIONS``
     The ``DEFINITIONS`` option provides a list of compile definitions.
 
 #]=======================================================================]
 function(xyz_add_library)
     set(options)
-    set(oneValueArgs NAME ALIAS)
+    set(oneValueArgs NAME ALIAS VERSION)
     set(multiValueArgs DEFINITIONS)
     cmake_parse_arguments(XYZ "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
     if (NOT XYZ_NAME)
@@ -39,6 +43,16 @@ function(xyz_add_library)
     endif()
     if (NOT XYZ_ALIAS)
         message(FATAL_ERROR "ALIAS parameter must be supplied")
+    endif()
+    if (NOT XYZ_VERSION)
+        set(XYZ_CXX_STANDARD cxx_std_20)
+    else()
+        set(VALID_TARGET_VERSIONS 11 14 17 20 23)
+        list(FIND VALID_TARGET_VERSIONS ${XYZ_VERSION} index)
+        if(index EQUAL -1)
+            message(FATAL_ERROR "TYPE must be one of <${VALID_TARGET_VERSIONS}>")
+        endif()
+        set(XYZ_CXX_STANDARD cxx_std_${XYZ_VERSION})
     endif()
 
     add_library(${XYZ_NAME} INTERFACE)
@@ -50,7 +64,7 @@ function(xyz_add_library)
     )
     target_compile_features(${XYZ_NAME}
         INTERFACE
-            cxx_std_20
+            ${XYZ_CXX_STANDARD}
     )
     if (XYZ_DEFINITIONS)
         target_compile_definitions(${XYZ_NAME}
