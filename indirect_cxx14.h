@@ -118,11 +118,13 @@ class indirect : private detail::empty_base_optimization<A> {
           !std::is_same<typename std::remove_const<
                             typename std::remove_reference<U>::type>::type,
                         indirect>::value,
-          typename std::enable_if<
-              !std::is_same<typename std::remove_const<
-                                typename std::remove_reference<U>::type>::type,
-                            std::allocator_arg_t>::value,
-              int>::type = 0> explicit indirect(U&& u, Us&&... us) {
+          int>::type = 0,
+      typename std::enable_if<
+          !std::is_same<typename std::remove_const<
+                            typename std::remove_reference<U>::type>::type,
+                        std::allocator_arg_t>::value,
+          int>::type = 0>
+  , explicit indirect(U&& u, Us&&... us) {
     p_ = construct_from(alloc_base::get(), std::forward<U>(u),
                         std::forward<Us>(us)...);
   }
