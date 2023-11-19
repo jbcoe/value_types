@@ -590,6 +590,12 @@ class indirect {
     const U& lhs, const indirect& rhs) noexcept(see below);
 };
 
+template <typename Value>
+indirect(Value) -> indirect<Value>;
+
+template <typename Alloc, typename Value>
+indirect(std::allocator_arg_t, Alloc, Value) -> indirect<
+    Value, typename std::allocator_traits<Alloc>::template rebind_alloc<Value>>;
 ```
 
 #### X.Y.3 Constructors [indirect.ctor]

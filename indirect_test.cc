@@ -55,6 +55,18 @@ TEST(IndirectTest, ValueAccessFromDefaultConstructedObject) {
   EXPECT_EQ(*a, 0);
 }
 
+#ifdef XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
+TEST(IndirectTest, TemplateArgumentDeduction) {
+  xyz::indirect a(42);
+  EXPECT_EQ(*a, 42);
+}
+
+TEST(IndirectTest, TemplateArgumentDeductionWithAllocator) {
+  xyz::indirect a(std::allocator_arg, std::allocator<int>{}, 42);
+  EXPECT_EQ(*a, 42);
+}
+#endif  // XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
+
 template <typename Allocator = std::allocator<void>>
 struct AllocatorAwareType {
   using allocator_type = typename std::allocator_traits<
