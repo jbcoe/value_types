@@ -40,6 +40,25 @@ This proposal is a fusion of two earlier individual proposals, P1950 and P0201.
 The design of the two proposed class templates is sufficiently similar that they
 should not be considered in isolation.
 
+# History
+
+## Changes from R2
+
+* Remove `std::optional` specializations.
+
+## Changes from R1
+
+## Changes from R0
+
+ * Add feature-test macros.
+
+ * Add `std::format` support for `std::indirect`
+
+ * Remove `std::uses_allocator` specliazations.
+
+ * Fix `sizeof` error.
+
+
 ## Motivation
 
 The standard library has no vocabulary type for a dynamically-allocated object
