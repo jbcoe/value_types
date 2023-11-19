@@ -122,7 +122,7 @@ For building and working with the project, please see the [developer guide](docs
 ## GitHub codespaces
 
 Press `.` or visit [https://github.dev/jbcoe/value_types] to open the project in
-an instant cloud-based development environment. We have defined a
+an instant, cloud-based, development environment. We have defined a
 [devcontainer](.devcontainer/devcontainer.json) that will automatically install
 the dependencies required to build and test the project.
 
