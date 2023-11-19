@@ -1,0 +1,8 @@
+@PACKAGE_INIT@
+
+check_required_components(xyz_value_types)
+
+if(NOT TARGET xyz_value_types::xyz_value_types)
+    list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+    include(${CMAKE_CURRENT_LIST_DIR}/xyz_value_types-target.cmake)
+endif()

@@ -119,6 +119,13 @@ and made the null state unobservable.
 
 For building and working with the project, please see the [developer guide](docs/developer-guide.md).
 
+## GitHub codespaces
+
+Press `.` or visit [https://github.dev/jbcoe/value_types] to open the project in
+an instant, cloud-based, development environment. We have defined a
+[devcontainer](.devcontainer/devcontainer.json) that will automatically install
+the dependencies required to build and test the project.
+
 ## References
 
 * [TK's allocator user guide]
@@ -129,3 +136,6 @@ For building and working with the project, please see the [developer guide](docs
 
 * [indirect_value: A Free-Store-Allocated Value Type For C++]
   (https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1950r2.html)
+
+* [GitHub codepsaces]
+  (https://docs.github.com/en/codespaces/getting-started/deep-dive)
