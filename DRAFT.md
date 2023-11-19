@@ -40,15 +40,25 @@ This proposal is a fusion of two earlier individual proposals, P1950 and P0201.
 The design of the two proposed class templates is sufficiently similar that they
 should not be considered in isolation.
 
-# History
+## History
 
-## Changes from R2
+### Changes from R2
 
-* Move feature test macros to [version.syn]
+* Add explicit to constructors
+
+* Add constructor indirect(U&& u, Us&&... us) overload.
+
+* Add discussion on similarities and dissimilarities with variant.
+
+* Additions to acknowledgements.
+
+* Address wording for `swap()` relating to `noexcept`.
+
+* Move feature test macros to [version.syn].
 
 * Remove `std::optional` specializations.
 
-## Changes from R1
+### Changes from R1
 
 * Add discussion on returning `auto` for `std::indirect` comparison operators.
 
@@ -56,7 +66,7 @@ should not be considered in isolation.
 
 * Update working to support allocator-awareness.
 
-## Changes from R0
+### Changes from R0
 
 * Add feature-test macros.
 
