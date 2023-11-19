@@ -3,9 +3,21 @@ name: Clang-tidy
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
+    paths-ignore:
+      - requirements.txt
+      - LICENSE.txt
+      - .pre-commit-config.yaml
+      - '**/*.md'
+      - '**/*.yml'
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
+    paths-ignore:
+      - requirements.txt
+      - LICENSE.txt
+      - .pre-commit-config.yaml
+      - '**/*.md'
+      - '**/*.yml'
 
 jobs:
   checkout-and-check-formatting:
