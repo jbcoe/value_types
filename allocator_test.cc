@@ -33,7 +33,7 @@ struct SimpleType {
 };
 
 struct FussyType {
-  FussyType(int i) {
+  FussyType(int) {
     throw std::runtime_error("FussyType must be allocator-constructed");
   }
 

@@ -3,12 +3,12 @@ cmake_policy(SET CMP0127 NEW)
 cmake_policy(SET CMP0135 NEW)
 
 if(NOT DEFINED PROJECT_NAME)
-    set(CPP_VALUE_TYPES_IS_NOT_SUBPROJECT ON)
+    set(XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT ON)
 endif()
 
-set(CPP_VALUE_TYPES_VERSION 0.0.1)
+set(XYZ_VALUE_TYPES_VERSION 0.0.1)
 
-project(value_types LANGUAGES CXX VERSION ${CPP_VALUE_TYPES_VERSION})
+project(value_types LANGUAGES CXX VERSION ${XYZ_VALUE_TYPES_VERSION})
 
 include(CTest)
 include(FetchContent)
@@ -24,40 +24,40 @@ option(ENABLE_SANITIZERS "Enable Address Sanitizer and Undefined Behaviour Sanit
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # Custom CMake Includes
-include(vt_add_library)
-include(vt_add_test)
+include(xyz_add_library)
+include(xyz_add_test)
 
-vt_add_library(
-    NAME value_types
-    ALIAS value_types::value_types
+xyz_add_library(
+    NAME xyz_value_types
+    ALIAS xyz_value_types::value_types
 )
-target_sources(value_types
+target_sources(xyz_value_types
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect.h>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h>
 )
 
-vt_add_library(
+xyz_add_library(
     NAME indirect
-    ALIAS value_types::indirect
+    ALIAS xyz_value_types::indirect
 )
 target_sources(indirect
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect.h>
 )
 
-vt_add_library(
+xyz_add_library(
     NAME polymorphic
-    ALIAS value_types::polymorphic
+    ALIAS xyz_value_types::polymorphic
 )
 target_sources(polymorphic
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h>
 )
 
-vt_add_library(
+xyz_add_library(
     NAME polymorphic_inline_vtable
-    ALIAS value_types::polymorphic_inline_vtable
+    ALIAS xyz_value_types::polymorphic_inline_vtable
     DEFINITIONS XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
 )
 target_sources(polymorphic_inline_vtable
@@ -65,9 +65,9 @@ target_sources(polymorphic_inline_vtable
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/polymorphic_inline_vtable.h>
 )
 
-vt_add_library(
+xyz_add_library(
     NAME polymorphic_sbo
-    ALIAS value_types::polymorphic_sbo
+    ALIAS xyz_value_types::polymorphic_sbo
     DEFINITIONS XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
 )
 target_sources(polymorphic_sbo
@@ -75,7 +75,7 @@ target_sources(polymorphic_sbo
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/polymorphic_sbo.h>
 )
 
-if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
+if (${XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT})
 
     add_subdirectory(benchmarks)
 
@@ -119,32 +119,32 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
             list(APPEND LCOV_REMOVE_PATTERNS "'/usr/*'")
         endif()
 
-        vt_add_test(
+        xyz_add_test(
             NAME allocator_test
             LINK_LIBRARIES indirect polymorphic
             FILES allocator_test.cc
         )
 
-        vt_add_test(
+        xyz_add_test(
             NAME indirect_test
             LINK_LIBRARIES indirect
             FILES indirect_test.cc
         )
 
-        vt_add_test(
+        xyz_add_test(
             NAME polymorphic_test
             LINK_LIBRARIES polymorphic
             FILES polymorphic_test.cc
         )
 
-        vt_add_test(
+        xyz_add_test(
             NAME polymorphic_inline_vtable_test
             LINK_LIBRARIES polymorphic_inline_vtable
             FILES polymorphic_test.cc
             MANUAL TRUE
         )
 
-        vt_add_test(
+        xyz_add_test(
             NAME polymorphic_sbo_test
             LINK_LIBRARIES polymorphic_sbo
             FILES polymorphic_test.cc
@@ -173,42 +173,42 @@ if (${CPP_VALUE_TYPES_IS_NOT_SUBPROJECT})
         FILES
             "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt"
         DESTINATION
-            "${CMAKE_INSTALL_DATAROOTDIR}/licenses/value_types"
+            "${CMAKE_INSTALL_DATAROOTDIR}/licenses/xyz_value_types"
     )
 
     install(
-        TARGETS value_types
-        EXPORT value_types-export-set
+        TARGETS xyz_value_types
+        EXPORT xyz_value_types-export-set
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 
     install(
-        EXPORT value_types-export-set
-        NAMESPACE value_types::
-        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/value_types"
+        EXPORT xyz_value_types-export-set
+        NAMESPACE xyz_value_types::
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/xyz_value_types"
     )
 
     configure_package_config_file(
-        ${CMAKE_CURRENT_LIST_DIR}/value_types-config.cmake.in
-        ${CMAKE_CURRENT_BINARY_DIR}/value_types-config.cmake
+        ${CMAKE_CURRENT_LIST_DIR}/xyz_value_types-config.cmake.in
+        ${CMAKE_CURRENT_BINARY_DIR}/xyz_value_types-config.cmake
         INSTALL_DESTINATION
-            "${CMAKE_INSTALL_LIBDIR}/cmake/value_types"
+            "${CMAKE_INSTALL_LIBDIR}/cmake/xyz_value_types"
     )
 
     write_basic_package_version_file(
-        ${CMAKE_CURRENT_BINARY_DIR}/value_types-version.cmake
-        VERSION ${CPP_VALUE_TYPES_VERSION}
+        ${CMAKE_CURRENT_BINARY_DIR}/xyz_value_types-version.cmake
+        VERSION ${XYZ_VALUE_TYPES_VERSION}
         COMPATIBILITY SameMajorVersion
         ARCH_INDEPENDENT
     )
 
     install(
         FILES
-            ${CMAKE_CURRENT_BINARY_DIR}/value_types-config.cmake
-            ${CMAKE_CURRENT_BINARY_DIR}/value_types-version.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/xyz_value_types-config.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/xyz_value_types-version.cmake
         DESTINATION
-            "${CMAKE_INSTALL_LIBDIR}/cmake/value_types"
+            "${CMAKE_INSTALL_LIBDIR}/cmake/xyz_value_types"
     )
 endif()

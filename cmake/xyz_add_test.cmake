@@ -1,7 +1,7 @@
 include_guard(GLOBAL)
 
 #[=======================================================================[.rst:
-vt_add_test
+xyz_add_test
 ------------------
 
 Overview
@@ -12,7 +12,7 @@ associates patterns and allows configuration for common optional settings
 
 .. code-block:: cmake
 
-  vt_add_test(
+  xyz_add_test(
       [NAME <name>]
       [VERSION <version>]
       [FILES <files...>]
@@ -37,19 +37,19 @@ associates patterns and allows configuration for common optional settings
     target depends upon.
 
 #]=======================================================================]
-function(vt_add_test)
+function(xyz_add_test)
     set(options MANUAL)
     set(oneValueArgs NAME VERSION)
     set(multiValueArgs LINK_LIBRARIES FILES)
-    cmake_parse_arguments(VALUE_TYPES "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    if (NOT VALUE_TYPES_NAME)
+    cmake_parse_arguments(XYZ "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    if (NOT XYZ_NAME)
         message(FATAL_ERROR "NAME parameter must be supplied")
     endif()
-    if (NOT VALUE_TYPES_VERSION)
-        set(VALUE_TYPES_VERSION 20)
+    if (NOT XYZ_VERSION)
+        set(XYZ_VERSION 20)
     else()
         set(VALID_TARGET_VERSIONS 11 14 17 20 23)
-        list(FIND VALID_TARGET_VERSIONS ${VALUE_TYPES_VERSION} index)
+        list(FIND VALID_TARGET_VERSIONS ${XYZ_VERSION} index)
         if(index EQUAL -1)
             message(FATAL_ERROR "TYPE must be one of <${VALID_TARGET_TYPES}>")
         endif()
@@ -69,38 +69,38 @@ function(vt_add_test)
 
     include(sanitizers)
 
-    add_executable(${VALUE_TYPES_NAME} "")
-    target_sources(${VALUE_TYPES_NAME}
+    add_executable(${XYZ_NAME} "")
+    target_sources(${XYZ_NAME}
        PRIVATE
-            ${VALUE_TYPES_FILES}
+            ${XYZ_FILES}
     )
-    target_link_libraries(${VALUE_TYPES_NAME}
+    target_link_libraries(${XYZ_NAME}
         PRIVATE
-            ${VALUE_TYPES_LINK_LIBRARIES}
+            ${XYZ_LINK_LIBRARIES}
             GTest::gtest_main
             common_compiler_settings
             $<$<BOOL:${COMPILER_SUPPORTS_ASAN}>:asan>
             $<$<BOOL:${COMPILER_SUPPORTS_USAN}>:ubsan>
     )
 
-    set_target_properties(${VALUE_TYPES_NAME} PROPERTIES
-        CXX_STANDARD ${VALUE_TYPES_VERSION}
+    set_target_properties(${XYZ_NAME} PROPERTIES
+        CXX_STANDARD ${XYZ_VERSION}
         CXX_STANDARD_REQUIRED YES
         CXX_EXTENSIONS NO
     )
 
-    if(${VALUE_TYPES_MANUAL})
-        message(STATUS "Manual test: ${VALUE_TYPES_NAME}")
+    if(${XYZ_MANUAL})
+        message(STATUS "Manual test: ${XYZ_NAME}")
     else()
 
         include(GoogleTest)
-        gtest_discover_tests(${VALUE_TYPES_NAME}
+        gtest_discover_tests(${XYZ_NAME}
             WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
             EXTRA_ARGS "--output-on-failure"
         )
 
         if (ENABLE_CODE_COVERAGE)
-            add_coverage(${VALUE_TYPES_NAME})
+            add_coverage(${XYZ_NAME})
         endif()
     endif()
 
