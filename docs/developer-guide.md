@@ -1,4 +1,6 @@
-# Using pre-commit for git hooks
+# Developer Guide
+
+## Using pre-commit for git hooks
 
 This repository uses the Python `pre-commit` library to manage git hook run as
 part of the commit process.  Use the following steps to install a virtual
@@ -13,7 +15,7 @@ pip install -r requirements.txt # Install latest requirements including pre-comm
 pre-commit install              # Use pre-commit to install git hooks into the working repository.
 ```
 
-# Building with CMake
+## Building with CMake
 
 To build the repository with CMake use the following steps
 ```bash
@@ -24,7 +26,7 @@ cmake ../            # Generate build system specified in root with cmake
 cmake --build ./     # Build the underlying build system via CMake
 ```
 
-# Including in your own project
+## Including value_types your own project
 
 To use the value types code in your own CMake project then you can pull
 the project in as a dependency via CMake's FetchContent module as follows:
@@ -43,7 +45,7 @@ target_link_libraries(my_program
 )
 ```
 
-# Contributing
+## Contributing
 
 We use GitHub actions to ensure that all changes have test coverage and that
 source code is formatted with clang-format (v17).
