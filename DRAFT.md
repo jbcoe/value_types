@@ -74,7 +74,7 @@ should not be considered in isolation.
 
 * Remove `std::optional` specializations.
 
-* Replace use of "erroneous" with "a programming error".
+* Replace use of "erroneous" with "undefined behaviour".
 
 * Strong exception guarantee for copy assignment.
 
@@ -246,8 +246,8 @@ will be ill-formed.
 Both `indirect` and `polymorphic` have a valueless state that is used to
 implement move. The valueless state is not intended to be observable to the
 user. There is no `operator bool` or `has_value` member function. Accessing the
-value of an `indirect` or `polymorphic` after it has been moved from is a
-programming error. We provide a `valueless_after_move` member function that
+value of an `indirect` or `polymorphic` after it has been moved from is
+undefined behaviour. We provide a `valueless_after_move` member function that
 returns `true` if an object is in a valueless state. This allows explicit checks
 for the valueless state in cases where it cannot be verified statically.
 
@@ -322,9 +322,9 @@ propagates const and is allocator aware.
 * Like `optional`, `indirect` knows the type of the owned object so forwards
   comparison operators and hash to the underlying object.
 
-* Unlike `optional`, `indirect` is not observably valueless: use after move is a
-  programming error. Formatting is supported by `indirect` by forwarding to the
-  owned object.
+* Unlike `optional`, `indirect` is not observably valueless: use after move is
+  undefined behaviour. Formatting is supported by `indirect` by forwarding to
+  the owned object.
 
 #### Modelled types for `polymorphic`
 
@@ -370,7 +370,7 @@ comparisons can account for the valueless state with zero cost. A variant must
 check which type is the engaged type to perform comparison; valueless is one of
 the possible states it can be in. For `indirect`, allowing comparison when in a
 valueless state would necessitate the addition of an otherwise redundant check.
-Accessing a valueless `indirect` is a programming error, so we make it a
+Accessing a valueless `indirect` is undefined behaviour, so we make it a
 precondition for comparison and hash that the instance of `indirect` is not
 valueless.
 
