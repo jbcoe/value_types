@@ -237,7 +237,7 @@ or remove the ability to be default constructed.
 Note that due to the requirement to support incomplete `T` types, the
 `indirect<T>` and `polymorphic<T>` types unconditionally have a
 default constructor (according to
-`std::is_default_constructible_v<indirect<T>>`). However, if `T` is not default 
+`std::is_default_constructible_v<indirect<T>>`). However, if `T` is not default
 constructible then attempting to odr-use the `indirect<T>` default constructor
 will be ill-formed.
 
@@ -309,9 +309,9 @@ propagates const and is allocator aware.
 
 * Like `vector`, `indirect` owns an object created by an allocator. The move
   constructor and move assignment operator for `vector` are conditionally
-  noexcept on properties of the allocator. Thus for `indirect`, the move 
-  constructor and move assignment operator are conditionally noexcept on 
-  properties of the allocator. (Allocator instances may have different 
+  noexcept on properties of the allocator. Thus for `indirect`, the move
+  constructor and move assignment operator are conditionally noexcept on
+  properties of the allocator. (Allocator instances may have different
   underlying memory resources; it is not possible for an allocator
   with one memory resource to delete an object in another memory resource. When
   allocators have different underlying memory resources, move necessitates the
@@ -341,7 +341,7 @@ propagates const and is allocator aware.
   `polymorphic` does the same.
 
 * Neither `unique_ptr` nor `polymorphic` know the underlying type of the owned
-  object so cannot implement r-value qualified versions of `operator*`. For 
+  object so cannot implement r-value qualified versions of `operator*`. For
   `optional`, the underlying type is known, so r-value qualified versions of
   `operator*` are provided.
 
