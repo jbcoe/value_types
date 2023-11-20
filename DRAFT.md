@@ -20,7 +20,7 @@ We propose the addition of two new class templates to the C++ Standard Library:
 `indirect<T>` and `polymorphic<T>`.
 
 Specializations of these class templates have value semantics and compose well
-with other standard library types (such as vector) allowing the compiler to
+with other standard library types (such as vector), allowing the compiler to
 correctly generate special member functions.
 
 The class template `indirect` confers value-like semantics on a
@@ -46,13 +46,13 @@ should not be considered in isolation.
 
 * Add explicit to constructors.
 
-* Add constructor indirect(U&& u, Us&&... us) overload and requisite constraints.
+* Add constructor `indirect(U&& u, Us&&... us)` overload and requisite constraints.
 
-* Add constructor polymorphic(allocator_arg_t, const Allocator& alloc) overload.
+* Add constructor `polymorphic(allocator_arg_t, const Allocator& alloc)` overload.
 
 * Add discussion on similarities and dissimilarities with variant.
 
-* Add table of breaking and non-breaking change to appendix C.
+* Add table of breaking and non-breaking changes to appendix C.
 
 * Add missing comparison operators and ensure they are all conditionally noexcept.
 
@@ -66,7 +66,7 @@ should not be considered in isolation.
 
 * Address constraints wording for `std::indirect` comparison operators.
 
-* Copy constructor now uses allocator_traits select_on_container_copy_construction.
+* Copy constructor now uses `allocator_traits::select_on_container_copy_construction`.
 
 * Ensure swap and assign with self are nops.
 
@@ -88,7 +88,7 @@ should not be considered in isolation.
 
 * Add discussion of `emplace()` to appendix.
 
-* Update wording to support allocator-awareness.
+* Update wording to support allocator awareness.
 
 ### Changes in R1
 
@@ -96,19 +96,19 @@ should not be considered in isolation.
 
 * Add `std::format` support for `std::indirect`
 
-* Add Appendix B: Before and after examples.
+* Add Appendix B before and after examples.
 
 * Add preconditions checking for types are not valueless.
 
 * Add constexpr support.
 
-* Allow quality of implementation support for small buffer optimization for Polymophic.
+* Allow quality of implementation support for small buffer optimization for `polymorphic`.
 
 * Extend wording for allocator support.
 
-* Change constraints to mandate to enable support for imcomplete types.
+* Change _constraints_ to _mandates_ to enable support for incomplete types.
 
-* Change pointer usage to use allocator_traits pointer.
+* Change pointer usage to use `allocator_traits` pointer.
 
 * Remove `std::uses_allocator` specliazations.
 
@@ -228,16 +228,16 @@ modified separately.
 
 The owned object is part of the logical state of `indirect` and `polymorphic`.
 Operations on a const-qualified object do not make changes to the object's
-logical state nor to the logical state of other object.
+logical state nor to the logical state of other objects.
 
 `indirect<T>` and `polymorphic<T>` are default constructible in cases where `T`
 is default constructible. Moving a value type onto the free store should not add
 or remove the ability to be default constructed.
 
-Note that, due to the requirement to support incomplete `T` types, the
+Note that due to the requirement to support incomplete `T` types, the
 `indirect<T>` and `polymorphic<T>` types unconditionally have a
-default-constructor (according to
-`std::is_default_constructible_v<indirect<T>>`), however if `T` is not default
+default constructor (according to
+`std::is_default_constructible_v<indirect<T>>`). However, if `T` is not default 
 constructible then attempting to odr-use the `indirect<T>` default constructor
 will be ill-formed.
 
@@ -303,19 +303,19 @@ propagates const and is allocator aware.
   `indirect` does the same.
 
 * `optional` and `indirect` know the underlying type of the owned object so can
-  implement r-value qualified versions of `operator*`. For `unique_ptr` the
+  implement r-value qualified versions of `operator*`. For `unique_ptr`, the
   underlying type is not known (it could be an instance of a derived class) so
   r-value qualified versions of `operator*` are not provided.
 
 * Like `vector`, `indirect` owns an object created by an allocator. The move
   constructor and move assignment operator for `vector` are conditionally
-  noexcept on properties of the allocator. Thus for `indirect`, the move
-  constructor and move assignment operator for `indirect` are conditionally
-  noexcept on properties of the allocator (Allocator instances may have
-  different underlying memory resources, it is not possible for an allocator
+  noexcept on properties of the allocator. Thus for `indirect`, the move 
+  constructor and move assignment operator are conditionally noexcept on 
+  properties of the allocator. (Allocator instances may have different 
+  underlying memory resources; it is not possible for an allocator
   with one memory resource to delete an object in another memory resource. When
   allocators have different underlying memory resources, move necessitates the
-  allocation of memory and cannot be marked noexcept). Like `vector`, `indirect`
+  allocation of memory and cannot be marked noexcept.) Like `vector`, `indirect`
   marks member and non-member `swap` as noexcept and requires allocators to be
   equal.
 
@@ -341,29 +341,29 @@ propagates const and is allocator aware.
   `polymorphic` does the same.
 
 * Neither `unique_ptr` nor `polymorphic` know the underlying type of the owned
-  object so cannot implement r-value qualified versions of `operator*`. For
-  `optional` the underlying type is known so r-value qualified versions of
+  object so cannot implement r-value qualified versions of `operator*`. For 
+  `optional`, the underlying type is known, so r-value qualified versions of
   `operator*` are provided.
 
 * Like `vector`, `polymorphic` owns an object created by an allocator. The move
   constructor and move assignment operator for `vector` are conditionally
   noexcept on properties of the allocator. Thus for `polymorphic`, the move
-  constructor and move assignment operator for `polymorphic` are conditionally
-  noexcept on properties of the allocator. Like `vector`, `polymorphic` marks
-  member and non-member `swap` as noexcept and requires allocators to be equal.
+  constructor and move assignment operator are conditionally noexcept on
+  properties of the allocator. Like `vector`, `polymorphic` marks member
+  and non-member `swap` as noexcept and requires allocators to be equal.
 
 * Like `unique_ptr`, `polymorphic` does not know the type of the owned object
   (it could be an instance of a derived type). As a result `polymorphic` cannot
   forward comparison operators, hash or formatting to the owned object.
 
-#### Similarities and dissimilarities with variant
+#### Similarities and differences with variant
 
 The sum type `variant<Ts...>` models one of several alternatives; `indirect<T>`
 models a single type `T`, but with different storage constraints.
 
 Like `indirect`, a variant can get into a valueless state. For variant, this
 valueless state is accessible when an exception is thrown when changing the
-type: variant has `bool valueless_by_exception()`. When all of the types, `Ts`,
+type: variant has `bool valueless_by_exception()`. When all of the types `Ts`
 are comparable, `variant<Ts...>` supports comparison without preconditions: it
 is valid to compare variants when they are in a valueless state. Variant
 comparisons can account for the valueless state with zero cost. A variant must
@@ -377,7 +377,7 @@ valueless.
 ### `noexcept` and narrow contracts
 
 C++ library design guidelines recommend that member functions with narrow
-contracts (runtime-preconditions) should not be marked `noexcept`. This is
+contracts (runtime preconditions) should not be marked `noexcept`. This is
 partially motivated by a non-vendor implementation of the C++ standard library
 that uses exceptions in a debug build to check for precondition violations by
 throwing an exception. The `noexcept` status of `operator->` and `operator*` for
@@ -833,7 +833,7 @@ _Mandates_: `is_move_constructible_v<T>` is `true`.
   == true`, `allocator_` is set to the allocator of `other`. If allocator is
   propagated or is equal to the allocator of `other`, destroys the owned object,
   if any, then takes ownership of the object owned by `other`.  Otherwise,
-  destroys the owned object, if any, then move constructs an object from the
+  destroys the owned object if any, then move constructs an object from the
   object owned by `other`.
 
 8. _Postconditions_: `*this` is not valueless. `other` is valueless.
@@ -1339,9 +1339,9 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
 5. _Effects_: If `&other == this`, then has no effects. Otherwise, if
   `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value
   == true`, `allocator_` is set to the allocator of `other`. If allocator is
-  propagated or is equal to the allocator of `other`, destroys the owned object,
+  propagated or is equal to the allocator of `other`, destroys the owned object
   if any, then takes ownership of the object owned by `other`.  Otherwise,
-  destroys the owned object, if any, then move constructs an object from the
+  destroys the owned object if any, then move constructs an object from the
   object owned by `other`.
 
 6. _Postconditions_: `*this` is not valueless. `other` is valueless.
@@ -1550,7 +1550,7 @@ the return type of comparison operators on user-defined types.
 ### Supporting `operator()` `operator[]`
 
 There is no need for `indirect` or `polymorphic` to provide a function call or
-an indexing operator. Users who wish to do that can just access the value and
+an indexing operator. Users who wish to do that can simply access the value and
 call its operator. Furthermore, unlike comparisons, function calls or indexing
 operators do not compose further; for example, a composite would not be able to
 automatically generate a composited `operator()` or an `operator[]`.
