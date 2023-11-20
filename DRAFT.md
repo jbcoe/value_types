@@ -56,7 +56,9 @@ should not be considered in isolation.
 
 * Add missing comparison operators and ensure they are all conditionally noexcept.
 
-* Add argument deduction guides for `std::inmdirect`.
+* Add argument deduction guides for `std::indirect`.
+
+* Address incorrect `std::indirect` usage in composite example.
 
 * Additions to acknowledgements.
 
@@ -203,8 +205,8 @@ struct A {
 class Composite {
     indirect<A> a_;
 
-    Constness foo() { return a_.foo(); }
-    Constness foo() const { return a_.foo(); };
+    Constness foo() { return a_->foo(); }
+    Constness foo() const { return a_->foo(); };
 };
 
 int main() {
