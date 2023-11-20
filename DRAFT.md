@@ -40,6 +40,82 @@ This proposal is a fusion of two earlier individual proposals, P1950 and P0201.
 The design of the two proposed class templates is sufficiently similar that they
 should not be considered in isolation.
 
+## History
+
+### Changes in R3
+
+* Add explicit to constructors.
+
+* Add constructor indirect(U&& u, Us&&... us) overload and requisite constraints.
+
+* Add constructor polymorphic(allocator_arg_t, const Allocator& alloc) overload.
+
+* Add discussion on similarities and dissimilarities with variant.
+
+* Add table of breaking and non-breaking change to appendix C.
+
+* Add missing comparison operators and ensure they are all conditionally noexcept.
+
+* Add argument deduction guides for `std::indirect`.
+
+* Address incorrect `std::indirect` usage in composite example.
+
+* Additions to acknowledgements.
+
+* Address wording for `swap()` relating to `noexcept`.
+
+* Address constraints wording for `std::indirect` comparison operators.
+
+* Copy constructor now uses allocator_traits select_on_container_copy_construction.
+
+* Ensure swap and assign with self are nops.
+
+* Move feature test macros to [version.syn].
+
+* Remove `std::optional` specializations.
+
+* Replace use of "erroneous" with "a programming error".
+
+* Strong exception guarantee for copy assignment.
+
+* Specify constructors as uses-allocator constructing `T`.
+
+* Wording review and additions to <memory> synopsis [memory.syn]
+
+### Changes in R2
+
+* Add discussion on returning `auto` for `std::indirect` comparison operators.
+
+* Add discussion of `emplace()` to appendix.
+
+* Update wording to support allocator-awareness.
+
+### Changes in R1
+
+* Add feature-test macros.
+
+* Add `std::format` support for `std::indirect`
+
+* Add Appendix B: Before and after examples.
+
+* Add preconditions checking for types are not valueless.
+
+* Add constexpr support.
+
+* Allow quality of implementation support for small buffer optimization for Polymophic.
+
+* Extend wording for allocator support.
+
+* Change constraints to mandate to enable support for imcomplete types.
+
+* Change pointer usage to use allocator_traits pointer.
+
+* Remove `std::uses_allocator` specliazations.
+
+* Remove `std::inplace_t` parameter in constructors for `std::indirect`.
+
+* Fix `sizeof` error.
+
 ## Motivation
 
 The standard library has no vocabulary type for a dynamically-allocated object
@@ -129,8 +205,8 @@ struct A {
 class Composite {
     indirect<A> a_;
 
-    Constness foo() { return a_.foo(); }
-    Constness foo() const { return a_.foo(); };
+    Constness foo() { return a_->foo(); }
+    Constness foo() const { return a_->foo(); };
 };
 
 int main() {
@@ -635,73 +711,77 @@ template <class U, class... Us>
 explicit constexpr indirect(U&& u, Us&&... us);
 ```
 
-9. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(), std::forward<U>(u), std::forward<Us>(us)...)`.
+9. _Constraints_: `is_constructible_v<T, U, Us...>` is `true`.
+   `is_same_v<remove_cvref_t<U>, allocator_arg>` is `false`.
+   `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
+
+10. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(), std::forward<U>(u), std::forward<Us>(us)...)`.
 
 ```c++
 template <class U, class... Us>
 explicit constexpr indirect(allocator_arg_t, const Allocator& alloc, U&& u, Us&& ...us);
 ```
 
-10. _Constraints_: `is_constructible_v<T, U, Us...>` is `true`.
+11. _Constraints_: `is_constructible_v<T, U, Us...>` is `true`.
   `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
 
-11. _Effects_: `allocator_` is direct-non-list-initialized with `alloc`.
+12. _Effects_: `allocator_` is direct-non-list-initialized with `alloc`.
 
     DRAFTING NOTE: based on https://eel.is/c++draft/func.wrap#func.con-6
 
-12. _Postconditions_: `*this` is not valueless.  `p_` targets an object of type `T`
+13. _Postconditions_: `*this` is not valueless.  `p_` targets an object of type `T`
   uses-allocator constructed with `std::forward<U>(u)`, `std::forward<Us>(us)...`.
 
 ```c++
 constexpr indirect(const indirect& other);
 ```
 
-13. _Mandates_: `is_copy_constructible_v<T>` is `true`.
+14. _Mandates_: `is_copy_constructible_v<T>` is `true`.
 
-14. _Preconditions_: `other` is not valueless.
+15. _Preconditions_: `other` is not valueless.
 
-15. _Effects_: Equivalent to
+16. _Effects_: Equivalent to
   `indirect(allocator_arg, allocator_traits<allocator_type>::select_on_container_copy_construction(other.get_allocator()), *other)`.
 `
-16. _Postconditions_: `*this` is not valueless.
+17. _Postconditions_: `*this` is not valueless.
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& alloc,
                    const indirect& other);
 ```
 
-17. _Mandates_: `is_copy_constructible_v<T>` is `true`.
+18. _Mandates_: `is_copy_constructible_v<T>` is `true`.
 
-18. _Preconditions_: `other` is not valueless.
+19. _Preconditions_: `other` is not valueless.
 
-19. _Effects_: Equivalent to `indirect(allocator_arg, alloc, *other)`.
+20. _Effects_: Equivalent to `indirect(allocator_arg, alloc, *other)`.
 
-20. _Postconditions_: `*this` is not valueless.
+21. _Postconditions_: `*this` is not valueless.
 
 ```c++
 constexpr indirect(indirect&& other) noexcept;
 ```
 
-21. _Preconditions_: `other` is not valueless. _[Note: This constructor does not require that `is_move_constructible_v<T>`
+22. _Preconditions_: `other` is not valueless. _[Note: This constructor does not require that `is_move_constructible_v<T>`
   is `true` --end note]_
 
-22. _Effects_: Constructs an `indirect` that takes ownership of the `other`'s owned object and stores the address in `p_`.
+23. _Effects_: Constructs an `indirect` that takes ownership of the `other`'s owned object and stores the address in `p_`.
   `allocator_` is initialized by construction from `other.allocator_`.
 
-23. _Postconditions_: `other` is valueless.
+24. _Postconditions_: `other` is valueless.
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& alloc, indirect&& other)
   noexcept(allocator_traits<Allocator>::is_always_equal);
 ```
 
-24. _Preconditions_: `other` is not valueless. _[Note: This constructor does not require that `is_move_constructible_v<T>`
+25. _Preconditions_: `other` is not valueless. _[Note: This constructor does not require that `is_move_constructible_v<T>`
   is `true` --end note]_
 
-25. _Effects_: If `alloc == other.get_allocator()` is `true` then equivalent to `indirect(std::move(other))`,
+26. _Effects_: If `alloc == other.get_allocator()` is `true` then equivalent to `indirect(std::move(other))`,
   otherwise, equivalent to `indirect(allocator_arg, alloc, *std::move(other))`.
 
-26. _Postconditions_: `other` is valueless.
+27. _Postconditions_: `other` is valueless.
 
 #### X.Y.4 Destructor [indirect.dtor]
 
