@@ -711,73 +711,77 @@ template <class U, class... Us>
 explicit constexpr indirect(U&& u, Us&&... us);
 ```
 
-9. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(), std::forward<U>(u), std::forward<Us>(us)...)`.
+9. _Constraints_: `is_constructible_v<T, U, Us...>` is `true`.
+   `is_same_v<remove_cvref_t<U>, allocator_arg>` is `false`.
+   `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
+
+10. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(), std::forward<U>(u), std::forward<Us>(us)...)`.
 
 ```c++
 template <class U, class... Us>
 explicit constexpr indirect(allocator_arg_t, const Allocator& alloc, U&& u, Us&& ...us);
 ```
 
-10. _Constraints_: `is_constructible_v<T, U, Us...>` is `true`.
+11. _Constraints_: `is_constructible_v<T, U, Us...>` is `true`.
   `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
 
-11. _Effects_: `allocator_` is direct-non-list-initialized with `alloc`.
+12. _Effects_: `allocator_` is direct-non-list-initialized with `alloc`.
 
     DRAFTING NOTE: based on https://eel.is/c++draft/func.wrap#func.con-6
 
-12. _Postconditions_: `*this` is not valueless.  `p_` targets an object of type `T`
+13. _Postconditions_: `*this` is not valueless.  `p_` targets an object of type `T`
   uses-allocator constructed with `std::forward<U>(u)`, `std::forward<Us>(us)...`.
 
 ```c++
 constexpr indirect(const indirect& other);
 ```
 
-13. _Mandates_: `is_copy_constructible_v<T>` is `true`.
+14. _Mandates_: `is_copy_constructible_v<T>` is `true`.
 
-14. _Preconditions_: `other` is not valueless.
+15. _Preconditions_: `other` is not valueless.
 
-15. _Effects_: Equivalent to
+16. _Effects_: Equivalent to
   `indirect(allocator_arg, allocator_traits<allocator_type>::select_on_container_copy_construction(other.get_allocator()), *other)`.
 `
-16. _Postconditions_: `*this` is not valueless.
+17. _Postconditions_: `*this` is not valueless.
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& alloc,
                    const indirect& other);
 ```
 
-17. _Mandates_: `is_copy_constructible_v<T>` is `true`.
+18. _Mandates_: `is_copy_constructible_v<T>` is `true`.
 
-18. _Preconditions_: `other` is not valueless.
+19. _Preconditions_: `other` is not valueless.
 
-19. _Effects_: Equivalent to `indirect(allocator_arg, alloc, *other)`.
+20. _Effects_: Equivalent to `indirect(allocator_arg, alloc, *other)`.
 
-20. _Postconditions_: `*this` is not valueless.
+21. _Postconditions_: `*this` is not valueless.
 
 ```c++
 constexpr indirect(indirect&& other) noexcept;
 ```
 
-21. _Preconditions_: `other` is not valueless. _[Note: This constructor does not require that `is_move_constructible_v<T>`
+22. _Preconditions_: `other` is not valueless. _[Note: This constructor does not require that `is_move_constructible_v<T>`
   is `true` --end note]_
 
-22. _Effects_: Constructs an `indirect` that takes ownership of the `other`'s owned object and stores the address in `p_`.
+23. _Effects_: Constructs an `indirect` that takes ownership of the `other`'s owned object and stores the address in `p_`.
   `allocator_` is initialized by construction from `other.allocator_`.
 
-23. _Postconditions_: `other` is valueless.
+24. _Postconditions_: `other` is valueless.
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& alloc, indirect&& other)
   noexcept(allocator_traits<Allocator>::is_always_equal);
 ```
 
-24. _Preconditions_: `other` is not valueless. _[Note: This constructor does not require that `is_move_constructible_v<T>`
+25. _Preconditions_: `other` is not valueless. _[Note: This constructor does not require that `is_move_constructible_v<T>`
   is `true` --end note]_
 
-25. _Effects_: If `alloc == other.get_allocator()` is `true` then equivalent to `indirect(std::move(other))`,
+26. _Effects_: If `alloc == other.get_allocator()` is `true` then equivalent to `indirect(std::move(other))`,
   otherwise, equivalent to `indirect(allocator_arg, alloc, *std::move(other))`.
 
-26. _Postconditions_: `other` is valueless.
+27. _Postconditions_: `other` is valueless.
 
 #### X.Y.4 Destructor [indirect.dtor]
 
