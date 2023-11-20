@@ -203,8 +203,8 @@ struct A {
 class Composite {
     indirect<A> a_;
 
-    Constness foo() { return a_.foo(); }
-    Constness foo() const { return a_.foo(); };
+    Constness foo() { return a_->foo(); }
+    Constness foo() const { return a_->foo(); };
 };
 
 int main() {
