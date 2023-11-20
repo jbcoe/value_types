@@ -142,6 +142,12 @@ if (${XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT})
         endif()
 
         xyz_add_test(
+            NAME allocator_test
+            LINK_LIBRARIES indirect polymorphic
+            FILES allocator_test.cc
+        )
+
+        xyz_add_test(
             NAME indirect_test
             LINK_LIBRARIES indirect
             FILES indirect_test.cc

@@ -97,6 +97,7 @@ function(xyz_add_test)
         include(GoogleTest)
         gtest_discover_tests(${XYZ_NAME}
             WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+            EXTRA_ARGS "--output-on-failure"
         )
 
         if (ENABLE_CODE_COVERAGE)
