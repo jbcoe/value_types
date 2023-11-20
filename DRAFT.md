@@ -765,8 +765,6 @@ _Mandates_: `is_move_constructible_v<T>` is `true`.
 ```c++
 constexpr const T& operator*() const & noexcept;
 constexpr T& operator*() & noexcept;
-constexpr const T&& operator*() const && noexcept;
-constexpr T&& operator*() && noexcept;
 ```
 
 1. _Preconditions_: `*this` is not valueless.
@@ -774,25 +772,34 @@ constexpr T&& operator*() && noexcept;
 2. _Returns_: `*p_`.
 
 ```c++
-constexpr const_pointer operator->() const noexcept;
-constexpr pointer operator->() noexcept;
+constexpr const T&& operator*() const && noexcept;
+constexpr T&& operator*() && noexcept;
 ```
 
 3. _Preconditions_: `*this` is not valueless.
 
-4. _Returns_: `p_`.
+4. _Returns_: `std::move(*p_)`.
+
+```c++
+constexpr const_pointer operator->() const noexcept;
+constexpr pointer operator->() noexcept;
+```
+
+5. _Preconditions_: `*this` is not valueless.
+
+6. _Returns_: `p_`.
 
 ```c++
 constexpr bool valueless_after_move() const noexcept;
 ```
 
-5. _Returns_: `true` if `*this` is valueless, otherwise `false`.
+7. _Returns_: `true` if `*this` is valueless, otherwise `false`.
 
 ```c++
 constexpr allocator_type get_allocator() const noexcept;
 ```
 
-6. _Returns_: A copy of the `Allocator` object used to construct the owned object.
+8. _Returns_: A copy of the `Allocator` object used to construct the owned object.
 
 #### X.Y.7 Swap [indirect.swap]
 
