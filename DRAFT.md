@@ -40,6 +40,80 @@ This proposal is a fusion of two earlier individual proposals, P1950 and P0201.
 The design of the two proposed class templates is sufficiently similar that they
 should not be considered in isolation.
 
+## History
+
+### Changes in R3
+
+* Add explicit to constructors.
+
+* Add constructor indirect(U&& u, Us&&... us) overload and requisite constraints.
+
+* Add constructor polymorphic(allocator_arg_t, const Allocator& alloc) overload.
+
+* Add discussion on similarities and dissimilarities with variant.
+
+* Add table of breaking and non-breaking change to appendix C.
+
+* Add missing comparison operators and ensure they are all conditionally noexcept.
+
+* Add argument deduction guides for `std::inmdirect`.
+
+* Additions to acknowledgements.
+
+* Address wording for `swap()` relating to `noexcept`.
+
+* Address constraints wording for `std::indirect` comparison operators.
+
+* Copy constructor now uses allocator_traits select_on_container_copy_construction.
+
+* Ensure swap and assign with self are nops.
+
+* Move feature test macros to [version.syn].
+
+* Remove `std::optional` specializations.
+
+* Replace use of "erroneous" with "a programming error".
+
+* Strong exception guarantee for copy assignment.
+
+* Specify constructors as uses-allocator constructing `T`.
+
+* Wording review and additions to <memory> synopsis [memory.syn]
+
+### Changes in R2
+
+* Add discussion on returning `auto` for `std::indirect` comparison operators.
+
+* Add discussion of `emplace()` to appendix.
+
+* Update wording to support allocator-awareness.
+
+### Changes in R1
+
+* Add feature-test macros.
+
+* Add `std::format` support for `std::indirect`
+
+* Add Appendix B: Before and after examples.
+
+* Add preconditions checking for types are not valueless.
+
+* Add constexpr support.
+
+* Allow quality of implementation support for small buffer optimization for Polymophic.
+
+* Extend wording for allocator support.
+
+* Change constraints to mandate to enable support for imcomplete types.
+
+* Change pointer usage to use allocator_traits pointer.
+
+* Remove `std::uses_allocator` specliazations.
+
+* Remove `std::inplace_t` parameter in constructors for `std::indirect`.
+
+* Fix `sizeof` error.
+
 ## Motivation
 
 The standard library has no vocabulary type for a dynamically-allocated object
