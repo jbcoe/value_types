@@ -86,7 +86,7 @@ should not be considered in isolation.
 
 * Add discussion of `emplace()` to appendix.
 
-* Update working to support allocator-awareness.
+* Update wording to support allocator-awareness.
 
 ### Changes from R0
 
