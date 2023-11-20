@@ -42,7 +42,7 @@ should not be considered in isolation.
 
 ## History
 
-### Changes from R2
+### Changes in R3
 
 * Add explicit to constructors.
 
@@ -74,13 +74,13 @@ should not be considered in isolation.
 
 * Replace use of "erroneous" with "a programming error".
 
-* Strong exception guarantee for copy assignement.
+* Strong exception guarantee for copy assignment.
 
 * Specify constructors as uses-allocator constructing `T`.
 
 * Wording review and additions to <memory> synopsis [memory.syn]
 
-### Changes from R1
+### Changes in R2
 
 * Add discussion on returning `auto` for `std::indirect` comparison operators.
 
@@ -88,7 +88,7 @@ should not be considered in isolation.
 
 * Update wording to support allocator-awareness.
 
-### Changes from R0
+### Changes in R1
 
 * Add feature-test macros.
 
@@ -100,7 +100,7 @@ should not be considered in isolation.
 
 * Add constexpr support.
 
-* Allow quality of implentation support for small buffer optimization for Polymophic.
+* Allow quality of implementation support for small buffer optimization for Polymophic.
 
 * Extend wording for allocator support.
 
