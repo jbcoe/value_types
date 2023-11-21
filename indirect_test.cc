@@ -39,6 +39,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifdef XYZ_HAS_STD_OPTIONAL
 #include <optional>
 #endif  // XYZ_HAS_STD_OPTIONAL
+#include <random>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -835,6 +836,24 @@ TEST(IndirectTest, TaggedAllocatorEqualAllocatorMoveAssign) {
   EXPECT_EQ(red2->tag(), "RED");
 
   red = std::move(red);  // -Wno-self-move
+}
+
+TEST(IndirectTest, MovingAlgorithms) {
+  std::vector<xyz::indirect<int>> values = {
+      xyz::indirect<int>{0}, xyz::indirect<int>{1}, xyz::indirect<int>{2},
+      xyz::indirect<int>{3}, xyz::indirect<int>{4},
+  };
+
+  EXPECT_EQ(std::is_sorted(values.begin(), values.end()), false);
+
+  std::random_device rd;
+  std::mt19937 g(rd());
+
+  std::shuffle(values.begin(), values.end(), g);
+  EXPECT_EQ(std::is_sorted(values.begin(), values.end()), false);
+
+  std::sort(values.begin(), values.end());
+  EXPECT_EQ(std::is_sorted(values.begin(), values.end()), true);
 }
 
 }  // namespace
