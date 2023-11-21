@@ -63,12 +63,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
 #ifdef __has_include
-#if __has_include(<memory_resource>)
+#if (__cplusplus >= 201703L) && __has_include(<memory_resource>)
 #include <memory_resource>
 #if __cpp_lib_memory_resource >= 201603L
 #define XYZ_HAS_STD_MEMORY_RESOURCE
 #endif  // __cpp_lib_memory_resource >= 201603L
-#endif  //__has_include(<memory_resource>)
+#endif  //(__cplusplus >= 201703L) && __has_include(<memory_resource>)
 #endif  //__has_include
 
 #endif  // XYZ_FEATURE_CHECK_H
