@@ -1,4 +1,5 @@
 # `indirect` and `polymorphic`: Vocabulary Types for Composite Class Design
+ <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
