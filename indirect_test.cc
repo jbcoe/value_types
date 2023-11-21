@@ -28,6 +28,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <array>
 #include <map>
 
@@ -854,6 +855,21 @@ TEST(IndirectTest, MovingAlgorithms) {
 
   std::sort(values.begin(), values.end());
   EXPECT_EQ(std::is_sorted(values.begin(), values.end()), true);
+}
+
+TEST(IndirectTest, PredicateAlgorithms) {
+  std::vector<xyz::indirect<int>> values = {
+      xyz::indirect<int>{0}, xyz::indirect<int>{1}, xyz::indirect<int>{2},
+      xyz::indirect<int>{3}, xyz::indirect<int>{4},
+  };
+
+  auto const isEven = [](auto const& i) { return *i % 2 == 0; };
+
+  EXPECT_EQ(std::all_of(values.begin(), values.end(), isEven), false);
+
+  EXPECT_EQ(std::any_of(values.begin(), values.end(), isEven), true);
+
+  EXPECT_EQ(std::none_of(values.begin(), values.end(), isEven), false);
 }
 
 }  // namespace
