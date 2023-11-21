@@ -683,7 +683,7 @@ class TaggingAllocator {
   using propagate_on_container_copy_assignment = std::true_type;
   using propagate_on_container_move_assignment = std::true_type;
 
-  class TagMismatch : std::exception {
+  class TagMismatch : public std::exception {
     std::string message_;
 
    public:
@@ -836,4 +836,5 @@ TEST(IndirectTest, TaggedAllocatorEqualAllocatorMoveAssign) {
 
   red = std::move(red);  // -Wno-self-move
 }
+
 }  // namespace
