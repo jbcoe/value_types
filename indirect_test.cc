@@ -836,10 +836,5 @@ TEST(IndirectTest, TaggedAllocatorEqualAllocatorMoveAssign) {
 
   red = std::move(red);  // -Wno-self-move
 }
-/*
-TEST(IndirectTest, TaggedAllocatorEqualAllocatorMoveAssign) {
-  std::vector<xyz::indirect<int>> values(0, 10);
 
-}
-*/
 }  // namespace
