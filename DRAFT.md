@@ -51,7 +51,7 @@ should not be considered in isolation.
 
 * Add constructor `polymorphic(allocator_arg_t, const Allocator& alloc)` overload.
 
-* Add discussion on similarities and dissimilarities with variant.
+* Add discussion on similarities and differences with variant.
 
 * Add table of breaking and non-breaking changes to appendix C.
 
