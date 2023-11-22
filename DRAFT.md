@@ -955,7 +955,7 @@ constexpr auto operator<=>(const indirect& lhs, const indirect<U, AA>& rhs)
 
 2. _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
 
-3. _Effects_: Returns `*lhs` _op_ `*rhs`.
+3. _Returns_: `*lhs` _op_ `*rhs`.
 
 4. _Remarks_: Specializations of this function template for which `*lhs` _op_
   `*rhs` is a core constant expression are constexpr functions.
@@ -1008,7 +1008,7 @@ constexpr auto operator<=>(const indirect& lhs, const U& rhs)
 
 2. _Preconditions_: `lhs` is not valueless.
 
-3. _Effects_: Returns `*lhs` _op_ `rhs`.
+3. _Returns_: `*lhs` _op_ `rhs`.
 
 4. _Remarks_: Specializations of this function template for which `*lhs` _op_
   `rhs` is a core constant expression, are constexpr functions.
@@ -1059,7 +1059,7 @@ constexpr auto operator<=>(const U& lhs, const indirect& rhs)
 
 6. _Preconditions_: `rhs` is not valueless.
 
-7. _Effects_: Returns `lhs` _op_ `*rhs`.
+7. _Returns_: `lhs` _op_ `*rhs`.
 
 8. _Remarks_: Specializations of this function template for which `lhs` _op_
   `*rhs` is a core constant expression, are constexpr functions.
@@ -1356,7 +1356,7 @@ constexpr T& operator*() noexcept;
 
 1. _Preconditions_: `*this` is not valueless.
 
-2. _Effects_: Returns a reference to the owned object.
+2. _Returns_: A reference to the owned object.
 
 ```c++
 constexpr const_pointer operator->() const noexcept;
@@ -1365,7 +1365,7 @@ constexpr pointer operator->() noexcept;
 
 3. _Preconditions_: `*this` is not valueless.
 
-4. _Effects_: Returns a pointer to the owned object.
+4. _Returns_: A pointer to the owned object.
 
 ```c++
 constexpr bool valueless_after_move() const noexcept;
