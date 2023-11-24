@@ -41,7 +41,8 @@ These fill a gap in the suite of existing standard library vocabulary types.
 # Vocabulary Types
 
 We refer to standard library types such as `std::array`, `std::map`,
-`std::optional`,  `std::variant` and `std::vector` as _vocabulary types_.
+`std::optional`,  `std::variant`, `std::tuple` and `std::vector` as
+_vocabulary types_.
 
 We postulate that an arbitrary piece of C++ library or application code would
 make use of some of these types.
@@ -71,6 +72,7 @@ Vocabulary types can be used to express common idioms.
 | An instance of an object `T` | `T` |
 | A nullable instance of an object `T` | `std::optional<T>` |
 | An instance of one of a closed-set of types `Ts...`| `std::variant<Ts...>`|
+| Every instance of a closed-set of types `Ts...`| `std::tuple<Ts...>`|
 | `N` instances of a type `T`| `std::array<T, N>`|
 | Variable-count, multiple instances of a type `T`| `std::vector<T>`|
 | Unique, variable-count, instances of a type `T`| `std::set<T>`|
@@ -89,7 +91,6 @@ can be compiler-generated if it is supported by all component objects.
 | Destructor | `~T();` |
 | Copy constructor/assignment | `T(const T&);` `T& operator=(const T&);` |
 | Move constructor/assignment|  `T(T&&);` `T& operator=(T&&);` |
-
 ---
 
 # Const propagation
