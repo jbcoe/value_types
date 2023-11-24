@@ -72,7 +72,7 @@ Vocabulary types can be used to express common idioms.
 | An instance of an object `T` | `T` |
 | A nullable instance of an object `T` | `std::optional<T>` |
 | An instance of one of a closed-set of types `Ts...`| `std::variant<Ts...>`|
-| Every instance of a closed-set of types `Ts...`| `std::tuple<Ts...>`|
+| Once instance of each of a closed-set of types `Ts...`| `std::tuple<Ts...>`|
 | `N` instances of a type `T`| `std::array<T, N>`|
 | Variable-count, multiple instances of a type `T`| `std::vector<T>`|
 | Unique, variable-count, instances of a type `T`| `std::set<T>`|
