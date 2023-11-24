@@ -516,7 +516,7 @@ move assignment, or swapping of the allocator only if
 
     is `true` within the implementation of the corresponding indirect value operation.
 
-4. The template parameter `T` of `indirect` shall be a non-union class type.
+4. The template parameter `T` of `indirect` shall be _Cpp17Destructible_.
 
 5. The template parameter `T` of `indirect` may be an incomplete type.
 
@@ -1145,7 +1145,7 @@ or (64.3) `allocator_traits<allocator_type>::propagate_on_container_swap::value`
 is true within the implementation of the corresponding polymorphic value
 operation.
 
-4. The template parameter `T` of `polymorphic` shall be a non-union class type.
+4. The template parameter `T` of `polymorphic` shall be a _Cpp17Destructible_.
 
 5. The template parameter `T` of `polymorphic` may be an incomplete type.
 
