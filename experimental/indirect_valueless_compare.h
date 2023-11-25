@@ -238,6 +238,12 @@ class indirect {
   friend constexpr bool operator==(
       const indirect<T, A>& lhs,
       const indirect<U, AA>& rhs) noexcept(noexcept(*lhs == *rhs)) {
+    if (lhs.p_ == nullptr) {
+      return rhs.p_ == nullptr;
+    }
+    if (rhs.p_ == nullptr) {
+      return false;
+    }
     return *lhs == *rhs;
   }
 
@@ -253,6 +259,7 @@ class indirect {
                                    const U& rhs) noexcept(noexcept(*lhs == rhs))
     requires(!is_indirect_v<U>)
   {
+    if (lhs == nullptr) return false;
     return *lhs == rhs;
   }
 
@@ -261,6 +268,7 @@ class indirect {
       const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs == *rhs))
     requires(!is_indirect_v<U>)
   {
+    if (rhs == nullptr) return false;
     return lhs == *rhs;
   }
 
