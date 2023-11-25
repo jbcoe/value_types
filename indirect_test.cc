@@ -18,18 +18,6 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==============================================================================*/
 
-#ifdef XYZ_INDIRECT_VALULESS_COPY
-#include "experimental/indirect_valueless_copy.h"
-#endif  // XYZ_INDIRECT_VALULESS_COPY
-
-#ifdef XYZ_INDIRECT_VALULESS_COMPARE
-#include "experimental/indirect_valueless_compare.h"
-#endif  // XYZ_INDIRECT_VALULESS_COMPARE
-
-#ifdef XYZ_INDIRECT_VALULESS_COPY_AND_COMPARE
-#include "experimental/indirect_valueless_copy_and_compare.h"
-#endif  // XYZ_INDIRECT_VALULESS_COPY_AND_COMPARE
-
 #ifdef XYZ_INDIRECT_CXX_14
 #include "indirect_cxx14.h"
 #endif  // XYZ_INDIRECT_CXX_14

@@ -54,7 +54,6 @@ cc_test(
 
 cc_library(
     name = "indirect_valueless_compare",
-    defines = ["XYZ_INDIRECT_VALULESS_COMPARE"],
     hdrs = ["experimental/indirect_valueless_compare.h"],
     copts = ["-Iexternal/value_types/"],
     visibility = ["//visibility:public"],
