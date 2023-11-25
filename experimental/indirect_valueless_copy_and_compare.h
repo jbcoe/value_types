@@ -234,27 +234,6 @@ class indirect {
   }
 
   template <class U, class AA>
-  friend constexpr bool operator!=(
-      const indirect<T, A>& lhs,
-      const indirect<U, AA>& rhs) noexcept(noexcept(*lhs != *rhs)) {
-    return *lhs != *rhs;
-  }
-
-  template <class U, class AA>
-  friend constexpr bool operator<(
-      const indirect<T, A>& lhs,
-      const indirect<U, AA>& rhs) noexcept(noexcept(*lhs < *rhs)) {
-    return *lhs < *rhs;
-  }
-
-  template <class U, class AA>
-  friend constexpr bool operator<=(
-      const indirect<T, A>& lhs,
-      const indirect<U, AA>& rhs) noexcept(noexcept(*lhs <= *rhs)) {
-    return *lhs <= *rhs;
-  }
-
-  template <class U, class AA>
   friend constexpr auto operator<=>(
       const indirect<T, A>& lhs,
       const indirect<U, AA>& rhs) noexcept(noexcept(*lhs <=> *rhs)) {
@@ -275,85 +254,6 @@ class indirect {
     requires(!is_indirect_v<U>)
   {
     return lhs == *rhs;
-  }
-
-  template <class U>
-  friend constexpr bool operator!=(const indirect<T, A>& lhs,
-                                   const U& rhs) noexcept(noexcept(*lhs != rhs))
-    requires(!is_indirect_v<U>)
-  {
-    return *lhs != rhs;
-  }
-
-  template <class U>
-  friend constexpr bool operator!=(const U& lhs, const indirect<T, A>& rhs)
-    requires(!is_indirect_v<U>)
-  {
-    return lhs != *rhs;
-  }
-
-  template <class U>
-  friend constexpr bool operator<(const indirect<T, A>& lhs,
-                                  const U& rhs) noexcept(noexcept(*lhs < rhs))
-    requires(!is_indirect_v<U>)
-  {
-    return *lhs < rhs;
-  }
-
-  template <class U>
-  friend constexpr bool operator<(
-      const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs < *rhs))
-    requires(!is_indirect_v<U>)
-  {
-    return lhs < *rhs;
-  }
-
-  template <class U>
-  friend constexpr bool operator<=(const indirect<T, A>& lhs,
-                                   const U& rhs) noexcept(noexcept(*lhs <= rhs))
-    requires(!is_indirect_v<U>)
-  {
-    return *lhs <= rhs;
-  }
-
-  template <class U>
-  friend constexpr bool operator<=(
-      const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs <= *rhs))
-    requires(!is_indirect_v<U>)
-  {
-    return lhs <= *rhs;
-  }
-
-  template <class U>
-  friend constexpr bool operator>(const indirect<T, A>& lhs,
-                                  const U& rhs) noexcept(noexcept(*lhs > rhs))
-    requires(!is_indirect_v<U>)
-  {
-    return *lhs > rhs;
-  }
-
-  template <class U>
-  friend constexpr bool operator>(
-      const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs > *rhs))
-    requires(!is_indirect_v<U>)
-  {
-    return lhs > *rhs;
-  }
-
-  template <class U>
-  friend constexpr bool operator>=(const indirect<T, A>& lhs,
-                                   const U& rhs) noexcept(noexcept(*lhs >= rhs))
-    requires(!is_indirect_v<U>)
-  {
-    return *lhs >= rhs;
-  }
-
-  template <class U>
-  friend constexpr bool operator>=(
-      const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs >= *rhs))
-    requires(!is_indirect_v<U>)
-  {
-    return lhs >= *rhs;
   }
 
   template <class U>
