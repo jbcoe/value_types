@@ -45,6 +45,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace {
 
+#if XYZ_INDIRECT_IS_TRIVIALLY_RELOCATABLE
+TEST(IndirectTest, TriviallyRelocatable) {
+  static_assert(std::is_trivially_relocatable_v<xyz::indirect<int>>);
+}
+#endif  // XYZ_INDIRECT_IS_TRIVIALLY_RELOCATABLE
+
 TEST(IndirectTest, ValueAccessFromInPlaceConstructedObject) {
   xyz::indirect<int> a(42);
   EXPECT_EQ(*a, 42);

@@ -47,6 +47,16 @@ namespace xyz {
 }
 #endif  // XYZ_UNREACHABLE_DEFINED
 
+#ifndef XYZ_TRIVIALLY_RELOCATABLE_DEFINED
+#if defined(__cpp_impl_trivially_relocatable)
+#define XYZ_TRIVIALLY_RELOCATABLE [[trivially_relocatable]]
+#define XYZ_INDIRECT_IS_TRIVIALLY_RELOCATABLE 1
+#else
+#define XYZ_INDIRECT_IS_TRIVIALLY_RELOCATABLE 0
+#define XYZ_TRIVIALLY_RELOCATABLE
+#endif  // defined(__cpp_impl_trivially_relocatable)
+#endif  // XYZ_TRIVIALLY_RELOCATABLE_DEFINED
+
 template <class T, class A>
 class indirect;
 
@@ -57,7 +67,7 @@ template <class T, class A>
 inline constexpr bool is_indirect_v<indirect<T, A>> = true;
 
 template <class T, class A = std::allocator<T>>
-class indirect {
+class XYZ_TRIVIALLY_RELOCATABLE indirect {
   using allocator_traits = std::allocator_traits<A>;
 
  public:
