@@ -238,8 +238,6 @@ class indirect {
   friend constexpr bool operator==(
       const indirect<T, A>& lhs,
       const indirect<U, AA>& rhs) noexcept(noexcept(*lhs == *rhs)) {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
     return *lhs == *rhs;
   }
 
@@ -247,8 +245,6 @@ class indirect {
   friend constexpr bool operator!=(
       const indirect<T, A>& lhs,
       const indirect<U, AA>& rhs) noexcept(noexcept(*lhs != *rhs)) {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
     return *lhs != *rhs;
   }
 
@@ -256,8 +252,6 @@ class indirect {
   friend constexpr bool operator<(
       const indirect<T, A>& lhs,
       const indirect<U, AA>& rhs) noexcept(noexcept(*lhs < *rhs)) {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
     return *lhs < *rhs;
   }
 
@@ -265,8 +259,6 @@ class indirect {
   friend constexpr bool operator<=(
       const indirect<T, A>& lhs,
       const indirect<U, AA>& rhs) noexcept(noexcept(*lhs <= *rhs)) {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
     return *lhs <= *rhs;
   }
 
@@ -274,8 +266,6 @@ class indirect {
   friend constexpr auto operator<=>(
       const indirect<T, A>& lhs,
       const indirect<U, AA>& rhs) noexcept(noexcept(*lhs <=> *rhs)) {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
     return *lhs <=> *rhs;
   }
 
@@ -284,7 +274,6 @@ class indirect {
                                    const U& rhs) noexcept(noexcept(*lhs == rhs))
     requires(!is_indirect_v<U>)
   {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
     return *lhs == rhs;
   }
 
@@ -293,7 +282,6 @@ class indirect {
       const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs == *rhs))
     requires(!is_indirect_v<U>)
   {
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
     return lhs == *rhs;
   }
 
@@ -302,7 +290,6 @@ class indirect {
                                    const U& rhs) noexcept(noexcept(*lhs != rhs))
     requires(!is_indirect_v<U>)
   {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
     return *lhs != rhs;
   }
 
@@ -310,7 +297,6 @@ class indirect {
   friend constexpr bool operator!=(const U& lhs, const indirect<T, A>& rhs)
     requires(!is_indirect_v<U>)
   {
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
     return lhs != *rhs;
   }
 
@@ -319,7 +305,6 @@ class indirect {
                                   const U& rhs) noexcept(noexcept(*lhs < rhs))
     requires(!is_indirect_v<U>)
   {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
     return *lhs < rhs;
   }
 
@@ -328,7 +313,6 @@ class indirect {
       const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs < *rhs))
     requires(!is_indirect_v<U>)
   {
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
     return lhs < *rhs;
   }
 
@@ -337,7 +321,6 @@ class indirect {
                                    const U& rhs) noexcept(noexcept(*lhs <= rhs))
     requires(!is_indirect_v<U>)
   {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
     return *lhs <= rhs;
   }
 
@@ -346,7 +329,6 @@ class indirect {
       const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs <= *rhs))
     requires(!is_indirect_v<U>)
   {
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
     return lhs <= *rhs;
   }
 
@@ -355,7 +337,6 @@ class indirect {
                                   const U& rhs) noexcept(noexcept(*lhs > rhs))
     requires(!is_indirect_v<U>)
   {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
     return *lhs > rhs;
   }
 
@@ -364,7 +345,6 @@ class indirect {
       const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs > *rhs))
     requires(!is_indirect_v<U>)
   {
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
     return lhs > *rhs;
   }
 
@@ -373,7 +353,6 @@ class indirect {
                                    const U& rhs) noexcept(noexcept(*lhs >= rhs))
     requires(!is_indirect_v<U>)
   {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
     return *lhs >= rhs;
   }
 
@@ -382,7 +361,6 @@ class indirect {
       const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs >= *rhs))
     requires(!is_indirect_v<U>)
   {
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
     return lhs >= *rhs;
   }
 
@@ -392,7 +370,6 @@ class indirect {
                                                                     rhs))
     requires(!is_indirect_v<U>)
   {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
     return *lhs <=> rhs;
   }
 
@@ -401,7 +378,6 @@ class indirect {
       const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs <=> *rhs))
     requires(!is_indirect_v<U>)
   {
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
     return lhs <=> *rhs;
   }
 
