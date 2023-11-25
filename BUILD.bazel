@@ -53,6 +53,72 @@ cc_test(
 )
 
 cc_library(
+    name = "indirect_valueless_copy",
+    defines = ["XYZ_INDIRECT_VALULESS_COPY"],
+    hdrs = ["experimental/indirect_valueless_copy.h"],
+    copts = ["-Iexternal/value_types/"],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "indirect_valueless_copy_test",
+    size = "small",
+    srcs = [
+        "indirect_test.cc",
+        "tracking_allocator.h"
+    ],
+    deps = [
+        "feature_check",
+        "indirect_valueless_copy",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "indirect_valueless_compare",
+    defines = ["XYZ_INDIRECT_VALULESS_COMPARE"],
+    hdrs = ["experimental/indirect_valueless_compare.h"],
+    copts = ["-Iexternal/value_types/"],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "indirect_valueless_compare_test",
+    size = "small",
+    srcs = [
+        "indirect_test.cc",
+        "tracking_allocator.h"
+    ],
+    deps = [
+        "feature_check",
+        "indirect_valueless_compare",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "indirect_valueless_copy_and_compare",
+    defines = ["XYZ_INDIRECT_VALULESS_COPY_AND_COMPARE"],
+    hdrs = ["experimental/indirect_valueless_copy_and_compare.h"],
+    copts = ["-Iexternal/value_types/"],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "indirect_valueless_copy_and_compare_test",
+    size = "small",
+    srcs = [
+        "indirect_test.cc",
+        "tracking_allocator.h"
+    ],
+    deps = [
+        "feature_check",
+        "indirect_valueless_copy_and_compare",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "polymorphic",
     hdrs = ["polymorphic.h"],
     copts = ["-Iexternal/value_types/"],
