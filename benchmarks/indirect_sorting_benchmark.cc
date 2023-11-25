@@ -104,7 +104,7 @@ static void Indirect_SortingBenchmark(benchmark::State& state) {
   }
 }
 
-static void Indirect_ExperimentalSortingBenchmark(benchmark::State& state) {
+static void Indirect_ValuelessCheckSortingBenchmark(benchmark::State& state) {
   std::vector<xyz::experimental::indirect<int>> values(LARGE_VECTOR_SIZE);
   values.resize(LARGE_VECTOR_SIZE);
 
@@ -127,4 +127,4 @@ BENCHMARK(Int_SortingBenchmark);
 BENCHMARK(Optional_Int_SortingBenchmark);
 BENCHMARK(VariantInt_SortingBenchmark);
 BENCHMARK(Indirect_SortingBenchmark);
-BENCHMARK(Indirect_ExperimentalSortingBenchmark);
+BENCHMARK(Indirect_ValuelessCheckSortingBenchmark);
