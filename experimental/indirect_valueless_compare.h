@@ -18,8 +18,8 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==============================================================================*/
 
-#ifndef XYZ_INDIRECT_H
-#define XYZ_INDIRECT_H
+#ifndef XYZ_EXPERIMENTAL_INDIRECT_VALUELESS_COMPARE_H
+#define XYZ_EXPERIMENTAL_INDIRECT_VALUELESS_COMPARE_H
 
 #include <cassert>
 #include <compare>
@@ -27,10 +27,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <memory>
 #include <type_traits>
 #include <utility>
-
-#if __has_include(<format>)
-#include <format>
-#endif
 
 namespace xyz {
 
@@ -46,7 +42,7 @@ namespace xyz {
 #endif
 }
 #endif  // XYZ_UNREACHABLE_DEFINED
-
+namespace experimental {
 template <class T, class A>
 class indirect;
 
@@ -238,10 +234,10 @@ class indirect {
   friend constexpr bool operator==(
       const indirect<T, A>& lhs,
       const indirect<U, AA>& rhs) noexcept(noexcept(*lhs == *rhs)) {
-    if (lhs.p_ == nullptr) {
-      return rhs.p_ == nullptr;
+    if (lhs.valueless_after_move()) {
+      return rhs.valueless_after_move();
     }
-    if (rhs.p_ == nullptr) {
+    if (rhs.valueless_after_move()) {
       return false;
     }
     return *lhs == *rhs;
@@ -251,6 +247,9 @@ class indirect {
   friend constexpr auto operator<=>(
       const indirect<T, A>& lhs,
       const indirect<U, AA>& rhs) noexcept(noexcept(*lhs <=> *rhs)) {
+    if (lhs.valueless_after_move() || rhs.valueless_after_move()) {
+      return !lhs.valueless_after_move() <=> !rhs.valueless_after_move();
+    }
     return *lhs <=> *rhs;
   }
 
@@ -259,7 +258,9 @@ class indirect {
                                    const U& rhs) noexcept(noexcept(*lhs == rhs))
     requires(!is_indirect_v<U>)
   {
-    if (lhs == nullptr) return false;
+    if (lhs.valueless_after_move()) {
+      return false;
+    }
     return *lhs == rhs;
   }
 
@@ -268,7 +269,9 @@ class indirect {
       const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs == *rhs))
     requires(!is_indirect_v<U>)
   {
-    if (rhs == nullptr) return false;
+    if (rhs.valueless_after_move()) {
+      return false;
+    }
     return lhs == *rhs;
   }
 
@@ -278,6 +281,9 @@ class indirect {
                                                                     rhs))
     requires(!is_indirect_v<U>)
   {
+    if (lhs.valueless_after_move()) {
+      return false <=> true;
+    }
     return *lhs <=> rhs;
   }
 
@@ -286,6 +292,9 @@ class indirect {
       const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs <=> *rhs))
     requires(!is_indirect_v<U>)
   {
+    if (rhs.valueless_after_move()) {
+      return true <=> false;
+    }
     return lhs <=> *rhs;
   }
 
@@ -323,51 +332,13 @@ class indirect {
   }
 };
 
-template <class T>
-concept is_hashable = requires(T t) { std::hash<T>{}(t); };
-
 template <typename Value>
 indirect(Value) -> indirect<Value>;
 
 template <typename Alloc, typename Value>
 indirect(std::allocator_arg_t, Alloc, Value) -> indirect<
     Value, typename std::allocator_traits<Alloc>::template rebind_alloc<Value>>;
-
+}  // namespace experimental
 }  // namespace xyz
 
-template <class T, class Alloc>
-  requires xyz::is_hashable<T>
-struct std::hash<xyz::indirect<T, Alloc>> {
-  constexpr std::size_t operator()(const xyz::indirect<T, Alloc>& key) const {
-    return std::hash<typename xyz::indirect<T, Alloc>::value_type>{}(*key);
-  }
-};
-
-#if (__cpp_lib_format >= 201907L)
-
-namespace xyz {
-
-template <class T, class charT>
-concept is_formattable = requires(T t) { std::formatter<T, charT>{}; };
-
-}  // namespace xyz
-
-template <class T, class Alloc, class charT>
-  requires xyz::is_formattable<T, charT>
-struct std::formatter<xyz::indirect<T, Alloc>, charT>
-    : std::formatter<T, charT> {
-  template <class ParseContext>
-  constexpr auto parse(ParseContext& ctx) -> typename ParseContext::iterator {
-    return std::formatter<T, charT>::parse(ctx);
-  }
-
-  template <class FormatContext>
-  auto format(xyz::indirect<T, Alloc> const& value, FormatContext& ctx) const ->
-      typename FormatContext::iterator {
-    return std::formatter<T, charT>::format(*value, ctx);
-  }
-};
-
-#endif  // __cpp_lib_format >= 201907L
-
-#endif  // XYZ_INDIRECT_H
+#endif  // XYZ_EXPERIMENTAL_INDIRECT_VALUELESS_COMPARE_H
