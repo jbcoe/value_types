@@ -21,6 +21,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <benchmark/benchmark.h>
 
 #include <algorithm>
+#include <optional>
 #include <random>
 #include <vector>
 
@@ -29,6 +30,42 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace {
 
 constexpr size_t LARGE_VECTOR_SIZE = 1 << 22;
+
+static void Int_SortingBenchmark(benchmark::State& state) {
+  std::vector<int> values(LARGE_VECTOR_SIZE);
+  values.resize(LARGE_VECTOR_SIZE);
+
+  std::random_device r;
+  std::default_random_engine e(r());
+  std::uniform_int_distribution<int> uniform_dist(1, 1000);
+
+  for (size_t i = 0; i < LARGE_VECTOR_SIZE; ++i) {
+    values[i] = int(uniform_dist(e));
+  }
+
+  for (auto _ : state) {
+    std::stable_sort(values.begin(), values.end());
+    benchmark::DoNotOptimize(std::is_sorted(values.begin(), values.end()));
+  }
+}
+
+static void Optional_Int_SortingBenchmark(benchmark::State& state) {
+  std::vector<std::optional<int>> values(LARGE_VECTOR_SIZE);
+  values.resize(LARGE_VECTOR_SIZE);
+
+  std::random_device r;
+  std::default_random_engine e(r());
+  std::uniform_int_distribution<int> uniform_dist(1, 1000);
+
+  for (size_t i = 0; i < LARGE_VECTOR_SIZE; ++i) {
+    values[i] = std::optional<int>(uniform_dist(e));
+  }
+
+  for (auto _ : state) {
+    std::stable_sort(values.begin(), values.end());
+    benchmark::DoNotOptimize(std::is_sorted(values.begin(), values.end()));
+  }
+}
 
 static void Indirect_SortingBenchmark(benchmark::State& state) {
   std::vector<xyz::indirect<int>> values(LARGE_VECTOR_SIZE);
@@ -47,6 +84,7 @@ static void Indirect_SortingBenchmark(benchmark::State& state) {
     benchmark::DoNotOptimize(std::is_sorted(values.begin(), values.end()));
   }
 }
+
 static void Indirect_ExperimentalSortingBenchmark(benchmark::State& state) {
   std::vector<xyz::experimental::indirect<int>> values(LARGE_VECTOR_SIZE);
   values.resize(LARGE_VECTOR_SIZE);
@@ -66,5 +104,7 @@ static void Indirect_ExperimentalSortingBenchmark(benchmark::State& state) {
 }
 }  // namespace
 
+BENCHMARK(Int_SortingBenchmark);
+BENCHMARK(Optional_Int_SortingBenchmark);
 BENCHMARK(Indirect_SortingBenchmark);
 BENCHMARK(Indirect_ExperimentalSortingBenchmark);
