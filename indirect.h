@@ -48,6 +48,7 @@ namespace xyz {
 #endif  // XYZ_UNREACHABLE_DEFINED
 
 #ifndef XYZ_TRIVIALLY_RELOCATABLE_DEFINED
+#define XYZ_TRIVIALLY_RELOCATABLE_DEFINED
 #if defined(__cpp_impl_trivially_relocatable) && \
     defined(__cpp_lib_trivially_relocatable)
 
