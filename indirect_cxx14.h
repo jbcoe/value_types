@@ -148,26 +148,30 @@ class indirect : private detail::empty_base_optimization<A> {
       : alloc_base(allocator_traits::select_on_container_copy_construction(
             other.alloc_base::get())) {
     static_assert(std::is_copy_constructible<T>::value, "");
-    assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
+    if (other.valueless_after_move()) {
+      p_ = nullptr;
+      return;
+    }
     p_ = construct_from(alloc_base::get(), *other);
   }
 
   indirect(std::allocator_arg_t, const A& alloc, const indirect& other)
       : alloc_base(alloc) {
     static_assert(std::is_copy_constructible<T>::value, "");
-    assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
+    if (other.valueless_after_move()) {
+      p_ = nullptr;
+      return;
+    }
     p_ = construct_from(alloc_base::get(), *other);
   }
 
   indirect(indirect&& other) noexcept
       : alloc_base(other.alloc_base::get()), p_(nullptr) {
-    assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     std::swap(p_, other.p_);
   }
 
   indirect(std::allocator_arg_t, const A& alloc, indirect&& other) noexcept
       : alloc_base(alloc), p_(nullptr) {
-    assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     std::swap(p_, other.p_);
   }
 
@@ -175,7 +179,6 @@ class indirect : private detail::empty_base_optimization<A> {
 
   indirect& operator=(const indirect& other) {
     if (this == &other) return *this;
-    assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     static_assert(std::is_copy_constructible<T>::value, "");
     static_assert(std::is_copy_assignable<T>::value, "");
     if (allocator_traits::propagate_on_container_copy_assignment::value) {
@@ -191,6 +194,10 @@ class indirect : private detail::empty_base_optimization<A> {
       }
     }
     reset();  // We may not have reset above and it's a no-op if valueless.
+    if (other.valueless_after_move()) {
+      p_ = nullptr;
+      return *this;
+    }
     p_ = construct_from(alloc_base::get(), *other);
     return *this;
   }
@@ -199,7 +206,6 @@ class indirect : private detail::empty_base_optimization<A> {
       allocator_traits::propagate_on_container_move_assignment::value ||
       allocator_traits::is_always_equal::value) {
     if (this == &other) return *this;
-    assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
     static_assert(std::is_copy_constructible<T>::value, "");
 
     if (allocator_traits::propagate_on_container_move_assignment::value) {
@@ -212,6 +218,10 @@ class indirect : private detail::empty_base_optimization<A> {
     if (alloc_base::get() == other.alloc_base::get()) {
       std::swap(p_, other.p_);
     } else {
+      if (other.valueless_after_move()) {
+        p_ = nullptr;
+        return *this;
+      }
       p_ = construct_from(alloc_base::get(), std::move(*other));
     }
     return *this;

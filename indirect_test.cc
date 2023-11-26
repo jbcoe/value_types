@@ -187,6 +187,56 @@ TEST(IndirectTest, MemberSwapWithSelf) {
   EXPECT_FALSE(a.valueless_after_move());
 }
 
+TEST(IndirectTest, CopyFromValueless) {
+  xyz::indirect<int> a;
+  xyz::indirect<int> aa(std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  xyz::indirect<int> b(a);
+  EXPECT_TRUE(b.valueless_after_move());
+}
+
+TEST(IndirectTest, MoveFromValueless) {
+  xyz::indirect<int> a;
+  xyz::indirect<int> aa(std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  xyz::indirect<int> b(std::move(a));
+  EXPECT_TRUE(b.valueless_after_move());
+}
+
+TEST(IndirectTest, AssignFromValueless) {
+  xyz::indirect<int> a;
+  xyz::indirect<int> aa(std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  xyz::indirect<int> b = a;
+  EXPECT_TRUE(b.valueless_after_move());
+}
+
+TEST(IndirectTest, MoveAssignFromValueless) {
+  xyz::indirect<int> a;
+  xyz::indirect<int> aa(std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  xyz::indirect<int> b;
+  b = std::move(a);
+  EXPECT_TRUE(b.valueless_after_move());
+}
+
+TEST(IndirectTest, SwapFromValueless) {
+  xyz::indirect<int> a;
+  xyz::indirect<int> aa(std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  xyz::indirect<int> b;
+  EXPECT_TRUE(!b.valueless_after_move());
+
+  std::swap(a, b);
+  EXPECT_TRUE(!a.valueless_after_move());
+  EXPECT_TRUE(b.valueless_after_move());
+}
+
 TEST(IndirectTest, ConstPropagation) {
   struct SomeType {
     enum class Constness { LV_CONST, LV_NON_CONST, RV_CONST, RV_NON_CONST };

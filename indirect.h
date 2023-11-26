@@ -102,6 +102,10 @@ class indirect {
       : alloc_(allocator_traits::select_on_container_copy_construction(
             other.alloc_)) {
     static_assert(std::is_copy_constructible_v<T>);
+    if (other.valueless_after_move()) {
+      p_ = nullptr;
+      return;
+    }
     p_ = construct_from(alloc_, *other);
   }
 
@@ -109,6 +113,10 @@ class indirect {
                      const indirect& other)
       : alloc_(alloc) {
     static_assert(std::is_copy_constructible_v<T>);
+    if (other.valueless_after_move()) {
+      p_ = nullptr;
+      return;
+    }
     p_ = construct_from(alloc_, *other);
   }
 
@@ -138,12 +146,16 @@ class indirect {
       }
     }
     if (alloc_ == other.alloc_) {
-      if (p_ != nullptr) {
+      if (p_ != nullptr && !other.valueless_after_move()) {
         *p_ = *other.p_;
         return *this;
       }
     }
     reset();  // We may not have reset above and it's a no-op if valueless.
+    if (other.valueless_after_move()) {
+      p_ = nullptr;
+      return *this;
+    }
     p_ = construct_from(alloc_, *other);
     return *this;
   }
@@ -165,6 +177,10 @@ class indirect {
     if (alloc_ == other.alloc_) {
       std::swap(p_, other.p_);
     } else {
+      if (other.valueless_after_move()) {
+        p_ = nullptr;
+        return *this;
+      }
       p_ = construct_from(alloc_, std::move(*other));
     }
     return *this;
