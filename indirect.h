@@ -299,7 +299,8 @@ class indirect {
   }
 
   template <class U>
-  friend constexpr bool operator!=(const U& lhs, const indirect<T, A>& rhs)
+  friend constexpr bool operator!=(
+      const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs != *rhs))
     requires(!is_indirect_v<U>)
   {
     assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
