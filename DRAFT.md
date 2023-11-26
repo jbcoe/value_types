@@ -45,6 +45,8 @@ should not be considered in isolation.
 
 ### Changes in R4
 
+* Allow copy and move of valueless objects, discuss similarities with variant.
+
 * No longer specify constructors as uses-allocator constructing anything.
 
 * Require `T` to satisfy the requirements of `Cpp17Destructible`.
@@ -380,6 +382,25 @@ valueless state would necessitate the addition of an otherwise redundant check.
 Accessing a valueless `indirect` is undefined behaviour, so we make it a
 precondition for comparison and hash that the instance of `indirect` is not
 valueless.
+
+Variant allows valueless objects to be passed around via copy, assignment, move
+and move assignment. There is no precondition on varaint that it must not be in
+a valuless state to be copied from, moved from, assigned from or move assigned
+from. While the notion that a valueless `indirect` or `polymorphic` is toxic and
+must not be passed around code is appealing, it would not interact well with
+generic code which may need to handle a variety of types. Note that the standard
+does not require a moved-from object to be valid for copy, move, assign or move
+assignment: the only restriction is that it should be in a well-formed but
+unspecified state. However, there is no precedent for standard library types to
+have preconditions on move, copy, assign or move assignment. We opt for
+consistency with existing standard library types (namely varaint which has a
+valueless state) and allow copy, move, assignment and move assignment of a
+valuless `indirect` and `polymorphic`. Handling of the valueless state for
+indirect and polymorphic in move operations will not incur cost; for copy
+operations, the cost of handling the valuless state will be insignificant
+compared to the cost of allocating memory. Introducing preconditions for copy,
+move, assign and move assign in a later revision of the C++ standard would be a
+silent breaking change.
 
 ### `noexcept` and narrow contracts
 
@@ -1798,8 +1819,8 @@ of these changes on users could be potentially significant and unwelcome.
 |`indirect` comparsion preconditions | `indirect` must not be valueless | Allows comparison of valueless objects | Runtime cost | No |
 |`indirect` hash preconditions| `indirect` must not be valueless | Allows hash of valueless objects | Runtime cost | No |
 |`indirect` format preconditions | `indirect` must not be valueless | Allows formatting of valueless objects | Runtime cost | No |
-|Copy and copy assign preconditions| Object must not be valueless | Allows copying of valueless objects | Runtime cost | No |
-|Move and move assign preconditions| Object must not be valueless | Allows moving of valueless objects | Runtime cost | No |
+|Copy and copy assign preconditions| Object can valueless | Forbids copying of valueless objects | Previously valid code would invoke undefined behaviour | Yes |
+|Move and move assign preconditions| Object can valueless | Forbids moving of valueless objects | Previously valid code would invoke undefined behaviour | Yes |
 |Requirements on `T` in `polymorphic<T>` | No requirement that `T` has virtual functions | Add _Mandates_ or _Constraints_ to require `T` to have virtual functions | Code becomes ill-formed | Yes |
 |State of default-constructed object| Default-constructed object (where valid) has a value | Make default-constructed object valueless | Changes semantics; necessitates adding `operator bool` and allowing move, copy and compare of valueless (empty) objects | Yes |
 |Small buffer optimisation for polymorphic|SBO is not required, settings are hidden|Add buffer size and alignment as template parameters| Breaks ABI; forces implementers to use SBO | Yes |
