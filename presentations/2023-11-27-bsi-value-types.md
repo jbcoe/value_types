@@ -256,6 +256,60 @@ Both of the proposed types, `indirect` and `polymorphic`, need:
 
 ---
 
+# Semantially composition with `std::unique_ptr`
+
+```c++
+struct Foo
+{
+    unique_ptr<Bar> a;
+    unique_ptr<Bar> b;
+};
+```
+
+behaves like
+
+```c++
+struct Foo
+{
+    Bar* a;
+    Bar* b;
+};
+```
+
+---
+
+# Where as composition with `std::indirect`
+
+```c++
+struct Foo
+{
+    indirect<Bar> a;
+    indirect<Bar> b;
+};
+```
+
+behaves like
+
+```c++
+struct Foo
+{
+    Bar a;
+    Bar b;
+};
+```
+
+---
+
+# Benefits of value types over pointer types
+
+- Deep copy
+- Deep comparison
+- Const propagation
+- Copy semantics rather than move-only semantics
+- Allocator support
+
+---
+
 # How has the design evolved?
 
 - P1950R2: indirect_value -> indirect
@@ -330,13 +384,19 @@ int main ()
 
 ---
 
-# Further details
+ # Further details
 
 * Our proposal, with design discussion and proposed formal wording:
   <https://wg21.link/p3019r1>
 
 * Our (header-only, C++20) reference implementation with tests and benchmarks:
   <https://github.com/jbcoe/value_types>
+
+* Original `indirect_value` design and proposal:
+  https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1950r2.html>
+
+* Original `polymorphic_value` design and proposal:
+  <https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0201r6.html>
 
 ---
 
