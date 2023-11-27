@@ -348,7 +348,7 @@ int main ()
 
 ---
 
-# Previous version support a copier and delete model
+# Previous version support a copier and deleter model
 
 ```c++
 template <
@@ -381,6 +381,44 @@ class indirect;
 template <typename T, typename Allocator = std::allocator<T>>
 class polymorphic;
 ```
+
+---
+
+# Other significant design changes
+
+- Removal of the null-state in favour of null state via optional
+  * `std::optional<std::indirect<T>>`
+  * `std::optional<std::polymorphic<T>>`
+- All constructors are now explicit
+- Additional constructors to support allocators
+- Deduction guides for constructors
+- Comparison operators return `auto`
+
+---
+
+# Current Status
+
+- Design approved by LEWG (remaining issues to be resolved by telecon)
+- Remaining issues:
+  * `std::indirect` comparison operators
+  * Pre-conditons as a result of moved from state
+
+---
+
+# Behaviour of `indirect` comparison operators
+
+`std::indirect` is a wapper type so comparison operators forward to
+underlying type and return `auto`.
+
+It was suggested standard types should always be regular so should
+return `bool`
+
+A survey of non-bool equality overload identified the follow categories:
+- Valarray-like containers: element-wise operator== overload
+- SIMD types: SIMD libraries operator == return masks
+- `int`-returning comparisons
+- Expression templates
+- Monotype API: All operations return the same 'handle' type.
 
 ---
 
