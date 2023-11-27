@@ -256,7 +256,7 @@ Both of the proposed types, `indirect` and `polymorphic`, need:
 
 ---
 
-# Semantically composition with `std::unique_ptr`
+# Composition with `std::unique_ptr`
 
 ```c++
 struct Foo
