@@ -90,6 +90,11 @@ function(xyz_add_test)
         CXX_EXTENSIONS NO
     )
 
+    target_compile_options(${XYZ_NAME}
+        PRIVATE
+            $<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>
+    )
+
     if(${XYZ_MANUAL})
         message(STATUS "Manual test: ${XYZ_NAME}")
     else()
