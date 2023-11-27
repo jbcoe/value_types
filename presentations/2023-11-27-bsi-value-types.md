@@ -310,6 +310,37 @@ struct Foo
 
 ---
 
+```c++
+#include <boost/interprocess/allocators/adaptive_pool.hpp>
+#include <boost/interprocess/managed_shared_memory.hpp>
+#include <scoped_allocator>
+#include <vector>
+#include <memory>
+
+namespace bi = boost::interprocess;
+
+template<class T> using alloc = bi::adaptive_pool<T, bi::managed_shared_memory::segment_manager>;
+using icp_value = std::indirect<int, alloc<int>>;
+using ipc_vector = std::vector<icp_value, std::scoped_allocator_adaptor<alloc<icp_value>>>;
+
+int main ()
+{
+    bi::managed_shared_memory s(bi::create_only, "Example", 65536);
+
+    // create vector of values in shared memory
+    ipc_vector v(s.get_segment_manager());
+
+    // The inner type propagates the allocator type from the outer type's scope
+    v.reserve(10);
+    for(int i = 0; i < 10; i++)
+      v.emplace_back(42+i);
+
+    bi::shared_memory_object::remove("Example");
+}
+```
+
+---
+
 # How has the design evolved?
 
 - P1950R2: indirect_value -> indirect
@@ -353,34 +384,7 @@ class polymorphic;
 
 ---
 
-```c++
-#include <boost/interprocess/allocators/adaptive_pool.hpp>
-#include <boost/interprocess/managed_shared_memory.hpp>
-#include <scoped_allocator>
-#include <vector>
-#include <memory>
 
-namespace bi = boost::interprocess;
-
-template<class T> using alloc = bi::adaptive_pool<T, bi::managed_shared_memory::segment_manager>;
-using icp_value = std::indirect<int, alloc<int>>;
-using ipc_vector = std::vector<icp_value, std::scoped_allocator_adaptor<alloc<icp_value>>>;
-
-int main ()
-{
-    bi::managed_shared_memory s(bi::create_only, "Example", 65536);
-
-    // create vector of values in shared memory
-    ipc_vector v(s.get_segment_manager());
-
-    // The inner type propagates the allocator type from the out type's scrope
-    v.reserve(10);
-    for(int i = 0; i < 10; i++)
-      v.emplace_back(42+i);
-
-    bi::shared_memory_object::remove("Example");
-}
-```
 
 ---
 
