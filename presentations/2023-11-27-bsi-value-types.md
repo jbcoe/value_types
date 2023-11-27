@@ -422,6 +422,27 @@ A survey of non-bool equality overload identified the follow categories:
 
 ---
 
+# Explicity handling the valueless state has a cost
+
+```
+Run on (12 X 24 MHz CPU s)
+CPU Caches:
+  L1 Data 64 KiB
+  L1 Instruction 128 KiB
+  L2 Unified 4096 KiB (x12)
+Load Average: 0.98, 1.38, 1.66
+----------------------------------------------------------------------------------
+Benchmark                                        Time             CPU   Iterations
+----------------------------------------------------------------------------------
+Int_SortingBenchmark                      28352850 ns     27718636 ns           22
+Optional_Int_SortingBenchmark             56351883 ns     56240727 ns           11
+VariantInt_SortingBenchmark              105704208 ns    105381667 ns            6
+Indirect_SortingBenchmark                213564833 ns    211927333 ns            3
+Indirect_ValuelessCheckSortingBenchmark  267500583 ns    265372500 ns            2
+```
+
+---
+
 # Further details
 
 * Our proposal, with design discussion and proposed formal wording:
