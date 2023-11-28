@@ -716,7 +716,7 @@ explicit constexpr indirect(U&& u, Us&&... us);
 ```
 
 9. _Constraints_: `is_constructible_v<T, U, Us...>` is `true`.
-   `is_same_v<remove_cvref_t<U>, allocator_arg>` is `false`.
+   `is_same_v<remove_cvref_t<U>, allocator_arg_t>` is `false`.
    `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
 
 10. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(), std::forward<U>(u), std::forward<Us>(us)...)`.
