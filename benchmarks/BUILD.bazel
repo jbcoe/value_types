@@ -17,6 +17,23 @@ build_test(
 )
 
 cc_binary(
+    name = "indirect_sorting_benchmark",
+    srcs = [
+        "indirect_sorting_benchmark.cc",
+    ],
+    deps = [
+        "//:indirect",
+        "//:indirect_valueless_compare",
+        "@com_google_benchmark//:benchmark_main",
+    ],
+)
+
+build_test(
+    name = "indirect_sorting_benchmark_build_test",
+    targets = ["indirect_sorting_benchmark"],
+)
+
+cc_binary(
     name = "polymorphic_benchmark",
     srcs = [
         "polymorphic_benchmark.cc",
