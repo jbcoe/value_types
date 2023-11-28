@@ -486,8 +486,9 @@ Note to editors: Add the following macros with editor provided values to [versio
 An indirect value object is _valueless_ if it has no owned object. An indirect
 value may only become valueless after it has been moved from.
 
-2. In every specialization `indirect<T, Allocator>`, the type
-`allocator_traits<Allocator>::value_type` shall be the same type as `T`. Every
+2. In every specialization `indirect<T, Allocator>`, if the type
+`allocator_traits<Allocator>::value_type` is not the same type as `T`,
+the program is ill-formed. Every
 object of type `indirect<T, Allocator>` uses an object of type `Allocator` to
 allocate and free storage for the owned object as needed. The owned object is
 constructed using the function
