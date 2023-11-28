@@ -1122,12 +1122,10 @@ moved from.
 2. In every specialization `polymorphic<T, Allocator>`, the type
 `allocator_traits<Allocator>::value_type` shall be the same type as `T`. Every
 object of type `polymorphic<T, Allocator>` uses an object of type `Allocator` to
-allocate and free storage for the owned object as needed. The owned object is constructed using the function
-`allocator_traits<allocator_type>::rebind_traits<U>::construct` and destroyed
- using the function
-`allocator_traits<allocator_type>::rebind_traits<U>::destroy`, where `U` is
-either `allocator_type::value_type` or an internal type used by the polymorphic
-value.
+allocate and free storage for the owned object as needed. The owned object is
+constructed using the function
+`allocator_traits<allocator_type>::construct` and destroyed
+using the function `allocator_traits<allocator_type>::destroy`.
 
 3. Copy constructors for a polymorphic value obtain an allocator by calling
 `allocator_traits<allocator_type>::select_on_container_copy_construction` on the
