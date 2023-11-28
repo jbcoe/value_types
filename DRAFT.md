@@ -1121,7 +1121,7 @@ points in its lifetime. A polymorphic value object is _valueless_ if it has no
 owned object. A polymorphic value may only become valueless after it has been
 moved from.
 
-2. In every specialization `polymorphic<T, Allocator>`, the type
+2. In every specialization `polymorphic<T, Allocator>`, if the type
 `allocator_traits<Allocator>::value_type` is not the same type as`T`,
 the program is ill-formed. Every object of type `polymorphic<T, Allocator>`
 uses an object of type `Allocator` to allocate and free storage for the owned
