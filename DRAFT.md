@@ -486,16 +486,14 @@ Note to editors: Add the following macros with editor provided values to [versio
 An indirect value object is _valueless_ if it has no owned object. An indirect
 value may only become valueless after it has been moved from.
 
-2. In every specialization `indirect<T, Allocator>`, the type
-`allocator_traits<Allocator>::value_type` shall be the same type as `T`. Every
+2. In every specialization `indirect<T, Allocator>`, if the type
+`allocator_traits<Allocator>::value_type` is not the same type as `T`,
+the program is ill-formed. Every
 object of type `indirect<T, Allocator>` uses an object of type `Allocator` to
 allocate and free storage for the owned object as needed. The owned object is
 constructed using the function
- `allocator_traits<allocator_type>::rebind_traits<U>::construct` and destroyed
-using the function
-`allocator_traits<allocator_type>::rebind_traits<U>::destroy`, where `U` is
-either `allocator_type::value_type` or an internal type used by the indirect
-value.
+`allocator_traits<allocator_type>::construct` and destroyed
+using the function `allocator_traits<allocator_type>::destroy`.
 
 
 // DRAFTING NOTE: [indirect.general]#3 modeled on [container.reqmts]#64
@@ -720,7 +718,7 @@ explicit constexpr indirect(U&& u, Us&&... us);
 ```
 
 9. _Constraints_: `is_constructible_v<T, U, Us...>` is `true`.
-   `is_same_v<remove_cvref_t<U>, allocator_arg>` is `false`.
+   `is_same_v<remove_cvref_t<U>, allocator_arg_t>` is `false`.
    `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
 
 10. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(), std::forward<U>(u), std::forward<Us>(us)...)`.
