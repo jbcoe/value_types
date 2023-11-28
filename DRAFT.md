@@ -492,11 +492,8 @@ the program is ill-formed. Every
 object of type `indirect<T, Allocator>` uses an object of type `Allocator` to
 allocate and free storage for the owned object as needed. The owned object is
 constructed using the function
- `allocator_traits<allocator_type>::rebind_traits<U>::construct` and destroyed
-using the function
-`allocator_traits<allocator_type>::rebind_traits<U>::destroy`, where `U` is
-either `allocator_type::value_type` or an internal type used by the indirect
-value.
+`allocator_traits<allocator_type>::construct` and destroyed
+using the function `allocator_traits<allocator_type>::destroy`.
 
 
 // DRAFTING NOTE: [indirect.general]#3 modeled on [container.reqmts]#64
