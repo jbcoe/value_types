@@ -266,11 +266,10 @@ class polymorphic : private detail::empty_base_optimization<A> {
       }
     }
     reset();  // We may not have reset above and it's a no-op if valueless.
-    if (!other.valueless_after_move()) {
-      cb_ = other.cb_->clone(alloc_base::get());
-    } else {
-      cb_ = nullptr;
+    if (other.valueless_after_move()) {
+      return *this;
     }
+    cb_ = other.cb_->clone(alloc_base::get());
     return *this;
   }
 
@@ -285,14 +284,13 @@ class polymorphic : private detail::empty_base_optimization<A> {
       }
     }
     reset();  // We may not have reset above and it's a no-op if valueless.
+    if (other.valueless_after_move()) {
+      return *this;
+    }
     if (alloc_base::get() == other.alloc_base::get()) {
       std::swap(cb_, other.cb_);
     } else {
-      if (!other.valueless_after_move()) {
-        cb_ = other.cb_->clone(alloc_base::get());
-      } else {
-        cb_ = nullptr;
-      }
+      cb_ = other.cb_->clone(alloc_base::get());
     }
     return *this;
   }

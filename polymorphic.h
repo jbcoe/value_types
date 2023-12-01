@@ -230,11 +230,10 @@ class polymorphic {
       }
     }
     reset();  // We may not have reset above and it's a no-op if valueless.
-    if (!other.valueless_after_move()) {
-      cb_ = other.cb_->clone(alloc_);
-    } else {
-      cb_ = nullptr;
+    if (other.valueless_after_move()) {
+      return *this;
     }
+    cb_ = other.cb_->clone(alloc_);
     return *this;
   }
 
@@ -250,14 +249,13 @@ class polymorphic {
       }
     }
     reset();  // We may not have reset above and it's a no-op if valueless.
+    if (other.valueless_after_move()) {
+      return *this;
+    }
     if (alloc_ == other.alloc_) {
       std::swap(cb_, other.cb_);
     } else {
-      if (!other.valueless_after_move()) {
-        cb_ = other.cb_->clone(alloc_);
-      } else {
-        cb_ = nullptr;
-      }
+      cb_ = other.cb_->clone(alloc_);
     }
     return *this;
   }
