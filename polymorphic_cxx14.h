@@ -298,22 +298,22 @@ class polymorphic : private detail::empty_base_optimization<A> {
   }
 
   pointer operator->() noexcept {
-    assert(cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return cb_->p_;
   }
 
   const_pointer operator->() const noexcept {
-    assert(cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return cb_->p_;
   }
 
   T& operator*() noexcept {
-    assert(cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return *cb_->p_;
   }
 
   const T& operator*() const noexcept {
-    assert(cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return *cb_->p_;
   }
 

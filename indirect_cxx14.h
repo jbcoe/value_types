@@ -231,32 +231,32 @@ class indirect : private detail::empty_base_optimization<A> {
   }
 
   const T& operator*() const& noexcept {
-    assert(p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return *p_;
   }
 
   T& operator*() & noexcept {
-    assert(p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return *p_;
   }
 
   T&& operator*() && noexcept {
-    assert(p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return std::move(*p_);
   }
 
   const T&& operator*() const&& noexcept {
-    assert(p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return std::move(*p_);
   }
 
   const_pointer operator->() const noexcept {
-    assert(p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return p_;
   }
 
   pointer operator->() noexcept {
-    assert(p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return p_;
   }
 

@@ -185,32 +185,32 @@ class indirect {
   }
 
   constexpr const T& operator*() const& noexcept {
-    assert(p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return *p_;
   }
 
   constexpr T& operator*() & noexcept {
-    assert(p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return *p_;
   }
 
   constexpr T&& operator*() && noexcept {
-    assert(p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return std::move(*p_);
   }
 
   constexpr const T&& operator*() const&& noexcept {
-    assert(p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return std::move(*p_);
   }
 
   constexpr const_pointer operator->() const noexcept {
-    assert(p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return p_;
   }
 
   constexpr pointer operator->() noexcept {
-    assert(p_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return p_;
   }
 

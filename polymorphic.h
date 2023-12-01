@@ -263,22 +263,22 @@ class polymorphic {
   }
 
   constexpr pointer operator->() noexcept {
-    assert(cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return cb_->p_;
   }
 
   constexpr const_pointer operator->() const noexcept {
-    assert(cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return cb_->p_;
   }
 
   constexpr T& operator*() noexcept {
-    assert(cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return *cb_->p_;
   }
 
   constexpr const T& operator*() const noexcept {
-    assert(cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return *cb_->p_;
   }
 
