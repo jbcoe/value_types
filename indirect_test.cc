@@ -205,6 +205,24 @@ TEST(IndirectTest, MoveFromValueless) {
   EXPECT_TRUE(b.valueless_after_move());
 }
 
+TEST(IndirectTest, AllocatorExtendedCopyFromValueless) {
+  xyz::indirect<int> a;
+  xyz::indirect<int> aa(std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  xyz::indirect<int> b(std::allocator_arg, a.get_allocator(), a);
+  EXPECT_TRUE(b.valueless_after_move());
+}
+
+TEST(IndirectTest, AllocatorExtendedMoveFromValueless) {
+  xyz::indirect<int> a;
+  xyz::indirect<int> aa(std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  xyz::indirect<int> b(std::allocator_arg, a.get_allocator(), std::move(a));
+  EXPECT_TRUE(b.valueless_after_move());
+}
+
 TEST(IndirectTest, AssignFromValueless) {
   xyz::indirect<int> a;
   xyz::indirect<int> aa(std::move(a));

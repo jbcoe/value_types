@@ -211,6 +211,24 @@ TEST(PolymorphicTest, MoveFromValueless) {
   EXPECT_TRUE(b.valueless_after_move());
 }
 
+TEST(PolymorphicTest, AllocatorExtendedCopyFromValueless) {
+  xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
+  xyz::polymorphic<Base> aa(std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  xyz::polymorphic<Base> b(std::allocator_arg, a.get_allocator(), a);
+  EXPECT_TRUE(b.valueless_after_move());
+}
+
+TEST(PolymorphicTest, AllocatorExtendedMoveFromValueless) {
+  xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
+  xyz::polymorphic<Base> aa(std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  xyz::polymorphic<Base> b(std::allocator_arg, a.get_allocator(), std::move(a));
+  EXPECT_TRUE(b.valueless_after_move());
+}
+
 TEST(PolymorphicTest, AssignFromValueless) {
   xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
   xyz::polymorphic<Base> aa(std::move(a));
