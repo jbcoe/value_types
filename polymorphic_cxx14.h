@@ -259,7 +259,6 @@ class polymorphic : private detail::empty_base_optimization<A> {
 
   polymorphic& operator=(const polymorphic& other) {
     if (this == &other) return *this;
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     if (allocator_traits::propagate_on_container_copy_assignment::value) {
       if (alloc_base::get() != other.alloc_base::get()) {
         reset();  // using current allocator.

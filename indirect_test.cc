@@ -210,7 +210,8 @@ TEST(IndirectTest, AssignFromValueless) {
   xyz::indirect<int> aa(std::move(a));
 
   EXPECT_TRUE(a.valueless_after_move());
-  xyz::indirect<int> b = a;
+  xyz::indirect<int> b;
+  b = a;
   EXPECT_TRUE(b.valueless_after_move());
 }
 

@@ -216,7 +216,8 @@ TEST(PolymorphicTest, AssignFromValueless) {
   xyz::polymorphic<Base> aa(std::move(a));
 
   EXPECT_TRUE(a.valueless_after_move());
-  xyz::polymorphic<Base> b = a;
+  xyz::polymorphic<Base> b(xyz::in_place_type_t<Derived>{}, 101);
+  b = a;
   EXPECT_TRUE(b.valueless_after_move());
 }
 
