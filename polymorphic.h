@@ -190,13 +190,21 @@ class polymorphic {
   constexpr polymorphic(const polymorphic& other)
       : alloc_(allocator_traits::select_on_container_copy_construction(
             other.alloc_)) {
-    cb_ = other.cb_->clone(alloc_);
+    if (!other.valueless_after_move()) {
+      cb_ = other.cb_->clone(alloc_);
+    } else {
+      cb_ = nullptr;
+    }
   }
 
   constexpr polymorphic(std::allocator_arg_t, const A& alloc,
                         const polymorphic& other)
       : alloc_(alloc) {
-    cb_ = other.cb_->clone(alloc_);
+    if (!other.valueless_after_move()) {
+      cb_ = other.cb_->clone(alloc_);
+    } else {
+      cb_ = nullptr;
+    }
   }
 
   constexpr polymorphic(polymorphic&& other) noexcept : alloc_(other.alloc_) {

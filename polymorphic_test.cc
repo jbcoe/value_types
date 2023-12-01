@@ -193,6 +193,56 @@ TEST(PolymorphicTest, MemberSwapWithSelf) {
   EXPECT_FALSE(a.valueless_after_move());
 }
 
+TEST(PolymorphicTest, CopyFromValueless) {
+  xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
+  xyz::polymorphic<Base> aa(std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  xyz::polymorphic<Base> b(a);
+  EXPECT_TRUE(b.valueless_after_move());
+}
+
+TEST(PolymorphicTest, MoveFromValueless) {
+  xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
+  xyz::polymorphic<Base> aa(std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  xyz::polymorphic<Base> b(std::move(a));
+  EXPECT_TRUE(b.valueless_after_move());
+}
+
+TEST(PolymorphicTest, AssignFromValueless) {
+  xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
+  xyz::polymorphic<Base> aa(std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  xyz::polymorphic<Base> b = a;
+  EXPECT_TRUE(b.valueless_after_move());
+}
+
+TEST(PolymorphicTest, MoveAssignFromValueless) {
+  xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
+  xyz::polymorphic<Base> aa(std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  xyz::polymorphic<Base> b(xyz::in_place_type_t<Derived>{}, 101);
+  b = std::move(a);
+  EXPECT_TRUE(b.valueless_after_move());
+}
+
+TEST(PolymorphicTest, SwapFromValueless) {
+  xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
+  xyz::polymorphic<Base> aa(std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  xyz::polymorphic<Base> b(xyz::in_place_type_t<Derived>{}, 101);
+  EXPECT_TRUE(!b.valueless_after_move());
+
+  std::swap(a, b);
+  EXPECT_TRUE(!a.valueless_after_move());
+  EXPECT_TRUE(b.valueless_after_move());
+}
+
 TEST(PolymorphicTest, ConstPropagation) {
   struct SomeType {
     enum class Constness { CONST, NON_CONST };
