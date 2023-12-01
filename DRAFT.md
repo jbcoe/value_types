@@ -306,7 +306,8 @@ The class template `indirect` owns an object of known type, permits copies,
 propagates const and is allocator aware.
 
 * Like `optional` and `unique_ptr`, `indirect` can be in a valueless state;
-  `indirect` can only get into the valueless state after move.
+  `indirect` can only get into the valueless state after being moved from, or
+  assignment or construction from a valueless state.
 
 * `unique_ptr` and `optional` have preconditions for `operator->` and
   `operator*`: the behavior is undefined if `*this` does not contain a value.
@@ -344,7 +345,8 @@ The class template `polymorphic` owns an object of known type, requires copies,
 propagates const and is allocator aware.
 
 * Like `optional` and `unique_ptr`, `polymorphic` can be in a valueless state;
-  `polymorphic` can only get into the valueless state after move.
+  `polymorphic` can only get into the valueless state after being moved from, or
+  assignment or construction from a valueless state.
 
 * `unique_ptr` and `optional` have preconditions for `operator->` and
   `operator*`: the behavior is undefined if `*this` does not contain a value.
@@ -801,6 +803,8 @@ constexpr indirect(allocator_arg_t, const Allocator& alloc, indirect&& other)
 20. _Effects_: If `alloc == other.get_allocator()` is `true` then equivalent to `indirect(std::move(other))`,
   otherwise, equivalent to `indirect(allocator_arg, alloc, *std::move(other))`.
 
+21. _Postconditions_: `other` is valueless.
+
 _[Note: This constructor does not require that `is_move_constructible_v<T>` is `true` --end note]_
 
 #### X.Y.4 Destructor [indirect.dtor]
@@ -909,7 +913,8 @@ constexpr void swap(indirect& other) noexcept(
   the allocators of `*this` and `other` are exchanged by calling
   `swap` as described in [swappable.requirements]. Otherwise, the allocators
   are not swapped, and the behavior is undefined unless
-  `(*this).get_allocator() == other.get_allocator()`. _[Note: Does not call `swap` on the owned objects directly. --end note]_
+  `(*this).get_allocator() == other.get_allocator()`.
+  _[Note: Does not call `swap` on the owned objects directly. --end note]_
 
 ```c++
 constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
@@ -1304,7 +1309,9 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
 ```
 
 16. _Effects_: Constructs a polymorphic that takes ownership of the object owned
-  by `other`. `allocator_` is direct-non-list-initialized with `alloc`.
+  by `other` if any. `allocator_` is direct-non-list-initialized with `alloc`.
+
+17. _Postconditions_: `other` is valueless.
 
 _[Note: This constructor does not require that `is_move_constructible_v<T>`
   is `true`. --end note]_
@@ -1455,6 +1462,10 @@ the discriminant must be stored.
 
 For the sake of minimal size and efficiency, we opted to use two class
 templates.
+
+### A null state or a valueless state
+
+TODO: discuss the tradeoffs between an observable null state and a valueless state.
 
 ### Copiers, deleters, pointer constructors, and allocator support
 
