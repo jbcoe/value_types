@@ -226,19 +226,24 @@ class polymorphic : private detail::empty_base_optimization<A> {
   polymorphic(const polymorphic& other)
       : alloc_base(allocator_traits::select_on_container_copy_construction(
             other.alloc_base::get())) {
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
-    cb_ = other.cb_->clone(alloc_base::get());
+    if (!other.valueless_after_move()) {
+      cb_ = other.cb_->clone(alloc_base::get());
+    } else {
+      cb_ = nullptr;
+    }
   }
 
   polymorphic(std::allocator_arg_t, const A& alloc, const polymorphic& other)
       : alloc_base(alloc) {
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
-    cb_ = other.cb_->clone(alloc_base::get());
+    if (!other.valueless_after_move()) {
+      cb_ = other.cb_->clone(alloc_base::get());
+    } else {
+      cb_ = nullptr;
+    }
   }
 
   polymorphic(polymorphic&& other) noexcept
       : alloc_base(other.alloc_base::get()) {
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = other.cb_;
     other.cb_ = nullptr;
   }
@@ -246,7 +251,6 @@ class polymorphic : private detail::empty_base_optimization<A> {
   polymorphic(std::allocator_arg_t, const A& alloc,
               polymorphic&& other) noexcept
       : alloc_base(alloc) {
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = other.cb_;
     other.cb_ = nullptr;
   }
@@ -255,7 +259,6 @@ class polymorphic : private detail::empty_base_optimization<A> {
 
   polymorphic& operator=(const polymorphic& other) {
     if (this == &other) return *this;
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     if (allocator_traits::propagate_on_container_copy_assignment::value) {
       if (alloc_base::get() != other.alloc_base::get()) {
         reset();  // using current allocator.
@@ -263,6 +266,9 @@ class polymorphic : private detail::empty_base_optimization<A> {
       }
     }
     reset();  // We may not have reset above and it's a no-op if valueless.
+    if (other.valueless_after_move()) {
+      return *this;
+    }
     cb_ = other.cb_->clone(alloc_base::get());
     return *this;
   }
@@ -271,7 +277,6 @@ class polymorphic : private detail::empty_base_optimization<A> {
       allocator_traits::propagate_on_container_move_assignment::value ||
       allocator_traits::is_always_equal::value) {
     if (this == &other) return *this;
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     if (allocator_traits::propagate_on_container_move_assignment::value) {
       if (alloc_base::get() != other.alloc_base::get()) {
         reset();  // using current allocator.
@@ -279,6 +284,9 @@ class polymorphic : private detail::empty_base_optimization<A> {
       }
     }
     reset();  // We may not have reset above and it's a no-op if valueless.
+    if (other.valueless_after_move()) {
+      return *this;
+    }
     if (alloc_base::get() == other.alloc_base::get()) {
       std::swap(cb_, other.cb_);
     } else {
@@ -288,22 +296,22 @@ class polymorphic : private detail::empty_base_optimization<A> {
   }
 
   pointer operator->() noexcept {
-    assert(cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return cb_->p_;
   }
 
   const_pointer operator->() const noexcept {
-    assert(cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return cb_->p_;
   }
 
   T& operator*() noexcept {
-    assert(cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return *cb_->p_;
   }
 
   const T& operator*() const noexcept {
-    assert(cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return *cb_->p_;
   }
 
@@ -314,8 +322,6 @@ class polymorphic : private detail::empty_base_optimization<A> {
   void swap(polymorphic& other) noexcept(
       std::allocator_traits<A>::propagate_on_container_swap::value ||
       std::allocator_traits<A>::is_always_equal::value) {
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
-
     if (allocator_traits::propagate_on_container_swap::value) {
       // If allocators move with their allocated objects we can swap both.
       std::swap(alloc_base::get(), other.alloc_base::get());
