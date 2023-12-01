@@ -137,7 +137,6 @@ class indirect {
   constexpr indirect& operator=(const indirect& other) {
     if (this == &other) return *this;
     static_assert(std::is_copy_constructible_v<T>);
-    static_assert(std::is_copy_assignable_v<T>);
     if constexpr (allocator_traits::propagate_on_container_copy_assignment::
                       value) {
       if (alloc_ != other.alloc_) {
@@ -145,17 +144,17 @@ class indirect {
         alloc_ = other.alloc_;
       }
     }
-    if (alloc_ == other.alloc_) {
-      if (p_ != nullptr && !other.valueless_after_move()) {
+    if (other.valueless_after_move()) {
+      reset();
+      return *this;
+    }
+    if (alloc_ == other.alloc_ && std::is_copy_assignable_v<T>) {
+      if (p_ != nullptr) {
         *p_ = *other.p_;
         return *this;
       }
     }
     reset();  // We may not have reset above and it's a no-op if valueless.
-    if (other.valueless_after_move()) {
-      p_ = nullptr;
-      return *this;
-    }
     p_ = construct_from(alloc_, *other);
     return *this;
   }
@@ -174,13 +173,12 @@ class indirect {
       }
     }
     reset();  // We may not have reset above and it's a no-op if valueless.
+    if (other.valueless_after_move()) {
+      return *this;
+    }
     if (alloc_ == other.alloc_) {
       std::swap(p_, other.p_);
     } else {
-      if (other.valueless_after_move()) {
-        p_ = nullptr;
-        return *this;
-      }
       p_ = construct_from(alloc_, std::move(*other));
     }
     return *this;

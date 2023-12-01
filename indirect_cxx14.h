@@ -180,14 +180,18 @@ class indirect : private detail::empty_base_optimization<A> {
   indirect& operator=(const indirect& other) {
     if (this == &other) return *this;
     static_assert(std::is_copy_constructible<T>::value, "");
-    static_assert(std::is_copy_assignable<T>::value, "");
     if (allocator_traits::propagate_on_container_copy_assignment::value) {
       if (alloc_base::get() != other.alloc_base::get()) {
         reset();  // using current allocator.
         alloc_base::get() = other.alloc_base::get();
       }
     }
-    if (alloc_base::get() == other.alloc_base::get()) {
+    if (other.valueless_after_move()) {
+      reset();
+      return *this;
+    }
+    if (alloc_base::get() == other.alloc_base::get() &&
+        std::is_copy_assignable<T>::value) {
       if (p_ != nullptr && !other.valueless_after_move()) {
         *p_ = *other.p_;
         return *this;
@@ -215,13 +219,12 @@ class indirect : private detail::empty_base_optimization<A> {
       }
     }
     reset();  // We may not have reset above and it's a no-op if valueless.
+    if (other.valueless_after_move()) {
+      return *this;
+    }
     if (alloc_base::get() == other.alloc_base::get()) {
       std::swap(p_, other.p_);
     } else {
-      if (other.valueless_after_move()) {
-        p_ = nullptr;
-        return *this;
-      }
       p_ = construct_from(alloc_base::get(), std::move(*other));
     }
     return *this;
