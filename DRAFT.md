@@ -782,16 +782,13 @@ constexpr indirect(allocator_arg_t, const Allocator& alloc,
 
 18. _Effects_: Equivalent to `indirect(allocator_arg, alloc, *other)`.
 
-19. _Postconditions_: `*this` is not valueless.
-
 ```c++
 constexpr indirect(indirect&& other) noexcept;
 ```
 
-20. _Effects_: Constructs an `indirect` that takes ownership of the `other`'s owned object and stores the address in `p_`.
-  `allocator_` is initialized by construction from `other.allocator_`.
-
-21. _Postconditions_: `other` is valueless.
+19. _Effects_: Constructs an `indirect` that takes ownership of the `other`'s
+    owned object and stores the address in `p_`. `allocator_` is initialized by
+    construction from `other.allocator_`.
 
 _[Note: This constructor does not require that `is_move_constructible_v<T>`
   is `true` --end note]_
@@ -801,10 +798,8 @@ constexpr indirect(allocator_arg_t, const Allocator& alloc, indirect&& other)
   noexcept(allocator_traits<Allocator>::is_always_equal);
 ```
 
-22. _Effects_: If `alloc == other.get_allocator()` is `true` then equivalent to `indirect(std::move(other))`,
+20. _Effects_: If `alloc == other.get_allocator()` is `true` then equivalent to `indirect(std::move(other))`,
   otherwise, equivalent to `indirect(allocator_arg, alloc, *std::move(other))`.
-
-23. _Postconditions_: `other` is valueless.
 
 _[Note: This constructor does not require that `is_move_constructible_v<T>` is `true` --end note]_
 
@@ -837,9 +832,7 @@ constexpr indirect& operator=(const indirect& other);
   Otherwise, equivalent to:
   - `(allocator_traits<allocator_type>::destruct(alloc, p), allocator_traits<allocator_type>::construct(a, p, *other))`
 
-3. _Postconditions_: `*this` is not valueless.
-
-4. _Returns_: A reference to `*this`.
+3. _Returns_: A reference to `*this`.
 
 ```c++
 constexpr indirect& operator=(indirect&& other) noexcept(
@@ -849,7 +842,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 
 _Mandates_: `is_move_constructible_v<T>` is `true`.
 
-5. _Effects_: If `&other == this`, then has no effects. Otherwise, if
+4. _Effects_: If `&other == this`, then has no effects. Otherwise, if
   `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value
   == true`, `alloc` is set to the allocator of `other`. If allocator is
   propagated or is equal to the allocator of `other`, destroys the owned object,
@@ -857,9 +850,9 @@ _Mandates_: `is_move_constructible_v<T>` is `true`.
   destroys the owned object if any, then move constructs an object from the
   object owned by `other`.
 
-6. _Postconditions_: `*this` is not valueless. `other` is valueless.
+5. _Postconditions_: `other` is valueless.
 
-7. _Returns_: A reference to `*this`.
+6. _Returns_: A reference to `*this`.
 
 #### X.Y.6 Observers [indirect.observers]
 
@@ -1299,23 +1292,19 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
   copy constructor of the object owned by `other`. `allocator_` is
   direct-non-list-initialized with alloc.
 
-15. _Postconditions_: `*this` is not valueless.
-
 ```c++
 constexpr polymorphic(polymorphic&& other) noexcept;
 ```
 
-16. _Effects_: Equivalent to `polymorphic(allocator_arg_t{}, Allocator(std::move(other.alloc_)), other)`.
+15. _Effects_: Equivalent to `polymorphic(allocator_arg_t{}, Allocator(std::move(other.alloc_)), other)`.
 
 ```c++
 constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       polymorphic&& other) noexcept;
 ```
 
-17. _Effects_: Constructs a polymorphic that takes ownership of the object owned
+16. _Effects_: Constructs a polymorphic that takes ownership of the object owned
   by `other`. `allocator_` is direct-non-list-initialized with `alloc`.
-
-18. _Postconditions_: `other` is valueless.
 
 _[Note: This constructor does not require that `is_move_constructible_v<T>`
   is `true`. --end note]_
@@ -1336,13 +1325,12 @@ constexpr ~polymorphic();
 constexpr polymorphic& operator=(const polymorphic& other);
 ```
 
-1. _Effects_: If `&other == this`, then has no effects. Otherwise, if `*this` is not
-valueless, destroys the owned object. If
+1. _Effects_: If `&other == this`, then has no effects. Otherwise, if `*this` is
+not valueless, destroys the owned object. If
   `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value
-  == true`, `allocator_` is set to the allocator of `other`. Copy constructs a
-  new object using the object owned by `other`.
-
-2. _Postconditions_: `*this` is not valueless.
+  == true`, `allocator_` is set to the allocator of `other`. If `other` is not
+  valueless, copy constructs a new object using the object owned by `other`.
+  Otherwise `*this` becomes valueless.
 
 ```c++
 constexpr polymorphic& operator=(polymorphic&& other) noexcept(
@@ -1350,7 +1338,7 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
     allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-3. _Effects_: If `&other == this`, then has no effects. Otherwise, if
+2. _Effects_: If `&other == this`, then has no effects. Otherwise, if
   `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value
   == true`, `allocator_` is set to the allocator of `other`. If allocator is
   propagated or is equal to the allocator of `other`, destroys the owned object
@@ -1358,7 +1346,7 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
   destroys the owned object if any, then move constructs an object from the
   object owned by `other`.
 
-4. _Postconditions_: `*this` is not valueless. `other` is valueless.
+3. _Postconditions_: `other` is valueless.
 
 #### X.Z.6 Observers [polymorphic.observers]
 
