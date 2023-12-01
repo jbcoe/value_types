@@ -101,6 +101,21 @@ TEST(PolymorphicTest, MoveRendersSourceValueless) {
   EXPECT_TRUE(a.valueless_after_move());
 }
 
+TEST(PolymorphicTest, AllocatorExtendedCopy) {
+  xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
+  xyz::polymorphic<Base> aa(std::allocator_arg, a.get_allocator(), a);
+  EXPECT_EQ(a->value(), aa->value());
+  EXPECT_NE(&*a, &*aa);
+}
+
+TEST(PolymorphicTest, AllocatorExtendedMove) {
+  xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
+  xyz::polymorphic<Base> aa(std::allocator_arg, a.get_allocator(),
+                            std::move(a));
+  EXPECT_EQ(aa->value(), 42);
+  EXPECT_TRUE(a.valueless_after_move());
+}
+
 TEST(PolymorphicTest, Swap) {
   xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
   xyz::polymorphic<Base> b(xyz::in_place_type_t<Derived>{}, 101);

@@ -128,6 +128,22 @@ TEST(IndirectTest, MovePreservesIndirectObjectAddress) {
   EXPECT_EQ(address, &*aa);
 }
 
+TEST(IndirectTest, AllocatorExtendedCopy) {
+  xyz::indirect<int> a(42);
+  xyz::indirect<int> aaa(std::allocator_arg, a.get_allocator(), a);
+  EXPECT_EQ(*a, *aa);
+  EXPECT_NE(&*a, &*aa);
+}
+
+TEST(IndirectTest, AllocatorExtendedMove) {
+  xyz::indirect<int> a(42);
+  auto address = &*a;
+  xyz::indirect<int> aa(std::allocator_arg, a.get_allocator(), std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  EXPECT_EQ(address, &*aa);
+}
+
 TEST(IndirectTest, CopyAssignment) {
   xyz::indirect<int> a(42);
   xyz::indirect<int> b(101);
