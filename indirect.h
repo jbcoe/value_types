@@ -148,11 +148,10 @@ class indirect {
       reset();
       return *this;
     }
-    if (alloc_ == other.alloc_ && std::is_copy_assignable_v<T>) {
-      if (p_ != nullptr) {
-        *p_ = *other.p_;
-        return *this;
-      }
+    if (alloc_ == other.alloc_ && std::is_copy_assignable_v<T> &&
+        p_ != nullptr) {
+      *p_ = *other.p_;
+      return *this;
     }
     reset();  // We may not have reset above and it's a no-op if valueless.
     p_ = construct_from(alloc_, *other);
