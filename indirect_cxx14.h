@@ -267,9 +267,6 @@ class indirect : private detail::empty_base_optimization<A> {
   void swap(indirect& other) noexcept(
       std::allocator_traits<A>::propagate_on_container_swap::value ||
       std::allocator_traits<A>::is_always_equal::value) {
-    assert(p_ != nullptr);        // LCOV_EXCL_LINE
-    assert(other.p_ != nullptr);  // LCOV_EXCL_LINE
-
     if (allocator_traits::propagate_on_container_swap::value) {
       // If allocators move with their allocated objects we can swap both.
       std::swap(alloc_base::get(), other.alloc_base::get());

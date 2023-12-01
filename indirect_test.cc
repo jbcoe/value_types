@@ -233,7 +233,8 @@ TEST(IndirectTest, SwapFromValueless) {
   xyz::indirect<int> b;
   EXPECT_TRUE(!b.valueless_after_move());
 
-  std::swap(a, b);
+  using std::swap;
+  swap(a, b);
   EXPECT_TRUE(!a.valueless_after_move());
   EXPECT_TRUE(b.valueless_after_move());
 }

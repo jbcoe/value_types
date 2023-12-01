@@ -239,7 +239,8 @@ TEST(PolymorphicTest, SwapFromValueless) {
   xyz::polymorphic<Base> b(xyz::in_place_type_t<Derived>{}, 101);
   EXPECT_TRUE(!b.valueless_after_move());
 
-  std::swap(a, b);
+  using std::swap;
+  swap(a, b);
   EXPECT_TRUE(!a.valueless_after_move());
   EXPECT_TRUE(b.valueless_after_move());
 }
