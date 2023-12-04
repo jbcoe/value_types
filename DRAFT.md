@@ -522,7 +522,7 @@ move assignment, or swapping of the allocator only if
 
     is `true` within the implementation of the corresponding indirect value operation.
 
-4. The template parameter `T` of `indirect` shall meet the requirements of _Cpp17Destructible_.
+4. A program that instantiates the definition of indirect for a non-object type, an array type, a specialization of indirect, or a cv-qualified type is ill-formed.
 
 5. The template parameter `T` of `indirect` may be an incomplete type.
 
@@ -1154,7 +1154,7 @@ or (64.3) `allocator_traits<allocator_type>::propagate_on_container_swap::value`
 is true within the implementation of the corresponding polymorphic value
 operation.
 
-4. The template parameter `T` of `polymorphic` shall meet the requirements of _Cpp17Destructible_.
+4. A program that instantiates the definition of polymorphic for a non-object type, an array type, a specialization of polymorphic, or a cv-qualified type is ill-formed.
 
 5. The template parameter `T` of `polymorphic` may be an incomplete type.
 
