@@ -49,6 +49,9 @@ should not be considered in isolation.
 
 * Require `T` to satisfy the requirements of `Cpp17Destructible`.
 
+* Rename exposition only variables `p_` to `p` and `allocator_` to `alloc`.
+
+
 ### Changes in R3
 
 * Add explicit to constructors.
@@ -486,17 +489,13 @@ Note to editors: Add the following macros with editor provided values to [versio
 An indirect value object is _valueless_ if it has no owned object. An indirect
 value may only become valueless after it has been moved from.
 
-2. In every specialization `indirect<T, Allocator>`, the type
-`allocator_traits<Allocator>::value_type` shall be the same type as `T`. Every
-object of type `indirect<T, Allocator>` uses an object of type `Allocator` to
-allocate and free storage for the owned object as needed. The owned object is
-constructed using the function
- `allocator_traits<allocator_type>::rebind_traits<U>::construct` and destroyed
-using the function
-`allocator_traits<allocator_type>::rebind_traits<U>::destroy`, where `U` is
-either `allocator_type::value_type` or an internal type used by the indirect
-value.
-
+2. In every specialization `indirect<T, Allocator>`, if the type
+`allocator_traits<Allocator>::value_type` is not the same type as `T`,
+the program is ill-formed. Every object of type `indirect<T, Allocator>` uses
+an object of type `Allocator` to allocate and free storage for the owned object
+as needed. The owned object is constructed using the function
+`allocator_traits<allocator_type>::construct` and destroyed
+using the function `allocator_traits<allocator_type>::destroy`.
 
 // DRAFTING NOTE: [indirect.general]#3 modeled on [container.reqmts]#64
 
@@ -536,8 +535,6 @@ move assignment, or swapping of the allocator only if
 ```c++
 template <class T, class Allocator = allocator<T>>
 class indirect {
-  pointer p_; // exposition only
-  Allocator allocator_; // exposition only
  public:
   using value_type = T;
   using allocator_type = Allocator;
@@ -674,6 +671,10 @@ class indirect {
   template <class U>
   friend constexpr auto operator<=>(
     const U& lhs, const indirect& rhs) noexcept(see below);
+
+private:
+  pointer p; // exposition only
+  Allocator alloc; // exposition only
 };
 
 template <typename Value>
@@ -693,7 +694,7 @@ explicit constexpr indirect()
 1. _Mandates_: `is_default_constructible_v<T>` is true.
 
 2. _Effects_: Constructs an `indirect` owning a default constructed `T`
-  and stores the address in `p_`. `allocator_` is default constructed.
+  and stores the address in `p`. `alloc` is default constructed.
 
 3. _Postconditions_: `*this` is not valueless.
 
@@ -707,7 +708,7 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& alloc);
 5. _Mandates_: `is_default_constructible_v<T>` is `true`.
 
 6. _Effects_: Constructs an `indirect` owning a default constructed `T` and
-  stores the address in `p_`. `allocator_` is direct-non-list-initialized with `alloc`.
+  stores the address in `p`. `alloc` is direct-non-list-initialized with `alloc`.
 
 7. _Postconditions_: `*this` is not valueless.
 
@@ -720,20 +721,20 @@ explicit constexpr indirect(U&& u, Us&&... us);
 ```
 
 9. _Constraints_: `is_constructible_v<T, U, Us...>` is `true`.
-   `is_same_v<remove_cvref_t<U>, allocator_arg>` is `false`.
+   `is_same_v<remove_cvref_t<U>, allocator_arg_t>` is `false`.
    `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
 
 10. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(), std::forward<U>(u), std::forward<Us>(us)...)`.
 
 ```c++
 template <class U, class... Us>
-explicit constexpr indirect(allocator_arg_t, const Allocator& alloc, U&& u, Us&& ...us);
+explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u, Us&& ...us);
 ```
 
 11. _Constraints_: `is_constructible_v<T, U, Us...>` is `true`.
   `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
 
-12. _Effects_: `allocator_` is direct-non-list-initialized with `alloc`.
+12. _Effects_: `alloc` is direct-non-list-initialized with `a`.
 
     DRAFTING NOTE: based on https://eel.is/c++draft/func.wrap#func.con-6
 
@@ -774,7 +775,7 @@ constexpr indirect(indirect&& other) noexcept;
   is `true` --end note]_
 
 23. _Effects_: Constructs an `indirect` that takes ownership of the `other`'s owned object and stores the address in `p_`.
-  `allocator_` is initialized by construction from `other.allocator_`.
+  `alloc` is initialized by construction from `other.alloc`.
 
 24. _Postconditions_: `other` is valueless.
 
@@ -815,12 +816,12 @@ constexpr indirect& operator=(const indirect& other);
   Otherwise, if either:
   - `is_copy_assignable_v<T>` is `false` and `is_nothrow_copy_constructible_v<T>` is `false`, or
   - `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value` is `true` and
-    `allocator_ == other.allocator_` is `false`, or
+    `alloc == other.alloc` is `false`, or
   - `*this` is valueless
-  then, equivalent to `*this = indirect(allocator_arg, allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value ? other.allocator_ : allocator_, *other)`
+  then, equivalent to `*this = indirect(allocator_arg, allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value ? other.alloc : alloc, *other)`
   Otherwise, if `is_copy_assignable_v<T>` is `true`, then equivalent to `**this = *other`,
   Otherwise, equivalent to:
-  - `(allocator_traits<allocator_type>::destruct(alloc_, p_), allocator_traits<allocator_type>::construct(alloc_, p_, *other))`
+  - `(allocator_traits<allocator_type>::destruct(alloc, p), allocator_traits<allocator_type>::construct(a, p, *other))`
 
 4. _Postconditions_: `*this` is not valueless.
 
@@ -838,7 +839,7 @@ _Mandates_: `is_move_constructible_v<T>` is `true`.
 
 7. _Effects_: If `&other == this`, then has no effects. Otherwise, if
   `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value
-  == true`, `allocator_` is set to the allocator of `other`. If allocator is
+  == true`, `alloc` is set to the allocator of `other`. If allocator is
   propagated or is equal to the allocator of `other`, destroys the owned object,
   if any, then takes ownership of the object owned by `other`.  Otherwise,
   destroys the owned object if any, then move constructs an object from the
@@ -1121,10 +1122,11 @@ points in its lifetime. A polymorphic value object is _valueless_ if it has no
 owned object. A polymorphic value may only become valueless after it has been
 moved from.
 
-2. In every specialization `polymorphic<T, Allocator>`, the type
-`allocator_traits<Allocator>::value_type` shall be the same type as `T`. Every
-object of type `polymorphic<T, Allocator>` uses an object of type `Allocator` to
-allocate and free storage for the owned object as needed. The owned object is constructed using the function
+2. In every specialization `polymorphic<T, Allocator>`, if the type
+`allocator_traits<Allocator>::value_type` is not the same type as`T`,
+the program is ill-formed. Every object of type `polymorphic<T, Allocator>`
+uses an object of type `Allocator` to allocate and free storage for the owned
+object as needed. The owned object is constructed using the function
 `allocator_traits<allocator_type>::rebind_traits<U>::construct` and destroyed
  using the function
 `allocator_traits<allocator_type>::rebind_traits<U>::destroy`, where `U` is
@@ -1165,7 +1167,7 @@ operation.
 ```c++
 template <class T, class Allocator = allocator<T>>
 class polymorphic {
-  Allocator allocator_; // exposition only
+  Allocator alloc; // exposition only
  public:
   using value_type = T;
   using allocator_type = Allocator;
@@ -1228,7 +1230,7 @@ explicit constexpr polymorphic()
   `is_copy_constructible_v<T>` is `true`.
 
 2. _Effects_: Constructs a polymorphic owning a default constructed `T`.
-  `allocator_` is default constructed.
+  `alloc` is default constructed.
 
 3. _Postconditions_: `*this` is not valueless.
 
@@ -1243,7 +1245,7 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& alloc);
   `is_copy_constructible_v<T>` is `true`.
 
 6. _Effects_: Constructs a polymorphic owning a default constructed `T`.
-   `allocator_` is direct-non-list-initialized with alloc.
+   `alloc` is direct-non-list-initialized with alloc.
 
 7. _Postconditions_: `*this` is not valueless.
 
@@ -1259,14 +1261,14 @@ explicit constexpr polymorphic(in_place_type_t<U>, Ts&&... ts);
 
 ```c++
 template <class U, class... Ts>
-explicit constexpr polymorphic(allocator_arg_t, const Allocator& alloc,
+explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       in_place_type_t<U>, Ts&&... ts);
 ```
 
 10. _Constraints_: `is_base_of_v<T, U>` is `true`  and `is_constructible_v<U, Ts...>` is
   `true` and `is_copy_constructible_v<U>` is `true`.
 
-11. _Effects_: `allocator_` is direct-non-list-initialized with alloc.
+11. _Effects_: `alloc` is direct-non-list-initialized with `a`.
 
 12. _Postconditions_: `*this` is not valueless.  The owned instance targets an object of type `U`
   constructed  with `std::forward<Ts>(ts)...`.
@@ -1276,17 +1278,17 @@ constexpr polymorphic(const polymorphic& other);
 ```
 
 13. _Effects_: Equivalent to
-  `polymorphic(allocator_arg_t{}, allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc_), other)`.
+  `polymorphic(allocator_arg_t{}, allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc), other)`.
 
 ```c++
-constexpr polymorphic(allocator_arg_t, const Allocator& alloc,
+constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       const polymorphic& other);
 ```
 
 14. _Preconditions_: `other` is not valueless.
 
 15. _Effects_: Constructs a polymorphic owning an instance of `T` created with the
-  copy constructor of the object owned by `other`. `allocator_` is direct-non-list-initialized with alloc.
+  copy constructor of the object owned by `other`. `alloc` is direct-non-list-initialized with `a`.
 
 16. _Postconditions_: `*this` is not valueless.
 
@@ -1297,7 +1299,7 @@ constexpr polymorphic(polymorphic&& other) noexcept;
 17. _Effects_: Equivalent to `polymorphic(allocator_arg_t{}, Allocator(std::move(other.alloc_)), other)`.
 
 ```c++
-constexpr polymorphic(allocator_arg_t, const Allocator& alloc,
+constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       polymorphic&& other) noexcept;
 ```
 
@@ -1306,7 +1308,7 @@ constexpr polymorphic(allocator_arg_t, const Allocator& alloc,
 
 19. _Effects_: Constructs a polymorphic that takes ownership of the object owned
   by `other`.
-  `allocator_` is direct-non-list-initialized with `alloc`.
+  `alloc` is direct-non-list-initialized with `a`.
 
 20. _Postconditions_: `other` is valueless.
 

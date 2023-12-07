@@ -453,10 +453,11 @@ class XYZ_TRIVIALLY_RELOCATABLE(A) indirect {
   }
 
   template <typename... Ts>
-  constexpr static T* construct_from(A alloc, Ts&&... ts) {
-    T* mem = allocator_traits::allocate(alloc, 1);
+  constexpr static pointer construct_from(A alloc, Ts&&... ts) {
+    pointer mem = allocator_traits::allocate(alloc, 1);
     try {
-      allocator_traits::construct(alloc, mem, std::forward<Ts>(ts)...);
+      allocator_traits::construct(alloc, std::to_address(mem),
+                                  std::forward<Ts>(ts)...);
       return mem;
     } catch (...) {
       allocator_traits::deallocate(alloc, mem, 1);
@@ -464,8 +465,8 @@ class XYZ_TRIVIALLY_RELOCATABLE(A) indirect {
     }
   }
 
-  constexpr static void destroy_with(A alloc, T* p) {
-    allocator_traits::destroy(alloc, p);
+  constexpr static void destroy_with(A alloc, pointer p) {
+    allocator_traits::destroy(alloc, std::to_address(p));
     allocator_traits::deallocate(alloc, p, 1);
   }
 };
