@@ -819,7 +819,7 @@ constexpr indirect& operator=(const indirect& other);
     `alloc == other.alloc` is `false`, or
   - `*this` is valueless
   then, equivalent to `*this = indirect(allocator_arg, allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value ? other.alloc : alloc, *other)`
-  Otherwise, if `is_copy_assignable_v<T>` is `true`, then equivalent to `**this = *other`,
+  Otherwise, if `is_copy_assignable_v<T>` is `true`, then equivalent to `*this = *other`,
   Otherwise, equivalent to:
   - `(allocator_traits<allocator_type>::destruct(alloc, p), allocator_traits<allocator_type>::construct(a, p, *other))`
 
@@ -839,7 +839,7 @@ _Mandates_: `is_move_constructible_v<T>` is `true`.
 
 7. _Effects_: If `&other == this`, then has no effects. Otherwise, if
   `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value
-  == true`, `alloc` is set to the allocator of `other`. If allocator is
+ == true`, `alloc` is set to the allocator of `other`. If allocator is
   propagated or is equal to the allocator of `other`, destroys the owned object,
   if any, then takes ownership of the object owned by `other`.  Otherwise,
   destroys the owned object if any, then move constructs an object from the
@@ -1053,7 +1053,7 @@ constexpr auto operator>(const U& lhs, const indirect& rhs)
 
 ```c++
 template <class U>
-constexpr auto operator>=const U& lhs, const indirect& rhs)
+constexpr auto operator>=(const U& lhs, const indirect& rhs)
   noexcept(noexcept(lhs >= *rhs));
 ```
 
@@ -1333,7 +1333,7 @@ constexpr polymorphic& operator=(const polymorphic& other);
 2. _Effects_: If `&other == this`, then has no effects. Otherwise, if `*this` is not
 valueless, destroys the owned object. If
   `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value
-  == true`, `allocator_` is set to the allocator of `other`. Copy constructs a
+ == true`, `allocator_` is set to the allocator of `other`. Copy constructs a
   new object using the object owned by `other`.
 
 3. _Postconditions_: `*this` is not valueless.
