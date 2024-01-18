@@ -326,26 +326,19 @@ TEST(IndirectTest, Optional) {
 }
 #endif  // XYZ_HAS_STD_OPTIONAL
 
-TEST(IndirectTest, Equality) {
-  xyz::indirect<int> a(42);
-  xyz::indirect<int> b(42);
-  xyz::indirect<int> c(43);
-  EXPECT_EQ(a, a);  // Same object.
-  EXPECT_EQ(a, b);  // Same value.
-  EXPECT_NE(a, c);  // Different value.
-}
-
-TEST(IndirectTest, ValuelessEquality) {
-  xyz::indirect<int> a(42);
-  EXPECT_NE(a, make_valueless_indirect());
-  EXPECT_NE(make_valueless_indirect(), a);
-  EXPECT_EQ(make_valueless_indirect(), make_valueless_indirect());
-}
-
 TEST(IndirectTest, Comparison) {
   xyz::indirect<int> a(42);
   xyz::indirect<int> b(42);
   xyz::indirect<int> c(101);
+
+  EXPECT_TRUE(a == a);
+  EXPECT_TRUE(a == b);
+  EXPECT_FALSE(a == c);
+
+  EXPECT_FALSE(a != a);
+  EXPECT_FALSE(a != b);
+  EXPECT_TRUE(a != c);
+
   EXPECT_FALSE(a < a);
   EXPECT_FALSE(a > a);
   EXPECT_TRUE(a <= a);
@@ -374,6 +367,14 @@ TEST(IndirectTest, Comparison) {
 
 TEST(IndirectTest, ValuelessComparison) {
   xyz::indirect<int> a(42);
+
+  EXPECT_FALSE(a == make_valueless_indirect());
+  EXPECT_FALSE(make_valueless_indirect() == a);
+  EXPECT_TRUE(make_valueless_indirect() == make_valueless_indirect());
+
+  EXPECT_TRUE(a != make_valueless_indirect());
+  EXPECT_TRUE(make_valueless_indirect() != a);
+  EXPECT_FALSE(make_valueless_indirect() != make_valueless_indirect());
 
   EXPECT_FALSE(a < make_valueless_indirect());
   EXPECT_TRUE(make_valueless_indirect() < a);
