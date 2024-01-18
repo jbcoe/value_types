@@ -349,31 +349,4 @@ struct std::hash<xyz::indirect<T, Alloc>> {
   }
 };
 
-#if (__cpp_lib_format >= 201907L)
-
-namespace xyz {
-
-template <class T, class charT>
-concept is_formattable = requires(T t) { std::formatter<T, charT>{}; };
-
-}  // namespace xyz
-
-template <class T, class Alloc, class charT>
-  requires xyz::is_formattable<T, charT>
-struct std::formatter<xyz::indirect<T, Alloc>, charT>
-    : std::formatter<T, charT> {
-  template <class ParseContext>
-  constexpr auto parse(ParseContext& ctx) -> typename ParseContext::iterator {
-    return std::formatter<T, charT>::parse(ctx);
-  }
-
-  template <class FormatContext>
-  auto format(xyz::indirect<T, Alloc> const& value, FormatContext& ctx) const ->
-      typename FormatContext::iterator {
-    return std::formatter<T, charT>::format(*value, ctx);
-  }
-};
-
-#endif  // __cpp_lib_format >= 201907L
-
 #endif  // XYZ_INDIRECT_H

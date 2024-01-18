@@ -44,6 +44,8 @@ should not be considered in isolation.
 
 ### Changes in R4
 
+* Remove `std::format` support for `std::indirect`.
+
 * Allow copy and move of valueless objects, discuss similarities with variant.
 
 * No longer specify constructors as uses-allocator constructing anything.
@@ -361,7 +363,7 @@ propagates const and is allocator aware.
 
 * Like `unique_ptr`, `polymorphic` does not know the type of the owned object
   (it could be an instance of a derived type). As a result `polymorphic` cannot
-  forward comparison operators, hash or formatting to the owned object.
+  forward comparison operators or hash to the owned object.
 
 #### Similarities and differences with variant
 
@@ -484,10 +486,6 @@ Note to editors: Add the following macros with editor provided values to [versio
 
   // [indirect.hash], hash support
   template <class T, class Alloc> struct hash<indirect<T, Alloc>>;
-
-  // [indirect.format], formatting
-  template <class T, class Alloc, class charT>
-    struct formatter<indirect<T, Alloc>, charT>;
 
   // [polymorphic], class template polymorphic
   template <class T, class Allocator = allocator<T>>
@@ -937,31 +935,6 @@ same value as `hash<remove_const_t<T>>()(*i)`. The member functions are not
 guaranteed to be noexcept.
 
 2. _Preconditions_: `i` is not valueless.
-
-#### X.Y.11 Formatter support [indirect.format]
-DRAFTING NOTE: following [time.format] precedent for formatting
-```c++
-// [indirect.format]
-template <class T, class Alloc, class charT>
-struct formatter<indirect<T, Alloc>, charT> : formatter<T, charT> {
-  template<class ParseContext>
-  constexpr typename ParseContext::iterator parse(ParseContext& ctx);
-
-  template<class FormatContext>
-  typename FormatContext::iterator format(
-    const indirect<T, Alloc>& value, FormatContext& ctx) const;
-};
-```
-
-1. Specializations of `formatter<indirect<T, Alloc>, charT>` are enabled if and only if `formatter<T, charT>` is enabled.
-
-```c++
-template<class FormatContext>
-  typename FormatContext::iterator
-    format(const indirect<T, Alloc>& value, FormatContext& ctx) const;
-```
-2. Preconditions: `value` is not valueless. The specialization `formatter<T,
-  charT>` meets the _Formatter_ requirements [formatter.requirements].
 
 ### X.Z Class template polymorphic [polymorphic]
 
@@ -1664,7 +1637,6 @@ of these changes on users could be potentially significant and unwelcome.
 |`operator bool`| No `operator bool` | Add `operator bool` | Changes semantics | No |
 |`indirect` comparsion preconditions | `indirect` must not be valueless | Allows comparison of valueless objects | Runtime cost | No |
 |`indirect` hash preconditions| `indirect` must not be valueless | Allows hash of valueless objects | Runtime cost | No |
-|`indirect` format preconditions | `indirect` must not be valueless | Allows formatting of valueless objects | Runtime cost | No |
 |Copy and copy assign preconditions| Object can be valueless | Forbids copying of valueless objects | Previously valid code would invoke undefined behaviour | Yes |
 |Move and move assign preconditions| Object can be valueless | Forbids moving of valueless objects | Previously valid code would invoke undefined behaviour | Yes |
 |Requirements on `T` in `polymorphic<T>` | No requirement that `T` has virtual functions | Add _Mandates_ or _Constraints_ to require `T` to have virtual functions | Code becomes ill-formed | Yes |
