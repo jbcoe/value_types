@@ -26,16 +26,14 @@ correctly generate special member functions.
 
 The class template `indirect` confers value-like semantics on a
 free-store-allocated object. An `indirect` may hold an object of a class `T`.
-Copying the `indirect` will copy the object `T`. When a parent object contains a
-member of type `indirect<T>` and is accessed through a const access path,
-`const`ness will propagate from the parent object to the instance of `T` owned
-by the `indirect` member.
+Copying the `indirect` will copy the object `T`. When an `indirect<T>` is accessed through a const access path,
+constness will propagate to the owned object.
 
 The class template `polymorphic` confers value-like semantics on a
 dynamically-allocated object.  A `polymorphic<T>` may hold an object of a class
 publicly derived from `T`. Copying the `polymorphic<T>` will copy the object of
-the derived type. A const `polymorphic<T>` propagates the constness to the owned
-`T`.
+the derived type. When a `polymorphic<T>` is accessed through a const access path,
+constness will propagate to the owned object.
 
 This proposal is a fusion of two earlier individual proposals, P1950 and P0201.
 The design of the two proposed class templates is sufficiently similar that they
@@ -159,8 +157,7 @@ by the owned object type `T`.
 * `indirect<T, Alloc>` and `polymorphic<T, Alloc>` are default constructible in
   cases where `T` is default constructible.
 
-* `indirect<T, Alloc>` is copy constructible where `T` is copy constructible and
-  assignable.
+* `indirect<T, Alloc>` is copy constructible and assignable where `T` is copy constructible and assignable.
 
 * `polymorphic<T, Alloc>` is unconditionally copy constructible and assignable.
 
@@ -243,7 +240,7 @@ Operations on a const-qualified object do not make changes to the object's
 logical state nor to the logical state of other objects.
 
 `indirect<T>` and `polymorphic<T>` are default constructible in cases where `T`
-is default constructible. Moving a value type onto the free store should not add
+is default constructible. Moving a value type into dynamically allocated storage should not add
 or remove the ability to be default constructed.
 
 Note that due to the requirement to support incomplete `T` types, the
@@ -275,11 +272,6 @@ is recommended. This may become common practice since `indirect` and
 currently used to (mis)represent component objects. Putting `T` onto the free
 store should not make it nullable. Nullability must be explicitly opted into by
 using `std::optional<indirect<T>>` or `std::optional<polymorphic<T>>`.
-
-We invite implementers to optimise their implementation of `optional<indirect>`
-and `optional<polymorphic>` to exploit the non-observable nature of the
-valueless state and minimise the size of an `optional<indirect>` or
-`optional<polymorphic>`.
 
 ### Allocator support
 
@@ -390,7 +382,7 @@ valueless.
 
 Variant allows valueless objects to be passed around via copy, assignment, move
 and move assignment. There is no precondition on varaint that it must not be in
-a valuless state to be copied from, moved from, assigned from or move assigned
+a valueless state to be copied from, moved from, assigned from or move assigned
 from. While the notion that a valueless `indirect` or `polymorphic` is toxic and
 must not be passed around code is appealing, it would not interact well with
 generic code which may need to handle a variety of types. Note that the standard
