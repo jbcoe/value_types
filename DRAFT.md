@@ -44,6 +44,8 @@ should not be considered in isolation.
 
 ### Changes in R4
 
+* Allow comparison of valueless `indirect` objects.
+
 * Allow copy and move of valueless objects, discuss similarities with variant.
 
 * No longer specify constructors as uses-allocator constructing anything.
@@ -51,7 +53,6 @@ should not be considered in isolation.
 * Require `T` to satisfy the requirements of `Cpp17Destructible`.
 
 * Rename exposition only variables `p_` to `p` and `allocator_` to `alloc`.
-
 
 ### Changes in R3
 
@@ -856,7 +857,7 @@ constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
 
 2. _Effects_: Equivalent to `lhs.swap(rhs)`.
 
-#### X.Y.8 Relational operators [indirect.rel]
+#### X.Y.8 Relational operators [indirect.relops]
 
 ```c++
 template <class U, class AA>
@@ -864,20 +865,25 @@ constexpr bool operator==(const indirect& lhs, const indirect<U, AA>& rhs)
   noexcept(noexcept(*lhs == *rhs));
 ```
 
+1. _Constraints_: `*lhs == *rhs` is well-formed.
+
+2. _Returns_: `*lhs == *rhs`.
+
+3. _Remarks_: Specializations of this function template for which `*lhs == *rhs`
+  is a core constant expression are constexpr functions.
+
 ```c++
 template <class U, class AA>
 constexpr auto operator<=>(const indirect& lhs, const indirect<U, AA>& rhs)
   noexcept(noexcept(*lhs <=> *rhs));
 ```
 
-1. _Constraints_: `*lhs` _op_ `*rhs` is well-formed.
+4. _Constraints_: `*lhs <=> *rhs` is well-formed.
 
-2. _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
+5. _Returns_: `*lhs <=> *rhs`.
 
-3. _Returns_: `*lhs` _op_ `*rhs`.
-
-4. _Remarks_: Specializations of this function template for which `*lhs` _op_
-  `*rhs` is a core constant expression are constexpr functions.
+6. _Remarks_: Specializations of this function template for which `*lhs <=> *rhs`
+  is a core constant expression are constexpr functions.
 
 #### X.Y.9 Comparison with T [indirect.comp.with.t]
 
@@ -887,20 +893,25 @@ constexpr bool operator==(const indirect& lhs, const U& rhs)
   noexcept(noexcept(*lhs == rhs));
 ```
 
+1. _Constraints_: `*lhs == rhs` is well-formed.
+
+2. _Returns_: `*lhs == rhs`.
+
+3. _Remarks_: Specializations of this function template for which `*lhs == rhs`
+   is a core constant expression, are constexpr functions.
+
 ```c++
 template <class U>
 constexpr auto operator<=>(const indirect& lhs, const U& rhs)
   noexcept(noexcept(*lhs <=> rhs));
 ```
 
-1. _Constraints_: `*lhs` _op_ `rhs` is well-formed.
+4. _Constraints_: `*lhs <=> rhs` is well-formed.
 
-2. _Preconditions_: `lhs` is not valueless.
+5. _Returns_: `*lhs <=> rhs`.
 
-3. _Returns_: `*lhs` _op_ `rhs`.
-
-4. _Remarks_: Specializations of this function template for which `*lhs` _op_
-  `rhs` is a core constant expression, are constexpr functions.
+6. _Remarks_: Specializations of this function template for which `*lhs <=> rhs`
+   is a core constant expression, are constexpr functions.
 
 ```c++
 template <class U>
@@ -908,20 +919,25 @@ constexpr bool operator==(const U& lhs, const indirect& rhs)
   noexcept(noexcept(lhs == *rhs));
 ```
 
+7. _Constraints_: `lhs == *rhs` is well-formed.
+
+8. _Returns_: `lhs == *rhs`.
+
+9. _Remarks_: Specializations of this function template for which `lhs == *rhs`
+   is a core constant expression, are constexpr functions.
+
 ```c++
 template <class U>
 constexpr auto operator<=>(const U& lhs, const indirect& rhs)
   noexcept(noexcept(lhs <=> *rhs));
 ```
 
-5. _Constraints_: `lhs` _op_ `*rhs` is well-formed.
+10. _Constraints_: `lhs <=> *rhs` is well-formed.
 
-6. _Preconditions_: `rhs` is not valueless.
+11. _Returns_: `lhs <=> *rhs`.
 
-7. _Returns_: `lhs` _op_ `*rhs`.
-
-8. _Remarks_: Specializations of this function template for which `lhs` _op_
-  `*rhs` is a core constant expression, are constexpr functions.
+12. _Remarks_: Specializations of this function template for which `lhs <=> *rhs`
+    is a core constant expression, are constexpr functions.
 
 #### X.Y.10 Hash support [indirect.hash]
 
