@@ -867,7 +867,8 @@ constexpr bool operator==(const indirect& lhs, const indirect<U, AA>& rhs)
 
 1. _Constraints_: `*lhs == *rhs` is well-formed.
 
-2. _Returns_: `*lhs == *rhs`.
+2. _Returns_: If `lhs` is valueless or `rhs` is valueless,
+  `lhs.valueless_after_move()==rhs.valueless_after_move()`; otherwise `*lhs == *rhs`.
 
 3. _Remarks_: Specializations of this function template for which `*lhs == *rhs`
   is a core constant expression are constexpr functions.
@@ -895,7 +896,7 @@ constexpr bool operator==(const indirect& lhs, const U& rhs)
 
 1. _Constraints_: `*lhs == rhs` is well-formed.
 
-2. _Returns_: `*lhs == rhs`.
+2. _Returns_: If `lhs` is valueless, false; otherwise `*lhs == rhs`.
 
 3. _Remarks_: Specializations of this function template for which `*lhs == rhs`
    is a core constant expression, are constexpr functions.
@@ -921,7 +922,7 @@ constexpr bool operator==(const U& lhs, const indirect& rhs)
 
 7. _Constraints_: `lhs == *rhs` is well-formed.
 
-8. _Returns_: `lhs == *rhs`.
+8. _Returns_: If `rhs` is valueless, false; otherwise `lhs == *rhs`.
 
 9. _Remarks_: Specializations of this function template for which `lhs == *rhs`
    is a core constant expression, are constexpr functions.
