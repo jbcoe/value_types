@@ -605,27 +605,7 @@ class indirect {
   friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept(see below);
 
   template <class U, class AA>
-  friend constexpr auto operator==(
-    const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below);
-
-  template <class U, class AA>
-  friend constexpr auto operator!=(
-    const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below);
-
-  template <class U, class AA>
-  friend constexpr auto operator<(
-    const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below);
-
-  template <class U, class AA>
-  friend constexpr auto operator<=(
-    const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below);
-
-  template <class U, class AA>
-  friend constexpr auto operator>(
-    const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below);
-
-  template <class U, class AA>
-  friend constexpr auto operator>=(
+  friend constexpr bool operator==(
     const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below);
 
   template <class U, class AA>
@@ -633,51 +613,11 @@ class indirect {
     const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below);
 
   template <class U>
-  friend constexpr auto operator==(
+  friend constexpr bool operator==(
     const indirect& lhs, const U& rhs) noexcept(see below);
 
   template <class U>
-  friend constexpr auto operator==(
-    const U& lhs, const indirect& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr auto operator!=(
-    const indirect& lhs, const U& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr auto operator!=(
-    const U& lhs, const indirect& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr auto operator<(
-    const indirect& lhs, const U& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr auto operator<(
-    const U& lhs, const indirect& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr auto operator<=(
-    const indirect& lhs, const U& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr auto operator<=(
-    const U& lhs, const indirect& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr auto operator>(
-    const indirect& lhs, const U& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr auto operator>(
-    const U& lhs, const indirect& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr auto operator>=(
-    const indirect& lhs, const U& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr auto operator>=(
+  friend constexpr bool operator==(
     const U& lhs, const indirect& rhs) noexcept(see below);
 
   template <class U>
@@ -920,38 +860,8 @@ constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
 
 ```c++
 template <class U, class AA>
-constexpr auto operator==(const indirect& lhs, const indirect<U, AA>& rhs)
+constexpr bool operator==(const indirect& lhs, const indirect<U, AA>& rhs)
   noexcept(noexcept(*lhs == *rhs));
-```
-
-```c++
-template <class U, class AA>
-constexpr auto operator!=(const indirect& lhs, const indirect<U, AA>& rhs)
-  noexcept(noexcept(*lhs != *rhs));
-```
-
-```c++
-template <class U, class AA>
-constexpr auto operator<(const indirect& lhs, const indirect<U, AA>& rhs)
-  noexcept(noexcept(*lhs < *rhs));
-```
-
-```c++
-template <class U, class AA>
-constexpr auto operator<=(const indirect& lhs, const indirect<U, AA>& rhs)
-  noexcept(noexcept(*lhs <= *rhs));
-```
-
-```c++
-template <class U, class AA>
-constexpr auto operator>(const indirect& lhs, const indirect<U, AA>& rhs)
-  noexcept(noexcept(*lhs > *rhs));
-```
-
-```c++
-template <class U, class AA>
-constexpr auto operator>=(const indirect& lhs, const indirect<U, AA>& rhs)
-  noexcept(noexcept(*lhs >= *rhs));
 ```
 
 ```c++
@@ -973,38 +883,8 @@ constexpr auto operator<=>(const indirect& lhs, const indirect<U, AA>& rhs)
 
 ```c++
 template <class U>
-constexpr auto operator==(const indirect& lhs, const U& rhs)
+constexpr bool operator==(const indirect& lhs, const U& rhs)
   noexcept(noexcept(*lhs == rhs));
-```
-
-```c++
-template <class U>
-constexpr auto operator!=(const indirect& lhs, const U& rhs)
-  noexcept(noexcept(*lhs != rhs));
-```
-
-```c++
-template <class U>
-constexpr auto operator<(const indirect& lhs, const U& rhs)
-  noexcept(noexcept(*lhs < rhs));
-```
-
-```c++
-template <class U>
-constexpr auto operator<=(const indirect& lhs, const U& rhs)
-  noexcept(noexcept(*lhs <= rhs));
-```
-
-```c++
-template <class U>
-constexpr auto operator>(const indirect& lhs, const U& rhs)
-  noexcept(noexcept(*lhs > rhs));
-```
-
-```c++
-template <class U>
-constexpr auto operator>=(const indirect& lhs, const U& rhs)
-  noexcept(noexcept(*lhs >= rhs));
 ```
 
 ```c++
@@ -1024,38 +904,8 @@ constexpr auto operator<=>(const indirect& lhs, const U& rhs)
 
 ```c++
 template <class U>
-constexpr auto operator==(const U& lhs, const indirect& rhs)
+constexpr bool operator==(const U& lhs, const indirect& rhs)
   noexcept(noexcept(lhs == *rhs));
-```
-
-```c++
-template <class U>
-constexpr auto operator!=(const U& lhs, const indirect& rhs)
-  noexcept(noexcept(lhs != *rhs));
-```
-
-```c++
-template <class U>
-constexpr auto operator<(const U& lhs, const indirect& rhs)
-  noexcept(noexcept(lhs < *rhs));
-```
-
-```c++
-template <class U>
-constexpr auto operator<=(const U& lhs, const indirect& rhs)
-  noexcept(noexcept(lhs <= *rhs));
-```
-
-```c++
-template <class U>
-constexpr auto operator>(const U& lhs, const indirect& rhs)
-  noexcept(noexcept(lhs > *rhs));
-```
-
-```c++
-template <class U>
-constexpr auto operator>=(const U& lhs, const indirect& rhs)
-  noexcept(noexcept(lhs >= *rhs));
 ```
 
 ```c++
