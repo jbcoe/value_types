@@ -1386,15 +1386,21 @@ outside of tests.
 
 A converting constructor could be added in a future version of the C++ standard.
 
-### Comparisons returning `auto`
+### Comparisons for `indirect`
 
-We opt to return `auto` from comparison operators on `indirect<T>` so that the
-return type perfectly matches that of the underlying comparison for `T`. While
-deferring the return type to the underlying type does support unusual
-user-defined comparison operators, we prefer to do so rather than impose
-requirements on the user-defined operators for consistency. Adoption of indirect
-or moving an object onto the heap should not be impeded by unusual choices for
-the return type of comparison operators on user-defined types.
+We implement comparisons for `indirect` in terms of `operator==` and
+`operator<=>` returning `bool` and `auto` respectively.
+
+The alternative would be to implement the full suite of comparison operators,
+forwarding them to the underlying type and allowing non-boolean return types.
+Support for non-boolean return types would support unusual (non-regular)
+user-defined comparison operators which could be helpful when the underlying
+type is part of a domain-specific-language (DSL) that uses comparison operators
+for a different purpose. However, this would be inconsistent with other standard
+library types like `optional`, `variant` and `reference_wrapper`. Moreover, we'd
+likely only give partial support for a theoretical DSL which may well make use
+of other operators like operator+ and operator- which are not supported for
+`indirect`.
 
 ### Supporting `operator()` `operator[]`
 
