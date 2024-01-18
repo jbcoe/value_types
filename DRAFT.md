@@ -1196,7 +1196,6 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
 
 26. _[Note 2: The use of this function may require that `T` be a complete type dependent on behavour of the allocator. — end note]_
 
-
 #### X.Z.4 Destructor [polymorphic.dtor]
 
 ```c++
