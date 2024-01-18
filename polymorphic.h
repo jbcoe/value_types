@@ -190,19 +190,24 @@ class polymorphic {
   constexpr polymorphic(const polymorphic& other)
       : alloc_(allocator_traits::select_on_container_copy_construction(
             other.alloc_)) {
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
-    cb_ = other.cb_->clone(alloc_);
+    if (!other.valueless_after_move()) {
+      cb_ = other.cb_->clone(alloc_);
+    } else {
+      cb_ = nullptr;
+    }
   }
 
   constexpr polymorphic(std::allocator_arg_t, const A& alloc,
                         const polymorphic& other)
       : alloc_(alloc) {
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
-    cb_ = other.cb_->clone(alloc_);
+    if (!other.valueless_after_move()) {
+      cb_ = other.cb_->clone(alloc_);
+    } else {
+      cb_ = nullptr;
+    }
   }
 
   constexpr polymorphic(polymorphic&& other) noexcept : alloc_(other.alloc_) {
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = std::exchange(other.cb_, nullptr);
   }
 
@@ -210,7 +215,6 @@ class polymorphic {
       std::allocator_arg_t, const A& alloc,
       polymorphic&& other) noexcept(allocator_traits::is_always_equal::value)
       : alloc_(alloc) {
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     cb_ = std::exchange(other.cb_, nullptr);
   }
 
@@ -218,7 +222,6 @@ class polymorphic {
 
   constexpr polymorphic& operator=(const polymorphic& other) {
     if (this == &other) return *this;
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     if constexpr (allocator_traits::propagate_on_container_copy_assignment::
                       value) {
       if (alloc_ != other.alloc_) {
@@ -227,6 +230,9 @@ class polymorphic {
       }
     }
     reset();  // We may not have reset above and it's a no-op if valueless.
+    if (other.valueless_after_move()) {
+      return *this;
+    }
     cb_ = other.cb_->clone(alloc_);
     return *this;
   }
@@ -235,7 +241,6 @@ class polymorphic {
       allocator_traits::propagate_on_container_move_assignment::value ||
       allocator_traits::is_always_equal::value) {
     if (this == &other) return *this;
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     if constexpr (allocator_traits::propagate_on_container_move_assignment::
                       value) {
       if (alloc_ != other.alloc_) {
@@ -244,6 +249,9 @@ class polymorphic {
       }
     }
     reset();  // We may not have reset above and it's a no-op if valueless.
+    if (other.valueless_after_move()) {
+      return *this;
+    }
     if (alloc_ == other.alloc_) {
       std::swap(cb_, other.cb_);
     } else {
@@ -253,22 +261,22 @@ class polymorphic {
   }
 
   constexpr pointer operator->() noexcept {
-    assert(cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return cb_->p_;
   }
 
   constexpr const_pointer operator->() const noexcept {
-    assert(cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return cb_->p_;
   }
 
   constexpr T& operator*() noexcept {
-    assert(cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return *cb_->p_;
   }
 
   constexpr const T& operator*() const noexcept {
-    assert(cb_ != nullptr);  // LCOV_EXCL_LINE
+    assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return *cb_->p_;
   }
 
@@ -281,8 +289,6 @@ class polymorphic {
   constexpr void swap(polymorphic& other) noexcept(
       std::allocator_traits<A>::propagate_on_container_swap::value ||
       std::allocator_traits<A>::is_always_equal::value) {
-    assert(cb_ != nullptr);        // LCOV_EXCL_LINE
-    assert(other.cb_ != nullptr);  // LCOV_EXCL_LINE
     if constexpr (allocator_traits::propagate_on_container_swap::value) {
       // If allocators move with their allocated objects, we can swap both.
       std::swap(alloc_, other.alloc_);

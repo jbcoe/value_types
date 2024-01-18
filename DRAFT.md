@@ -26,16 +26,15 @@ correctly generate special member functions.
 
 The class template `indirect` confers value-like semantics on a
 free-store-allocated object. An `indirect` may hold an object of a class `T`.
-Copying the `indirect` will copy the object `T`. When a parent object contains a
-member of type `indirect<T>` and is accessed through a const access path,
-`const`ness will propagate from the parent object to the instance of `T` owned
-by the `indirect` member.
+Copying the `indirect` will copy the object `T`. When an `indirect<T>` is
+accessed through a const access path, constness will propagate to the owned
+object.
 
 The class template `polymorphic` confers value-like semantics on a
 dynamically-allocated object.  A `polymorphic<T>` may hold an object of a class
 publicly derived from `T`. Copying the `polymorphic<T>` will copy the object of
-the derived type. A const `polymorphic<T>` propagates the constness to the owned
-`T`.
+the derived type. When a `polymorphic<T>` is accessed through a const access path,
+constness will propagate to the owned object.
 
 This proposal is a fusion of two earlier individual proposals, P1950 and P0201.
 The design of the two proposed class templates is sufficiently similar that they
@@ -44,6 +43,8 @@ should not be considered in isolation.
 ## History
 
 ### Changes in R4
+
+* Allow copy and move of valueless objects, discuss similarities with variant.
 
 * No longer specify constructors as uses-allocator constructing anything.
 
@@ -90,7 +91,7 @@ should not be considered in isolation.
 
 * Specify constructors as uses-allocator constructing `T`.
 
-* Wording review and additions to <memory> synopsis [memory.syn]
+* Wording review and additions to `<memory>` synopsis [memory.syn]
 
 ### Changes in R2
 
@@ -157,8 +158,7 @@ by the owned object type `T`.
 * `indirect<T, Alloc>` and `polymorphic<T, Alloc>` are default constructible in
   cases where `T` is default constructible.
 
-* `indirect<T, Alloc>` is copy constructible where `T` is copy constructible and
-  assignable.
+* `indirect<T, Alloc>` is copy constructible and assignable where `T` is copy constructible and assignable.
 
 * `polymorphic<T, Alloc>` is unconditionally copy constructible and assignable.
 
@@ -241,7 +241,7 @@ Operations on a const-qualified object do not make changes to the object's
 logical state nor to the logical state of other objects.
 
 `indirect<T>` and `polymorphic<T>` are default constructible in cases where `T`
-is default constructible. Moving a value type onto the free store should not add
+is default constructible. Moving a value type into dynamically allocated storage should not add
 or remove the ability to be default constructed.
 
 Note that due to the requirement to support incomplete `T` types, the
@@ -274,11 +274,6 @@ currently used to (mis)represent component objects. Putting `T` onto the free
 store should not make it nullable. Nullability must be explicitly opted into by
 using `std::optional<indirect<T>>` or `std::optional<polymorphic<T>>`.
 
-We invite implementers to optimise their implementation of `optional<indirect>`
-and `optional<polymorphic>` to exploit the non-observable nature of the
-valueless state and minimise the size of an `optional<indirect>` or
-`optional<polymorphic>`.
-
 ### Allocator support
 
 Both `indirect` and `polymorphic` are allocator-aware types. They must be
@@ -304,7 +299,8 @@ The class template `indirect` owns an object of known type, permits copies,
 propagates const and is allocator aware.
 
 * Like `optional` and `unique_ptr`, `indirect` can be in a valueless state;
-  `indirect` can only get into the valueless state after move.
+  `indirect` can only get into the valueless state after being moved from, or
+  assignment or construction from a valueless state.
 
 * `unique_ptr` and `optional` have preconditions for `operator->` and
   `operator*`: the behavior is undefined if `*this` does not contain a value.
@@ -342,7 +338,8 @@ The class template `polymorphic` owns an object of known type, requires copies,
 propagates const and is allocator aware.
 
 * Like `optional` and `unique_ptr`, `polymorphic` can be in a valueless state;
-  `polymorphic` can only get into the valueless state after move.
+  `polymorphic` can only get into the valueless state after being moved from, or
+  assignment or construction from a valueless state.
 
 * `unique_ptr` and `optional` have preconditions for `operator->` and
   `operator*`: the behavior is undefined if `*this` does not contain a value.
@@ -383,6 +380,25 @@ valueless state would necessitate the addition of an otherwise redundant check.
 Accessing a valueless `indirect` is undefined behaviour, so we make it a
 precondition for comparison and hash that the instance of `indirect` is not
 valueless.
+
+Variant allows valueless objects to be passed around via copy, assignment, move
+and move assignment. There is no precondition on varaint that it must not be in
+a valueless state to be copied from, moved from, assigned from or move assigned
+from. While the notion that a valueless `indirect` or `polymorphic` is toxic and
+must not be passed around code is appealing, it would not interact well with
+generic code which may need to handle a variety of types. Note that the standard
+does not require a moved-from object to be valid for copy, move, assign or move
+assignment: the only restriction is that it should be in a well-formed but
+unspecified state. However, there is no precedent for standard library types to
+have preconditions on move, copy, assign or move assignment. We opt for
+consistency with existing standard library types (namely varaint which has a
+valueless state) and allow copy, move, assignment and move assignment of a
+valuless `indirect` and `polymorphic`. Handling of the valueless state for
+indirect and polymorphic in move operations will not incur cost; for copy
+operations, the cost of handling the valuless state will be insignificant
+compared to the cost of allocating memory. Introducing preconditions for copy,
+move, assign and move assign in a later revision of the C++ standard would be a
+silent breaking change.
 
 ### `noexcept` and narrow contracts
 
@@ -747,50 +763,42 @@ constexpr indirect(const indirect& other);
 
 14. _Mandates_: `is_copy_constructible_v<T>` is `true`.
 
-15. _Preconditions_: `other` is not valueless.
-
-16. _Effects_: Equivalent to
+15. _Effects_: Equivalent to
   `indirect(allocator_arg, allocator_traits<allocator_type>::select_on_container_copy_construction(other.get_allocator()), *other)`.
 `
-17. _Postconditions_: `*this` is not valueless.
+16. _Postconditions_: `*this` is not valueless.
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& alloc,
                    const indirect& other);
 ```
 
-18. _Mandates_: `is_copy_constructible_v<T>` is `true`.
+17. _Mandates_: `is_copy_constructible_v<T>` is `true`.
 
-19. _Preconditions_: `other` is not valueless.
-
-20. _Effects_: Equivalent to `indirect(allocator_arg, alloc, *other)`.
-
-21. _Postconditions_: `*this` is not valueless.
+18. _Effects_: Equivalent to `indirect(allocator_arg, alloc, *other)`.
 
 ```c++
 constexpr indirect(indirect&& other) noexcept;
 ```
 
-22. _Preconditions_: `other` is not valueless. _[Note: This constructor does not require that `is_move_constructible_v<T>`
+19. _Effects_: Constructs an `indirect` that takes ownership of the `other`'s
+    owned object and stores the address in `p_`. `allocator_` is initialized by
+    construction from `other.allocator_`.
+
+_[Note: This constructor does not require that `is_move_constructible_v<T>`
   is `true` --end note]_
-
-23. _Effects_: Constructs an `indirect` that takes ownership of the `other`'s owned object and stores the address in `p_`.
-  `alloc` is initialized by construction from `other.alloc`.
-
-24. _Postconditions_: `other` is valueless.
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& alloc, indirect&& other)
   noexcept(allocator_traits<Allocator>::is_always_equal);
 ```
 
-25. _Preconditions_: `other` is not valueless. _[Note: This constructor does not require that `is_move_constructible_v<T>`
-  is `true` --end note]_
-
-26. _Effects_: If `alloc == other.get_allocator()` is `true` then equivalent to `indirect(std::move(other))`,
+20. _Effects_: If `alloc == other.get_allocator()` is `true` then equivalent to `indirect(std::move(other))`,
   otherwise, equivalent to `indirect(allocator_arg, alloc, *std::move(other))`.
 
-27. _Postconditions_: `other` is valueless.
+21. _Postconditions_: `other` is valueless.
+
+_[Note: This constructor does not require that `is_move_constructible_v<T>` is `true` --end note]_
 
 #### X.Y.4 Destructor [indirect.dtor]
 
@@ -810,22 +818,18 @@ constexpr indirect& operator=(const indirect& other);
 
 1. _Mandates_: `is_copy_constructible_v<T>` is `true`.
 
-2. _Preconditions_: `other` is not valueless.
-
-3. _Effects_: If `this == &other` is `true`, then has no effects.
+2. _Effects_: If `this == &other` is `true`, then has no effects.
   Otherwise, if either:
   - `is_copy_assignable_v<T>` is `false` and `is_nothrow_copy_constructible_v<T>` is `false`, or
   - `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value` is `true` and
     `alloc == other.alloc` is `false`, or
   - `*this` is valueless
   then, equivalent to `*this = indirect(allocator_arg, allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value ? other.alloc : alloc, *other)`
-  Otherwise, if `is_copy_assignable_v<T>` is `true`, then equivalent to `**this = *other`,
+  Otherwise, if `is_copy_assignable_v<T>` is `true`, then equivalent to `*this = *other`,
   Otherwise, equivalent to:
   - `(allocator_traits<allocator_type>::destruct(alloc, p), allocator_traits<allocator_type>::construct(a, p, *other))`
 
-4. _Postconditions_: `*this` is not valueless.
-
-5. _Returns_: A reference to `*this`.
+3. _Returns_: A reference to `*this`.
 
 ```c++
 constexpr indirect& operator=(indirect&& other) noexcept(
@@ -835,19 +839,17 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 
 _Mandates_: `is_move_constructible_v<T>` is `true`.
 
-6. _Preconditions_: `other` is not valueless.
-
-7. _Effects_: If `&other == this`, then has no effects. Otherwise, if
+4. _Effects_: If `&other == this`, then has no effects. Otherwise, if
   `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value
-  == true`, `alloc` is set to the allocator of `other`. If allocator is
+ == true`, `alloc` is set to the allocator of `other`. If allocator is
   propagated or is equal to the allocator of `other`, destroys the owned object,
   if any, then takes ownership of the object owned by `other`.  Otherwise,
   destroys the owned object if any, then move constructs an object from the
   object owned by `other`.
 
-8. _Postconditions_: `*this` is not valueless. `other` is valueless.
+5. _Postconditions_: `other` is valueless.
 
-9. _Returns_: A reference to `*this`.
+6. _Returns_: A reference to `*this`.
 
 #### X.Y.6 Observers [indirect.observers]
 
@@ -898,22 +900,21 @@ constexpr void swap(indirect& other) noexcept(
   || allocator_traits::is_always_equal::value);
 ```
 
-1. _Preconditions_: `*this` is not valueless, `other` is not valueless.
-
-2. _Effects_: Swaps the objects owned by `*this` and `other`. If
+1. _Effects_: Swaps the objects owned by `*this` and `other`. If
   `allocator_traits<allocator_type>::propagate_on_container_swap::value` is
   `true`, then `allocator_type` shall meet the _Cpp17Swappable_ requirements and
   the allocators of `*this` and `other` are exchanged by calling
   `swap` as described in [swappable.requirements]. Otherwise, the allocators
   are not swapped, and the behavior is undefined unless
-  `(*this).get_allocator() == other.get_allocator()`. _[Note: Does not call `swap` on the owned objects directly. --end note]_
+  `(*this).get_allocator() == other.get_allocator()`.
+  _[Note: Does not call `swap` on the owned objects directly. --end note]_
 
 ```c++
 constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
   noexcept(lhs.swap(rhs)));
 ```
 
-4. _Effects_: Equivalent to `lhs.swap(rhs)`.
+2. _Effects_: Equivalent to `lhs.swap(rhs)`.
 
 #### X.Y.8 Relational operators [indirect.rel]
 
@@ -1053,7 +1054,7 @@ constexpr auto operator>(const U& lhs, const indirect& rhs)
 
 ```c++
 template <class U>
-constexpr auto operator>=const U& lhs, const indirect& rhs)
+constexpr auto operator>=(const U& lhs, const indirect& rhs)
   noexcept(noexcept(lhs >= *rhs));
 ```
 
@@ -1285,32 +1286,28 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       const polymorphic& other);
 ```
 
-14. _Preconditions_: `other` is not valueless.
-
-15. _Effects_: Constructs a polymorphic owning an instance of `T` created with the
-  copy constructor of the object owned by `other`. `alloc` is direct-non-list-initialized with `a`.
-
-16. _Postconditions_: `*this` is not valueless.
+14. _Effects_: Constructs a polymorphic owning an instance of `T` created with the
+  copy constructor of the object owned by `other`. `allocator_` is
+  direct-non-list-initialized with alloc.
 
 ```c++
 constexpr polymorphic(polymorphic&& other) noexcept;
 ```
 
-17. _Effects_: Equivalent to `polymorphic(allocator_arg_t{}, Allocator(std::move(other.alloc_)), other)`.
+15. _Effects_: Equivalent to `polymorphic(allocator_arg_t{}, Allocator(std::move(other.alloc_)), other)`.
 
 ```c++
 constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       polymorphic&& other) noexcept;
 ```
 
-18. _Preconditions_: `other` is not valueless. _[Note: This constructor does not require that `is_move_constructible_v<T>`
+16. _Effects_: Constructs a polymorphic that takes ownership of the object owned
+  by `other` if any. `allocator_` is direct-non-list-initialized with `alloc`.
+
+17. _Postconditions_: `other` is valueless.
+
+_[Note: This constructor does not require that `is_move_constructible_v<T>`
   is `true`. --end note]_
-
-19. _Effects_: Constructs a polymorphic that takes ownership of the object owned
-  by `other`.
-  `alloc` is direct-non-list-initialized with `a`.
-
-20. _Postconditions_: `other` is valueless.
 
 #### X.Z.4 Destructor [polymorphic.dtor]
 
@@ -1328,15 +1325,12 @@ constexpr ~polymorphic();
 constexpr polymorphic& operator=(const polymorphic& other);
 ```
 
-1. _Preconditions_: `other` is not valueless.
-
-2. _Effects_: If `&other == this`, then has no effects. Otherwise, if `*this` is not
-valueless, destroys the owned object. If
+1. _Effects_: If `&other == this`, then has no effects. Otherwise, if `*this` is
+not valueless, destroys the owned object. If
   `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value
-  == true`, `allocator_` is set to the allocator of `other`. Copy constructs a
-  new object using the object owned by `other`.
-
-3. _Postconditions_: `*this` is not valueless.
+  == true`, `allocator_` is set to the allocator of `other`. If `other` is not
+  valueless, copy constructs a new object using the object owned by `other`.
+  Otherwise `*this` becomes valueless.
 
 ```c++
 constexpr polymorphic& operator=(polymorphic&& other) noexcept(
@@ -1344,9 +1338,7 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
     allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-4. _Preconditions_: `other` is not valueless.
-
-5. _Effects_: If `&other == this`, then has no effects. Otherwise, if
+2. _Effects_: If `&other == this`, then has no effects. Otherwise, if
   `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value
   == true`, `allocator_` is set to the allocator of `other`. If allocator is
   propagated or is equal to the allocator of `other`, destroys the owned object
@@ -1354,7 +1346,7 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
   destroys the owned object if any, then move constructs an object from the
   object owned by `other`.
 
-6. _Postconditions_: `*this` is not valueless. `other` is valueless.
+3. _Postconditions_: `other` is valueless.
 
 #### X.Z.6 Observers [polymorphic.observers]
 
@@ -1395,10 +1387,7 @@ constexpr void swap(polymorphic& other) noexcept(
   allocator_traits::propagate_on_container_swap::value
   || allocator_traits::is_always_equal::value);
 ```
-
-1. _Preconditions_: `*this` is not valueless, `other` is not valueless.
-
-2. _Effects_: Swaps the objects owned by `*this` and `other`. If
+1. _Effects_: Swaps the objects owned by `*this` and `other`. If
   `allocator_traits<allocator_type>::propagate_on_container_swap::value` is
   `true`, then `allocator_type` shall meet the _Cpp17Swappable_ requirements and
   the allocators of `*this` and `other` are exchanged by calling
@@ -1412,7 +1401,7 @@ constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(
   noexcept(lhs.swap(rhs)));
 ```
 
-3. _Effects_: Equivalent to `lhs.swap(rhs)`.
+2. _Effects_: Equivalent to `lhs.swap(rhs)`.
 
 ## Reference implementation
 
@@ -1820,8 +1809,8 @@ of these changes on users could be potentially significant and unwelcome.
 |`indirect` comparsion preconditions | `indirect` must not be valueless | Allows comparison of valueless objects | Runtime cost | No |
 |`indirect` hash preconditions| `indirect` must not be valueless | Allows hash of valueless objects | Runtime cost | No |
 |`indirect` format preconditions | `indirect` must not be valueless | Allows formatting of valueless objects | Runtime cost | No |
-|Copy and copy assign preconditions| Object must not be valueless | Allows copying of valueless objects | Runtime cost | No |
-|Move and move assign preconditions| Object must not be valueless | Allows moving of valueless objects | Runtime cost | No |
+|Copy and copy assign preconditions| Object can be valueless | Forbids copying of valueless objects | Previously valid code would invoke undefined behaviour | Yes |
+|Move and move assign preconditions| Object can be valueless | Forbids moving of valueless objects | Previously valid code would invoke undefined behaviour | Yes |
 |Requirements on `T` in `polymorphic<T>` | No requirement that `T` has virtual functions | Add _Mandates_ or _Constraints_ to require `T` to have virtual functions | Code becomes ill-formed | Yes |
 |State of default-constructed object| Default-constructed object (where valid) has a value | Make default-constructed object valueless | Changes semantics; necessitates adding `operator bool` and allowing move, copy and compare of valueless (empty) objects | Yes |
 |Small buffer optimisation for polymorphic|SBO is not required, settings are hidden|Add buffer size and alignment as template parameters| Breaks ABI; forces implementers to use SBO | Yes |
