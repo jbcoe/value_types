@@ -518,15 +518,15 @@ using the function `allocator_traits<allocator_type>::destroy`.
 3. Copy constructors for an indirect value obtain an allocator by calling
 `allocator_traits<allocator_type>::select_on_container_copy_construction` on the
 allocator belonging to the indirect value being copied. Move constructors obtain
-an allocator by move construction from the allocator belonging to the container
-being moved. Such move construction of the allocator shall not exit via an exception.
-All other constructors for these container types take a `const
-allocator_type& argument`. _[Note 3: If an invocation of a constructor uses the
-default value of an optional allocator argument, then the allocator type must
-support value-initialization. --end note]_ A copy of this allocator is used for
-any memory allocation and element construction performed by these constructors
-and by all member functions during the lifetime of each indirect value object,
-or until the allocator is replaced. The allocator may be replaced only via
+an allocator by move construction from the allocator belonging to the object
+being moved. Such move construction of the allocator shall not exit via an
+exception. All other constructors for these types take a `const allocator_type&
+argument`. _[Note 3: If an invocation of a constructor uses the default value of
+an optional allocator argument, then the allocator type must support
+value-initialization. --end note]_ A copy of this allocator is used for any
+memory allocation and element construction performed by these constructors and
+by all member functions during the lifetime of each indirect value object, or
+until the allocator is replaced. The allocator may be replaced only via
 assignment or `swap()`. Allocator replacement is performed by copy assignment,
 move assignment, or swapping of the allocator only if
 
@@ -988,16 +988,16 @@ value.
 `allocator_traits<allocator_type>::select_on_container_copy_construction` on the
 allocator belonging to the polymorphic value being copied. Move constructors
 obtain an allocator by move construction from the allocator belonging to the
-container being moved. Such move construction of the allocator shall not exit
-via an exception. All other constructors for these container types take a `const
-allocator_type& argument`. [Note 3:If an invocation of a constructor uses the
+object being moved. Such move construction of the allocator shall not exit via
+an exception. All other constructors for these types take a `const
+allocator_type& argument`. [Note 3: If an invocation of a constructor uses the
 default value of an optional allocator argument, then the allocator type must
 support value-initialization.  end note] A copy of this allocator is used for
 any memory allocation and element construction performed by these constructors
 and by all member functions during the lifetime of each polymorphic value
 object, or until the allocator is replaced. The allocator may be replaced only
-via assignment or `swap()`. Allocator replacement is performed by copy assignment,
-move assignment, or swapping of the allocator only if (64.1)
+via assignment or `swap()`. Allocator replacement is performed by copy
+assignment, move assignment, or swapping of the allocator only if (64.1)
 `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value`,
 (64.2)
 `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value`,
