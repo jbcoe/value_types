@@ -1455,10 +1455,6 @@ the discriminant must be stored.
 For the sake of minimal size and efficiency, we opted to use two class
 templates.
 
-### A null state or a valueless state
-
-TODO: discuss the tradeoffs between an observable null state and a valueless state.
-
 ### Copiers, deleters, pointer constructors, and allocator support
 
 The older types `indirect_value` and `polymorphic_value` had constructors that
