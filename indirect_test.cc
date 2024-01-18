@@ -128,6 +128,22 @@ TEST(IndirectTest, MovePreservesIndirectObjectAddress) {
   EXPECT_EQ(address, &*aa);
 }
 
+TEST(IndirectTest, AllocatorExtendedCopy) {
+  xyz::indirect<int> a(42);
+  xyz::indirect<int> aa(std::allocator_arg, a.get_allocator(), a);
+  EXPECT_EQ(*a, *aa);
+  EXPECT_NE(&*a, &*aa);
+}
+
+TEST(IndirectTest, AllocatorExtendedMove) {
+  xyz::indirect<int> a(42);
+  auto address = &*a;
+  xyz::indirect<int> aa(std::allocator_arg, a.get_allocator(), std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  EXPECT_EQ(address, &*aa);
+}
+
 TEST(IndirectTest, CopyAssignment) {
   xyz::indirect<int> a(42);
   xyz::indirect<int> b(101);
@@ -185,6 +201,76 @@ TEST(IndirectTest, MemberSwapWithSelf) {
 
   a.swap(a);
   EXPECT_FALSE(a.valueless_after_move());
+}
+
+TEST(IndirectTest, CopyFromValueless) {
+  xyz::indirect<int> a;
+  xyz::indirect<int> aa(std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  xyz::indirect<int> b(a);
+  EXPECT_TRUE(b.valueless_after_move());
+}
+
+TEST(IndirectTest, MoveFromValueless) {
+  xyz::indirect<int> a;
+  xyz::indirect<int> aa(std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  xyz::indirect<int> b(std::move(a));
+  EXPECT_TRUE(b.valueless_after_move());
+}
+
+TEST(IndirectTest, AllocatorExtendedCopyFromValueless) {
+  xyz::indirect<int> a;
+  xyz::indirect<int> aa(std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  xyz::indirect<int> b(std::allocator_arg, a.get_allocator(), a);
+  EXPECT_TRUE(b.valueless_after_move());
+}
+
+TEST(IndirectTest, AllocatorExtendedMoveFromValueless) {
+  xyz::indirect<int> a;
+  xyz::indirect<int> aa(std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  xyz::indirect<int> b(std::allocator_arg, a.get_allocator(), std::move(a));
+  EXPECT_TRUE(b.valueless_after_move());
+}
+
+TEST(IndirectTest, AssignFromValueless) {
+  xyz::indirect<int> a;
+  xyz::indirect<int> aa(std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  xyz::indirect<int> b;
+  b = a;
+  EXPECT_TRUE(b.valueless_after_move());
+}
+
+TEST(IndirectTest, MoveAssignFromValueless) {
+  xyz::indirect<int> a;
+  xyz::indirect<int> aa(std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  xyz::indirect<int> b;
+  b = std::move(a);
+  EXPECT_TRUE(b.valueless_after_move());
+}
+
+TEST(IndirectTest, SwapFromValueless) {
+  xyz::indirect<int> a;
+  xyz::indirect<int> aa(std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  xyz::indirect<int> b;
+  EXPECT_TRUE(!b.valueless_after_move());
+
+  using std::swap;
+  swap(a, b);
+  EXPECT_TRUE(!a.valueless_after_move());
+  EXPECT_TRUE(b.valueless_after_move());
 }
 
 TEST(IndirectTest, ConstPropagation) {
