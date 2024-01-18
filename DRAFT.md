@@ -537,7 +537,7 @@ move assignment, or swapping of the allocator only if
 
     is `true` within the implementation of the corresponding indirect value operation.
 
-4. The template parameter `T` of `indirect` shall meet the requirements of _Cpp17Destructible_.
+4. A program that instantiates the definition of indirect for a non-object type, an array type, or a cv-qualified type is ill-formed.
 
 5. The template parameter `T` of `indirect` may be an incomplete type.
 
@@ -604,27 +604,7 @@ class indirect {
   friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept(see below);
 
   template <class U, class AA>
-  friend constexpr auto operator==(
-    const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below);
-
-  template <class U, class AA>
-  friend constexpr auto operator!=(
-    const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below);
-
-  template <class U, class AA>
-  friend constexpr auto operator<(
-    const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below);
-
-  template <class U, class AA>
-  friend constexpr auto operator<=(
-    const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below);
-
-  template <class U, class AA>
-  friend constexpr auto operator>(
-    const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below);
-
-  template <class U, class AA>
-  friend constexpr auto operator>=(
+  friend constexpr bool operator==(
     const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below);
 
   template <class U, class AA>
@@ -632,51 +612,11 @@ class indirect {
     const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below);
 
   template <class U>
-  friend constexpr auto operator==(
+  friend constexpr bool operator==(
     const indirect& lhs, const U& rhs) noexcept(see below);
 
   template <class U>
-  friend constexpr auto operator==(
-    const U& lhs, const indirect& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr auto operator!=(
-    const indirect& lhs, const U& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr auto operator!=(
-    const U& lhs, const indirect& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr auto operator<(
-    const indirect& lhs, const U& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr auto operator<(
-    const U& lhs, const indirect& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr auto operator<=(
-    const indirect& lhs, const U& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr auto operator<=(
-    const U& lhs, const indirect& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr auto operator>(
-    const indirect& lhs, const U& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr auto operator>(
-    const U& lhs, const indirect& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr auto operator>=(
-    const indirect& lhs, const U& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr auto operator>=(
+  friend constexpr bool operator==(
     const U& lhs, const indirect& rhs) noexcept(see below);
 
   template <class U>
@@ -834,7 +774,7 @@ constexpr indirect& operator=(const indirect& other);
     `alloc == other.alloc` is `false`, or
   - `*this` is valueless
   then, equivalent to `*this = indirect(allocator_arg, allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value ? other.alloc : alloc, *other)`
-  Otherwise, if `is_copy_assignable_v<T>` is `true`, then equivalent to `**this = *other`,
+  Otherwise, if `is_copy_assignable_v<T>` is `true`, then equivalent to `*this = *other`,
   Otherwise, equivalent to:
   - `(allocator_traits<allocator_type>::destruct(alloc, p), allocator_traits<allocator_type>::construct(a, p, *other))`
 
@@ -850,7 +790,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 
 5. _Effects_: If `&other == this`, then has no effects. Otherwise, if
   `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value
-  == true`, `alloc` is set to the allocator of `other`. If allocator is
+ == true`, `alloc` is set to the allocator of `other`. If allocator is
   propagated or is equal to the allocator of `other`, destroys the owned object,
   if any, then takes ownership of the object owned by `other`.  Otherwise,
   destroys the owned object if any, then move constructs an object from the
@@ -931,38 +871,8 @@ constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
 
 ```c++
 template <class U, class AA>
-constexpr auto operator==(const indirect& lhs, const indirect<U, AA>& rhs)
+constexpr bool operator==(const indirect& lhs, const indirect<U, AA>& rhs)
   noexcept(noexcept(*lhs == *rhs));
-```
-
-```c++
-template <class U, class AA>
-constexpr auto operator!=(const indirect& lhs, const indirect<U, AA>& rhs)
-  noexcept(noexcept(*lhs != *rhs));
-```
-
-```c++
-template <class U, class AA>
-constexpr auto operator<(const indirect& lhs, const indirect<U, AA>& rhs)
-  noexcept(noexcept(*lhs < *rhs));
-```
-
-```c++
-template <class U, class AA>
-constexpr auto operator<=(const indirect& lhs, const indirect<U, AA>& rhs)
-  noexcept(noexcept(*lhs <= *rhs));
-```
-
-```c++
-template <class U, class AA>
-constexpr auto operator>(const indirect& lhs, const indirect<U, AA>& rhs)
-  noexcept(noexcept(*lhs > *rhs));
-```
-
-```c++
-template <class U, class AA>
-constexpr auto operator>=(const indirect& lhs, const indirect<U, AA>& rhs)
-  noexcept(noexcept(*lhs >= *rhs));
 ```
 
 ```c++
@@ -986,38 +896,8 @@ constexpr auto operator<=>(const indirect& lhs, const indirect<U, AA>& rhs)
 
 ```c++
 template <class U>
-constexpr auto operator==(const indirect& lhs, const U& rhs)
+constexpr bool operator==(const indirect& lhs, const U& rhs)
   noexcept(noexcept(*lhs == rhs));
-```
-
-```c++
-template <class U>
-constexpr auto operator!=(const indirect& lhs, const U& rhs)
-  noexcept(noexcept(*lhs != rhs));
-```
-
-```c++
-template <class U>
-constexpr auto operator<(const indirect& lhs, const U& rhs)
-  noexcept(noexcept(*lhs < rhs));
-```
-
-```c++
-template <class U>
-constexpr auto operator<=(const indirect& lhs, const U& rhs)
-  noexcept(noexcept(*lhs <= rhs));
-```
-
-```c++
-template <class U>
-constexpr auto operator>(const indirect& lhs, const U& rhs)
-  noexcept(noexcept(*lhs > rhs));
-```
-
-```c++
-template <class U>
-constexpr auto operator>=(const indirect& lhs, const U& rhs)
-  noexcept(noexcept(*lhs >= rhs));
 ```
 
 ```c++
@@ -1039,38 +919,8 @@ constexpr auto operator<=>(const indirect& lhs, const U& rhs)
 
 ```c++
 template <class U>
-constexpr auto operator==(const U& lhs, const indirect& rhs)
+constexpr bool operator==(const U& lhs, const indirect& rhs)
   noexcept(noexcept(lhs == *rhs));
-```
-
-```c++
-template <class U>
-constexpr auto operator!=(const U& lhs, const indirect& rhs)
-  noexcept(noexcept(lhs != *rhs));
-```
-
-```c++
-template <class U>
-constexpr auto operator<(const U& lhs, const indirect& rhs)
-  noexcept(noexcept(lhs < *rhs));
-```
-
-```c++
-template <class U>
-constexpr auto operator<=(const U& lhs, const indirect& rhs)
-  noexcept(noexcept(lhs <= *rhs));
-```
-
-```c++
-template <class U>
-constexpr auto operator>(const U& lhs, const indirect& rhs)
-  noexcept(noexcept(lhs > *rhs));
-```
-
-```c++
-template <class U>
-constexpr auto operator>=const U& lhs, const indirect& rhs)
-  noexcept(noexcept(lhs >= *rhs));
 ```
 
 ```c++
@@ -1176,7 +1026,7 @@ or (64.3) `allocator_traits<allocator_type>::propagate_on_container_swap::value`
 is true within the implementation of the corresponding polymorphic value
 operation.
 
-4. The template parameter `T` of `polymorphic` shall meet the requirements of _Cpp17Destructible_.
+4. A program that instantiates the definition of polymorphic for a non-object type, an array type, or a cv-qualified type is ill-formed.
 
 5. The template parameter `T` of `polymorphic` may be an incomplete type.
 
@@ -1576,15 +1426,21 @@ outside of tests.
 
 A converting constructor could be added in a future version of the C++ standard.
 
-### Comparisons returning `auto`
+### Comparisons for `indirect`
 
-We opt to return `auto` from comparison operators on `indirect<T>` so that the
-return type perfectly matches that of the underlying comparison for `T`. While
-deferring the return type to the underlying type does support unusual
-user-defined comparison operators, we prefer to do so rather than impose
-requirements on the user-defined operators for consistency. Adoption of indirect
-or moving an object onto the heap should not be impeded by unusual choices for
-the return type of comparison operators on user-defined types.
+We implement comparisons for `indirect` in terms of `operator==` and
+`operator<=>` returning `bool` and `auto` respectively.
+
+The alternative would be to implement the full suite of comparison operators,
+forwarding them to the underlying type and allowing non-boolean return types.
+Support for non-boolean return types would support unusual (non-regular)
+user-defined comparison operators which could be helpful when the underlying
+type is part of a domain-specific-language (DSL) that uses comparison operators
+for a different purpose. However, this would be inconsistent with other standard
+library types like `optional`, `variant` and `reference_wrapper`. Moreover, we'd
+likely only give partial support for a theoretical DSL which may well make use
+of other operators like `operator+` and `operator-` which are not supported for
+`indirect`.
 
 ### Supporting `operator()` `operator[]`
 
