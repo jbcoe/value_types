@@ -1812,8 +1812,8 @@ of these changes on users could be potentially significant and unwelcome.
 |`indirect` comparsion preconditions | `indirect` must not be valueless | Allows comparison of valueless objects | Runtime cost | No |
 |`indirect` hash preconditions| `indirect` must not be valueless | Allows hash of valueless objects | Runtime cost | No |
 |`indirect` format preconditions | `indirect` must not be valueless | Allows formatting of valueless objects | Runtime cost | No |
-|Copy and copy assign preconditions| Object can valueless | Forbids copying of valueless objects | Previously valid code would invoke undefined behaviour | Yes |
-|Move and move assign preconditions| Object can valueless | Forbids moving of valueless objects | Previously valid code would invoke undefined behaviour | Yes |
+|Copy and copy assign preconditions| Object can be valueless | Forbids copying of valueless objects | Previously valid code would invoke undefined behaviour | Yes |
+|Move and move assign preconditions| Object can be valueless | Forbids moving of valueless objects | Previously valid code would invoke undefined behaviour | Yes |
 |Requirements on `T` in `polymorphic<T>` | No requirement that `T` has virtual functions | Add _Mandates_ or _Constraints_ to require `T` to have virtual functions | Code becomes ill-formed | Yes |
 |State of default-constructed object| Default-constructed object (where valid) has a value | Make default-constructed object valueless | Changes semantics; necessitates adding `operator bool` and allowing move, copy and compare of valueless (empty) objects | Yes |
 |Small buffer optimisation for polymorphic|SBO is not required, settings are hidden|Add buffer size and alignment as template parameters| Breaks ABI; forces implementers to use SBO | Yes |
