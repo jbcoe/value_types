@@ -304,6 +304,18 @@ TEST(IndirectTest, Hash) {
   EXPECT_EQ(std::hash<xyz::indirect<int>>()(a), std::hash<int>()(*a));
 }
 
+auto make_valueless_indirect() {
+  xyz::indirect<int> a;
+  auto aa = std::move(a);
+  return a;
+}
+
+TEST(IndirectTest, HashValueless) {
+  xyz::indirect<int> v = make_valueless_indirect();
+  // The value here is implementation-defined but behaviour is well-defined.
+  EXPECT_EQ(std::hash<xyz::indirect<int>>()(v), static_cast<size_t>(-1));
+}
+
 #ifdef XYZ_HAS_STD_OPTIONAL
 TEST(IndirectTest, Optional) {
   std::optional<xyz::indirect<int>> a;
@@ -313,12 +325,6 @@ TEST(IndirectTest, Optional) {
   EXPECT_EQ(**a, 42);
 }
 #endif  // XYZ_HAS_STD_OPTIONAL
-
-auto make_valueless_indirect() {
-  xyz::indirect<int> a;
-  auto aa = std::move(a);
-  return a;
-}
 
 TEST(IndirectTest, Equality) {
   xyz::indirect<int> a(42);
