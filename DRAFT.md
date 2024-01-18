@@ -846,9 +846,9 @@ constexpr indirect& operator=(indirect&& other) noexcept(
     allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-6. _Mandates_: `is_move_constructible_v<T>` is `true`.
+4. _Mandates_: `is_move_constructible_v<T>` is `true`.
 
-7. _Effects_: If `&other == this`, then has no effects. Otherwise, if
+5. _Effects_: If `&other == this`, then has no effects. Otherwise, if
   `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value
   == true`, `alloc` is set to the allocator of `other`. If allocator is
   propagated or is equal to the allocator of `other`, destroys the owned object,
@@ -856,11 +856,11 @@ constexpr indirect& operator=(indirect&& other) noexcept(
   destroys the owned object if any, then move constructs an object from the
   object owned by `other`.
 
-8. _Postconditions_: `other` is valueless.
+6. _Postconditions_: `other` is valueless.
 
-9. _Returns_: A reference to `*this`.
+7. _Returns_: A reference to `*this`.
 
-10. [Note 1: The use of this function may require that T be a complete type dependent on behavour of the allocator. — end note]
+8. [Note 1: The use of this function may require that T be a complete type dependent on behavour of the allocator. — end note]
 
 #### X.Y.6 Observers [indirect.observers]
 
