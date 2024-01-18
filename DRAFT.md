@@ -611,11 +611,17 @@ class indirect {
 
   template <class U, class AA>
   friend constexpr auto operator<=>(
-    const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below);
+    const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below)
+    -> compare_three_way_result_t<T, U>;
 
   template <class U>
   friend constexpr bool operator==(
     const indirect& lhs, const U& rhs) noexcept(see below);
+
+  template <class U>
+  friend constexpr auto operator<=>(
+    const indirect& lhs, const U& rhs) noexcept(see below)
+    -> compare_three_way_result_t<T, U>;
 
   template <class U>
   friend constexpr bool operator==(
@@ -623,11 +629,8 @@ class indirect {
 
   template <class U>
   friend constexpr auto operator<=>(
-    const indirect& lhs, const U& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr auto operator<=>(
-    const U& lhs, const indirect& rhs) noexcept(see below);
+    const U& lhs, const indirect& rhs) noexcept(see below)
+    -> compare_three_way_result_t<T, U>;
 
 private:
   pointer p; // exposition only
@@ -876,12 +879,14 @@ constexpr bool operator==(const indirect& lhs, const indirect<U, AA>& rhs)
 ```c++
 template <class U, class AA>
 constexpr auto operator<=>(const indirect& lhs, const indirect<U, AA>& rhs)
-  noexcept(noexcept(*lhs <=> *rhs));
+  noexcept(noexcept(*lhs <=> *rhs)) -> compare_three_way_result_t<T, U>;
 ```
 
 4. _Constraints_: `*lhs <=> *rhs` is well-formed.
 
-5. _Returns_: `*lhs <=> *rhs`.
+5. _Returns_: If `lhs` is valueless or `rhs` is valueless,
+  `!lhs.valueless_after_move() <=> !rhs.valueless_after_move()`;
+  otherwise `*lhs <=> *rhs`.
 
 6. _Remarks_: Specializations of this function template for which `*lhs <=> *rhs`
   is a core constant expression are constexpr functions.
@@ -904,12 +909,12 @@ constexpr bool operator==(const indirect& lhs, const U& rhs)
 ```c++
 template <class U>
 constexpr auto operator<=>(const indirect& lhs, const U& rhs)
-  noexcept(noexcept(*lhs <=> rhs));
+  noexcept(noexcept(*lhs <=> rhs)) -> compare_three_way_result_t<T, U>;
 ```
 
 4. _Constraints_: `*lhs <=> rhs` is well-formed.
 
-5. _Returns_: `*lhs <=> rhs`.
+5. _Returns_: If `rhs` is valueless, `false <=> true`; otherwise `*lhs <=> rhs`.
 
 6. _Remarks_: Specializations of this function template for which `*lhs <=> rhs`
    is a core constant expression, are constexpr functions.
@@ -930,12 +935,12 @@ constexpr bool operator==(const U& lhs, const indirect& rhs)
 ```c++
 template <class U>
 constexpr auto operator<=>(const U& lhs, const indirect& rhs)
-  noexcept(noexcept(lhs <=> *rhs));
+  noexcept(noexcept(lhs <=> *rhs)) -> compare_three_way_result_t<T, U>;
 ```
 
 10. _Constraints_: `lhs <=> *rhs` is well-formed.
 
-11. _Returns_: `lhs <=> *rhs`.
+11. _Returns_: If `rhs` is valueless, `true <=> false`; otherwise `lhs <=> *rhs`.
 
 12. _Remarks_: Specializations of this function template for which `lhs <=> *rhs`
     is a core constant expression, are constexpr functions.
