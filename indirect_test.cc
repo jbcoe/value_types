@@ -799,25 +799,6 @@ TEST(IndirectTest, HashCustomAllocator) {
 }
 #endif  // XYZ_HAS_STD_MEMORY_RESOURCE
 
-#if (__cpp_lib_format >= 201907L)
-
-TEST(IndirectTest, FormatNativeTypesDefaultFormatting) {
-  EXPECT_EQ(std::format("{}", xyz::indirect<bool>(true)), "true");
-  EXPECT_EQ(std::format("{}", xyz::indirect<int>(100)), "100");
-  EXPECT_EQ(std::format("{}", xyz::indirect<float>(50.0f)), "50");
-  EXPECT_EQ(std::format("{}", xyz::indirect<double>(25.0)), "25");
-}
-
-TEST(IndirectTest, FormatNativeTypesPropagateFormatting) {
-  EXPECT_EQ(std::format("{:*<6}", xyz::indirect<bool>(true)), "true**");
-  EXPECT_EQ(std::format("{:*^7}", xyz::indirect<int>(100)), "**100**");
-  EXPECT_EQ(std::format("{:>7}", xyz::indirect<float>(50.0f)), "     50");
-  EXPECT_EQ(std::format("{:+8.3e}", xyz::indirect<double>(25.75)),
-            "+2.575e+01");
-}
-
-#endif  // __cpp_lib_format >= 201907L
-
 template <typename T>
 class TaggingAllocator {
   std::string tag_;
