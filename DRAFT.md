@@ -376,10 +376,10 @@ is valid to compare variants when they are in a valueless state. Variant
 comparisons can account for the valueless state with zero cost. A variant must
 check which type is the engaged type to perform comparison; valueless is one of
 the possible states it can be in. For `indirect`, allowing comparison when in a
-valueless state would necessitate the addition of an otherwise redundant check.
-Accessing a valueless `indirect` is undefined behaviour, so we make it a
-precondition for comparison and hash that the instance of `indirect` is not
-valueless.
+valueless state necessitates the addition of an otherwise redundant check.
+After feedback from standard library implementers, we opt to allow hash and
+comparison of `indirect` in a valueless state, at cost, to avoid rendering the
+valueless state user-hostile.
 
 Variant allows valueless objects to be passed around via copy, assignment, move
 and move assignment. There is no precondition on varaint that it must not be in

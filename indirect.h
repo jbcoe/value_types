@@ -243,17 +243,23 @@ class indirect {
   friend constexpr bool operator==(
       const indirect<T, A>& lhs,
       const indirect<U, AA>& rhs) noexcept(noexcept(*lhs == *rhs)) {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    if (lhs.valueless_after_move()) {
+      return rhs.valueless_after_move();
+    }
+    if (rhs.valueless_after_move()) {
+      return false;
+    }
     return *lhs == *rhs;
   }
 
   template <class U, class AA>
   friend constexpr auto operator<=>(
       const indirect<T, A>& lhs,
-      const indirect<U, AA>& rhs) noexcept(noexcept(*lhs <=> *rhs)) {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+      const indirect<U, AA>& rhs) noexcept(noexcept(*lhs <=> *rhs))
+      -> std::compare_three_way_result_t<T, U> {
+    if (lhs.valueless_after_move() || rhs.valueless_after_move()) {
+      return !lhs.valueless_after_move() <=> !rhs.valueless_after_move();
+    }
     return *lhs <=> *rhs;
   }
 
@@ -262,7 +268,9 @@ class indirect {
                                    const U& rhs) noexcept(noexcept(*lhs == rhs))
     requires(!is_indirect_v<U>)
   {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
+    if (lhs.valueless_after_move()) {
+      return false;
+    }
     return *lhs == rhs;
   }
 
@@ -271,7 +279,9 @@ class indirect {
       const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs == *rhs))
     requires(!is_indirect_v<U>)
   {
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    if (rhs.valueless_after_move()) {
+      return false;
+    }
     return lhs == *rhs;
   }
 
@@ -279,18 +289,24 @@ class indirect {
   friend constexpr auto operator<=>(const indirect<T, A>& lhs,
                                     const U& rhs) noexcept(noexcept(*lhs <=>
                                                                     rhs))
+      -> std::compare_three_way_result_t<T, U>
     requires(!is_indirect_v<U>)
   {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
+    if (lhs.valueless_after_move()) {
+      return false <=> true;
+    }
     return *lhs <=> rhs;
   }
 
   template <class U>
   friend constexpr auto operator<=>(
       const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs <=> *rhs))
+      -> std::compare_three_way_result_t<T, U>
     requires(!is_indirect_v<U>)
   {
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    if (rhs.valueless_after_move()) {
+      return true <=> false;
+    }
     return lhs <=> *rhs;
   }
 
@@ -345,6 +361,9 @@ template <class T, class Alloc>
   requires xyz::is_hashable<T>
 struct std::hash<xyz::indirect<T, Alloc>> {
   constexpr std::size_t operator()(const xyz::indirect<T, Alloc>& key) const {
+    if (key.valueless_after_move()) {
+      return -1;
+    }
     return std::hash<typename xyz::indirect<T, Alloc>::value_type>{}(*key);
   }
 };
