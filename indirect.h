@@ -362,7 +362,7 @@ template <class T, class Alloc>
 struct std::hash<xyz::indirect<T, Alloc>> {
   constexpr std::size_t operator()(const xyz::indirect<T, Alloc>& key) const {
     if (key.valueless_after_move()) {
-      return -1;  // Implementation defined value.
+      return static_cast<std::size_t>(-1);  // Implementation defined value.
     }
     return std::hash<typename xyz::indirect<T, Alloc>::value_type>{}(*key);
   }
