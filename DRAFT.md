@@ -1399,7 +1399,7 @@ type is part of a domain-specific-language (DSL) that uses comparison operators
 for a different purpose. However, this would be inconsistent with other standard
 library types like `optional`, `variant` and `reference_wrapper`. Moreover, we'd
 likely only give partial support for a theoretical DSL which may well make use
-of other operators like operator+ and operator- which are not supported for
+of other operators like `operator+` and `operator-` which are not supported for
 `indirect`.
 
 ### Supporting `operator()` `operator[]`
