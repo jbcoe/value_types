@@ -26,8 +26,9 @@ correctly generate special member functions.
 
 The class template `indirect` confers value-like semantics on a
 free-store-allocated object. An `indirect` may hold an object of a class `T`.
-Copying the `indirect` will copy the object `T`. When an `indirect<T>` is accessed through a const access path,
-constness will propagate to the owned object.
+Copying the `indirect` will copy the object `T`. When an `indirect<T>` is
+accessed through a const access path, constness will propagate to the owned
+object.
 
 The class template `polymorphic` confers value-like semantics on a
 dynamically-allocated object.  A `polymorphic<T>` may hold an object of a class
