@@ -91,7 +91,7 @@ should not be considered in isolation.
 
 * Specify constructors as uses-allocator constructing `T`.
 
-* Wording review and additions to <memory> synopsis [memory.syn]
+* Wording review and additions to `<memory>` synopsis [memory.syn]
 
 ### Changes in R2
 
