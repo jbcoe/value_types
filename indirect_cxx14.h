@@ -283,130 +283,161 @@ class indirect : private detail::empty_base_optimization<A> {
   template <class U, class AA>
   friend bool operator==(const indirect<T, A>& lhs,
                          const indirect<U, AA>& rhs) {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    if (lhs.valueless_after_move() || rhs.valueless_after_move()) {
+      return lhs.valueless_after_move() && rhs.valueless_after_move();
+    }
     return *lhs == *rhs;
   }
 
   template <class U, class AA>
   friend bool operator!=(const indirect<T, A>& lhs,
                          const indirect<U, AA>& rhs) {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    if (lhs.valueless_after_move() || rhs.valueless_after_move()) {
+      return !(lhs.valueless_after_move() && rhs.valueless_after_move());
+    }
     return *lhs != *rhs;
   }
 
   template <class U, class AA>
   friend bool operator<(const indirect<T, A>& lhs, const indirect<U, AA>& rhs) {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
-    return *lhs < *rhs;
+    if (lhs.valueless_after_move()) {
+      return !rhs.valueless_after_move();
+    }
+    return !rhs.valueless_after_move() && *lhs < *rhs;
   }
 
   template <class U, class AA>
   friend bool operator>(const indirect<T, A>& lhs, const indirect<U, AA>& rhs) {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
-    return *lhs > *rhs;
+    if (rhs.valueless_after_move()) {
+      return !lhs.valueless_after_move();
+    }
+    return !lhs.valueless_after_move() && *lhs > *rhs;
   }
 
   template <class U, class AA>
   friend bool operator<=(const indirect<T, A>& lhs,
                          const indirect<U, AA>& rhs) {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
-    return *lhs <= *rhs;
+    if (lhs.valueless_after_move()) {
+      return true;
+    }
+    return !rhs.valueless_after_move() && *lhs <= *rhs;
   }
 
   template <class U, class AA>
   friend bool operator>=(const indirect<T, A>& lhs,
                          const indirect<U, AA>& rhs) {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
-    return *lhs >= *rhs;
+    if (rhs.valueless_after_move()) {
+      return true;
+    }
+
+    return !lhs.valueless_after_move() && *lhs >= *rhs;
   }
 
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
   friend bool operator==(const indirect<T, A>& lhs, const U& rhs) {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
+    if (lhs.valueless_after_move()) {
+      return false;
+    }
     return *lhs == rhs;
   }
 
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
   friend bool operator==(const U& lhs, const indirect<T, A>& rhs) {
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    if (rhs.valueless_after_move()) {
+      return false;
+    }
     return lhs == *rhs;
   }
 
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
   friend bool operator!=(const indirect<T, A>& lhs, const U& rhs) {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
+    if (lhs.valueless_after_move()) {
+      return true;
+    }
     return *lhs != rhs;
   }
 
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
   friend bool operator!=(const U& lhs, const indirect<T, A>& rhs) {
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    if (rhs.valueless_after_move()) {
+      return true;
+    }
     return lhs != *rhs;
   }
 
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
   friend bool operator<(const indirect<T, A>& lhs, const U& rhs) {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
+    if (lhs.valueless_after_move()) {
+      return true;
+    }
     return *lhs < rhs;
   }
 
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
   friend bool operator<(const U& lhs, const indirect<T, A>& rhs) {
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    if (rhs.valueless_after_move()) {
+      return false;
+    }
     return lhs < *rhs;
   }
 
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
   friend bool operator>(const indirect<T, A>& lhs, const U& rhs) {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
+    if (lhs.valueless_after_move()) {
+      return false;
+    }
     return *lhs > rhs;
   }
 
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
   friend bool operator>(const U& lhs, const indirect<T, A>& rhs) {
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    if (rhs.valueless_after_move()) {
+      return true;
+    }
     return lhs > *rhs;
   }
 
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
   friend bool operator<=(const indirect<T, A>& lhs, const U& rhs) {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
+    if (lhs.valueless_after_move()) {
+      return true;
+    }
     return *lhs <= rhs;
   }
 
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
   friend bool operator<=(const U& lhs, const indirect<T, A>& rhs) {
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    if (rhs.valueless_after_move()) {
+      return false;
+    }
     return lhs <= *rhs;
   }
 
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
   friend bool operator>=(const indirect<T, A>& lhs, const U& rhs) {
-    assert(!lhs.valueless_after_move());  // LCOV_EXCL_LINE
+    if (lhs.valueless_after_move()) {
+      return false;
+    }
     return *lhs >= rhs;
   }
 
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
   friend bool operator>=(const U& lhs, const indirect<T, A>& rhs) {
-    assert(!rhs.valueless_after_move());  // LCOV_EXCL_LINE
+    if (rhs.valueless_after_move()) {
+      return true;
+    }
     return lhs >= *rhs;
   }
 
@@ -442,6 +473,9 @@ class indirect : private detail::empty_base_optimization<A> {
 template <class T, class Alloc>
 struct std::hash<xyz::indirect<T, Alloc>> {
   std::size_t operator()(const xyz::indirect<T, Alloc>& key) const {
+    if (key.valueless_after_move()) {
+      return static_cast<std::size_t>(-1);  // Implementation defined value.
+    }
     return std::hash<typename xyz::indirect<T, Alloc>::value_type>{}(*key);
   }
 };

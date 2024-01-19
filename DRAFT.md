@@ -44,6 +44,8 @@ should not be considered in isolation.
 
 ### Changes in R4
 
+* Allow comparison of valueless `indirect` objects.
+
 * Remove `std::format` support for `std::indirect`.
 
 * Allow copy and move of valueless objects, discuss similarities with variant.
@@ -377,10 +379,10 @@ is valid to compare variants when they are in a valueless state. Variant
 comparisons can account for the valueless state with zero cost. A variant must
 check which type is the engaged type to perform comparison; valueless is one of
 the possible states it can be in. For `indirect`, allowing comparison when in a
-valueless state would necessitate the addition of an otherwise redundant check.
-Accessing a valueless `indirect` is undefined behaviour, so we make it a
-precondition for comparison and hash that the instance of `indirect` is not
-valueless.
+valueless state necessitates the addition of an otherwise redundant check.
+After feedback from standard library implementers, we opt to allow hash and
+comparison of `indirect` in a valueless state, at cost, to avoid rendering the
+valueless state user-hostile.
 
 Variant allows valueless objects to be passed around via copy, assignment, move
 and move assignment. There is no precondition on varaint that it must not be in
@@ -607,11 +609,17 @@ class indirect {
 
   template <class U, class AA>
   friend constexpr auto operator<=>(
-    const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below);
+    const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below)
+    -> compare_three_way_result_t<T, U>;
 
   template <class U>
   friend constexpr bool operator==(
     const indirect& lhs, const U& rhs) noexcept(see below);
+
+  template <class U>
+  friend constexpr auto operator<=>(
+    const indirect& lhs, const U& rhs) noexcept(see below)
+    -> compare_three_way_result_t<T, U>;
 
   template <class U>
   friend constexpr bool operator==(
@@ -619,11 +627,8 @@ class indirect {
 
   template <class U>
   friend constexpr auto operator<=>(
-    const indirect& lhs, const U& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr auto operator<=>(
-    const U& lhs, const indirect& rhs) noexcept(see below);
+    const U& lhs, const indirect& rhs) noexcept(see below)
+    -> compare_three_way_result_t<T, U>;
 
 private:
   pointer p; // exposition only
@@ -677,9 +682,9 @@ explicit constexpr indirect(U&& u, Us&&... us);
    `is_same_v<remove_cvref_t<U>, allocator_arg_t>` is `false`.
    `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
 
-10. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(), std::forward<U>(u), std::forward<Us>(us)...)`.
+10. _Mandates_: `T` is a complete type.
 
-11. _Mandates_: `T` is a complete type.
+11. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(), std::forward<U>(u), std::forward<Us>(us)...)`.
 
 ```c++
 template <class U, class... Us>
@@ -689,14 +694,14 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u, Us&& ...
 12. _Constraints_: `is_constructible_v<T, U, Us...>` is `true`.
   `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
 
-13. _Effects_: `alloc` is direct-non-list-initialized with `a`.
+13. _Mandates_: `T` is a complete type.
+
+14. _Effects_: `alloc` is direct-non-list-initialized with `a`.
 
     DRAFTING NOTE: based on https://eel.is/c++draft/func.wrap#func.con-6
 
-14. _Postconditions_: `*this` is not valueless.  `p_` targets an object of type `T`
+15. _Postconditions_: `*this` is not valueless.  `p_` targets an object of type `T`
   constructed with `std::forward<U>(u)`, `std::forward<Us>(us)...`.
-
-15. _Mandates_: `T` is a complete type.
 
 ```c++
 constexpr indirect(const indirect& other);
@@ -726,24 +731,26 @@ constexpr indirect(indirect&& other) noexcept;
     owned object and stores the address in `p_`. `allocator_` is initialized by
     construction from `other.allocator_`.
 
-_[Note: This constructor does not require that `is_move_constructible_v<T>`
+22. _[Note 1: This constructor does not require that `is_move_constructible_v<T>`
   is `true` --end note]_
 
-22. _[Note 1: The use of this function may require that `T` be a complete type dependent on behavour of the allocator. — end note]_
+23. _[Note 2: The use of this function may require that `T` be a complete type
+    dependent on behaviour of the allocator. — end note]_
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& alloc, indirect&& other)
   noexcept(allocator_traits<Allocator>::is_always_equal);
 ```
 
-23. _Effects_: If `alloc == other.get_allocator()` is `true` then equivalent to `indirect(std::move(other))`,
+24. _Effects_: If `alloc == other.get_allocator()` is `true` then equivalent to `indirect(std::move(other))`,
   otherwise, equivalent to `indirect(allocator_arg, alloc, *std::move(other))`.
 
-24. _Postconditions_: `other` is valueless.
+25. _Postconditions_: `other` is valueless.
 
-_[Note: This constructor does not require that `is_move_constructible_v<T>` is `true` --end note]_
+26. _[Note 1: This constructor does not require that `is_move_constructible_v<T>` is `true` --end note]_
 
-25. _[Note 1: The use of this function may require that `T` be a complete type dependent on behavour of the allocator. — end note]_
+27. _[Note 2: The use of this function may require that `T` be a complete type
+    dependent on behaviour of the allocator. — end note]_
 
 #### X.Y.4 Destructor [indirect.dtor]
 
@@ -751,11 +758,11 @@ _[Note: This constructor does not require that `is_move_constructible_v<T>` is `
 constexpr ~indirect();
 ```
 
-1. _Effects_: If `*this` is not valueless, destroys the owned object using
+1. _Mandates_: `T` is a complete type.
+
+2. _Effects_: If `*this` is not valueless, destroys the owned object using
   `allocator_traits<allocator_type>::destroy` and then deallocates the storage
   using `allocator_traits<allocator_type>::deallocate`.
-
-2. _Mandates_: `T` is a complete type.
 
 #### X.Y.5 Assignment [indirect.assign]
 
@@ -798,7 +805,8 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 
 7. _Returns_: A reference to `*this`.
 
-8. _[Note 1: The use of this function may require that `T` be a complete type dependent on behavour of the allocator. — end note]_
+8. _[Note: The use of this function may require that `T` be a complete type
+   dependent on behavour of the allocator. — end note]_
 
 #### X.Y.6 Observers [indirect.observers]
 
@@ -811,35 +819,41 @@ constexpr T& operator*() & noexcept;
 
 2. _Returns_: `*p_`.
 
+3. [Note: The use of these functions typically requires that `T` be a complete type. —end note]
+
 ```c++
 constexpr const T&& operator*() const && noexcept;
 constexpr T&& operator*() && noexcept;
 ```
 
-3. _Preconditions_: `*this` is not valueless.
+4. _Preconditions_: `*this` is not valueless.
 
-4. _Returns_: `std::move(*p_)`.
+5. _Returns_: `std::move(*p_)`.
+
+6. [Note: The use of these functions typically requires that `T` be a complete type. —end note]
 
 ```c++
 constexpr const_pointer operator->() const noexcept;
 constexpr pointer operator->() noexcept;
 ```
 
-5. _Preconditions_: `*this` is not valueless.
+7. _Preconditions_: `*this` is not valueless.
 
-6. _Returns_: `p_`.
+8. _Returns_: `p_`.
+
+9. [Note: The use of these functions typically requires that `T` be a complete type. —end note]
 
 ```c++
 constexpr bool valueless_after_move() const noexcept;
 ```
 
-7. _Returns_: `true` if `*this` is valueless, otherwise `false`.
+10. _Returns_: `true` if `*this` is valueless, otherwise `false`.
 
 ```c++
 constexpr allocator_type get_allocator() const noexcept;
 ```
 
-8. _Returns_: A copy of the `Allocator` object used to construct the owned object.
+11. _Returns_: A copy of the `Allocator` object used to construct the owned object.
 
 #### X.Y.7 Swap [indirect.swap]
 
@@ -858,14 +872,17 @@ constexpr void swap(indirect& other) noexcept(
   `(*this).get_allocator() == other.get_allocator()`.
   _[Note: Does not call `swap` on the owned objects directly. --end note]_
 
+2. _[Note 2: The use of this function may require that `T` be a complete type
+dependent on behavour of the allocator. — end note]_
+
 ```c++
 constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
   noexcept(lhs.swap(rhs)));
 ```
 
-2. _Effects_: Equivalent to `lhs.swap(rhs)`.
+3. _Effects_: Equivalent to `lhs.swap(rhs)`.
 
-#### X.Y.8 Relational operators [indirect.rel]
+#### X.Y.8 Relational operators [indirect.relops]
 
 ```c++
 template <class U, class AA>
@@ -873,22 +890,32 @@ constexpr bool operator==(const indirect& lhs, const indirect<U, AA>& rhs)
   noexcept(noexcept(*lhs == *rhs));
 ```
 
+1. _Constraints_: `*lhs == *rhs` is well-formed.
+
+2. _Mandates_: `T` is a complete type.
+
+3. _Returns_: If `lhs` is valueless or `rhs` is valueless,
+  `lhs.valueless_after_move()==rhs.valueless_after_move()`; otherwise `*lhs == *rhs`.
+
+4. _Remarks_: Specializations of this function template for which `*lhs == *rhs`
+  is a core constant expression are constexpr functions.
+
 ```c++
 template <class U, class AA>
 constexpr auto operator<=>(const indirect& lhs, const indirect<U, AA>& rhs)
-  noexcept(noexcept(*lhs <=> *rhs));
+  noexcept(noexcept(*lhs <=> *rhs)) -> compare_three_way_result_t<T, U>;
 ```
 
-1. _Constraints_: `*lhs` _op_ `*rhs` is well-formed.
+5. _Constraints_: `*lhs <=> *rhs` is well-formed.
 
-2. _Preconditions_: `lhs` is not valueless, `rhs` is not valueless.
+6. _Mandates_: `T` is a complete type.
 
-3. _Returns_: `*lhs` _op_ `*rhs`.
+7. _Returns_: If `lhs` is valueless or `rhs` is valueless,
+  `!lhs.valueless_after_move() <=> !rhs.valueless_after_move()`;
+  otherwise `*lhs <=> *rhs`.
 
-4. _Remarks_: Specializations of this function template for which `*lhs` _op_
-  `*rhs` is a core constant expression are constexpr functions.
-
-5. _Mandates_: `T` is a complete type.
+8. _Remarks_: Specializations of this function template for which `*lhs <=> *rhs`
+  is a core constant expression are constexpr functions.
 
 #### X.Y.9 Comparison with T [indirect.comp.with.t]
 
@@ -898,22 +925,29 @@ constexpr bool operator==(const indirect& lhs, const U& rhs)
   noexcept(noexcept(*lhs == rhs));
 ```
 
+1. _Constraints_: `*lhs == rhs` is well-formed.
+
+2. _Mandates_: `T` is a complete type.
+
+3. _Returns_: If `lhs` is valueless, false; otherwise `*lhs == rhs`.
+
+4. _Remarks_: Specializations of this function template for which `*lhs == rhs`
+   is a core constant expression, are constexpr functions.
+
 ```c++
 template <class U>
 constexpr auto operator<=>(const indirect& lhs, const U& rhs)
-  noexcept(noexcept(*lhs <=> rhs));
+  noexcept(noexcept(*lhs <=> rhs)) -> compare_three_way_result_t<T, U>;
 ```
 
-1. _Constraints_: `*lhs` _op_ `rhs` is well-formed.
+5. _Constraints_: `*lhs <=> rhs` is well-formed.
 
-2. _Preconditions_: `lhs` is not valueless.
+6. _Mandates_: `T` is a complete type.
 
-3. _Returns_: `*lhs` _op_ `rhs`.
+7. _Returns_: If `rhs` is valueless, `false <=> true`; otherwise `*lhs <=> rhs`.
 
-4. _Remarks_: Specializations of this function template for which `*lhs` _op_
-  `rhs` is a core constant expression, are constexpr functions.
-
-5. _Mandates_: `T` is a complete type.
+8. _Remarks_: Specializations of this function template for which `*lhs <=> rhs`
+   is a core constant expression, are constexpr functions.
 
 ```c++
 template <class U>
@@ -921,22 +955,29 @@ constexpr bool operator==(const U& lhs, const indirect& rhs)
   noexcept(noexcept(lhs == *rhs));
 ```
 
+9. _Constraints_: `lhs == *rhs` is well-formed.
+
+10. _Mandates_: `T` is a complete type.
+
+11. _Returns_: If `rhs` is valueless, false; otherwise `lhs == *rhs`.
+
+12. _Remarks_: Specializations of this function template for which `lhs == *rhs`
+   is a core constant expression, are constexpr functions.
+
 ```c++
 template <class U>
 constexpr auto operator<=>(const U& lhs, const indirect& rhs)
-  noexcept(noexcept(lhs <=> *rhs));
+  noexcept(noexcept(lhs <=> *rhs)) -> compare_three_way_result_t<T, U>;
 ```
 
-6. _Constraints_: `lhs` _op_ `*rhs` is well-formed.
+13. _Constraints_: `lhs <=> *rhs` is well-formed.
 
-7. _Preconditions_: `rhs` is not valueless.
+14. _Mandates_: `T` is a complete type.
 
-8. _Returns_: `lhs` _op_ `*rhs`.
+15. _Returns_: If `rhs` is valueless, `true <=> false`; otherwise `lhs <=> *rhs`.
 
-9. _Remarks_: Specializations of this function template for which `lhs` _op_
-  `*rhs` is a core constant expression, are constexpr functions.
-
-10. _Mandates_: `T` is a complete type.
+16. _Remarks_: Specializations of this function template for which `lhs <=> *rhs`
+    is a core constant expression, are constexpr functions.
 
 #### X.Y.10 Hash support [indirect.hash]
 
@@ -951,9 +992,7 @@ type `indirect<T, Alloc>`, then `hash<indirect<T, Alloc>>()(i)` evaluates to the
 same value as `hash<remove_const_t<T>>()(*i)`. The member functions are not
 guaranteed to be noexcept.
 
-2. _Preconditions_: `i` is not valueless.
-
-3. _Mandates_: `T` is a complete type.
+2. _Mandates_: `T` is a complete type.
 
 ### X.Z Class template polymorphic [polymorphic]
 
@@ -1069,8 +1108,8 @@ class polymorphic {
 explicit constexpr polymorphic()
 ```
 
-1. _Mandates_: `T` is a complete type and `is_default_constructible_v<T>` is `true`,
-  `is_copy_constructible_v<T>` is `true`.
+1. _Mandates_: `is_default_constructible_v<T>` is `true`,
+  `is_copy_constructible_v<T>` is `true` and `T` is a complete type.
 
 2. _Effects_: Constructs a polymorphic owning a default constructed `T`.
   `alloc` is default constructed.
@@ -1084,8 +1123,8 @@ explicit constexpr polymorphic()
 explicit constexpr polymorphic(allocator_arg_t, const Allocator& alloc);
 ```
 
-5. _Mandates_: `T` is a complete type and `is_default_constructible_v<T>` is `true`,
-  `is_copy_constructible_v<T>` is `true`.
+5. _Mandates_: `is_default_constructible_v<T>` is `true`,
+  `is_copy_constructible_v<T>` is `true` and `T` is a complete type.
 
 6. _Effects_: Constructs a polymorphic owning a default constructed `T`.
    `alloc` is direct-non-list-initialized with alloc.
@@ -1104,33 +1143,29 @@ explicit constexpr polymorphic(in_place_type_t<U>, Ts&&... ts);
 
 10. _Effects_: Equivalent to `polymorphic(allocator_arg_t{}, Allocator(), in_place_type_t<U>{}, std::forward<Ts>(ts)...)`.
 
-11. _[Note 1: The use of this function may require that `T` be a complete type dependent on behavour of the allocator. — end note]_
-
 ```c++
 template <class U, class... Ts>
 explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       in_place_type_t<U>, Ts&&... ts);
 ```
 
-12. _Mandates_: `T` is a complete type.
-
-13. _Constraints_: `is_base_of_v<T, U>` is `true`  and `is_constructible_v<U, Ts...>` is
+11. _Constraints_: `is_base_of_v<T, U>` is `true`  and `is_constructible_v<U, Ts...>` is
   `true` and `is_copy_constructible_v<U>` is `true`.
 
-14. _Effects_: `alloc` is direct-non-list-initialized with `a`.
+12. _Mandates_: `T` is a complete type.
 
-15. _Postconditions_: `*this` is not valueless.  The owned instance targets an object of type `U`
+13. _Effects_: `alloc` is direct-non-list-initialized with `a`.
+
+14. _Postconditions_: `*this` is not valueless.  The owned instance targets an object of type `U`
   constructed  with `std::forward<Ts>(ts)...`.
-
-16. _[Note 1: The use of this function may require that `T` be a complete type dependent on behavour of the allocator. — end note]_
 
 ```c++
 constexpr polymorphic(const polymorphic& other);
 ```
 
-17. _Mandates_: `T` is a complete type.
+15. _Mandates_: `T` is a complete type.
 
-18. _Effects_: Equivalent to
+16. _Effects_: Equivalent to
   `polymorphic(allocator_arg_t{}, allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc), other)`.
 
 ```c++
@@ -1138,9 +1173,9 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       const polymorphic& other);
 ```
 
-19. _Mandates_: `T` is a complete type.
+17. _Mandates_: `T` is a complete type.
 
-20. _Effects_: Constructs a polymorphic owning an instance of `T` created with the
+18. _Effects_: Constructs a polymorphic owning an instance of `T` created with the
   copy constructor of the object owned by `other`. `allocator_` is
   direct-non-list-initialized with alloc.
 
@@ -1148,24 +1183,24 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
 constexpr polymorphic(polymorphic&& other) noexcept;
 ```
 
-21. _Effects_: Equivalent to `polymorphic(allocator_arg_t{}, Allocator(std::move(other.alloc_)), other)`.
-
-22. _[Note 1: The use of this function may require that `T` be a complete type dependent on behavour of the allocator. — end note]_
+19. _Effects_: Equivalent to `polymorphic(allocator_arg_t{}, Allocator(std::move(other.alloc_)), other)`.
 
 ```c++
 constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       polymorphic&& other) noexcept;
 ```
 
-23. _Effects_: Constructs a polymorphic that takes ownership of the object owned
+20. _Effects_: Constructs a polymorphic that takes ownership of the object owned
   by `other` if any. `allocator_` is direct-non-list-initialized with `alloc`.
 
-24. _Postconditions_: `other` is valueless.
+21. _Postconditions_: `other` is valueless.
 
-25. _[Note 1: This constructor does not require that `is_move_constructible_v<T>`
+22. _[Note 1: This constructor does not require that `is_move_constructible_v<T>`
   is `true`. --end note]_
 
-26. _[Note 2: The use of this function may require that `T` be a complete type dependent on behavour of the allocator. — end note]_
+23. _[Note 2: The use of this function may require that `T` be a complete type
+    dependent on behavour of the allocator. — end note]_
+
 
 #### X.Z.4 Destructor [polymorphic.dtor]
 
@@ -1173,7 +1208,9 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
 constexpr ~polymorphic();
 ```
 
-1. _Effects_: If `*this` is not valueless, destroys the owned object using
+1. _Mandates_: `T` is a complete type.
+
+2. _Effects_: If `*this` is not valueless, destroys the owned object using
   `allocator_traits<allocator_type>::destroy` and then deallocates the storage
   using `allocator_traits<allocator_type>::deallocate`.
 
@@ -1208,6 +1245,9 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
 
 4. _Postconditions_: `other` is valueless.
 
+5. _[Note: The use of this function may require that `T` be a complete type
+    dependent on behavour of the allocator. — end note]_
+
 #### X.Z.6 Observers [polymorphic.observers]
 
 ```c++
@@ -1219,26 +1259,30 @@ constexpr T& operator*() noexcept;
 
 2. _Returns_: A reference to the owned object.
 
+3. [Note: The use of these functions typically requires that `T` be a complete type. —end note]
+
 ```c++
 constexpr const_pointer operator->() const noexcept;
 constexpr pointer operator->() noexcept;
 ```
 
-3. _Preconditions_: `*this` is not valueless.
+4. _Preconditions_: `*this` is not valueless.
 
-4. _Returns_: A pointer to the owned object.
+5. _Returns_: A pointer to the owned object.
+
+6. [Note: The use of these functions typically requires that `T` be a complete type. —end note]
 
 ```c++
 constexpr bool valueless_after_move() const noexcept;
 ```
 
-5. _Returns_: `true` if `*this` is valueless, otherwise `false`.
+7. _Returns_: `true` if `*this` is valueless, otherwise `false`.
 
 ```c++
 constexpr allocator_type get_allocator() const noexcept;
 ```
 
-6. _Returns_: A copy of the `Allocator` object used to construct the owned object.
+8. _Returns_: A copy of the `Allocator` object used to construct the owned object.
 
 #### X.Z.7 Swap [polymorphic.swap]
 
