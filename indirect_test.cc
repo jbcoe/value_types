@@ -418,6 +418,14 @@ TEST(IndirectTest, ComparisonWithU) {
 }
 
 TEST(IndirectTest, ValuelessComparisonWithU) {
+  EXPECT_FALSE(make_valueless_indirect() == 42);
+  EXPECT_FALSE(42 == make_valueless_indirect());
+  EXPECT_TRUE(make_valueless_indirect() == make_valueless_indirect());
+
+  EXPECT_TRUE(make_valueless_indirect() != 42);
+  EXPECT_TRUE(42 != make_valueless_indirect());
+  EXPECT_FALSE(make_valueless_indirect() != make_valueless_indirect());
+
   EXPECT_TRUE(make_valueless_indirect() < 42);
   EXPECT_FALSE(42 < make_valueless_indirect());
   EXPECT_FALSE(make_valueless_indirect() < make_valueless_indirect());
