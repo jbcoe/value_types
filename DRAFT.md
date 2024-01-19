@@ -910,7 +910,7 @@ constexpr auto operator<=>(const indirect& lhs, const indirect<U, AA>& rhs)
 
 6. _Mandates_: `T` is a complete type.
 
-6. _Returns_: If `lhs` is valueless or `rhs` is valueless,
+7. _Returns_: If `lhs` is valueless or `rhs` is valueless,
   `!lhs.valueless_after_move() <=> !rhs.valueless_after_move()`;
   otherwise `*lhs <=> *rhs`.
 
