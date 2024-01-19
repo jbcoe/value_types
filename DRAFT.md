@@ -649,7 +649,8 @@ indirect(std::allocator_arg_t, Alloc, Value) -> indirect<
 explicit constexpr indirect()
 ```
 
-1. _Mandates_: `is_default_constructible_v<T>` is true.
+1. _Mandates_: `is_default_constructible_v<T>` is true and `T` is a complete
+  type.
 
 2. _Effects_: Constructs an `indirect` owning a default constructed `T`
   and stores the address in `p`. `alloc` is default constructed.
@@ -663,7 +664,8 @@ explicit constexpr indirect()
 explicit constexpr indirect(allocator_arg_t, const Allocator& alloc);
 ```
 
-5. _Mandates_: `is_default_constructible_v<T>` is `true`.
+5. _Mandates_: `is_default_constructible_v<T>` is `true` and `T` is a complete
+   type.
 
 6. _Effects_: Constructs an `indirect` owning a default constructed `T` and
   stores the address in `p`. `alloc` is direct-non-list-initialized with `alloc`.
@@ -682,48 +684,57 @@ explicit constexpr indirect(U&& u, Us&&... us);
    `is_same_v<remove_cvref_t<U>, allocator_arg_t>` is `false`.
    `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
 
-10. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(), std::forward<U>(u), std::forward<Us>(us)...)`.
+10. _Mandates_: `T` is a complete type.
+
+11. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(), std::forward<U>(u), std::forward<Us>(us)...)`.
 
 ```c++
 template <class U, class... Us>
 explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u, Us&& ...us);
 ```
 
-11. _Constraints_: `is_constructible_v<T, U, Us...>` is `true`.
+12. _Constraints_: `is_constructible_v<T, U, Us...>` is `true`.
   `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
 
-12. _Effects_: `alloc` is direct-non-list-initialized with `a`.
+13. _Mandates_: `T` is a complete type.
+
+14. _Effects_: `alloc` is direct-non-list-initialized with `a`.
 
     DRAFTING NOTE: based on https://eel.is/c++draft/func.wrap#func.con-6
 
-13. _Postconditions_: `*this` is not valueless.  `p_` targets an object of type `T`
+15. _Postconditions_: `*this` is not valueless.  `p_` targets an object of type `T`
   constructed with `std::forward<U>(u)`, `std::forward<Us>(us)...`.
 
 ```c++
 constexpr indirect(const indirect& other);
 ```
 
-14. _Mandates_: `is_copy_constructible_v<T>` is `true`.
+16. _Mandates_: `is_copy_constructible_v<T>` is `true` and `T` is a complete
+    type.
 
-15. _Effects_: Equivalent to
+17. _Effects_: Equivalent to
   `indirect(allocator_arg, allocator_traits<allocator_type>::select_on_container_copy_construction(other.get_allocator()), *other)`.
 `
-16. _Postconditions_: `*this` is not valueless.
+18. _Postconditions_: `*this` is not valueless.
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& alloc,
                    const indirect& other);
 ```
 
-17. _Mandates_: `is_copy_constructible_v<T>` is `true`.
+19. _Mandates_: `is_copy_constructible_v<T>` is `true` and `T` is a complete
+    type.
 
-18. _Effects_: Equivalent to `indirect(allocator_arg, alloc, *other)`.
+20. _Effects_: Equivalent to `indirect(allocator_arg, alloc, *other)`.
 
 ```c++
 constexpr indirect(indirect&& other) noexcept;
 ```
 
-19. _Effects_: Constructs an `indirect` that takes ownership of the `other`'s
+21. _[Note 1: The use of this function may require that `T` be a complete type
+    dependent on behaviour of the allocator. — end note]_
+
+22. _Effects_: Constructs an `indirect` that takes ownership of the `other`'s
     owned object and stores the address in `p_`. `allocator_` is initialized by
     construction from `other.allocator_`.
 
@@ -735,10 +746,13 @@ constexpr indirect(allocator_arg_t, const Allocator& alloc, indirect&& other)
   noexcept(allocator_traits<Allocator>::is_always_equal);
 ```
 
-20. _Effects_: If `alloc == other.get_allocator()` is `true` then equivalent to `indirect(std::move(other))`,
+23. _[Note 1: The use of this function may require that `T` be a complete type
+    dependent on behaviour of the allocator. — end note]_
+
+24. _Effects_: If `alloc == other.get_allocator()` is `true` then equivalent to `indirect(std::move(other))`,
   otherwise, equivalent to `indirect(allocator_arg, alloc, *std::move(other))`.
 
-21. _Postconditions_: `other` is valueless.
+25. _Postconditions_: `other` is valueless.
 
 _[Note: This constructor does not require that `is_move_constructible_v<T>` is `true` --end note]_
 
@@ -748,7 +762,9 @@ _[Note: This constructor does not require that `is_move_constructible_v<T>` is `
 constexpr ~indirect();
 ```
 
-1. _Effects_: If `*this` is not valueless, destroys the owned object using
+1. _Mandates_: `T` is a complete type.
+
+2. _Effects_: If `*this` is not valueless, destroys the owned object using
   `allocator_traits<allocator_type>::destroy` and then deallocates the storage
   using `allocator_traits<allocator_type>::deallocate`.
 
@@ -758,7 +774,8 @@ constexpr ~indirect();
 constexpr indirect& operator=(const indirect& other);
 ```
 
-1. _Mandates_: `is_copy_constructible_v<T>` is `true`.
+1. _Mandates_: `is_copy_constructible_v<T>` is `true` and `T` is a complete
+   type.
 
 2. _Effects_: If `this == &other` is `true`, then has no effects.
   Otherwise, if either:
@@ -779,9 +796,12 @@ constexpr indirect& operator=(indirect&& other) noexcept(
     allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-_Mandates_: `is_move_constructible_v<T>` is `true`.
+4. _Mandates_: `is_move_constructible_v<T>` is `true`.
 
-4. _Effects_: If `&other == this`, then has no effects. Otherwise, if
+_[Note 1: The use of this function may require that `T` be a complete type
+dependent on behavour of the allocator. — end note]_
+
+5. _Effects_: If `&other == this`, then has no effects. Otherwise, if
   `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value
  == true`, `alloc` is set to the allocator of `other`. If allocator is
   propagated or is equal to the allocator of `other`, destroys the owned object,
@@ -789,9 +809,9 @@ _Mandates_: `is_move_constructible_v<T>` is `true`.
   destroys the owned object if any, then move constructs an object from the
   object owned by `other`.
 
-5. _Postconditions_: `other` is valueless.
+6. _Postconditions_: `other` is valueless.
 
-6. _Returns_: A reference to `*this`.
+7. _Returns_: A reference to `*this`.
 
 #### X.Y.6 Observers [indirect.observers]
 
@@ -842,7 +862,10 @@ constexpr void swap(indirect& other) noexcept(
   || allocator_traits::is_always_equal::value);
 ```
 
-1. _Effects_: Swaps the objects owned by `*this` and `other`. If
+1. _[Note 1: The use of this function may require that `T` be a complete type
+dependent on behavour of the allocator. — end note]_
+
+2. _Effects_: Swaps the objects owned by `*this` and `other`. If
   `allocator_traits<allocator_type>::propagate_on_container_swap::value` is
   `true`, then `allocator_type` shall meet the _Cpp17Swappable_ requirements and
   the allocators of `*this` and `other` are exchanged by calling
@@ -856,7 +879,7 @@ constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
   noexcept(lhs.swap(rhs)));
 ```
 
-2. _Effects_: Equivalent to `lhs.swap(rhs)`.
+3. _Effects_: Equivalent to `lhs.swap(rhs)`.
 
 #### X.Y.8 Relational operators [indirect.relops]
 
@@ -868,10 +891,12 @@ constexpr bool operator==(const indirect& lhs, const indirect<U, AA>& rhs)
 
 1. _Constraints_: `*lhs == *rhs` is well-formed.
 
-2. _Returns_: If `lhs` is valueless or `rhs` is valueless,
+2. _Mandates_: `T` is a complete type.
+
+3. _Returns_: If `lhs` is valueless or `rhs` is valueless,
   `lhs.valueless_after_move()==rhs.valueless_after_move()`; otherwise `*lhs == *rhs`.
 
-3. _Remarks_: Specializations of this function template for which `*lhs == *rhs`
+4. _Remarks_: Specializations of this function template for which `*lhs == *rhs`
   is a core constant expression are constexpr functions.
 
 ```c++
@@ -882,11 +907,13 @@ constexpr auto operator<=>(const indirect& lhs, const indirect<U, AA>& rhs)
 
 4. _Constraints_: `*lhs <=> *rhs` is well-formed.
 
-5. _Returns_: If `lhs` is valueless or `rhs` is valueless,
+5. _Mandates_: `T` is a complete type.
+
+6. _Returns_: If `lhs` is valueless or `rhs` is valueless,
   `!lhs.valueless_after_move() <=> !rhs.valueless_after_move()`;
   otherwise `*lhs <=> *rhs`.
 
-6. _Remarks_: Specializations of this function template for which `*lhs <=> *rhs`
+7. _Remarks_: Specializations of this function template for which `*lhs <=> *rhs`
   is a core constant expression are constexpr functions.
 
 #### X.Y.9 Comparison with T [indirect.comp.with.t]
@@ -899,9 +926,11 @@ constexpr bool operator==(const indirect& lhs, const U& rhs)
 
 1. _Constraints_: `*lhs == rhs` is well-formed.
 
-2. _Returns_: If `lhs` is valueless, false; otherwise `*lhs == rhs`.
+2. _Mandates_: `T` is a complete type.
 
-3. _Remarks_: Specializations of this function template for which `*lhs == rhs`
+3. _Returns_: If `lhs` is valueless, false; otherwise `*lhs == rhs`.
+
+4. _Remarks_: Specializations of this function template for which `*lhs == rhs`
    is a core constant expression, are constexpr functions.
 
 ```c++
@@ -910,11 +939,13 @@ constexpr auto operator<=>(const indirect& lhs, const U& rhs)
   noexcept(noexcept(*lhs <=> rhs)) -> compare_three_way_result_t<T, U>;
 ```
 
-4. _Constraints_: `*lhs <=> rhs` is well-formed.
+5. _Constraints_: `*lhs <=> rhs` is well-formed.
 
-5. _Returns_: If `rhs` is valueless, `false <=> true`; otherwise `*lhs <=> rhs`.
+6. _Mandates_: `T` is a complete type.
 
-6. _Remarks_: Specializations of this function template for which `*lhs <=> rhs`
+7. _Returns_: If `rhs` is valueless, `false <=> true`; otherwise `*lhs <=> rhs`.
+
+8. _Remarks_: Specializations of this function template for which `*lhs <=> rhs`
    is a core constant expression, are constexpr functions.
 
 ```c++
@@ -923,11 +954,13 @@ constexpr bool operator==(const U& lhs, const indirect& rhs)
   noexcept(noexcept(lhs == *rhs));
 ```
 
-7. _Constraints_: `lhs == *rhs` is well-formed.
+9. _Constraints_: `lhs == *rhs` is well-formed.
 
-8. _Returns_: If `rhs` is valueless, false; otherwise `lhs == *rhs`.
+10. _Mandates_: `T` is a complete type.
 
-9. _Remarks_: Specializations of this function template for which `lhs == *rhs`
+11. _Returns_: If `rhs` is valueless, false; otherwise `lhs == *rhs`.
+
+12. _Remarks_: Specializations of this function template for which `lhs == *rhs`
    is a core constant expression, are constexpr functions.
 
 ```c++
@@ -936,11 +969,13 @@ constexpr auto operator<=>(const U& lhs, const indirect& rhs)
   noexcept(noexcept(lhs <=> *rhs)) -> compare_three_way_result_t<T, U>;
 ```
 
-10. _Constraints_: `lhs <=> *rhs` is well-formed.
+13. _Constraints_: `lhs <=> *rhs` is well-formed.
 
-11. _Returns_: If `rhs` is valueless, `true <=> false`; otherwise `lhs <=> *rhs`.
+14. _Mandates_: `T` is a complete type.
 
-12. _Remarks_: Specializations of this function template for which `lhs <=> *rhs`
+15. _Returns_: If `rhs` is valueless, `true <=> false`; otherwise `lhs <=> *rhs`.
+
+16. _Remarks_: Specializations of this function template for which `lhs <=> *rhs`
     is a core constant expression, are constexpr functions.
 
 #### X.Y.10 Hash support [indirect.hash]
@@ -956,7 +991,7 @@ type `indirect<T, Alloc>`, then `hash<indirect<T, Alloc>>()(i)` evaluates to the
 same value as `hash<remove_const_t<T>>()(*i)`. The member functions are not
 guaranteed to be noexcept.
 
-2. _Preconditions_: `i` is not valueless.
+2. _Mandates_: `T` is a complete type.
 
 ### X.Z Class template polymorphic [polymorphic]
 
