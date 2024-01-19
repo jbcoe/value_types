@@ -908,7 +908,7 @@ constexpr auto operator<=>(const indirect& lhs, const indirect<U, AA>& rhs)
 
 4. _Constraints_: `*lhs <=> *rhs` is well-formed.
 
-5. _Mandates_: `T` is a complete type.
+6. _Mandates_: `T` is a complete type.
 
 6. _Returns_: If `lhs` is valueless or `rhs` is valueless,
   `!lhs.valueless_after_move() <=> !rhs.valueless_after_move()`;
