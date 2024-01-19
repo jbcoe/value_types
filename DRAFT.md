@@ -906,7 +906,7 @@ constexpr auto operator<=>(const indirect& lhs, const indirect<U, AA>& rhs)
   noexcept(noexcept(*lhs <=> *rhs)) -> compare_three_way_result_t<T, U>;
 ```
 
-4. _Constraints_: `*lhs <=> *rhs` is well-formed.
+5. _Constraints_: `*lhs <=> *rhs` is well-formed.
 
 6. _Mandates_: `T` is a complete type.
 
