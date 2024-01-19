@@ -649,8 +649,7 @@ indirect(std::allocator_arg_t, Alloc, Value) -> indirect<
 explicit constexpr indirect()
 ```
 
-1. _Mandates_: `is_default_constructible_v<T>` is true and `T` is a complete
-  type.
+1. _Mandates_: `is_default_constructible_v<T>` is true and `T` is a complete type.
 
 2. _Effects_: Constructs an `indirect` owning a default constructed `T`
   and stores the address in `p`. `alloc` is default constructed.
@@ -664,8 +663,7 @@ explicit constexpr indirect()
 explicit constexpr indirect(allocator_arg_t, const Allocator& alloc);
 ```
 
-5. _Mandates_: `is_default_constructible_v<T>` is `true` and `T` is a complete
-   type.
+5. _Mandates_: `is_default_constructible_v<T>` is `true` and `T` is a complete type.
 
 6. _Effects_: Constructs an `indirect` owning a default constructed `T` and
   stores the address in `p`. `alloc` is direct-non-list-initialized with `alloc`.
@@ -709,8 +707,7 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u, Us&& ...
 constexpr indirect(const indirect& other);
 ```
 
-16. _Mandates_: `is_copy_constructible_v<T>` is `true` and `T` is a complete
-    type.
+16. _Mandates_: `is_copy_constructible_v<T>` is `true` and `T` is a complete type.
 
 17. _Effects_: Equivalent to
   `indirect(allocator_arg, allocator_traits<allocator_type>::select_on_container_copy_construction(other.get_allocator()), *other)`.
@@ -722,8 +719,7 @@ constexpr indirect(allocator_arg_t, const Allocator& alloc,
                    const indirect& other);
 ```
 
-19. _Mandates_: `is_copy_constructible_v<T>` is `true` and `T` is a complete
-    type.
+19. _Mandates_: `is_copy_constructible_v<T>` is `true` and `T` is a complete type.
 
 20. _Effects_: Equivalent to `indirect(allocator_arg, alloc, *other)`.
 
@@ -774,8 +770,7 @@ constexpr ~indirect();
 constexpr indirect& operator=(const indirect& other);
 ```
 
-1. _Mandates_: `is_copy_constructible_v<T>` is `true` and `T` is a complete
-   type.
+1. _Mandates_: `is_copy_constructible_v<T>` is `true` and `T` is a complete type.
 
 2. _Effects_: If `this == &other` is `true`, then has no effects.
   Otherwise, if either:
