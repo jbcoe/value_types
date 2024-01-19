@@ -914,7 +914,7 @@ constexpr auto operator<=>(const indirect& lhs, const indirect<U, AA>& rhs)
   `!lhs.valueless_after_move() <=> !rhs.valueless_after_move()`;
   otherwise `*lhs <=> *rhs`.
 
-7. _Remarks_: Specializations of this function template for which `*lhs <=> *rhs`
+8. _Remarks_: Specializations of this function template for which `*lhs <=> *rhs`
   is a core constant expression are constexpr functions.
 
 #### X.Y.9 Comparison with T [indirect.comp.with.t]
