@@ -819,7 +819,7 @@ constexpr T& operator*() & noexcept;
 
 2. _Returns_: `*p_`.
 
-3. [Note: The use of these functions typically requires that T be a complete type. —end note]
+3. [Note: The use of these functions typically requires that `T` be a complete type. —end note]
 
 ```c++
 constexpr const T&& operator*() const && noexcept;
@@ -830,7 +830,7 @@ constexpr T&& operator*() && noexcept;
 
 5. _Returns_: `std::move(*p_)`.
 
-6. [Note: The use of these functions typically requires that T be a complete type. —end note]
+6. [Note: The use of these functions typically requires that `T` be a complete type. —end note]
 
 ```c++
 constexpr const_pointer operator->() const noexcept;
@@ -841,7 +841,7 @@ constexpr pointer operator->() noexcept;
 
 8. _Returns_: `p_`.
 
-9. [Note: The use of these functions typically requires that T be a complete type. —end note]
+9. [Note: The use of these functions typically requires that `T` be a complete type. —end note]
 
 ```c++
 constexpr bool valueless_after_move() const noexcept;
@@ -1259,7 +1259,7 @@ constexpr T& operator*() noexcept;
 
 2. _Returns_: A reference to the owned object.
 
-3. [Note: The use of these functions typically requires that T be a complete type. —end note]
+3. [Note: The use of these functions typically requires that `T` be a complete type. —end note]
 
 ```c++
 constexpr const_pointer operator->() const noexcept;
@@ -1270,7 +1270,7 @@ constexpr pointer operator->() noexcept;
 
 5. _Returns_: A pointer to the owned object.
 
-6. [Note: The use of these functions typically requires that T be a complete type. —end note]
+6. [Note: The use of these functions typically requires that `T` be a complete type. —end note]
 
 ```c++
 constexpr bool valueless_after_move() const noexcept;
