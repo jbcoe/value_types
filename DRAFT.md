@@ -500,9 +500,9 @@ Note to editors: Add the following macros with editor provided values to [versio
 
 #### X.Y.1 Class template indirect general [indirect.general]
 
-1. An _indirect value_ is an object that manages the lifetime of an owned object.
-An indirect value object is _valueless_ if it has no owned object. An indirect
-value may only become valueless after it has been moved from.
+1. An indirect object manages the lifetime of an owned object.
+An indirect object is _valueless_ if it has no owned object. An indirect
+object may only become valueless after it has been moved from.
 
 2. In every specialization `indirect<T, Allocator>`, if the type
 `allocator_traits<Allocator>::value_type` is not the same type as `T`,
@@ -998,10 +998,10 @@ guaranteed to be noexcept.
 
 #### X.Z.1 Class template polymorphic general [polymorphic.general]
 
-1. A _polymorphic value_ is an object that manages the lifetime of an owned object.
-A polymorphic value object may own objects of different types at different
-points in its lifetime. A polymorphic value object is _valueless_ if it has no
-owned object. A polymorphic value may only become valueless after it has been
+1. A polymorphic object manages the lifetime of an owned object.
+A polymorphic object may own objects of different types at different
+points in its lifetime. A polymorphic object is _valueless_ if it has no
+owned object. A polymorphic object may only become valueless after it has been
 moved from.
 
 2. In every specialization `polymorphic<T, Allocator>`, if the type
