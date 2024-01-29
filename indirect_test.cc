@@ -45,6 +45,83 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace {
 
+// Notes on IndirectTraitsTest.
+//
+// Type traits for indirect are unable to report traits based on the owned
+// type as incomplete types must be supported. The workaround used for
+// polymorphic, introducing an extra template parameter, won't work for
+// indirect's copy constructor and move constructor as these can't take extra
+// template parameters. We opt to use static_assert for in function bodies in
+// indirect to enable compile time checks at the cost of having type traits
+// potentially returning misleading information.
+
+TEST(IndirectTraitsTest, DefaultConstructible) {
+  struct NoDefaultConstructor {
+    NoDefaultConstructor() = delete;
+  };
+
+  using NonDefaultConstructibleIndirect = xyz::indirect<NoDefaultConstructor>;
+
+  static_assert(!std::is_default_constructible<NoDefaultConstructor>::value,
+                "");
+  static_assert(
+      std::is_default_constructible<NonDefaultConstructibleIndirect>::value,
+      "");  // Trait is misleading, an attempt to instantiate the function will
+            // trigger a static assertion.
+}
+
+TEST(IndirectTraitsTest, CopyConstructible) {
+  struct NoCopyConstructor {
+    NoCopyConstructor(const NoCopyConstructor&) = delete;
+  };
+
+  using NonCopyConstructibleIndirect = xyz::indirect<NoCopyConstructor>;
+
+  static_assert(!std::is_copy_constructible<NoCopyConstructor>::value, "");
+  static_assert(std::is_copy_constructible<NonCopyConstructibleIndirect>::value,
+                "");  // Trait is misleading, an attempt to instantiate the
+                      // function will trigger a static assertion.
+}
+
+TEST(IndirectTraitsTest, MoveConstructible) {
+  struct NoMoveConstructor {
+    NoMoveConstructor(NoMoveConstructor&&) = delete;
+  };
+
+  using NonMoveConstructibleIndirect = xyz::indirect<NoMoveConstructor>;
+
+  static_assert(!std::is_move_constructible<NoMoveConstructor>::value, "");
+  static_assert(std::is_move_constructible<NonMoveConstructibleIndirect>::value,
+                "");  // Trait is misleading, an attempt to instantiate the
+                      // function will trigger a static assertion.
+}
+
+TEST(IndirectTraitsTest, CopyAssignable) {
+  struct NoCopyAssignment {
+    NoCopyAssignment& operator=(const NoCopyAssignment&) = delete;
+  };
+
+  using NonCopyAssignableIndirect = xyz::indirect<NoCopyAssignment>;
+
+  static_assert(!std::is_copy_assignable<NoCopyAssignment>::value, "");
+  static_assert(std::is_copy_assignable<NonCopyAssignableIndirect>::value,
+                "");  // Trait is misleading, an attempt to instantiate the
+                      // function will trigger a static assertion.
+}
+
+TEST(IndirectTraitsTest, MoveAssignable) {
+  struct NoMoveAssignment {
+    NoMoveAssignment& operator=(NoMoveAssignment&&) = delete;
+  };
+
+  using NonMoveAssignableIndirect = xyz::indirect<NoMoveAssignment>;
+
+  static_assert(!std::is_move_assignable<NoMoveAssignment>::value, "");
+  static_assert(std::is_move_assignable<NonMoveAssignableIndirect>::value,
+                "");  // Trait is misleading, an attempt to instantiate the
+                      // function will trigger a static assertion.
+}
+
 TEST(IndirectTest, ValueAccessFromInPlaceConstructedObject) {
   xyz::indirect<int> a(42);
   EXPECT_EQ(*a, 42);

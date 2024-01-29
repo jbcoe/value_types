@@ -1069,8 +1069,8 @@ class polymorphic {
 explicit constexpr polymorphic()
 ```
 
-1. _Mandates_: `T` is a complete type and `is_default_constructible_v<T>` is `true`,
-  `is_copy_constructible_v<T>` is `true`.
+1. _Requires_: `is_default_constructible_v<T>` is `true`,
+  `is_copy_constructible_v<T>` is `true` and `T` is a complete type.
 
 2. _Effects_: Constructs a polymorphic owning a default constructed `T`.
   `alloc` is default constructed.
@@ -1084,8 +1084,8 @@ explicit constexpr polymorphic()
 explicit constexpr polymorphic(allocator_arg_t, const Allocator& alloc);
 ```
 
-5. _Mandates_: `T` is a complete type and `is_default_constructible_v<T>` is `true`,
-  `is_copy_constructible_v<T>` is `true`.
+5. _Requires_: `is_default_constructible_v<T>` is `true`,
+  `is_copy_constructible_v<T>` is `true` and `T` is a complete type.
 
 6. _Effects_: Constructs a polymorphic owning a default constructed `T`.
    `alloc` is direct-non-list-initialized with alloc.
