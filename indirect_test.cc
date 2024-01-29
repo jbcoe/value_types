@@ -381,6 +381,18 @@ TEST(IndirectTest, Hash) {
   EXPECT_EQ(std::hash<xyz::indirect<int>>()(a), std::hash<int>()(*a));
 }
 
+auto make_valueless_indirect() {
+  xyz::indirect<int> a;
+  auto aa = std::move(a);
+  return a;
+}
+
+TEST(IndirectTest, HashValueless) {
+  xyz::indirect<int> v = make_valueless_indirect();
+  // The value here is implementation-defined but behaviour is well-defined.
+  EXPECT_EQ(std::hash<xyz::indirect<int>>()(v), static_cast<size_t>(-1));
+}
+
 #ifdef XYZ_HAS_STD_OPTIONAL
 TEST(IndirectTest, Optional) {
   std::optional<xyz::indirect<int>> a;
@@ -391,19 +403,19 @@ TEST(IndirectTest, Optional) {
 }
 #endif  // XYZ_HAS_STD_OPTIONAL
 
-TEST(IndirectTest, Equality) {
-  xyz::indirect<int> a(42);
-  xyz::indirect<int> b(42);
-  xyz::indirect<int> c(43);
-  EXPECT_EQ(a, a);  // Same object.
-  EXPECT_EQ(a, b);  // Same value.
-  EXPECT_NE(a, c);  // Different value.
-}
-
 TEST(IndirectTest, Comparison) {
   xyz::indirect<int> a(42);
   xyz::indirect<int> b(42);
   xyz::indirect<int> c(101);
+
+  EXPECT_TRUE(a == a);
+  EXPECT_TRUE(a == b);
+  EXPECT_FALSE(a == c);
+
+  EXPECT_FALSE(a != a);
+  EXPECT_FALSE(a != b);
+  EXPECT_TRUE(a != c);
+
   EXPECT_FALSE(a < a);
   EXPECT_FALSE(a > a);
   EXPECT_TRUE(a <= a);
@@ -430,6 +442,34 @@ TEST(IndirectTest, Comparison) {
   EXPECT_TRUE(c >= a);
 }
 
+TEST(IndirectTest, ValuelessComparison) {
+  xyz::indirect<int> a(42);
+
+  EXPECT_FALSE(a == make_valueless_indirect());
+  EXPECT_FALSE(make_valueless_indirect() == a);
+  EXPECT_TRUE(make_valueless_indirect() == make_valueless_indirect());
+
+  EXPECT_TRUE(a != make_valueless_indirect());
+  EXPECT_TRUE(make_valueless_indirect() != a);
+  EXPECT_FALSE(make_valueless_indirect() != make_valueless_indirect());
+
+  EXPECT_FALSE(a < make_valueless_indirect());
+  EXPECT_TRUE(make_valueless_indirect() < a);
+  EXPECT_FALSE(make_valueless_indirect() < make_valueless_indirect());
+
+  EXPECT_TRUE(a > make_valueless_indirect());
+  EXPECT_FALSE(make_valueless_indirect() > a);
+  EXPECT_FALSE(make_valueless_indirect() > make_valueless_indirect());
+
+  EXPECT_FALSE(a <= make_valueless_indirect());
+  EXPECT_TRUE(make_valueless_indirect() <= a);
+  EXPECT_TRUE(make_valueless_indirect() <= make_valueless_indirect());
+
+  EXPECT_TRUE(a >= make_valueless_indirect());
+  EXPECT_FALSE(make_valueless_indirect() >= a);
+  EXPECT_TRUE(make_valueless_indirect() >= make_valueless_indirect());
+}
+
 TEST(IndirectTest, ComparisonWithU) {
   EXPECT_EQ(xyz::indirect<int>(42), 42);
   EXPECT_EQ(42, xyz::indirect<int>(42));
@@ -452,6 +492,32 @@ TEST(IndirectTest, ComparisonWithU) {
   EXPECT_LE(42, xyz::indirect<int>(42));
   EXPECT_LE(xyz::indirect<int>(42), 101);
   EXPECT_LE(42, xyz::indirect<int>(101));
+}
+
+TEST(IndirectTest, ValuelessComparisonWithU) {
+  EXPECT_FALSE(make_valueless_indirect() == 42);
+  EXPECT_FALSE(42 == make_valueless_indirect());
+  EXPECT_TRUE(make_valueless_indirect() == make_valueless_indirect());
+
+  EXPECT_TRUE(make_valueless_indirect() != 42);
+  EXPECT_TRUE(42 != make_valueless_indirect());
+  EXPECT_FALSE(make_valueless_indirect() != make_valueless_indirect());
+
+  EXPECT_TRUE(make_valueless_indirect() < 42);
+  EXPECT_FALSE(42 < make_valueless_indirect());
+  EXPECT_FALSE(make_valueless_indirect() < make_valueless_indirect());
+
+  EXPECT_FALSE(make_valueless_indirect() > 42);
+  EXPECT_TRUE(42 > make_valueless_indirect());
+  EXPECT_FALSE(make_valueless_indirect() > make_valueless_indirect());
+
+  EXPECT_TRUE(make_valueless_indirect() <= 42);
+  EXPECT_FALSE(42 <= make_valueless_indirect());
+  EXPECT_TRUE(make_valueless_indirect() <= make_valueless_indirect());
+
+  EXPECT_FALSE(make_valueless_indirect() >= 42);
+  EXPECT_TRUE(42 >= make_valueless_indirect());
+  EXPECT_TRUE(make_valueless_indirect() >= make_valueless_indirect());
 }
 
 TEST(IndirectTest, ComparisonWithIndirectU) {
