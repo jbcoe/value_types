@@ -32,6 +32,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <map>
 
 #include "feature_check.h"
+#include "test_helpers.h"
 #include "tracking_allocator.h"
 #ifdef XYZ_HAS_STD_MEMORY_RESOURCE
 #include <memory_resource>
