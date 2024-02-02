@@ -1140,8 +1140,7 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& alloc);
 
 7. _Mandates_: `T` is a complete type.
 
-8. _Effects_: Constructs a polymorphic owning a default constructed `T`.
-   `alloc` is direct-non-list-initialized with alloc.
+8. _Effects_: TODO.
 
 9. _Postconditions_: `*this` is not valueless.
 
