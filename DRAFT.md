@@ -681,7 +681,8 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& alloc);
 
 7. _Mandates_: `T` is a complete type.
 
-8. _Effects_: TODO.
+8. _Effects_: `allocator` is direct-non-list-initialized with `alloc`. Value
+   initializes an owned object of type `T` using the specified allocator.
 
 9. _Postconditions_: `*this` is not valueless.
 
@@ -713,12 +714,11 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u, Us&& ...
 
 15. _Mandates_: `T` is a complete type.
 
-16. _Effects_: TODO.
+16. _Effects_: `allocator` is direct-non-list-initialized with `alloc`.
+    Direct-non-list-initializes an owned object of type `T` using the specified
+    allocator with `std::forward<U>(u), std​::​forward<Us>(us...)`.
 
-    DRAFTING NOTE: based on https://eel.is/c++draft/func.wrap#func.con-6
-
-17. _Postconditions_: `*this` is not valueless.  `p_` targets an object of type `T`
-  constructed with `std::forward<U>(u)`, `std::forward<Us>(us)...`.
+17. _Postconditions_: `*this` is not valueless.
 
 ```c++
 constexpr indirect(const indirect& other);
@@ -1140,7 +1140,8 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& alloc);
 
 7. _Mandates_: `T` is a complete type.
 
-8. _Effects_: TODO.
+8. _Effects_: `allocator` is direct-non-list-initialized with `alloc`. Value
+initializes an owned object of type `T` using the specified allocator.
 
 9. _Postconditions_: `*this` is not valueless.
 
@@ -1167,7 +1168,9 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
 
 14. _Mandates_: `T` is a complete type.
 
-15. _Effects_: TODO.
+15. _Effects_: `allocator` is direct-non-list-initialized with `alloc`.
+    Direct-non-list-initializes an owned object of type `U` using the specified
+    allocator with `std​::​forward<Ts>(ts...)`.
 
 16. _Postconditions_: `*this` is not valueless.  The owned instance targets an object of type `U`
   constructed  with `std::forward<Ts>(ts)...`.
