@@ -8,3 +8,4 @@ bazel-*
 build*/
 out/
 .cache
+MODULE.bazel.lock
