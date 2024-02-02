@@ -726,8 +726,8 @@ constexpr indirect(const indirect& other);
 
 18. _Mandates_: `T` is a complete type.
 
-19. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(), other)`
-`
+19. _Effects_: TODO.
+
 20. _Postconditions_: `*this` is not valueless.
 
 ```c++
@@ -743,7 +743,7 @@ constexpr indirect(allocator_arg_t, const Allocator& alloc,
 constexpr indirect(indirect&& other) noexcept;
 ```
 
-23. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(), std::move(other))`.
+23. _Effects_: TODO.
 
 24. _[Note 1: This constructor does not require that `is_move_constructible_v<T>`
   is `true` --end note]_
@@ -1178,8 +1178,7 @@ constexpr polymorphic(const polymorphic& other);
 
 17. _Mandates_: `T` is a complete type.
 
-18. _Effects_: Equivalent to
-  `polymorphic(allocator_arg_t{}, allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc), other)`.
+18. _Effects_: TODO.
 
 ```c++
 constexpr polymorphic(allocator_arg_t, const Allocator& a,
@@ -1194,7 +1193,7 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
 constexpr polymorphic(polymorphic&& other) noexcept;
 ```
 
-21. _Effects_: Equivalent to `polymorphic(allocator_arg_t{}, Allocator(other.alloc_), other)`.
+21. _Effects_: TODO.
 
 ```c++
 constexpr polymorphic(allocator_arg_t, const Allocator& a,
