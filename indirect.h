@@ -66,34 +66,40 @@ class indirect {
   using pointer = typename allocator_traits::pointer;
   using const_pointer = typename allocator_traits::const_pointer;
 
+  template <class TT = T>
   explicit constexpr indirect()
-    requires std::is_default_constructible_v<A>
+    requires(std::is_default_constructible_v<A> &&
+             std::is_default_constructible_v<TT> &&
+             std::is_copy_constructible_v<TT>)
   {
-    static_assert(std::is_default_constructible_v<T>);
     p_ = construct_from(alloc_);
   }
 
+  template <class TT = T>
   explicit constexpr indirect(std::allocator_arg_t, const A& alloc)
+    requires(std::is_default_constructible_v<TT> &&
+             std::is_copy_constructible_v<TT>)
       : alloc_(alloc) {
-    static_assert(std::is_default_constructible_v<T>);
     p_ = construct_from(alloc_);
   }
 
-  template <class U, class... Us>
+  template <class U, class... Us, class TT = T>
   explicit constexpr indirect(U&& u, Us&&... us)
     requires(std::constructible_from<T, U &&, Us && ...> &&
              std::is_default_constructible_v<A> &&
              !std::is_same_v<std::remove_cvref_t<U>, indirect> &&
-             !std::is_same_v<std::remove_cvref_t<U>, std::allocator_arg_t>)
+             !std::is_same_v<std::remove_cvref_t<U>, std::allocator_arg_t> &&
+             std::is_copy_constructible_v<TT>)
   {
     p_ = construct_from(alloc_, std::forward<U>(u), std::forward<Us>(us)...);
   }
 
-  template <class U, class... Us>
+  template <class U, class... Us, class TT = T>
   explicit constexpr indirect(std::allocator_arg_t, const A& alloc, U&& u,
                               Us&&... us)
     requires(std::constructible_from<T, U &&, Us && ...> &&
-             !std::is_same_v<std::remove_cvref_t<U>, indirect>)
+             !std::is_same_v<std::remove_cvref_t<U>, indirect> &&
+             std::is_copy_constructible_v<TT>)
       : alloc_(alloc) {
     p_ = construct_from(alloc_, std::forward<U>(u), std::forward<Us>(us)...);
   }
@@ -101,7 +107,6 @@ class indirect {
   constexpr indirect(const indirect& other)
       : alloc_(allocator_traits::select_on_container_copy_construction(
             other.alloc_)) {
-    static_assert(std::is_copy_constructible_v<T>);
     if (other.valueless_after_move()) {
       p_ = nullptr;
       return;
@@ -112,7 +117,6 @@ class indirect {
   constexpr indirect(std::allocator_arg_t, const A& alloc,
                      const indirect& other)
       : alloc_(alloc) {
-    static_assert(std::is_copy_constructible_v<T>);
     if (other.valueless_after_move()) {
       p_ = nullptr;
       return;
@@ -136,7 +140,6 @@ class indirect {
 
   constexpr indirect& operator=(const indirect& other) {
     if (this == &other) return *this;
-    static_assert(std::is_copy_constructible_v<T>);
     if constexpr (allocator_traits::propagate_on_container_copy_assignment::
                       value) {
       if (alloc_ != other.alloc_) {
@@ -162,7 +165,6 @@ class indirect {
       allocator_traits::propagate_on_container_move_assignment::value ||
       allocator_traits::is_always_equal::value) {
     if (this == &other) return *this;
-    static_assert(std::is_copy_constructible_v<T>);
 
     if constexpr (allocator_traits::propagate_on_container_move_assignment::
                       value) {
@@ -242,7 +244,9 @@ class indirect {
   template <class U, class AA>
   friend constexpr bool operator==(
       const indirect<T, A>& lhs,
-      const indirect<U, AA>& rhs) noexcept(noexcept(*lhs == *rhs)) {
+      const indirect<U, AA>& rhs) noexcept(noexcept(*lhs == *rhs))
+    requires std::equality_comparable_with<T, U>
+  {
     if (lhs.valueless_after_move()) {
       return rhs.valueless_after_move();
     }
@@ -256,7 +260,9 @@ class indirect {
   friend constexpr auto operator<=>(
       const indirect<T, A>& lhs,
       const indirect<U, AA>& rhs) noexcept(noexcept(*lhs <=> *rhs))
-      -> std::compare_three_way_result_t<T, U> {
+      -> std::compare_three_way_result_t<T, U>
+    requires std::three_way_comparable_with<T, U>
+  {
     if (lhs.valueless_after_move() || rhs.valueless_after_move()) {
       return !lhs.valueless_after_move() <=> !rhs.valueless_after_move();
     }
@@ -266,7 +272,7 @@ class indirect {
   template <class U>
   friend constexpr bool operator==(const indirect<T, A>& lhs,
                                    const U& rhs) noexcept(noexcept(*lhs == rhs))
-    requires(!is_indirect_v<U>)
+    requires(!is_indirect_v<U> && std::equality_comparable_with<T, U>)
   {
     if (lhs.valueless_after_move()) {
       return false;
@@ -277,7 +283,7 @@ class indirect {
   template <class U>
   friend constexpr bool operator==(
       const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs == *rhs))
-    requires(!is_indirect_v<U>)
+    requires(!is_indirect_v<U> && std::equality_comparable_with<T, U>)
   {
     if (rhs.valueless_after_move()) {
       return false;
@@ -290,7 +296,7 @@ class indirect {
                                     const U& rhs) noexcept(noexcept(*lhs <=>
                                                                     rhs))
       -> std::compare_three_way_result_t<T, U>
-    requires(!is_indirect_v<U>)
+    requires(!is_indirect_v<U> && std::three_way_comparable_with<T, U>)
   {
     if (lhs.valueless_after_move()) {
       return false <=> true;
@@ -302,7 +308,7 @@ class indirect {
   friend constexpr auto operator<=>(
       const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs <=> *rhs))
       -> std::compare_three_way_result_t<T, U>
-    requires(!is_indirect_v<U>)
+    requires(!is_indirect_v<U> && std::three_way_comparable_with<T, U>)
   {
     if (rhs.valueless_after_move()) {
       return true <=> false;
