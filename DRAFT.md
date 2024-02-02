@@ -1468,6 +1468,18 @@ call its operator. Furthermore, unlike comparisons, function calls or indexing
 operators do not compose further; for example, a composite would not be able to
 automatically generate a composited `operator()` or an `operator[]`.
 
+### Supporting arithmetic operators
+
+While we could provide support for arithmetic operators, `+`, `-` ,`*`, `/`, to
+`indirect` in the same way that we support comparisons, we have chosen not to do
+so. The arithmetic operators would need to support a valueless state which there
+is no precedent for in the standard library.
+
+Support for arithmetic operators could be added in a future version of the C++
+standard. If support for arithmetic operators for valueless or empty objects is
+later added to the standard library in a coherent way, it could be added for
+`indirect` at that time.
+
 ### Member function `emplace`
 
 Neither `indirect` nor `polymorphic` support `emplace` as a member function. The
@@ -1492,6 +1504,9 @@ some_indirect = indirect(/* arguments */);
 ```c++
 some_polymorphic = polymorphic(in_place_type<U>, /* arguments */);
 ```
+
+Support for an emplace member function could be added in a future version of the
+C++ standard.
 
 ### Small Buffer Optimisation
 
@@ -1730,3 +1745,7 @@ of these changes on users could be potentially significant and unwelcome.
 |`noexcept` for accessors|Accessors are `noexcept` like `unique_ptr` and `optional`| Remove `noexcept` from accessors | User functions marked `noexcept` could be broken | Yes |
 |Specialization of optional|No specialization of optional|Specialize optional to use valueless state| Breaks ABI; engaged but valueless optional would become indistinguishable from a disengaged optional| Yes |
 |Permit user specialization|No user specialization is permitted|Permit specialization for user-defined types| Previously ill-formed code would become well-formed| No |
+|Support comparisons for indirect|Comparisons are supported when the owned type supports them|No support for comparisons|Previously valid code would become ill-formed| Yes |
+|Support arithmetic operations for `indirect`|No support for arithmetic operations|Forward arithemtic operations to the owned type when it supports them|Previously ill-formed code would become well-formed| No |
+|Support `operator ()` for `indirect`|No support for `operator ()`|Forward `operator()` to the owned type when it is supported|Previously ill-formed code would become well-formed| No |
+|Support `operator []` for `indirect`|No support for `operator []`|Forward `operator[]` to the owned type when it is supported|Previously ill-formed code would become well-formed| No |
