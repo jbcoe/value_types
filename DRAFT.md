@@ -429,6 +429,9 @@ its constructor arguments (unlike `pair` or `variant`). To construct an
 `indirect` or `polymorphic` object, and with it use dynamically allocate memory,
 the user must explicitly use a constructor.
 
+The standard already marks multiple argument constructors as explicit for the
+inplace constructors of `optional` and `any`.
+
 With some suitably compelling motivation, the `explicit` keyword could be
 removed from some constructors in a later revision of the C++ standard without
 rendering code ill-formed.
