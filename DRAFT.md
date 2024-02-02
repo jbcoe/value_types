@@ -329,11 +329,8 @@ propagates const and is allocator aware.
   equal.
 
 * Like `optional`, `indirect` knows the type of the owned object so forwards
-  comparison operators and hash to the underlying object.
-
-* Unlike `optional`, `indirect` is not observably valueless: use after move is
-  undefined behaviour. Formatting is supported by `indirect` by forwarding to
-  the owned object.
+  comparison operators and hash to the underlying object. A valueless `indirect`
+  like an empty `optional` hashes to an implementation-defined value.
 
 #### Modelled types for `polymorphic`
 
@@ -402,6 +399,12 @@ operations, the cost of handling the valuless state will be insignificant
 compared to the cost of allocating memory. Introducing preconditions for copy,
 move, assign and move assign in a later revision of the C++ standard would be a
 silent breaking change.
+
+Like `variant`, `indirect` does not support formatting by forwarding to the
+owned object. There may be no owned object to format so we require the user to
+write code to determine how to format a valueless `indirect` or to validate that
+the `indirect` is not valueless before formatting `*i` (where `i` is an instance
+of `indirect` for some formattable type `T`).
 
 ### `noexcept` and narrow contracts
 
