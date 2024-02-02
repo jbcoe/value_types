@@ -44,6 +44,8 @@ should not be considered in isolation.
 
 ### Changes in R4
 
+* Use constraints to require that the object owned by `indirect` is copy-constructible.
+
 * Allow comparison of valueless `indirect` objects.
 
 * Remove `std::format` support for `std::indirect`.
