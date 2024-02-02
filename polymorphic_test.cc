@@ -647,9 +647,9 @@ TEST(PolymorphicTest, InteractionWithUnorderedMap) {
 }
 
 TEST(PolymorphicTest, InteractionWithSizedAllocators) {
-  EXPECT_EQ(
-      sizeof(xyz::polymorphic<int, xyz::TrackingAllocator<int>>),
-      (sizeof(xyz::polymorphic<int>) + sizeof(xyz::TrackingAllocator<int>)));
+  static_assert(sizeof(xyz::polymorphic<int>) == sizeof(int*));
+  static_assert(sizeof(xyz::polymorphic<int, xyz::TrackingAllocator<int>>) ==
+                sizeof(int*) + sizeof(xyz::TrackingAllocator<int>));
 }
 
 struct BaseA {

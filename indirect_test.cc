@@ -765,11 +765,9 @@ TEST(IndirectTest, InteractionWithUnorderedMap) {
 }
 
 TEST(IndirectTest, InteractionWithSizedAllocators) {
-  // Admit defeat... gtest does not seem to support STATIC_REQUIRES equivelent
-  // functionality.
-  EXPECT_EQ(sizeof(xyz::indirect<int>), sizeof(int*));
-  EXPECT_EQ(sizeof(xyz::indirect<int, xyz::TrackingAllocator<int>>),
-            (sizeof(int*) + sizeof(xyz::TrackingAllocator<int>)));
+  static_assert(sizeof(xyz::indirect<int>) == sizeof(int*));
+  static_assert(sizeof(xyz::indirect<int, xyz::TrackingAllocator<int>>) ==
+                sizeof(int*) + sizeof(xyz::TrackingAllocator<int>));
 }
 
 #ifdef XYZ_HAS_STD_MEMORY_RESOURCE
