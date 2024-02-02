@@ -1730,3 +1730,5 @@ of these changes on users could be potentially significant and unwelcome.
 |`noexcept` for accessors|Accessors are `noexcept` like `unique_ptr` and `optional`| Remove `noexcept` from accessors | User functions marked `noexcept` could be broken | Yes |
 |Specialization of optional|No specialization of optional|Specialize optional to use valueless state| Breaks ABI; engaged but valueless optional would become indistinguishable from a disengaged optional| Yes |
 |Permit user specialization|No user specialization is permitted|Permit specialization for user-defined types| Previously ill-formed code would become well-formed| No |
+|Support comparisons for indirect|Comparisons are supported when the owned type supports them|No support for comparisons|Previously valid code would become ill-formed| Yes |
+|Support arithmetic operations for indirect|No support for arithmetic operations|Add conditional support for arithmetic operations|Previously ill-formed code would become well-formed| Might affect concepts/SFINAE; otherwise, No |
