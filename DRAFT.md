@@ -329,8 +329,8 @@ propagates const and is allocator aware.
   equal.
 
 * Like `optional`, `indirect` knows the type of the owned object so forwards
-  comparison operators and hash to the underlying object. A valueless `indirect`
-  like an empty `optional` hashes to an implementation-defined value.
+  comparison operators and hash to the underlying object. A valueless `indirect`,
+  like an empty `optional`, hashes to an implementation-defined value.
 
 #### Modelled types for `polymorphic`
 
