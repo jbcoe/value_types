@@ -56,6 +56,7 @@ using std::in_place_type_t;
 #ifdef XYZ_HAS_STD_OPTIONAL
 #include <optional>
 #endif  // XYZ_HAS_STD_OPTIONAL
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -151,6 +152,16 @@ TEST(PolymorphicTest, SwapWithNoSBOAndSBO) {
   swap(a, b);
   EXPECT_EQ(a->value(), 101);
   EXPECT_EQ(b->value(), 42);
+}
+
+TEST(PolymorphicTest, TriviallyRelocatable) {
+#if defined(__cpp_impl_trivially_relocatable) && defined(__cpp_lib_trivially_relocatable)
+  static_assert(std::is_trivially_relocatable<xyz::polymorphic<int>>::value, "");
+#ifdef XYZ_HAS_STD_MEMORY_RESOURCE
+  static_assert(!std::is_trivially_relocatable_v<
+                xyz::polymorphic<int, std::pmr::polymorphic_allocator<int>>>);
+#endif
+#endif  // defined(__cpp_impl_trivially_relocatable) && ...
 }
 
 TEST(PolymorphicTest, AccessDerivedObject) {

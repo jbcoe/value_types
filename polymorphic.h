@@ -41,6 +41,15 @@ namespace xyz {
 }
 #endif  // XYZ_UNREACHABLE_DEFINED
 
+#ifndef XYZ_TRIVIALLY_RELOCATABLE_IF_DEFINED
+#define XYZ_TRIVIALLY_RELOCATABLE_IF_DEFINED
+#if defined(__cpp_impl_trivially_relocatable) && defined(__cpp_lib_trivially_relocatable)
+#define XYZ_TRIVIALLY_RELOCATABLE_IF(x) [[trivially_relocatable(x)]]
+#else
+#define XYZ_TRIVIALLY_RELOCATABLE_IF(x)
+#endif
+#endif  // XYZ_TRIVIALLY_RELOCATABLE_IF_DEFINED
+
 namespace detail {
 template <class T, class A>
 struct control_block {
@@ -108,8 +117,23 @@ class direct_control_block final : public control_block<T, A> {
 
 }  // namespace detail
 
+#if defined(__cpp_lib_trivially_relocatable)
+template <class A>
+inline constexpr bool polymorphic_allocator_pocma_models_relocatable_v =
+    std::allocator_traits<A>::is_always_equal::value ||
+    (std::allocator_traits<A>::propagate_on_container_copy_assignment::value &&
+     std::allocator_traits<A>::propagate_on_container_move_assignment::value &&
+     std::allocator_traits<A>::propagate_on_container_swap::value);
+
+template <class T, class A>
+inline constexpr bool polymorphic_be_trivially_relocatable_v =
+    std::is_trivially_relocatable_v<A> &&
+    std::is_trivially_relocatable_v<detail::control_block<T, A>*> &&
+    polymorphic_allocator_pocma_models_relocatable_v<A>;
+#endif
+
 template <class T, class A = std::allocator<T>>
-class polymorphic {
+class XYZ_TRIVIALLY_RELOCATABLE_IF((polymorphic_be_trivially_relocatable_v<T, A>)) polymorphic {
   using cblock_t = detail::control_block<T, A>;
   cblock_t* cb_;
 

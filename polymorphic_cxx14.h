@@ -49,6 +49,15 @@ namespace xyz {
 }  // namespace xyz
 #endif  // XYZ_UNREACHABLE_DEFINED
 
+#ifndef XYZ_TRIVIALLY_RELOCATABLE_IF_DEFINED
+#define XYZ_TRIVIALLY_RELOCATABLE_IF_DEFINED
+#if defined(__cpp_impl_trivially_relocatable) && defined(__cpp_lib_trivially_relocatable)
+#define XYZ_TRIVIALLY_RELOCATABLE_IF(x) [[trivially_relocatable(x)]]
+#else
+#define XYZ_TRIVIALLY_RELOCATABLE_IF(x)
+#endif
+#endif  // XYZ_TRIVIALLY_RELOCATABLE_IF_DEFINED
+
 #ifndef XYZ_EMPTY_BASE_DEFINED
 #define XYZ_EMPTY_BASE_DEFINED
 // This is a helper class to allow empty base class optimization.
@@ -152,8 +161,25 @@ class direct_control_block final : public control_block<T, A> {
 
 }  // namespace detail
 
+#if defined(__cpp_lib_trivially_relocatable)
+template <class A>
+struct polymorphic_allocator_pocma_models_relocatable : std::integral_constant<bool,
+    std::allocator_traits<A>::is_always_equal::value ||
+    (std::allocator_traits<A>::propagate_on_container_copy_assignment::value &&
+     std::allocator_traits<A>::propagate_on_container_move_assignment::value &&
+     std::allocator_traits<A>::propagate_on_container_swap::value)
+> {};
+
+template <class T, class A>
+struct polymorphic_be_trivially_relocatable : std::integral_constant<bool,
+    std::is_trivially_relocatable<A>::value &&
+    std::is_trivially_relocatable<detail::control_block<T, A>*>::value &&
+    polymorphic_allocator_pocma_models_relocatable<A>::value
+> {};
+#endif
+
 template <class T, class A = std::allocator<T>>
-class polymorphic : private detail::empty_base_optimization<A> {
+class XYZ_TRIVIALLY_RELOCATABLE_IF((polymorphic_be_trivially_relocatable<T, A>::value)) polymorphic : private detail::empty_base_optimization<A> {
   using cblock_t = detail::control_block<T, A>;
   cblock_t* cb_;
 
