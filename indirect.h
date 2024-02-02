@@ -244,9 +244,7 @@ class indirect {
   template <class U, class AA>
   friend constexpr bool operator==(
       const indirect<T, A>& lhs,
-      const indirect<U, AA>& rhs) noexcept(noexcept(*lhs == *rhs))
-    requires std::equality_comparable_with<T, U>
-  {
+      const indirect<U, AA>& rhs) noexcept(noexcept(*lhs == *rhs)) {
     if (lhs.valueless_after_move()) {
       return rhs.valueless_after_move();
     }
@@ -260,9 +258,7 @@ class indirect {
   friend constexpr auto operator<=>(
       const indirect<T, A>& lhs,
       const indirect<U, AA>& rhs) noexcept(noexcept(*lhs <=> *rhs))
-      -> std::compare_three_way_result_t<T, U>
-    requires std::three_way_comparable_with<T, U>
-  {
+      -> std::compare_three_way_result_t<T, U> {
     if (lhs.valueless_after_move() || rhs.valueless_after_move()) {
       return !lhs.valueless_after_move() <=> !rhs.valueless_after_move();
     }
@@ -272,7 +268,7 @@ class indirect {
   template <class U>
   friend constexpr bool operator==(const indirect<T, A>& lhs,
                                    const U& rhs) noexcept(noexcept(*lhs == rhs))
-    requires(!is_indirect_v<U> && std::equality_comparable_with<T, U>)
+    requires(!is_indirect_v<U>)
   {
     if (lhs.valueless_after_move()) {
       return false;
@@ -283,7 +279,7 @@ class indirect {
   template <class U>
   friend constexpr bool operator==(
       const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs == *rhs))
-    requires(!is_indirect_v<U> && std::equality_comparable_with<T, U>)
+    requires(!is_indirect_v<U>)
   {
     if (rhs.valueless_after_move()) {
       return false;
@@ -296,7 +292,7 @@ class indirect {
                                     const U& rhs) noexcept(noexcept(*lhs <=>
                                                                     rhs))
       -> std::compare_three_way_result_t<T, U>
-    requires(!is_indirect_v<U> && std::three_way_comparable_with<T, U>)
+    requires(!is_indirect_v<U>)
   {
     if (lhs.valueless_after_move()) {
       return false <=> true;
@@ -308,7 +304,7 @@ class indirect {
   friend constexpr auto operator<=>(
       const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs <=> *rhs))
       -> std::compare_three_way_result_t<T, U>
-    requires(!is_indirect_v<U> && std::three_way_comparable_with<T, U>)
+    requires(!is_indirect_v<U>)
   {
     if (rhs.valueless_after_move()) {
       return true <=> false;
