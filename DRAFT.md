@@ -1188,23 +1188,20 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
 
 19. _Mandates_: `T` is a complete type.
 
-20. _Effects_: Constructs a polymorphic owning an instance of `T` created with the
-  copy constructor of the object owned by `other`. `allocator_` is
-  direct-non-list-initialized with alloc.
+20. _Effects_: TODO.
 
 ```c++
 constexpr polymorphic(polymorphic&& other) noexcept;
 ```
 
-21. _Effects_: Equivalent to `polymorphic(allocator_arg_t{}, Allocator(std::move(other.alloc_)), other)`.
+21. _Effects_: Equivalent to `polymorphic(allocator_arg_t{}, Allocator(other.alloc_), other)`.
 
 ```c++
 constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       polymorphic&& other) noexcept;
 ```
 
-22. _Effects_: Constructs a polymorphic that takes ownership of the object owned
-  by `other` if any. `allocator_` is direct-non-list-initialized with `alloc`.
+22. _Effects_: TODO.
 
 23. _Postconditions_: `other` is valueless.
 
