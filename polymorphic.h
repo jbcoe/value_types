@@ -112,9 +112,13 @@ class polymorphic {
   using pointer = typename allocator_traits::pointer;
   using const_pointer = typename allocator_traits::const_pointer;
 
-  explicit constexpr polymorphic() {
-    static_assert(std::is_default_constructible_v<T>);
-    static_assert(std::is_copy_constructible_v<T>);
+  // The template type TT defers the constraint evaluation until the constructor
+  // is instantiated.
+  template <typename TT = T>
+  explicit constexpr polymorphic()
+    requires(std::is_default_constructible_v<TT> &&
+             std::is_copy_constructible_v<TT>)
+  {
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
     using cb_traits = std::allocator_traits<cb_allocator>;
@@ -129,10 +133,13 @@ class polymorphic {
     }
   }
 
+  // The template type TT defers the constraint evaluation until the constructor
+  // is instantiated.
+  template <typename TT = T>
   explicit constexpr polymorphic(std::allocator_arg_t, const A& alloc)
+    requires(std::is_default_constructible_v<TT> &&
+             std::is_copy_constructible_v<TT>)
       : alloc_(alloc) {
-    static_assert(std::is_default_constructible_v<T>);
-    static_assert(std::is_copy_constructible_v<T>);
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
     using cb_traits = std::allocator_traits<cb_allocator>;

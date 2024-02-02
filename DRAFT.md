@@ -1108,30 +1108,34 @@ class polymorphic {
 explicit constexpr polymorphic()
 ```
 
-1. _Mandates_: `is_default_constructible_v<T>` is `true`,
-  `is_copy_constructible_v<T>` is `true` and `T` is a complete type.
+1. _Constraints_: `is_default_constructible_v<T>` is `true`,
+  `is_copy_constructible_v<T>` is `true`.
 
-2. _Effects_: Constructs a polymorphic owning a default constructed `T`.
+2. Mandates: `T` is a complete type.
+
+3. _Effects_: Constructs a polymorphic owning a default constructed `T`.
   `alloc` is default constructed.
 
-3. _Postconditions_: `*this` is not valueless.
+4. _Postconditions_: `*this` is not valueless.
 
-4. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
+5. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
   `allocator_traits<allocator_type>::construct` throws.
 
 ```c++
 explicit constexpr polymorphic(allocator_arg_t, const Allocator& alloc);
 ```
 
-5. _Mandates_: `is_default_constructible_v<T>` is `true`,
-  `is_copy_constructible_v<T>` is `true` and `T` is a complete type.
+6. _Constraints_: `is_default_constructible_v<T>` is `true`,
+  `is_copy_constructible_v<T>` is `true`.
 
-6. _Effects_: Constructs a polymorphic owning a default constructed `T`.
+7. _Mandates_: `T` is a complete type.
+
+8. _Effects_: Constructs a polymorphic owning a default constructed `T`.
    `alloc` is direct-non-list-initialized with alloc.
 
-7. _Postconditions_: `*this` is not valueless.
+9. _Postconditions_: `*this` is not valueless.
 
-8. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
+10. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
   `allocator_traits<allocator_type>::construct` throws.
 
 ```c++
@@ -1139,9 +1143,9 @@ template <class U, class... Ts>
 explicit constexpr polymorphic(in_place_type_t<U>, Ts&&... ts);
 ```
 
-9. _Mandates_: `T` is a complete type.
+11. _Mandates_: `T` is a complete type.
 
-10. _Effects_: Equivalent to `polymorphic(allocator_arg_t{}, Allocator(), in_place_type_t<U>{}, std::forward<Ts>(ts)...)`.
+12. _Effects_: Equivalent to `polymorphic(allocator_arg_t{}, Allocator(), in_place_type_t<U>{}, std::forward<Ts>(ts)...)`.
 
 ```c++
 template <class U, class... Ts>
@@ -1149,23 +1153,23 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       in_place_type_t<U>, Ts&&... ts);
 ```
 
-11. _Constraints_: `is_base_of_v<T, U>` is `true`  and `is_constructible_v<U, Ts...>` is
+13. _Constraints_: `is_base_of_v<T, U>` is `true`  and `is_constructible_v<U, Ts...>` is
   `true` and `is_copy_constructible_v<U>` is `true`.
 
-12. _Mandates_: `T` is a complete type.
+14. _Mandates_: `T` is a complete type.
 
-13. _Effects_: `alloc` is direct-non-list-initialized with `a`.
+15. _Effects_: `alloc` is direct-non-list-initialized with `a`.
 
-14. _Postconditions_: `*this` is not valueless.  The owned instance targets an object of type `U`
+16. _Postconditions_: `*this` is not valueless.  The owned instance targets an object of type `U`
   constructed  with `std::forward<Ts>(ts)...`.
 
 ```c++
 constexpr polymorphic(const polymorphic& other);
 ```
 
-15. _Mandates_: `T` is a complete type.
+17. _Mandates_: `T` is a complete type.
 
-16. _Effects_: Equivalent to
+18. _Effects_: Equivalent to
   `polymorphic(allocator_arg_t{}, allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc), other)`.
 
 ```c++
@@ -1173,9 +1177,9 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       const polymorphic& other);
 ```
 
-17. _Mandates_: `T` is a complete type.
+19. _Mandates_: `T` is a complete type.
 
-18. _Effects_: Constructs a polymorphic owning an instance of `T` created with the
+20. _Effects_: Constructs a polymorphic owning an instance of `T` created with the
   copy constructor of the object owned by `other`. `allocator_` is
   direct-non-list-initialized with alloc.
 
@@ -1183,22 +1187,22 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
 constexpr polymorphic(polymorphic&& other) noexcept;
 ```
 
-19. _Effects_: Equivalent to `polymorphic(allocator_arg_t{}, Allocator(std::move(other.alloc_)), other)`.
+21. _Effects_: Equivalent to `polymorphic(allocator_arg_t{}, Allocator(std::move(other.alloc_)), other)`.
 
 ```c++
 constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       polymorphic&& other) noexcept;
 ```
 
-20. _Effects_: Constructs a polymorphic that takes ownership of the object owned
+22. _Effects_: Constructs a polymorphic that takes ownership of the object owned
   by `other` if any. `allocator_` is direct-non-list-initialized with `alloc`.
 
-21. _Postconditions_: `other` is valueless.
+23. _Postconditions_: `other` is valueless.
 
-22. _[Note 1: This constructor does not require that `is_move_constructible_v<T>`
+24. _[Note 1: This constructor does not require that `is_move_constructible_v<T>`
   is `true`. --end note]_
 
-23. _[Note 2: The use of this function may require that `T` be a complete type
+25. _[Note 2: The use of this function may require that `T` be a complete type
     dependent on behavour of the allocator. — end note]_
 
 

@@ -78,6 +78,21 @@ class Derived : public Base {
   void set_value(int v) override { value_ = v; }
 };
 
+TEST(PolymorphicTraitsTest, DefaultConstructible) {
+  struct NoDefaultConstructor {
+    NoDefaultConstructor() = delete;
+  };
+
+  using NonDefaultConstructiblePolymorphic =
+      xyz::polymorphic<NoDefaultConstructor>;
+
+  static_assert(!std::is_default_constructible<NoDefaultConstructor>::value,
+                "");
+  static_assert(
+      !std::is_default_constructible<NonDefaultConstructiblePolymorphic>::value,
+      "");
+}
+
 TEST(PolymorphicTest, ValueAccessFromInPlaceConstructedObject) {
   xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
   EXPECT_EQ(a->value(), 42);
