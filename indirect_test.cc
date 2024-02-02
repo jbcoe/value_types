@@ -766,9 +766,10 @@ TEST(IndirectTest, InteractionWithUnorderedMap) {
 }
 
 TEST(IndirectTest, InteractionWithSizedAllocators) {
-  static_assert(sizeof(xyz::indirect<int>) == sizeof(int*));
-  static_assert(sizeof(xyz::indirect<int, xyz::TrackingAllocator<int>>) ==
-                sizeof(int*) + sizeof(xyz::TrackingAllocator<int>));
+  EXPECT_TRUE(xyz::static_test<sizeof(xyz::indirect<int>) == sizeof(int*)>());
+  EXPECT_TRUE(xyz::static_test<
+              sizeof(xyz::indirect<int, xyz::TrackingAllocator<int>>) ==
+              (sizeof(int*) + sizeof(xyz::TrackingAllocator<int>))>());
 }
 
 #ifdef XYZ_HAS_STD_MEMORY_RESOURCE
