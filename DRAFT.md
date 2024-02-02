@@ -44,6 +44,8 @@ should not be considered in isolation.
 
 ### Changes in R4
 
+* Use constraints to require that the object owned by `indirect` is copy-constructible.
+
 * Allow comparison of valueless `indirect` objects.
 
 * Remove `std::format` support for `std::indirect`.
@@ -161,12 +163,8 @@ by the owned object type `T`.
 * `indirect<T, Alloc>` and `polymorphic<T, Alloc>` are default constructible in
   cases where `T` is default constructible.
 
-* `indirect<T, Alloc>` is copy constructible and assignable where `T` is copy constructible and assignable.
-
-* `polymorphic<T, Alloc>` is unconditionally copy constructible and assignable.
-
-* `indirect<T, Alloc>` and `polymorphic<T, Alloc>` are unconditionally move
-  constructible and assignable.
+* `indirect<T, Alloc>` and `polymorphic<T, Alloc>` are unconditionally copy
+  constructible and assignable, move constructible and move assignable.
 
 * `indirect<T, Alloc>` and `polymorphic<T, Alloc>` destroy the owned object in
   their destructors.
@@ -244,15 +242,8 @@ Operations on a const-qualified object do not make changes to the object's
 logical state nor to the logical state of other objects.
 
 `indirect<T>` and `polymorphic<T>` are default constructible in cases where `T`
-is default constructible. Moving a value type into dynamically allocated storage should not add
-or remove the ability to be default constructed.
-
-Note that due to the requirement to support incomplete `T` types, the
-`indirect<T>` and `polymorphic<T>` types unconditionally have a
-default constructor (according to
-`std::is_default_constructible_v<indirect<T>>`). However, if `T` is not default
-constructible then attempting to odr-use the `indirect<T>` default constructor
-will be ill-formed.
+is default constructible. Moving a value type into dynamically allocated storage
+should not add or remove the ability to be default constructed.
 
 ### The valueless state and interaction with `std::optional`
 
@@ -652,28 +643,34 @@ indirect(std::allocator_arg_t, Alloc, Value) -> indirect<
 explicit constexpr indirect()
 ```
 
-1. _Mandates_: `is_default_constructible_v<T>` is true and `T` is a complete type.
+1. _Constraints_: `is_default_constructible_v<T>` is `true`.
+  `is_copy_constructible_v<T>` is `true`.
 
-2. _Effects_: Constructs an `indirect` owning a default constructed `T`
+2. _Mandates_: `T` is a complete type.
+
+3. _Effects_: Constructs an `indirect` owning a default constructed `T`
   and stores the address in `p`. `alloc` is default constructed.
 
-3. _Postconditions_: `*this` is not valueless.
+4. _Postconditions_: `*this` is not valueless.
 
-4. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
+5. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
   `allocator_traits<allocator_type>::construct` throws.
 
 ```c++
 explicit constexpr indirect(allocator_arg_t, const Allocator& alloc);
 ```
 
-5. _Mandates_: `is_default_constructible_v<T>` is `true` and `T` is a complete type.
+6. _Constraints_: `is_default_constructible_v<T>` is `true`.
+  `is_copy_constructible_v<T>` is `true`.
 
-6. _Effects_: Constructs an `indirect` owning a default constructed `T` and
+7. _Mandates_: `T` is a complete type.
+
+8. _Effects_: Constructs an `indirect` owning a default constructed `T` and
   stores the address in `p`. `alloc` is direct-non-list-initialized with `alloc`.
 
-7. _Postconditions_: `*this` is not valueless.
+9. _Postconditions_: `*this` is not valueless.
 
-8. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
+10. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
   `allocator_traits<allocator_type>::construct` throws.
 
 ```c++
@@ -681,63 +678,65 @@ template <class U, class... Us>
 explicit constexpr indirect(U&& u, Us&&... us);
 ```
 
-9. _Constraints_: `is_constructible_v<T, U, Us...>` is `true`.
+11. _Constraints_: `is_constructible_v<T, U, Us...>` is `true`.
+   `is_copy_constructible_v<T>` is `true`.
    `is_same_v<remove_cvref_t<U>, allocator_arg_t>` is `false`.
    `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
 
-10. _Mandates_: `T` is a complete type.
+12. _Mandates_: `T` is a complete type.
 
-11. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(), std::forward<U>(u), std::forward<Us>(us)...)`.
+13. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(), std::forward<U>(u), std::forward<Us>(us)...)`.
 
 ```c++
 template <class U, class... Us>
 explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u, Us&& ...us);
 ```
 
-12. _Constraints_: `is_constructible_v<T, U, Us...>` is `true`.
-  `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
+14. _Constraints_: `is_constructible_v<T, U, Us...>` is `true`.
+  `is_copy_constructible_v<T>` is `true`.
+  `is_same_v<remove_cvref_t<U>, indirect>` is `false`, .
 
-13. _Mandates_: `T` is a complete type.
+15. _Mandates_: `T` is a complete type.
 
-14. _Effects_: `alloc` is direct-non-list-initialized with `a`.
+16. _Effects_: `alloc` is direct-non-list-initialized with `a`.
 
     DRAFTING NOTE: based on https://eel.is/c++draft/func.wrap#func.con-6
 
-15. _Postconditions_: `*this` is not valueless.  `p_` targets an object of type `T`
+17. _Postconditions_: `*this` is not valueless.  `p_` targets an object of type `T`
   constructed with `std::forward<U>(u)`, `std::forward<Us>(us)...`.
 
 ```c++
 constexpr indirect(const indirect& other);
 ```
 
-16. _Mandates_: `is_copy_constructible_v<T>` is `true` and `T` is a complete type.
+18. _Mandates_: `T` is a complete type.
 
-17. _Effects_: Equivalent to
+19. _Effects_: Equivalent to
   `indirect(allocator_arg, allocator_traits<allocator_type>::select_on_container_copy_construction(other.get_allocator()), *other)`.
 `
-18. _Postconditions_: `*this` is not valueless.
+20. _Postconditions_: `*this` is not valueless.
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& alloc,
                    const indirect& other);
 ```
 
-19. _Mandates_: `is_copy_constructible_v<T>` is `true` and `T` is a complete type.
+21. _Mandates_: `T` is a complete type.
 
-20. _Effects_: Equivalent to `indirect(allocator_arg, alloc, *other)`.
+22. _Effects_: Equivalent to `indirect(allocator_arg, alloc, *other)`.
 
 ```c++
 constexpr indirect(indirect&& other) noexcept;
 ```
 
-21. _Effects_: Constructs an `indirect` that takes ownership of the `other`'s
+23. _Effects_: Constructs an `indirect` that takes ownership of the `other`'s
     owned object and stores the address in `p_`. `allocator_` is initialized by
     construction from `other.allocator_`.
 
-22. _[Note 1: This constructor does not require that `is_move_constructible_v<T>`
+24. _[Note 1: This constructor does not require that `is_move_constructible_v<T>`
   is `true` --end note]_
 
-23. _[Note 2: The use of this function may require that `T` be a complete type
+25. _[Note 2: The use of this function may require that `T` be a complete type
     dependent on behaviour of the allocator. — end note]_
 
 ```c++
@@ -745,14 +744,14 @@ constexpr indirect(allocator_arg_t, const Allocator& alloc, indirect&& other)
   noexcept(allocator_traits<Allocator>::is_always_equal);
 ```
 
-24. _Effects_: If `alloc == other.get_allocator()` is `true` then equivalent to `indirect(std::move(other))`,
+26. _Effects_: If `alloc == other.get_allocator()` is `true` then equivalent to `indirect(std::move(other))`,
   otherwise, equivalent to `indirect(allocator_arg, alloc, *std::move(other))`.
 
-25. _Postconditions_: `other` is valueless.
+27. _Postconditions_: `other` is valueless.
 
-26. _[Note 1: This constructor does not require that `is_move_constructible_v<T>` is `true` --end note]_
+28. _[Note 1: This constructor does not require that `is_move_constructible_v<T>` is `true` --end note]_
 
-27. _[Note 2: The use of this function may require that `T` be a complete type
+29. _[Note 2: The use of this function may require that `T` be a complete type
     dependent on behaviour of the allocator. — end note]_
 
 #### X.Y.4 Destructor [indirect.dtor]
@@ -773,7 +772,7 @@ constexpr ~indirect();
 constexpr indirect& operator=(const indirect& other);
 ```
 
-1. _Mandates_: `is_copy_constructible_v<T>` is `true` and `T` is a complete type.
+1. _Mandates_: `T` is a complete type.
 
 2. _Effects_: If `this == &other` is `true`, then has no effects.
   Otherwise, if either:
