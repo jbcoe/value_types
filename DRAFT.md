@@ -419,6 +419,20 @@ Not marking `operator->` and `operator*` as `noexcept` for `indirect` and
 `polymorphic` would make them strictly less useful than `unique_ptr` in contexts
 where they would otherwise be a valid replacement.
 
+### Explicit constructors
+
+Constructors for `indirect` and `polymorphic` are marked as explicit. This
+disallows “implicit conversion” from single arguments or braced initializers.
+Given both `indirect` and `polymorphic` use dynamically-allocated storage, there
+are no instances where an object could be considered semantically equivalent to
+its constructor arguments (unlike `pair` or `variant`). To construct an
+`indirect` or `polymorphic` object, and with it use dynamically allocate memory,
+the user must explicitly use a constructor.
+
+With some suitably compelling motivation, the `explicit` keyword could be
+removed from some constructors in a later revision of the C++ standard without
+rendering code ill-formed.
+
 ### Design for polymorphic types
 
 A type `PolymorphicInterface` used as a base class with `polymorphic` does not
@@ -1730,3 +1744,4 @@ of these changes on users could be potentially significant and unwelcome.
 |`noexcept` for accessors|Accessors are `noexcept` like `unique_ptr` and `optional`| Remove `noexcept` from accessors | User functions marked `noexcept` could be broken | Yes |
 |Specialization of optional|No specialization of optional|Specialize optional to use valueless state| Breaks ABI; engaged but valueless optional would become indistinguishable from a disengaged optional| Yes |
 |Permit user specialization|No user specialization is permitted|Permit specialization for user-defined types| Previously ill-formed code would become well-formed| No |
+|Explicit constructors|Constructors are marked `explicit`|Non-explicit constructors|Conversion for single arguments or braced initializers becomes valid| No |
