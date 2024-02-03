@@ -59,7 +59,7 @@ cc_test(
     size = "small",
     srcs = [
         "indirect_test.cc",
-        "test_helpers.h
+        "test_helpers.h",
         "tracking_allocator.h"
     ],
     deps = [
