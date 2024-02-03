@@ -52,6 +52,21 @@ cc_test(
     copts = ["-std=c++14"],
 )
 
+cc_test(
+    name = "indirect_cxx17_test",
+    size = "small",
+    srcs = [
+        "indirect_test.cc",
+        "tracking_allocator.h"
+    ],
+    deps = [
+        "feature_check",
+        "indirect_cxx14",
+        "@com_google_googletest//:gtest_main",
+    ],
+    copts = ["-std=c++17"],
+)
+
 cc_library(
     name = "polymorphic",
     hdrs = ["polymorphic.h"],
@@ -94,6 +109,21 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
     copts = ["-std=c++14"],
+)
+
+cc_test(
+    name = "polymorphic_cxx17_test",
+    size = "small",
+    srcs = [
+        "polymorphic_test.cc",
+        "tracking_allocator.h"
+    ],
+    deps = [
+        "feature_check",
+        "polymorphic_cxx14",
+        "@com_google_googletest//:gtest_main",
+    ],
+    copts = ["-std=c++17"],
 )
 
 cc_library(

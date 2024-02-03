@@ -26,6 +26,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <type_traits>
 #include <utility>
 
+#include "feature_check.h"
+
 namespace xyz {
 
 #ifndef XYZ_UNREACHABLE_DEFINED
@@ -477,6 +479,15 @@ class indirect : private detail::empty_base_optimization<A> {
     allocator_traits::deallocate(alloc, p, 1);
   }
 };
+
+#ifdef XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
+template <typename Value>
+indirect(Value) -> indirect<Value>;
+
+template <typename Alloc, typename Value>
+indirect(std::allocator_arg_t, Alloc, Value) -> indirect<
+    Value, typename std::allocator_traits<Alloc>::template rebind_alloc<Value>>;
+#endif  // XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
 
 }  // namespace xyz
 
