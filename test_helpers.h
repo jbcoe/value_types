@@ -25,7 +25,7 @@ namespace xyz {
 
 template <bool B>
 constexpr bool static_test() {
-  static_assert(B);
+  static_assert(B, "");
   return B;
 }
 
