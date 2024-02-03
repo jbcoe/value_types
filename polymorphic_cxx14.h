@@ -29,13 +29,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef XYZ_IN_PLACE_TYPE_DEFINED
 #define XYZ_IN_PLACE_TYPE_DEFINED
 namespace xyz {
-
 template <class T>
 struct in_place_type_t {};
+}  // namespace xyz
 #endif  // XYZ_IN_PLACE_TYPE_DEFINED
 
 #ifndef XYZ_UNREACHABLE_DEFINED
 #define XYZ_UNREACHABLE_DEFINED
+namespace xyz {
 [[noreturn]] inline void unreachable() {  // LCOV_EXCL_LINE
 #if (__cpp_lib_unreachable >= 202202L)
   std::unreachable();  // LCOV_EXCL_LINE
@@ -45,6 +46,7 @@ struct in_place_type_t {};
   __builtin_unreachable();  // LCOV_EXCL_LINE
 #endif
 }
+}  // namespace xyz
 #endif  // XYZ_UNREACHABLE_DEFINED
 
 #ifndef XYZ_EMPTY_BASE_DEFINED
@@ -55,6 +57,7 @@ struct in_place_type_t {};
 // We duplicate implementations to allow this header to work as a single
 // include. https://godbolt.org needs single-file includes.
 // TODO: Add tests to keep implementations in sync.
+namespace xyz {
 namespace detail {
 template <class T, bool CanBeEmptyBaseClass =
                        std::is_empty<T>::value && !std::is_final<T>::value>
@@ -78,8 +81,10 @@ class empty_base_optimization<T, true> : private T {
   const T& get() const noexcept { return *this; }
 };
 }  // namespace detail
+}  // namespace xyz
 #endif  // XYZ_EMPTY_BASE_DEFINED
 
+namespace xyz {
 namespace detail {
 template <class T, class A>
 struct control_block {

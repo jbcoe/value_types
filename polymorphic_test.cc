@@ -42,7 +42,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "feature_check.h"
 #include "tracking_allocator.h"
-#ifdef XYZ_HAS_STD_IN_PLACE_TYPE_T
+#if defined(XYZ_HAS_STD_IN_PLACE_TYPE_T) && !defined(XYZ_POLYMORPHIC_CXX_14)
 namespace xyz {
 using std::in_place_type_t;
 }  // namespace xyz
