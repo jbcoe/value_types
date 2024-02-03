@@ -662,11 +662,11 @@ explicit constexpr indirect()
 
 1. _Constraints_: `is_default_constructible_v<T>` is `true`.
   `is_copy_constructible_v<T>` is `true`.
+  `is_default_constructible_v<allocator_type>` is `true`.
 
 2. _Mandates_: `T` is a complete type.
 
-3. _Effects_: Constructs an `indirect` owning a default constructed `T`
-  and stores the address in `p`. `alloc` is default constructed.
+3. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator())`.
 
 4. _Postconditions_: `*this` is not valueless.
 
@@ -682,8 +682,8 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& alloc);
 
 7. _Mandates_: `T` is a complete type.
 
-8. _Effects_: Constructs an `indirect` owning a default constructed `T` and
-  stores the address in `p`. `alloc` is direct-non-list-initialized with `alloc`.
+8. _Effects_: `allocator` is direct-non-list-initialized with `alloc`. Value
+   initializes an owned object of type `T` using the specified allocator.
 
 9. _Postconditions_: `*this` is not valueless.
 
@@ -699,6 +699,7 @@ explicit constexpr indirect(U&& u, Us&&... us);
    `is_copy_constructible_v<T>` is `true`.
    `is_same_v<remove_cvref_t<U>, allocator_arg_t>` is `false`.
    `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
+   `is_default_constructible_v<allocator_type>` is `true`.
 
 12. _Mandates_: `T` is a complete type.
 
@@ -715,12 +716,11 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u, Us&& ...
 
 15. _Mandates_: `T` is a complete type.
 
-16. _Effects_: `alloc` is direct-non-list-initialized with `a`.
+16. _Effects_: `allocator` is direct-non-list-initialized with `alloc`.
+    Direct-non-list-initializes an owned object of type `T` using the specified
+    allocator with `std::forward<U>(u), std​::​forward<Us>(us...)`.
 
-    DRAFTING NOTE: based on https://eel.is/c++draft/func.wrap#func.con-6
-
-17. _Postconditions_: `*this` is not valueless.  `p_` targets an object of type `T`
-  constructed with `std::forward<U>(u)`, `std::forward<Us>(us)...`.
+17. _Postconditions_: `*this` is not valueless.
 
 ```c++
 constexpr indirect(const indirect& other);
@@ -728,32 +728,29 @@ constexpr indirect(const indirect& other);
 
 18. _Mandates_: `T` is a complete type.
 
-19. _Effects_: Equivalent to
-  `indirect(allocator_arg, allocator_traits<allocator_type>::select_on_container_copy_construction(other.get_allocator()), *other)`.
-`
-20. _Postconditions_: `*this` is not valueless.
+19. _Effects_: Equivalent to `indirect(allocator_arg_t{}, allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc), other)`
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& alloc,
                    const indirect& other);
 ```
 
-21. _Mandates_: `T` is a complete type.
+20. _Mandates_: `T` is a complete type.
 
-22. _Effects_: Equivalent to `indirect(allocator_arg, alloc, *other)`.
+21. _Effects_: `allocator` is direct-non-list-initialized with `alloc`.
+    If `other` is valueless, `*this` is valueless. Otherwise, copy constructs
+    an owned object of type `T` using the specified allocator with `*other`.
 
 ```c++
 constexpr indirect(indirect&& other) noexcept;
 ```
 
-23. _Effects_: Constructs an `indirect` that takes ownership of the `other`'s
-    owned object and stores the address in `p_`. `allocator_` is initialized by
-    construction from `other.allocator_`.
+22. _Effects_: Equivalent to `indirect(allocator_arg_t{}, other.alloc, std::move(other))`.
 
-24. _[Note 1: This constructor does not require that `is_move_constructible_v<T>`
+23. _[Note 1: This constructor does not require that `is_move_constructible_v<T>`
   is `true` --end note]_
 
-25. _[Note 2: The use of this function may require that `T` be a complete type
+24. _[Note 2: The use of this function may require that `T` be a complete type
     dependent on behaviour of the allocator. — end note]_
 
 ```c++
@@ -761,15 +758,13 @@ constexpr indirect(allocator_arg_t, const Allocator& alloc, indirect&& other)
   noexcept(allocator_traits<Allocator>::is_always_equal);
 ```
 
-26. _Effects_: If `alloc == other.get_allocator()` is `true` then equivalent to `indirect(std::move(other))`,
-  otherwise, equivalent to `indirect(allocator_arg, alloc, *std::move(other))`.
+25. _Effects_: `allocator` is direct-non-list-initialized with `alloc`. If
+    `other` is valueless, `*this` is valueless. Otherwise, constructs an object
+    of type `indirect` that owns the owned value of other; `other` is valueless.
 
-27. _Postconditions_: `other` is valueless.
+26. _Postconditions_: `other` is valueless.
 
-28. _[Note 1: This constructor does not require that `is_move_constructible_v<T>` is `true` --end note]_
-
-29. _[Note 2: The use of this function may require that `T` be a complete type
-    dependent on behaviour of the allocator. — end note]_
+27. _[Note 1: This constructor does not require that `is_move_constructible_v<T>` is `true` --end note]_
 
 #### X.Y.4 Destructor [indirect.dtor]
 
@@ -1127,11 +1122,11 @@ explicit constexpr polymorphic()
 
 1. _Constraints_: `is_default_constructible_v<T>` is `true`,
   `is_copy_constructible_v<T>` is `true`.
+  `is_default_constructible_v<allocator_type>` is `true`.
 
 2. Mandates: `T` is a complete type.
 
-3. _Effects_: Constructs a polymorphic owning a default constructed `T`.
-  `alloc` is default constructed.
+3. _Effects_: Equivalent to `polymorphic(allocator_arg_t{}, Allocator())`.
 
 4. _Postconditions_: `*this` is not valueless.
 
@@ -1147,8 +1142,8 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& alloc);
 
 7. _Mandates_: `T` is a complete type.
 
-8. _Effects_: Constructs a polymorphic owning a default constructed `T`.
-   `alloc` is direct-non-list-initialized with alloc.
+8. _Effects_: `allocator` is direct-non-list-initialized with `alloc`. Value
+initializes an owned object of type `T` using the specified allocator.
 
 9. _Postconditions_: `*this` is not valueless.
 
@@ -1160,6 +1155,11 @@ template <class U, class... Ts>
 explicit constexpr polymorphic(in_place_type_t<U>, Ts&&... ts);
 ```
 
+11. _Constraints_: `is_base_of_v<T, U>` is `true`.
+  `is_constructible_v<U, Ts...>` is `true`.
+  `is_copy_constructible_v<U>` is `true`.
+  `is_default_constructible_v<allocator_type>` is `true`.
+
 11. _Mandates_: `T` is a complete type.
 
 12. _Effects_: Equivalent to `polymorphic(allocator_arg_t{}, Allocator(), in_place_type_t<U>{}, std::forward<Ts>(ts)...)`.
@@ -1170,12 +1170,14 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       in_place_type_t<U>, Ts&&... ts);
 ```
 
-13. _Constraints_: `is_base_of_v<T, U>` is `true`  and `is_constructible_v<U, Ts...>` is
+13. _Constraints_: `is_base_of_v<T, U>` is `true` and `is_constructible_v<U, Ts...>` is
   `true` and `is_copy_constructible_v<U>` is `true`.
 
 14. _Mandates_: `T` is a complete type.
 
-15. _Effects_: `alloc` is direct-non-list-initialized with `a`.
+15. _Effects_: `allocator` is direct-non-list-initialized with `alloc`.
+    Direct-non-list-initializes an owned object of type `U` using the specified
+    allocator with `std​::​forward<Ts>(ts...)`.
 
 16. _Postconditions_: `*this` is not valueless.  The owned instance targets an object of type `U`
   constructed  with `std::forward<Ts>(ts)...`.
@@ -1196,30 +1198,33 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
 
 19. _Mandates_: `T` is a complete type.
 
-20. _Effects_: Constructs a polymorphic owning an instance of `T` created with the
-  copy constructor of the object owned by `other`. `allocator_` is
-  direct-non-list-initialized with alloc.
+20. _Effects_: `allocator` is direct-non-list-initialized with `alloc`. If
+    `other` is valueless, `*this` is valueless. Otherwise, copy constructs an
+    owned object of type `U`, where `U` is the type of the owned object in
+    `other`, using the specified allocator with the owned object in `other`.
 
 ```c++
 constexpr polymorphic(polymorphic&& other) noexcept;
 ```
 
-21. _Effects_: Equivalent to `polymorphic(allocator_arg_t{}, Allocator(std::move(other.alloc_)), other)`.
+21. _Effects_: Equivalent to `polymorphic(allocator_arg_t{}, Allocator(other.alloc_), other)`.
 
 ```c++
 constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       polymorphic&& other) noexcept;
 ```
 
-22. _Effects_: Constructs a polymorphic that takes ownership of the object owned
-  by `other` if any. `allocator_` is direct-non-list-initialized with `alloc`.
+22. _Effects_: `allocator` is direct-non-list-initialized with `alloc`. If
+    `other` is valueless, `*this` is valueless. Otherwise, constructs an object
+    of type `polymorphic` that either owns the owned value of other, making
+    `other` valueless; or, owns an object of the same type constructed from
+    the owned value of `other` using the specified allocator, considering that
+    owned value as an rvalue
 
-23. _Postconditions_: `other` is valueless.
-
-24. _[Note 1: This constructor does not require that `is_move_constructible_v<T>`
+23. _[Note 1: This constructor does not require that `is_move_constructible_v<T>`
   is `true`. --end note]_
 
-25. _[Note 2: The use of this function may require that `T` be a complete type
+24. _[Note 2: The use of this function may require that `T` be a complete type
     dependent on behavour of the allocator. — end note]_
 
 
