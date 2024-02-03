@@ -17,6 +17,7 @@ cc_test(
     size = "small",
     srcs = [
         "indirect_test.cc",
+        "test_helpers.h",
         "tracking_allocator.h"
     ],
     deps = [
@@ -42,6 +43,7 @@ cc_test(
     size = "small",
     srcs = [
         "indirect_test.cc",
+        "test_helpers.h",
         "tracking_allocator.h"
     ],
     deps = [
@@ -64,6 +66,7 @@ cc_test(
     size = "small",
     srcs = [
         "polymorphic_test.cc",
+        "test_helpers.h",
         "tracking_allocator.h"
     ],
     deps = [
@@ -86,6 +89,7 @@ cc_test(
     size = "small",
     srcs = [
         "polymorphic_test.cc",
+        "test_helpers.h",
         "tracking_allocator.h"
     ],
     deps = [
@@ -109,6 +113,7 @@ cc_test(
     size = "small",
     srcs = [
         "polymorphic_test.cc",
+        "test_helpers.h",
         "tracking_allocator.h"
     ],
     tags = ["manual"],
@@ -132,6 +137,7 @@ cc_test(
     size = "small",
     srcs = [
         "polymorphic_test.cc",
+        "test_helpers.h",
         "tracking_allocator.h"
     ],
     tags = ["manual"],
