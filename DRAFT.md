@@ -727,7 +727,6 @@ constexpr indirect(const indirect& other);
 ```
 
 18. _Effects_: Equivalent to `indirect(allocator_arg_t{}, allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc), other)`
-18. _Effects_: Equivalent to `indirect(allocator_arg_t{}, allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc), other)`
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& alloc,
