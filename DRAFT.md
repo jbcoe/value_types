@@ -756,9 +756,7 @@ constexpr indirect(allocator_arg_t, const Allocator& alloc, indirect&& other)
 
 23. _Postconditions_: `other` is valueless.
 
-24. _[Note 1: This constructor does not require that `is_move_constructible_v<T>` is `true` --end note]_
-
-25. _[Note 2: The use of this function may require that `T` be a complete type
+24. _[Note: The use of this function may require that `T` be a complete type
     dependent on behavour of the allocator. — end note]_
 
 #### X.Y.4 Destructor [indirect.dtor]
@@ -1214,10 +1212,7 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
     the owned value of `other` using the specified allocator, considering that
     owned value as an rvalue.
 
-22. _[Note 1: This constructor does not require that `is_move_constructible_v<T>`
-  is `true`. --end note]_
-
-23. _[Note 2: The use of this function may require that `T` be a complete type
+22. _[Note: The use of this function may require that `T` be a complete type
     dependent on behavour of the allocator. — end note]_
 
 

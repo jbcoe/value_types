@@ -124,16 +124,33 @@ class indirect {
     p_ = construct_from(alloc_, *other);
   }
 
-  constexpr indirect(indirect&& other) noexcept
+  constexpr indirect(indirect&& other) noexcept(
+      allocator_traits::is_always_equal::value)
       : p_(nullptr), alloc_(other.alloc_) {
-    std::swap(p_, other.p_);
+    if constexpr (allocator_traits::is_always_equal::value) {
+      std::swap(p_, other.p_);
+    } else {
+      if (alloc_ == other.alloc_) {
+        std::swap(p_, other.p_);
+      } else {
+        p_ = construct_from(alloc_, std::move(*other));
+      }
+    }
   }
 
   constexpr indirect(
       std::allocator_arg_t, const A& alloc,
       indirect&& other) noexcept(allocator_traits::is_always_equal::value)
       : p_(nullptr), alloc_(alloc) {
-    std::swap(p_, other.p_);
+    if constexpr (allocator_traits::is_always_equal::value) {
+      std::swap(p_, other.p_);
+    } else {
+      if (alloc_ == other.alloc_) {
+        std::swap(p_, other.p_);
+      } else {
+        p_ = construct_from(alloc_, std::move(*other));
+      }
+    }
   }
 
   constexpr ~indirect() { reset(); }
