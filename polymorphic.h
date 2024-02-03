@@ -131,27 +131,6 @@ class polymorphic {
   // The template type TT defers the constraint evaluation until the constructor
   // is instantiated.
   template <typename TT = T>
-  explicit constexpr polymorphic()
-    requires(std::is_default_constructible_v<TT> &&
-             std::is_copy_constructible_v<TT>)
-  {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
-    using cb_traits = std::allocator_traits<cb_allocator>;
-    cb_allocator cb_alloc(alloc_);
-    auto mem = cb_traits::allocate(cb_alloc, 1);
-    try {
-      cb_traits::construct(cb_alloc, mem);
-      cb_ = mem;
-    } catch (...) {
-      cb_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
-  }
-
-  // The template type TT defers the constraint evaluation until the constructor
-  // is instantiated.
-  template <typename TT = T>
   explicit constexpr polymorphic(std::allocator_arg_t, const A& alloc)
     requires(std::is_default_constructible_v<TT> &&
              std::is_copy_constructible_v<TT>)
@@ -170,24 +149,13 @@ class polymorphic {
     }
   }
 
-  template <class U, class... Ts>
-  explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts)
-    requires std::constructible_from<U, Ts&&...> &&
-             std::copy_constructible<U> && std::derived_from<U, T>
-  {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
-    using cb_traits = std::allocator_traits<cb_allocator>;
-    cb_allocator cb_alloc(alloc_);
-    auto mem = cb_traits::allocate(cb_alloc, 1);
-    try {
-      cb_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
-      cb_ = mem;
-    } catch (...) {
-      cb_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
-  }
+  // The template type TT defers the constraint evaluation until the constructor
+  // is instantiated.
+  template <typename TT = T>
+  explicit constexpr polymorphic()
+    requires(std::is_default_constructible_v<TT> &&
+             std::is_copy_constructible_v<TT>)
+      : polymorphic(std::allocator_arg_t{}, A{}) {}
 
   template <class U, class... Ts>
   explicit constexpr polymorphic(std::allocator_arg_t, const A& alloc,
@@ -210,15 +178,12 @@ class polymorphic {
     }
   }
 
-  constexpr polymorphic(const polymorphic& other)
-      : alloc_(allocator_traits::select_on_container_copy_construction(
-            other.alloc_)) {
-    if (!other.valueless_after_move()) {
-      cb_ = other.cb_->clone(alloc_);
-    } else {
-      cb_ = nullptr;
-    }
-  }
+  template <class U, class... Ts>
+  explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts)
+    requires std::constructible_from<U, Ts&&...> &&
+             std::copy_constructible<U> && std::derived_from<U, T>
+      : polymorphic(std::allocator_arg_t{}, A{}, std::in_place_type<U>,
+                    std::forward<Ts>(ts)...) {}
 
   constexpr polymorphic(std::allocator_arg_t, const A& alloc,
                         const polymorphic& other)
@@ -230,23 +195,11 @@ class polymorphic {
     }
   }
 
-  constexpr polymorphic(polymorphic&& other) noexcept(
-      allocator_traits::is_always_equal::value)
-      : alloc_(other.alloc_) {
-    if constexpr (allocator_traits::is_always_equal::value) {
-      cb_ = std::exchange(other.cb_, nullptr);
-    } else {
-      if (alloc_ == other.alloc_) {
-        cb_ = std::exchange(other.cb_, nullptr);
-      } else {
-        if (!other.valueless_after_move()) {
-          cb_ = other.cb_->move(alloc_);
-        } else {
-          cb_ = nullptr;
-        }
-      }
-    }
-  }
+  constexpr polymorphic(const polymorphic& other)
+      : polymorphic(std::allocator_arg_t{},
+                    allocator_traits::select_on_container_copy_construction(
+                        other.alloc_),
+                    other) {}
 
   constexpr polymorphic(
       std::allocator_arg_t, const A& alloc,
@@ -266,6 +219,10 @@ class polymorphic {
       }
     }
   }
+
+  constexpr polymorphic(polymorphic&& other) noexcept(
+      allocator_traits::is_always_equal::value)
+      : polymorphic(std::allocator_arg_t{}, other.alloc_, std::move(other)) {}
 
   constexpr ~polymorphic() { reset(); }
 

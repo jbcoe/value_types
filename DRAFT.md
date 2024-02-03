@@ -727,6 +727,7 @@ constexpr indirect(const indirect& other);
 ```
 
 18. _Effects_: Equivalent to `indirect(allocator_arg_t{}, allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc), other)`
+18. _Effects_: Equivalent to `indirect(allocator_arg_t{}, allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc), other)`
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& alloc,
@@ -751,12 +752,12 @@ constexpr indirect(allocator_arg_t, const Allocator& alloc, indirect&& other)
 ```
 
 22. _Effects_: `allocator` is direct-non-list-initialized with `alloc`. If
-    `other` is valueless, `*this` is valueless. Otherwise, constructs an object
-    of type `indirect` that owns the owned value of other; `other` is valueless.
+    `other` is valueless, `*this` is valueless. Otherwise, if `alloc ==
+    other.alloc` constructs an object of type `indirect` that owns the owned
+    value of other; `other` is valueless. Otherwise constructs an object of type
+    `indirect` using the specified allocator with `*other` used as an rvalue.
 
-23. _Postconditions_: `other` is valueless.
-
-24. _[Note: The use of this function may require that `T` be a complete type
+23. _[Note: The use of this function may require that `T` be a complete type
     dependent on behavour of the allocator. — end note]_
 
 #### X.Y.4 Destructor [indirect.dtor]
@@ -1206,11 +1207,13 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
 ```
 
 21. _Effects_: `allocator` is direct-non-list-initialized with `alloc`. If
-    `other` is valueless, `*this` is valueless. Otherwise, constructs an object
-    of type `polymorphic` that either owns the owned value of other, making
-    `other` valueless; or, owns an object of the same type constructed from
-    the owned value of `other` using the specified allocator, considering that
-    owned value as an rvalue.
+    `other` is valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc`
+    either constructs an object of type `polymorphic` that owns the owned value
+    of other, making`other` is valueless; or, owns an object of the same type
+    constructed from the owned value of `other` using the specified allocator,
+    considering that owned value as an rvalue. Otherwise constructs an object of
+    type `polymorphic` using the specified allocator, considering that owned
+    value as an rvalue.
 
 22. _[Note: The use of this function may require that `T` be a complete type
     dependent on behavour of the allocator. — end note]_

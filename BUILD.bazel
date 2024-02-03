@@ -22,6 +22,11 @@ cc_library(
     hdrs = ["tracking_allocator.h"],
 )
 
+cc_library(
+    name = "test_helpers",
+    hdrs = ["test_helpers.h"],
+)
+
 cc_test(
     name = "indirect_test",
     size = "small",
@@ -32,6 +37,7 @@ cc_test(
         "feature_check",
         "indirect",
         "tagged_allocator",
+        "test_helpers",
         "tracking_allocator",
         "@com_google_googletest//:gtest_main",
     ],
@@ -59,6 +65,7 @@ cc_test(
         "feature_check",
         "indirect_cxx14",
         "tagged_allocator",
+        "test_helpers",
         "tracking_allocator",
         "@com_google_googletest//:gtest_main",
     ],
@@ -75,6 +82,7 @@ cc_test(
         "feature_check",
         "indirect_cxx14",
         "tagged_allocator",
+        "test_helpers",
         "tracking_allocator",
         "@com_google_googletest//:gtest_main",
     ],
@@ -97,6 +105,7 @@ cc_test(
         "feature_check",
         "polymorphic",
         "tagged_allocator",
+        "test_helpers",
         "tracking_allocator",
         "@com_google_googletest//:gtest_main",
     ],
@@ -121,6 +130,7 @@ cc_test(
         "feature_check",
         "polymorphic_cxx14",
         "tagged_allocator",
+        "test_helpers",
         "tracking_allocator",
         "@com_google_googletest//:gtest_main",
     ],
@@ -137,6 +147,7 @@ cc_test(
         "feature_check",
         "polymorphic_cxx14",
         "tagged_allocator",
+        "test_helpers",
         "tracking_allocator",
         "@com_google_googletest//:gtest_main",
     ],
@@ -161,6 +172,7 @@ cc_test(
         "feature_check",
         "polymorphic_inline_vtable",
         "tagged_allocator",
+        "test_helpers",
         "tracking_allocator",
         "@com_google_googletest//:gtest_main",
     ],
@@ -185,6 +197,7 @@ cc_test(
         "feature_check",
         "polymorphic_sbo",
         "tagged_allocator",
+        "test_helpers",
         "tracking_allocator",
         "@com_google_googletest//:gtest_main",
     ],

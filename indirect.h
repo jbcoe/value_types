@@ -66,15 +66,8 @@ class indirect {
   using pointer = typename allocator_traits::pointer;
   using const_pointer = typename allocator_traits::const_pointer;
 
-  template <class TT = T>
-  explicit constexpr indirect()
-    requires(std::is_default_constructible_v<A> &&
-             std::is_default_constructible_v<TT> &&
-             std::is_copy_constructible_v<TT>)
-  {
-    p_ = construct_from(alloc_);
-  }
-
+  // The template type TT defers the constraint evaluation until the constructor
+  // is instantiated.
   template <class TT = T>
   explicit constexpr indirect(std::allocator_arg_t, const A& alloc)
     requires(std::is_default_constructible_v<TT> &&
@@ -83,17 +76,17 @@ class indirect {
     p_ = construct_from(alloc_);
   }
 
-  template <class U, class... Us, class TT = T>
-  explicit constexpr indirect(U&& u, Us&&... us)
-    requires(std::constructible_from<T, U &&, Us && ...> &&
-             std::is_default_constructible_v<A> &&
-             !std::is_same_v<std::remove_cvref_t<U>, indirect> &&
-             !std::is_same_v<std::remove_cvref_t<U>, std::allocator_arg_t> &&
+  // The template type TT defers the constraint evaluation until the constructor
+  // is instantiated.
+  template <class TT = T>
+  explicit constexpr indirect()
+    requires(std::is_default_constructible_v<A> &&
+             std::is_default_constructible_v<TT> &&
              std::is_copy_constructible_v<TT>)
-  {
-    p_ = construct_from(alloc_, std::forward<U>(u), std::forward<Us>(us)...);
-  }
+      : indirect(std::allocator_arg, A{}) {}
 
+  // The template type TT defers the constraint evaluation until the constructor
+  // is instantiated.
   template <class U, class... Us, class TT = T>
   explicit constexpr indirect(std::allocator_arg_t, const A& alloc, U&& u,
                               Us&&... us)
@@ -104,15 +97,17 @@ class indirect {
     p_ = construct_from(alloc_, std::forward<U>(u), std::forward<Us>(us)...);
   }
 
-  constexpr indirect(const indirect& other)
-      : alloc_(allocator_traits::select_on_container_copy_construction(
-            other.alloc_)) {
-    if (other.valueless_after_move()) {
-      p_ = nullptr;
-      return;
-    }
-    p_ = construct_from(alloc_, *other);
-  }
+  // The template type TT defers the constraint evaluation until the constructor
+  // is instantiated.
+  template <class U, class... Us, class TT = T>
+  explicit constexpr indirect(U&& u, Us&&... us)
+    requires(std::constructible_from<T, U &&, Us && ...> &&
+             std::is_default_constructible_v<A> &&
+             !std::is_same_v<std::remove_cvref_t<U>, indirect> &&
+             !std::is_same_v<std::remove_cvref_t<U>, std::allocator_arg_t> &&
+             std::is_copy_constructible_v<TT>)
+      : indirect(std::allocator_arg, A{}, std::forward<U>(u),
+                 std::forward<Us>(us)...) {}
 
   constexpr indirect(std::allocator_arg_t, const A& alloc,
                      const indirect& other)
@@ -124,19 +119,11 @@ class indirect {
     p_ = construct_from(alloc_, *other);
   }
 
-  constexpr indirect(indirect&& other) noexcept(
-      allocator_traits::is_always_equal::value)
-      : p_(nullptr), alloc_(other.alloc_) {
-    if constexpr (allocator_traits::is_always_equal::value) {
-      std::swap(p_, other.p_);
-    } else {
-      if (alloc_ == other.alloc_) {
-        std::swap(p_, other.p_);
-      } else {
-        p_ = construct_from(alloc_, std::move(*other));
-      }
-    }
-  }
+  constexpr indirect(const indirect& other)
+      : indirect(std::allocator_arg,
+                 allocator_traits::select_on_container_copy_construction(
+                     other.alloc_),
+                 other) {}
 
   constexpr indirect(
       std::allocator_arg_t, const A& alloc,
@@ -148,10 +135,18 @@ class indirect {
       if (alloc_ == other.alloc_) {
         std::swap(p_, other.p_);
       } else {
-        p_ = construct_from(alloc_, std::move(*other));
+        if (!other.valueless_after_move()) {
+          p_ = construct_from(alloc_, std::move(*other));
+        } else {
+          p_ = nullptr;
+        }
       }
     }
   }
+
+  constexpr indirect(indirect&& other) noexcept(
+      allocator_traits::is_always_equal::value)
+      : indirect(std::allocator_arg, other.alloc_, std::move(other)) {}
 
   constexpr ~indirect() { reset(); }
 
