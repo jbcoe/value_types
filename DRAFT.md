@@ -1210,14 +1210,15 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
 
 22. _Effects_: `allocator` is direct-non-list-initialized with `alloc`. If
     `other` is valueless, `*this` is valueless. Otherwise, constructs an object
-    of type `polymorphic` that owns the owned value of other; `other` is valueless..
+    of type `polymorphic` that either owns the owned value of other, making
+    `other` is valueless; or, owns an object of the same type constructed from
+    the owned value of `other` using the specified allocator, considering that
+    owned value as an rvalue
 
-23. _Postconditions_: `other` is valueless.
-
-24. _[Note 1: This constructor does not require that `is_move_constructible_v<T>`
+23. _[Note 1: This constructor does not require that `is_move_constructible_v<T>`
   is `true`. --end note]_
 
-25. _[Note 2: The use of this function may require that `T` be a complete type
+24. _[Note 2: The use of this function may require that `T` be a complete type
     dependent on behavour of the allocator. — end note]_
 
 
