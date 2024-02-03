@@ -758,14 +758,13 @@ constexpr indirect(allocator_arg_t, const Allocator& alloc, indirect&& other)
   noexcept(allocator_traits<Allocator>::is_always_equal);
 ```
 
-26. _Effects_: TODO.
+26. _Effects_: `allocator` is direct-non-list-initialized with `alloc`. If
+    `other` is valueless, `*this` is valueless. Otherwise, constructs an object
+    of type `indirect` that owns the owned value of other; `other` is valueless.
 
 27. _Postconditions_: `other` is valueless.
 
 28. _[Note 1: This constructor does not require that `is_move_constructible_v<T>` is `true` --end note]_
-
-29. _[Note 2: The use of this function may require that `T` be a complete type
-    dependent on behaviour of the allocator. — end note]_
 
 #### X.Y.4 Destructor [indirect.dtor]
 
@@ -1209,7 +1208,9 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       polymorphic&& other) noexcept;
 ```
 
-22. _Effects_: TODO.
+22. _Effects_: `allocator` is direct-non-list-initialized with `alloc`. If
+    `other` is valueless, `*this` is valueless. Otherwise, constructs an object
+    of type `polymorphic` that owns the owned value of other; `other` is valueless..
 
 23. _Postconditions_: `other` is valueless.
 
