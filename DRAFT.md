@@ -662,7 +662,7 @@ explicit constexpr indirect()
 
 1. _Constraints_: `is_default_constructible_v<T>` is `true`.
   `is_copy_constructible_v<T>` is `true`.
-  `is_default_constructible_v<A>` is `true`.
+  `is_default_constructible_v<allocator_type>` is `true`.
 
 2. _Mandates_: `T` is a complete type.
 
@@ -699,6 +699,7 @@ explicit constexpr indirect(U&& u, Us&&... us);
    `is_copy_constructible_v<T>` is `true`.
    `is_same_v<remove_cvref_t<U>, allocator_arg_t>` is `false`.
    `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
+   `is_default_constructible_v<allocator_type>` is `true`.
 
 12. _Mandates_: `T` is a complete type.
 
@@ -1121,7 +1122,7 @@ explicit constexpr polymorphic()
 
 1. _Constraints_: `is_default_constructible_v<T>` is `true`,
   `is_copy_constructible_v<T>` is `true`.
-  `is_default_constructible_v<Allocator>` is `true`.
+  `is_default_constructible_v<allocator_type>` is `true`.
 
 2. Mandates: `T` is a complete type.
 
@@ -1154,6 +1155,11 @@ template <class U, class... Ts>
 explicit constexpr polymorphic(in_place_type_t<U>, Ts&&... ts);
 ```
 
+11. _Constraints_: `is_base_of_v<T, U>` is `true`.
+  `is_constructible_v<U, Ts...>` is `true`.
+  `is_copy_constructible_v<U>` is `true`.
+  `is_default_constructible_v<allocator_type>` is `true`.
+
 11. _Mandates_: `T` is a complete type.
 
 12. _Effects_: Equivalent to `polymorphic(allocator_arg_t{}, Allocator(), in_place_type_t<U>{}, std::forward<Ts>(ts)...)`.
@@ -1164,7 +1170,7 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       in_place_type_t<U>, Ts&&... ts);
 ```
 
-13. _Constraints_: `is_base_of_v<T, U>` is `true`  and `is_constructible_v<U, Ts...>` is
+13. _Constraints_: `is_base_of_v<T, U>` is `true` and `is_constructible_v<U, Ts...>` is
   `true` and `is_copy_constructible_v<U>` is `true`.
 
 14. _Mandates_: `T` is a complete type.
