@@ -32,6 +32,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <map>
 
 #include "feature_check.h"
+#include "test_helpers.h"
 #include "tracking_allocator.h"
 #ifdef XYZ_HAS_STD_MEMORY_RESOURCE
 #include <memory_resource>
@@ -765,11 +766,10 @@ TEST(IndirectTest, InteractionWithUnorderedMap) {
 }
 
 TEST(IndirectTest, InteractionWithSizedAllocators) {
-  // Admit defeat... gtest does not seem to support STATIC_REQUIRES equivelent
-  // functionality.
-  EXPECT_EQ(sizeof(xyz::indirect<int>), sizeof(int*));
-  EXPECT_EQ(sizeof(xyz::indirect<int, xyz::TrackingAllocator<int>>),
-            (sizeof(int*) + sizeof(xyz::TrackingAllocator<int>)));
+  EXPECT_TRUE(xyz::static_test<sizeof(xyz::indirect<int>) == sizeof(int*)>());
+  EXPECT_TRUE(xyz::static_test<
+              sizeof(xyz::indirect<int, xyz::TrackingAllocator<int>>) ==
+              (sizeof(int*) + sizeof(xyz::TrackingAllocator<int>))>());
 }
 
 #ifdef XYZ_HAS_STD_MEMORY_RESOURCE

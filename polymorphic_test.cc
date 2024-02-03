@@ -41,6 +41,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <utility>
 
 #include "feature_check.h"
+#include "test_helpers.h"
 #include "tracking_allocator.h"
 #if defined(XYZ_HAS_STD_IN_PLACE_TYPE_T) && !defined(XYZ_POLYMORPHIC_CXX_14)
 namespace xyz {
@@ -647,9 +648,10 @@ TEST(PolymorphicTest, InteractionWithUnorderedMap) {
 }
 
 TEST(PolymorphicTest, InteractionWithSizedAllocators) {
-  EXPECT_EQ(
-      sizeof(xyz::polymorphic<int, xyz::TrackingAllocator<int>>),
-      (sizeof(xyz::polymorphic<int>) + sizeof(xyz::TrackingAllocator<int>)));
+  EXPECT_TRUE(xyz::static_test<
+              sizeof(xyz::polymorphic<int, xyz::TrackingAllocator<int>>) ==
+              (sizeof(xyz::polymorphic<int>) +
+               sizeof(xyz::TrackingAllocator<int>))>());
 }
 
 struct BaseA {
