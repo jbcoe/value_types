@@ -41,6 +41,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <utility>
 
 #include "feature_check.h"
+#include "tagged_allocator.h"
 #include "tracking_allocator.h"
 #if defined(XYZ_HAS_STD_IN_PLACE_TYPE_T) && !defined(XYZ_POLYMORPHIC_CXX_14)
 namespace xyz {
@@ -708,5 +709,10 @@ TEST(PolymorphicTest, InteractionWithPMRAllocatorsWhenCopyThrows) {
   EXPECT_THROW(values.push_back(a), ThrowsOnCopyConstruction::Exception);
 }
 #endif  // XYZ_HAS_STD_MEMORY_RESOURCE
+
+TEST(PolymorphicTest, TaggedAllocatorsEqualMoveConstruct) {}
+TEST(PolymorphicTest, TaggedAllocatorsEqualMoveAssign) {}
+TEST(PolymorphicTest, TaggedAllocatorsNotEqualMoveConstruct) {}
+TEST(PolymorphicTest, TaggedAllocatorsNotEqualMoveAssign) {}
 
 }  // namespace

@@ -32,6 +32,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <map>
 
 #include "feature_check.h"
+#include "tagged_allocator.h"
 #include "tracking_allocator.h"
 #ifdef XYZ_HAS_STD_MEMORY_RESOURCE
 #include <memory_resource>
@@ -969,5 +970,10 @@ TEST(IndirectTest, TaggedAllocatorEqualAllocatorMoveAssign) {
 
   red = std::move(red);  // -Wno-self-move
 }
+
+TEST(IndirectTest, TaggedAllocatorsEqualMoveConstruct) {}
+TEST(IndirectTest, TaggedAllocatorsEqualMoveAssign) {}
+TEST(IndirectTest, TaggedAllocatorsNotEqualMoveConstruct) {}
+TEST(IndirectTest, TaggedAllocatorsNotEqualMoveAssign) {}
 
 }  // namespace
