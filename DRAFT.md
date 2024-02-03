@@ -1439,7 +1439,7 @@ defer the instantiation of the copy or move constructor.
 
 The same technique cannot be used for the copy or move constructor of
 `polymorphic` because that would require type information on an open set of
-erased types, which is not possible. A `polymorphic` object can contain any type
+erased types, which is not possible: a `polymorphic` object can contain any type
 that is derived from `T`, we cannot write a constraint that requires that all
 such types are copy constructible. We make `polymorphic` unconditionally copy
 and move constructible. The authors do not envisage that this could be relaxed
