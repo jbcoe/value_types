@@ -1206,13 +1206,17 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
 ```
 
 21. _Effects_: `allocator` is direct-non-list-initialized with `alloc`. If
-    `other` is valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc`
-    either constructs an object of type `polymorphic` that owns the owned value
-    of other, making `other` is valueless; or, owns an object of the same type
-    constructed from the owned value of `other` using the specified allocator,
-    considering that owned value as an rvalue. Otherwise constructs an object of
-    type `polymorphic` using the specified allocator, considering that owned
-    value as an rvalue.
+    `other` is valueless, `*this` is valueless. Otherwise, if `alloc ==
+    other.alloc` either constructs an object of type `polymorphic` that owns the
+    owned value of other, making `other` valueless; or, owns an object of the
+    same type constructed from the owned value of `other` using the specified
+    allocator, considering that owned value as an rvalue. Otherwise if `alloc !=
+    other.alloc`, constructs an object of type `polymorphic` using the specified
+    allocator, considering that owned value as an rvalue.
+
+  _[Drafting note: The above is intended to permit a small-buffer-optimization
+  and handle the case where allocators compare equal but we do not want to swap
+  pointers.]_
 
 22. _[Note: The use of this function may require that `T` be a complete type
     dependent on behavour of the allocator. — end note]_
