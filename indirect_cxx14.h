@@ -189,7 +189,7 @@ class indirect : private detail::empty_base_optimization<A> {
     }
   }
 
-  indirect(indirect&& other) noexcept
+  indirect(indirect&& other) noexcept(allocator_traits::is_always_equal::value)
       : indirect(std::allocator_arg, other.alloc_base::get(),
                  std::move(other)) {}
 
