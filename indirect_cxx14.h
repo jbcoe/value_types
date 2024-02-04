@@ -172,7 +172,7 @@ class indirect : private detail::empty_base_optimization<A> {
                      other.alloc_base::get()),
                  other) {}
 
-  indirect(std::allocator_arg_t, const A& alloc, indirect&& other) noexcept
+  indirect(std::allocator_arg_t, const A& alloc, indirect&& other) noexcept(allocator_traits::is_always_equal::value)
       : alloc_base(alloc), p_(nullptr) {
     if (allocator_traits::is_always_equal::value) {
       std::swap(p_, other.p_);
