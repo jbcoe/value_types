@@ -1208,7 +1208,7 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
 21. _Effects_: `allocator` is direct-non-list-initialized with `alloc`. If
     `other` is valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc`
     either constructs an object of type `polymorphic` that owns the owned value
-    of other, making`other` is valueless; or, owns an object of the same type
+    of other, making `other` is valueless; or, owns an object of the same type
     constructed from the owned value of `other` using the specified allocator,
     considering that owned value as an rvalue. Otherwise constructs an object of
     type `polymorphic` using the specified allocator, considering that owned
