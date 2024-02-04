@@ -12,17 +12,33 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+cc_library(
+    name = "tagged_allocator",
+    hdrs = ["tagged_allocator.h"],
+)
+
+cc_library(
+    name = "tracking_allocator",
+    hdrs = ["tracking_allocator.h"],
+)
+
+cc_library(
+    name = "test_helpers",
+    hdrs = ["test_helpers.h"],
+)
+
 cc_test(
     name = "indirect_test",
     size = "small",
     srcs = [
         "indirect_test.cc",
-        "test_helpers.h",
-        "tracking_allocator.h"
     ],
     deps = [
         "feature_check",
         "indirect",
+        "tagged_allocator",
+        "test_helpers",
+        "tracking_allocator",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -30,8 +46,8 @@ cc_test(
 cc_library(
     name = "indirect_cxx14",
     hdrs = [
-        "indirect_cxx14.h",
         "indirect.h",
+        "indirect_cxx14.h",
     ],
     copts = ["-Iexternal/value_types/"],
     defines = ["XYZ_INDIRECT_CXX_14"],
@@ -43,15 +59,16 @@ cc_test(
     size = "small",
     srcs = [
         "indirect_test.cc",
-        "test_helpers.h",
-        "tracking_allocator.h"
     ],
+    copts = ["-std=c++14"],
     deps = [
         "feature_check",
         "indirect_cxx14",
+        "tagged_allocator",
+        "test_helpers",
+        "tracking_allocator",
         "@com_google_googletest//:gtest_main",
     ],
-    copts = ["-std=c++14"],
 )
 
 cc_test(
@@ -59,15 +76,16 @@ cc_test(
     size = "small",
     srcs = [
         "indirect_test.cc",
-        "test_helpers.h",
-        "tracking_allocator.h"
     ],
+    copts = ["-std=c++17"],
     deps = [
         "feature_check",
         "indirect_cxx14",
+        "tagged_allocator",
+        "test_helpers",
+        "tracking_allocator",
         "@com_google_googletest//:gtest_main",
     ],
-    copts = ["-std=c++17"],
 )
 
 cc_library(
@@ -82,21 +100,22 @@ cc_test(
     size = "small",
     srcs = [
         "polymorphic_test.cc",
-        "test_helpers.h",
-        "tracking_allocator.h"
     ],
     deps = [
         "feature_check",
         "polymorphic",
+        "tagged_allocator",
+        "test_helpers",
+        "tracking_allocator",
         "@com_google_googletest//:gtest_main",
     ],
 )
 
 cc_library(
     name = "polymorphic_cxx14",
-    hdrs = ["polymorphic_cxx14.h",],
-    defines = ["XYZ_POLYMORPHIC_CXX_14"],
+    hdrs = ["polymorphic_cxx14.h"],
     copts = ["-Iexternal/value_types/"],
+    defines = ["XYZ_POLYMORPHIC_CXX_14"],
     visibility = ["//visibility:public"],
 )
 
@@ -105,15 +124,16 @@ cc_test(
     size = "small",
     srcs = [
         "polymorphic_test.cc",
-        "test_helpers.h",
-        "tracking_allocator.h"
     ],
+    copts = ["-std=c++14"],
     deps = [
         "feature_check",
         "polymorphic_cxx14",
+        "tagged_allocator",
+        "test_helpers",
+        "tracking_allocator",
         "@com_google_googletest//:gtest_main",
     ],
-    copts = ["-std=c++14"],
 )
 
 cc_test(
@@ -121,15 +141,16 @@ cc_test(
     size = "small",
     srcs = [
         "polymorphic_test.cc",
-        "test_helpers.h",
-        "tracking_allocator.h"
     ],
+    copts = ["-std=c++17"],
     deps = [
         "feature_check",
         "polymorphic_cxx14",
+        "tagged_allocator",
+        "test_helpers",
+        "tracking_allocator",
         "@com_google_googletest//:gtest_main",
     ],
-    copts = ["-std=c++17"],
 )
 
 cc_library(
@@ -145,13 +166,14 @@ cc_test(
     size = "small",
     srcs = [
         "polymorphic_test.cc",
-        "test_helpers.h",
-        "tracking_allocator.h"
     ],
     tags = ["manual"],
     deps = [
         "feature_check",
         "polymorphic_inline_vtable",
+        "tagged_allocator",
+        "test_helpers",
+        "tracking_allocator",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -169,13 +191,14 @@ cc_test(
     size = "small",
     srcs = [
         "polymorphic_test.cc",
-        "test_helpers.h",
-        "tracking_allocator.h"
     ],
     tags = ["manual"],
     deps = [
         "feature_check",
         "polymorphic_sbo",
+        "tagged_allocator",
+        "test_helpers",
+        "tracking_allocator",
         "@com_google_googletest//:gtest_main",
     ],
 )

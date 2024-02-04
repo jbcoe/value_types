@@ -96,6 +96,15 @@ class indirect : private detail::empty_base_optimization<A> {
   using pointer = typename allocator_traits::pointer;
   using const_pointer = typename allocator_traits::const_pointer;
 
+  template <class TT = T,
+            typename std::enable_if<std::is_default_constructible<TT>::value,
+                                    int>::type = 0,
+            typename std::enable_if<std::is_copy_constructible<TT>::value,
+                                    int>::type = 0>
+  indirect(std::allocator_arg_t, const A& alloc) : alloc_base(alloc) {
+    p_ = construct_from(alloc_base::get());
+  }
+
   template <class AA = A,
             typename std::enable_if<std::is_default_constructible<AA>::value,
                                     int>::type = 0,
@@ -104,17 +113,24 @@ class indirect : private detail::empty_base_optimization<A> {
                                     int>::type = 0,
             typename std::enable_if<std::is_copy_constructible<TT>::value,
                                     int>::type = 0>
-  indirect() {
-    p_ = construct_from(alloc_base::get());
-  }
+  indirect() : indirect(std::allocator_arg, A()) {}
 
-  template <class TT = T,
-            typename std::enable_if<std::is_default_constructible<TT>::value,
-                                    int>::type = 0,
-            typename std::enable_if<std::is_copy_constructible<TT>::value,
-                                    int>::type = 0>
-  indirect(std::allocator_arg_t, const A& alloc) : alloc_base(alloc) {
-    p_ = construct_from(alloc_base::get());
+  template <
+      class U, class... Us,
+      typename std::enable_if<std::is_constructible<T, U&&, Us&&...>::value,
+                              int>::type = 0,
+      typename std::enable_if<
+          !std::is_same<typename std::remove_const<
+                            typename std::remove_reference<U>::type>::type,
+                        indirect>::value,
+          int>::type = 0,
+      typename TT = T,
+      typename std::enable_if<std::is_copy_constructible<TT>::value,
+                              int>::type = 0>
+  indirect(std::allocator_arg_t, const A& alloc, U&& u, Us&&... us)
+      : alloc_base(alloc) {
+    p_ = construct_from(alloc_base::get(), std::forward<U>(u),
+                        std::forward<Us>(us)...);
   }
 
   template <
@@ -137,38 +153,9 @@ class indirect : private detail::empty_base_optimization<A> {
       typename TT = T,
       typename std::enable_if<std::is_copy_constructible<TT>::value,
                               int>::type = 0>
-  explicit indirect(U&& u, Us&&... us) {
-    p_ = construct_from(alloc_base::get(), std::forward<U>(u),
-                        std::forward<Us>(us)...);
-  }
-
-  template <
-      class U, class... Us,
-      typename std::enable_if<std::is_constructible<T, U&&, Us&&...>::value,
-                              int>::type = 0,
-      typename std::enable_if<
-          !std::is_same<typename std::remove_const<
-                            typename std::remove_reference<U>::type>::type,
-                        indirect>::value,
-          int>::type = 0,
-      typename TT = T,
-      typename std::enable_if<std::is_copy_constructible<TT>::value,
-                              int>::type = 0>
-  indirect(std::allocator_arg_t, const A& alloc, U&& u, Us&&... us)
-      : alloc_base(alloc) {
-    p_ = construct_from(alloc_base::get(), std::forward<U>(u),
-                        std::forward<Us>(us)...);
-  }
-
-  indirect(const indirect& other)
-      : alloc_base(allocator_traits::select_on_container_copy_construction(
-            other.alloc_base::get())) {
-    if (other.valueless_after_move()) {
-      p_ = nullptr;
-      return;
-    }
-    p_ = construct_from(alloc_base::get(), *other);
-  }
+  explicit indirect(U&& u, Us&&... us)
+      : indirect(std::allocator_arg, A(), std::forward<U>(u),
+                 std::forward<Us>(us)...) {}
 
   indirect(std::allocator_arg_t, const A& alloc, const indirect& other)
       : alloc_base(alloc) {
@@ -179,15 +166,33 @@ class indirect : private detail::empty_base_optimization<A> {
     p_ = construct_from(alloc_base::get(), *other);
   }
 
-  indirect(indirect&& other) noexcept
-      : alloc_base(other.alloc_base::get()), p_(nullptr) {
-    std::swap(p_, other.p_);
+  indirect(const indirect& other)
+      : indirect(std::allocator_arg,
+                 allocator_traits::select_on_container_copy_construction(
+                     other.alloc_base::get()),
+                 other) {}
+
+  indirect(std::allocator_arg_t, const A& alloc,
+           indirect&& other) noexcept(allocator_traits::is_always_equal::value)
+      : alloc_base(alloc), p_(nullptr) {
+    if (allocator_traits::is_always_equal::value) {
+      std::swap(p_, other.p_);
+    } else {
+      if (alloc_base::get() == other.alloc_base::get()) {
+        std::swap(p_, other.p_);
+      } else {
+        if (!other.valueless_after_move()) {
+          p_ = construct_from(alloc_base::get(), std::move(*other));
+        } else {
+          p_ = nullptr;
+        }
+      }
+    }
   }
 
-  indirect(std::allocator_arg_t, const A& alloc, indirect&& other) noexcept
-      : alloc_base(alloc), p_(nullptr) {
-    std::swap(p_, other.p_);
-  }
+  indirect(indirect&& other) noexcept(allocator_traits::is_always_equal::value)
+      : indirect(std::allocator_arg, other.alloc_base::get(),
+                 std::move(other)) {}
 
   ~indirect() { reset(); }
 

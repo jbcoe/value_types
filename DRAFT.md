@@ -751,14 +751,12 @@ constexpr indirect(allocator_arg_t, const Allocator& alloc, indirect&& other)
 ```
 
 22. _Effects_: `allocator` is direct-non-list-initialized with `alloc`. If
-    `other` is valueless, `*this` is valueless. Otherwise, constructs an object
-    of type `indirect` that owns the owned value of other; `other` is valueless.
+    `other` is valueless, `*this` is valueless. Otherwise, if `alloc ==
+    other.alloc` constructs an object of type `indirect` that owns the owned
+    value of other; `other` is valueless. Otherwise constructs an object of type
+    `indirect` using the specified allocator with `*other` used as an rvalue.
 
-23. _Postconditions_: `other` is valueless.
-
-24. _[Note 1: This constructor does not require that `is_move_constructible_v<T>` is `true` --end note]_
-
-25. _[Note 2: The use of this function may require that `T` be a complete type
+23. _[Note: The use of this function may require that `T` be a complete type
     dependent on behavour of the allocator. — end note]_
 
 #### X.Y.4 Destructor [indirect.dtor]
@@ -1208,16 +1206,19 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
 ```
 
 21. _Effects_: `allocator` is direct-non-list-initialized with `alloc`. If
-    `other` is valueless, `*this` is valueless. Otherwise, constructs an object
-    of type `polymorphic` that either owns the owned value of other, making
-    `other` valueless; or, owns an object of the same type constructed from
-    the owned value of `other` using the specified allocator, considering that
-    owned value as an rvalue.
+    `other` is valueless, `*this` is valueless. Otherwise, if `alloc ==
+    other.alloc` either constructs an object of type `polymorphic` that owns the
+    owned value of other, making `other` valueless; or, owns an object of the
+    same type constructed from the owned value of `other` using the specified
+    allocator, considering that owned value as an rvalue. Otherwise if `alloc !=
+    other.alloc`, constructs an object of type `polymorphic` using the specified
+    allocator, considering that owned value as an rvalue.
 
-22. _[Note 1: This constructor does not require that `is_move_constructible_v<T>`
-  is `true`. --end note]_
+  _[Drafting note: The above is intended to permit a small-buffer-optimization
+  and handle the case where allocators compare equal but we do not want to swap
+  pointers.]_
 
-23. _[Note 2: The use of this function may require that `T` be a complete type
+22. _[Note: The use of this function may require that `T` be a complete type
     dependent on behavour of the allocator. — end note]_
 
 

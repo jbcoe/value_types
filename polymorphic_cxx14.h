@@ -95,6 +95,7 @@ struct control_block {
   virtual ~control_block() = default;
   virtual void destroy(A& alloc) = 0;
   virtual control_block<T, A>* clone(A& alloc) = 0;
+  virtual control_block<T, A>* move(A& alloc) = 0;
 };
 
 template <class T, class U, class A>
@@ -117,6 +118,21 @@ class direct_control_block final : public control_block<T, A> {
     auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
     try {
       cb_alloc_traits::construct(cb_alloc, mem, u_);
+      return mem;
+    } catch (...) {
+      cb_alloc_traits::deallocate(cb_alloc, mem, 1);
+      throw;
+    }
+  }
+
+  control_block<T, A>* move(A& alloc) override {
+    using cb_allocator = typename std::allocator_traits<
+        A>::template rebind_alloc<direct_control_block<T, U, A>>;
+    cb_allocator cb_alloc(alloc);
+    using cb_alloc_traits = std::allocator_traits<cb_allocator>;
+    auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
+    try {
+      cb_alloc_traits::construct(cb_alloc, mem, std::move(u_));
       return mem;
     } catch (...) {
       cb_alloc_traits::deallocate(cb_alloc, mem, 1);
@@ -153,7 +169,7 @@ class polymorphic : private detail::empty_base_optimization<A> {
   template <typename TT = T,
             typename std::enable_if<std::is_default_constructible<TT>::value,
                                     int>::type = 0>
-  polymorphic() {
+  polymorphic(std::allocator_arg_t, const A& alloc) : alloc_base(alloc) {
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
     using cb_traits = std::allocator_traits<cb_allocator>;
@@ -170,43 +186,11 @@ class polymorphic : private detail::empty_base_optimization<A> {
 
   template <typename TT = T,
             typename std::enable_if<std::is_default_constructible<TT>::value,
+                                    int>::type = 0,
+            typename AA = A,
+            typename std::enable_if<std::is_default_constructible<AA>::value,
                                     int>::type = 0>
-  polymorphic(std::allocator_arg_t, const A& alloc) : alloc_base(alloc) {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
-    using cb_traits = std::allocator_traits<cb_allocator>;
-    cb_allocator cb_alloc(alloc_base::get());
-    auto mem = cb_traits::allocate(cb_alloc, 1);
-    try {
-      cb_traits::construct(cb_alloc, mem);
-      cb_ = mem;
-    } catch (...) {
-      cb_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
-  }
-
-  template <
-      class U, class... Ts,
-      typename std::enable_if<std::is_constructible<U, Ts&&...>::value,
-                              int>::type = 0,
-      typename std::enable_if<std::is_copy_constructible<U>::value, int>::type =
-          0,
-      typename std::enable_if<std::is_base_of<T, U>::value, int>::type = 0>
-  explicit polymorphic(in_place_type_t<U>, Ts&&... ts) {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
-    using cb_traits = std::allocator_traits<cb_allocator>;
-    cb_allocator cb_alloc(alloc_base::get());
-    auto mem = cb_traits::allocate(cb_alloc, 1);
-    try {
-      cb_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
-      cb_ = mem;
-    } catch (...) {
-      cb_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
-  }
+  polymorphic() : polymorphic(std::allocator_arg, A()) {}
 
   template <
       class U, class... Ts,
@@ -232,15 +216,19 @@ class polymorphic : private detail::empty_base_optimization<A> {
     }
   }
 
-  polymorphic(const polymorphic& other)
-      : alloc_base(allocator_traits::select_on_container_copy_construction(
-            other.alloc_base::get())) {
-    if (!other.valueless_after_move()) {
-      cb_ = other.cb_->clone(alloc_base::get());
-    } else {
-      cb_ = nullptr;
-    }
-  }
+  template <
+      class U, class... Ts,
+      typename std::enable_if<std::is_constructible<U, Ts&&...>::value,
+                              int>::type = 0,
+      typename std::enable_if<std::is_copy_constructible<U>::value, int>::type =
+          0,
+      typename std::enable_if<std::is_base_of<T, U>::value, int>::type = 0,
+      typename AA = A,
+      typename std::enable_if<std::is_default_constructible<AA>::value,
+                              int>::type = 0>
+  explicit polymorphic(in_place_type_t<U>, Ts&&... ts)
+      : polymorphic(std::allocator_arg, A(), in_place_type_t<U>{},
+                    std::forward<Ts>(ts)...) {}
 
   polymorphic(std::allocator_arg_t, const A& alloc, const polymorphic& other)
       : alloc_base(alloc) {
@@ -251,18 +239,36 @@ class polymorphic : private detail::empty_base_optimization<A> {
     }
   }
 
-  polymorphic(polymorphic&& other) noexcept
-      : alloc_base(other.alloc_base::get()) {
-    cb_ = other.cb_;
-    other.cb_ = nullptr;
+  polymorphic(const polymorphic& other)
+      : polymorphic(std::allocator_arg,
+                    allocator_traits::select_on_container_copy_construction(
+                        other.get_allocator()),
+                    other) {}
+
+  polymorphic(
+      std::allocator_arg_t, const A& alloc,
+      polymorphic&& other) noexcept(allocator_traits::is_always_equal::value)
+      : alloc_base(alloc) {
+    if (allocator_traits::propagate_on_container_copy_assignment::value) {
+      cb_ = other.cb_;
+      other.cb_ = nullptr;
+    } else {
+      if (get_allocator() == other.get_allocator()) {
+        cb_ = other.cb_;
+        other.cb_ = nullptr;
+      } else {
+        if (!other.valueless_after_move()) {
+          cb_ = other.cb_->move(alloc_base::get());
+        } else {
+          cb_ = nullptr;
+        }
+      }
+    }
   }
 
-  polymorphic(std::allocator_arg_t, const A& alloc,
-              polymorphic&& other) noexcept
-      : alloc_base(alloc) {
-    cb_ = other.cb_;
-    other.cb_ = nullptr;
-  }
+  polymorphic(polymorphic&& other) noexcept
+      : polymorphic(std::allocator_arg, other.get_allocator(),
+                    std::move(other)) {}
 
   ~polymorphic() { reset(); }
 

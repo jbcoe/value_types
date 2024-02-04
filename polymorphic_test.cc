@@ -41,6 +41,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <utility>
 
 #include "feature_check.h"
+#include "tagged_allocator.h"
 #include "test_helpers.h"
 #include "tracking_allocator.h"
 #if defined(XYZ_HAS_STD_IN_PLACE_TYPE_T) && !defined(XYZ_POLYMORPHIC_CXX_14)
@@ -565,6 +566,17 @@ struct ThrowsOnCopyConstruction {
   }
 };
 
+struct ThrowsOnMoveConstruction {
+  class Exception : public std::runtime_error {
+   public:
+    Exception() : std::runtime_error("ThrowsOnMoveConstruction::Exception") {}
+  };
+
+  ThrowsOnMoveConstruction() = default;
+  ThrowsOnMoveConstruction(const ThrowsOnMoveConstruction&) = default;
+  ThrowsOnMoveConstruction(ThrowsOnMoveConstruction&&) { throw Exception(); }
+};
+
 TEST(PolymorphicTest, DefaultConstructorWithExceptions) {
   EXPECT_THROW(xyz::polymorphic<ThrowsOnConstruction>(),
                ThrowsOnConstruction::Exception);
@@ -710,5 +722,80 @@ TEST(PolymorphicTest, InteractionWithPMRAllocatorsWhenCopyThrows) {
   EXPECT_THROW(values.push_back(a), ThrowsOnCopyConstruction::Exception);
 }
 #endif  // XYZ_HAS_STD_MEMORY_RESOURCE
+
+TEST(PolymorphicTest, TaggedAllocatorsEqualMoveConstruct) {
+  xyz::TaggedAllocator<Derived> a(42);
+  xyz::TaggedAllocator<Derived> aa(42);
+
+  static_assert(!std::allocator_traits<
+                    xyz::TaggedAllocator<Derived>>::is_always_equal::value,
+                "");
+
+  xyz::polymorphic<Derived, xyz::TaggedAllocator<Derived>> i(
+      std::allocator_arg, a, xyz::in_place_type_t<Derived>{}, -1);
+  xyz::polymorphic<Derived, xyz::TaggedAllocator<Derived>> ii(
+      std::allocator_arg, aa, std::move(i));
+
+  EXPECT_TRUE(i.valueless_after_move());
+  EXPECT_EQ(ii->value(), -1);
+}
+
+TEST(PolymorphicTest, TaggedAllocatorsNotEqualMoveConstruct) {
+  xyz::TaggedAllocator<Derived> a(42);
+  xyz::TaggedAllocator<Derived> aa(101);
+
+  static_assert(!std::allocator_traits<
+                    xyz::TaggedAllocator<Derived>>::is_always_equal::value,
+                "");
+
+  xyz::polymorphic<Derived, xyz::TaggedAllocator<Derived>> i(
+      std::allocator_arg, a, xyz::in_place_type_t<Derived>{}, -1);
+  xyz::polymorphic<Derived, xyz::TaggedAllocator<Derived>> ii(
+      std::allocator_arg, aa, std::move(i));
+
+  EXPECT_FALSE(i.valueless_after_move());
+  EXPECT_EQ(ii->value(), -1);
+}
+
+TEST(PolymorphicTest, TaggedAllocatorsNotEqualThrowingMoveConstruct) {
+  xyz::TaggedAllocator<ThrowsOnMoveConstruction> a(42);
+  xyz::TaggedAllocator<ThrowsOnMoveConstruction> aa(101);
+
+  static_assert(
+      !std::allocator_traits<xyz::TaggedAllocator<ThrowsOnMoveConstruction>>::
+          is_always_equal::value,
+      "");
+
+  xyz::polymorphic<ThrowsOnMoveConstruction,
+                   xyz::TaggedAllocator<ThrowsOnMoveConstruction>>
+      i(std::allocator_arg, a,
+        xyz::in_place_type_t<ThrowsOnMoveConstruction>{});
+  auto move_construct = [&]() {
+    xyz::polymorphic<ThrowsOnMoveConstruction,
+                     xyz::TaggedAllocator<ThrowsOnMoveConstruction>>
+        ii(std::allocator_arg, aa, std::move(i));
+  };
+  EXPECT_THROW(move_construct(), ThrowsOnMoveConstruction::Exception);
+}
+
+TEST(PolymorphicTest, TaggedAllocatorsNotEqualMoveConstructFromValueless) {
+  xyz::TaggedAllocator<Derived> a(42);
+  xyz::TaggedAllocator<Derived> aa(101);
+
+  static_assert(!std::allocator_traits<
+                    xyz::TaggedAllocator<Derived>>::is_always_equal::value,
+                "");
+
+  xyz::polymorphic<Derived, xyz::TaggedAllocator<Derived>> i(
+      std::allocator_arg, a, xyz::in_place_type_t<Derived>{}, -1);
+
+  xyz::polymorphic<Derived, xyz::TaggedAllocator<Derived>> ii(std::move(i));
+  EXPECT_TRUE(i.valueless_after_move());
+
+  // Move construct from the now valueless i.
+  xyz::polymorphic<Derived, xyz::TaggedAllocator<Derived>> iii(
+      std::allocator_arg, aa, std::move(i));
+  EXPECT_TRUE(iii.valueless_after_move());
+}
 
 }  // namespace
