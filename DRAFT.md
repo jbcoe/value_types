@@ -1407,6 +1407,41 @@ Pointer-like accessors like `dynamic_pointer_cast` and `static_pointer_cast`,
 which are provided for `std::shared_ptr`, could be added in a later revision of
 the standard if required.
 
+### Constraints on incomplete types and conditional constructors
+
+Both `indirect` and `polymorphic` support incomplete types. Support for an
+incomplete type requires deferring the instantiation of functions with
+requirements until they are used.
+
+For example, the default constructor of `indirect` requires that `T` is default
+constructible. We can't write this constraint as a requirement on `T` because
+that would require `T` to be a complete type at class instantiation time.
+Instead we write the constraint as a requirement on a deduced type `TT` to defer
+evaluation of the constraint until the default constructor is instantiated.
+
+```c++
+template <typename TT = T>
+indirect() requires std::is_default_constructible_v<TT>;
+```
+
+We can use this technique to write constraints on the default constructor of
+`indirect` and `polymorphic`. Both `indirect` and `polymorphic` are
+conditionally default constructible.
+
+The same technique cannot be used for the copy or move constructor of `indirect`
+because the copy or move constructor cannot be a template. We make `indirect`
+unconditionally copy and move constructible. This could be relaxed in a future
+version of the C++ standard, as a non-breaking change, if it was possible to
+defer the instantiation of the copy or move constructor.
+
+The same technique cannot be used for the copy or move constructor of
+`polymorphic` because that would require type information on an open set of
+erased types, which is not possible: a `polymorphic` object can contain any type
+that is derived from `T`, we cannot write a constraint that requires that all
+such types are copy constructible. We make `polymorphic` unconditionally copy
+and move constructible. The authors do not envisage that this could be relaxed
+in a future version of the C++ standard.
+
 ### Implicit conversions
 
 We decided that there should be no implicit conversion of a value `T` to an
