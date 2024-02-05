@@ -1241,7 +1241,25 @@ constexpr polymorphic& operator=(const polymorphic& other);
 
 1. _Mandates_: `T` is a complete type.
 
-2. _Effects_: TODO. No effects if an exception is thrown.
+2. _Effects_: If `other == *this` then no effect.
+
+  If `std::allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
+  `true` and `alloc != other.alloc` then the allocator needs updating.
+
+  The owned value in this, if any, is destroyed using
+  `allocator_traits<allocator_type>::destroy` and then deallocated using
+  `allocator_traits<allocator_type>::deallocate`. If `other` is not valueless, a
+  new owned object is constructed in `this` using
+  `allocator_traits<allocator_type>::construct` with the owned object from
+  `other` as the argument, with memory allocated using either the allocator in
+  `this` or the allocator in `other` if the allocator needs updating.
+
+  If the allocator needs updating, the allocator in `this` is replaced with a
+  copy of the allocator in `other`.
+
+  No effects if an exception is thrown.
+
+3. _Returns_: A reference to `*this`.
 
 ```c++
 constexpr polymorphic& operator=(polymorphic&& other) noexcept(
@@ -1249,9 +1267,32 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
     allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-3. _Effects_: TODO. No effects if an exception is thrown.
+4. _Effects_: If `other == *this` then no effect.
 
-4. _[Note: The use of this function may require that `T` be a complete type
+  If `std::allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
+  `true` and `alloc != other.alloc` then the allocator needs updating.
+
+  If `alloc == other.alloc`, swaps the owned objects in `this` and `other`; the
+  owned object in `other`, if any, is then destroyed using
+  `allocator_traits<allocator_type>::destroy` and then deallocated using
+  `allocator_traits<allocator_type>::deallocate`. Otherwise if `alloc !=
+  other.alloc` and if `other` is not valueless, a new owned object is
+  constructed in `this` using `allocator_traits<allocator_type>::construct` with
+  the owned object from `other` as the argument, with memory allocated using
+  either the allocator in `this` or the allocator in `other` if the allocator
+  needs updating. The original owned object in `this` is destroyed using
+  `allocator_traits<allocator_type>::destroy` and then deallocated using
+  `allocator_traits<allocator_type>::deallocate` with the original allocator in
+  `this`.
+
+  If the allocator needs updating, the allocator in `this` is replaced with a
+  copy of the allocator in `other`.
+
+  No effects if an exception is thrown.
+
+5. _Returns_: A reference to `*this`.
+
+6. _[Note: The use of this function may require that `T` be a complete type
     dependent on behavour of the allocator. — end note]_
 
 #### X.Z.6 Observers [polymorphic.observers]
