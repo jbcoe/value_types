@@ -209,7 +209,7 @@ class indirect : private detail::empty_base_optimization<A> {
     if (other.valueless_after_move()) {
       reset();
     } else {
-      if (std::is_copy_assignable_v<T> && !valueless_after_move() &&
+      if (std::is_copy_assignable<T>::value && !valueless_after_move() &&
           alloc_base::get() == other.alloc_base::get()) {
         T tmp(*other);
         using std::swap;
