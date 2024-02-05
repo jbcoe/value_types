@@ -3,11 +3,11 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-D3019R4
+P3019R4
 
 Working Group: Library Evolution, Library
 
-Date: 2023-11-20
+Date: 2024-02-05
 
 _Jonathan Coe \<<jonathanbcoe@gmail.com>\>_
 
@@ -48,6 +48,8 @@ should not be considered in isolation.
 
 * Allow comparison of valueless `indirect` objects.
 
+* Implement comparison in terms of `operator<=>` and `operator==` returning bool.
+
 * Remove `std::format` support for `std::indirect`.
 
 * Allow copy and move of valueless objects, discuss similarities with variant.
@@ -57,6 +59,18 @@ should not be considered in isolation.
 * Require `T` to satisfy the requirements of `Cpp17Destructible`.
 
 * Rename exposition only variables `p_` to `p` and `allocator_` to `alloc`.
+
+* Update constructor wording
+
+* Added discussion on incomplete types.
+
+* Added discussion on explicit constructors.
+
+* Added discussion on arithmetic operators and update change table.
+
+* Remove mandates on `std::indirect` move assignment.
+
+* Remove references to `std::indirect`/`std::polymorphic` values terms under `[*.general]` sections.
 
 ### Changes in R3
 
