@@ -553,15 +553,21 @@ template <typename T>
 struct NonEqualTrackingAllocator : xyz::TrackingAllocator<T> {
   using xyz::TrackingAllocator<T>::TrackingAllocator;
   using propagate_on_container_move_assignment = std::true_type;
+  std::uint32_t id = 0;
 
-  friend bool operator==(const NonEqualTrackingAllocator&,
-                         const NonEqualTrackingAllocator&) noexcept {
-    return false;
+  NonEqualTrackingAllocator(unsigned* alloc_counter, unsigned* dealloc_counter,
+                            std::uint32_t uniqueId)
+      : xyz::TrackingAllocator<T>(alloc_counter, dealloc_counter),
+        id(uniqueId) {}
+
+  friend bool operator==(const NonEqualTrackingAllocator& lhs,
+                         const NonEqualTrackingAllocator& rhs) noexcept {
+    return lhs.id == rhs.id;
   }
 
-  friend bool operator!=(const NonEqualTrackingAllocator&,
-                         const NonEqualTrackingAllocator&) noexcept {
-    return true;
+  friend bool operator!=(const NonEqualTrackingAllocator& lhs,
+                         const NonEqualTrackingAllocator& rhs) noexcept {
+    return !(lhs == rhs);
   }
 };
 
@@ -572,10 +578,12 @@ TEST(IndirectTest,
   {
     xyz::indirect<int, NonEqualTrackingAllocator<int>> a(
         std::allocator_arg,
-        NonEqualTrackingAllocator<int>(&alloc_counter, &dealloc_counter), 42);
+        NonEqualTrackingAllocator<int>(&alloc_counter, &dealloc_counter, 1),
+        42);
     xyz::indirect<int, NonEqualTrackingAllocator<int>> b(
         std::allocator_arg,
-        NonEqualTrackingAllocator<int>(&alloc_counter, &dealloc_counter), 101);
+        NonEqualTrackingAllocator<int>(&alloc_counter, &dealloc_counter, 2),
+        101);
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
     b = std::move(a);  // This will copy as allocators don't compare equal.
