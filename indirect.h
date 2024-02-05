@@ -192,7 +192,7 @@ class indirect {
     // We defer actually updating the allocator until later because it may be
     // needed to delete the current control block.
     bool update_alloc =
-        allocator_traits::propagate_on_container_copy_assignment::value &&
+        allocator_traits::propagate_on_container_move_assignment::value &&
         alloc_ != other.alloc_;
 
     if (other.valueless_after_move()) {
