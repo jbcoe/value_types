@@ -196,47 +196,70 @@ class indirect : private detail::empty_base_optimization<A> {
 
   ~indirect() { reset(); }
 
-  indirect& operator=(const indirect& other) {
+  constexpr indirect& operator=(const indirect& other) {
     if (this == &other) return *this;
-    if (allocator_traits::propagate_on_container_copy_assignment::value) {
-      if (alloc_base::get() != other.alloc_base::get()) {
-        reset();  // using current allocator.
-        alloc_base::get() = other.alloc_base::get();
-      }
-    }
+
+    // Check to see if the allocators need to be updated.
+    // We defer actually updating the allocator until later because it may be
+    // needed to delete the current control block.
+    bool update_alloc =
+        allocator_traits::propagate_on_container_copy_assignment::value &&
+        alloc_base::get() != other.alloc_base::get();
+
     if (other.valueless_after_move()) {
       reset();
-      return *this;
+    } else {
+      if (std::is_copy_assignable<T>::value && !valueless_after_move() &&
+          alloc_base::get() == other.alloc_base::get()) {
+        T tmp(*other);
+        using std::swap;
+        swap(tmp, *p_);
+      } else {
+        // Constructing a new object could throw so we need to defer resetting
+        // or updating allocators until this is done.
+        auto tmp = construct_from(
+            update_alloc ? other.alloc_base::get() : alloc_base::get(),
+            *other.p_);
+        reset();
+        p_ = tmp;
+      }
     }
-    if (alloc_base::get() == other.alloc_base::get() &&
-        std::is_copy_assignable<T>::value && p_ != nullptr) {
-      *p_ = *other.p_;
-      return *this;
+    if (update_alloc) {
+      alloc_base::get() = other.alloc_base::get();
     }
-    reset();  // We may not have reset above and it's a no-op if valueless.
-    p_ = construct_from(alloc_base::get(), *other);
     return *this;
   }
 
-  indirect& operator=(indirect&& other) noexcept(
+  constexpr indirect& operator=(indirect&& other) noexcept(
       allocator_traits::propagate_on_container_move_assignment::value ||
       allocator_traits::is_always_equal::value) {
     if (this == &other) return *this;
 
-    if (allocator_traits::propagate_on_container_move_assignment::value) {
-      if (alloc_base::get() != other.alloc_base::get()) {
-        reset();  // using current allocator.
-        alloc_base::get() = other.alloc_base::get();
+    // Check to see if the allocators need to be updated.
+    // We defer actually updating the allocator until later because it may be
+    // needed to delete the current control block.
+    bool update_alloc =
+        allocator_traits::propagate_on_container_move_assignment::value &&
+        alloc_base::get() != other.alloc_base::get();
+
+    if (other.valueless_after_move()) {
+      reset();
+    } else {
+      if (alloc_base::get() == other.alloc_base::get()) {
+        std::swap(p_, other.p_);
+        other.reset();
+      } else {
+        // Constructing a new object could throw so we need to defer resetting
+        // or updating allocators until this is done.
+        auto tmp = construct_from(
+            update_alloc ? other.alloc_base::get() : alloc_base::get(),
+            std::move(*other.p_));
+        reset();
+        p_ = tmp;
       }
     }
-    reset();  // We may not have reset above and it's a no-op if valueless.
-    if (other.valueless_after_move()) {
-      return *this;
-    }
-    if (alloc_base::get() == other.alloc_base::get()) {
-      std::swap(p_, other.p_);
-    } else {
-      p_ = construct_from(alloc_base::get(), std::move(*other));
+    if (update_alloc) {
+      alloc_base::get() = other.alloc_base::get();
     }
     return *this;
   }

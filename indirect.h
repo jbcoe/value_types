@@ -165,7 +165,9 @@ class indirect {
     } else {
       if (std::is_copy_assignable_v<T> && !valueless_after_move() &&
           alloc_ == other.alloc_) {
-        *p_ = *other;
+        T tmp(*other);
+        using std::swap;
+        swap(tmp, *p_);
       } else {
         // Constructing a new object could throw so we need to defer resetting
         // or updating allocators until this is done.
@@ -190,7 +192,7 @@ class indirect {
     // We defer actually updating the allocator until later because it may be
     // needed to delete the current control block.
     bool update_alloc =
-        allocator_traits::propagate_on_container_copy_assignment::value &&
+        allocator_traits::propagate_on_container_move_assignment::value &&
         alloc_ != other.alloc_;
 
     if (other.valueless_after_move()) {
