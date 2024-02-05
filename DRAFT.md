@@ -779,16 +779,7 @@ constexpr indirect& operator=(const indirect& other);
 
 1. _Mandates_: `T` is a complete type.
 
-2. _Effects_: If `this == &other` is `true`, then has no effects.
-  Otherwise, if either:
-  - `is_copy_assignable_v<T>` is `false` and `is_nothrow_copy_constructible_v<T>` is `false`, or
-  - `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value` is `true` and
-    `alloc == other.alloc` is `false`, or
-  - `*this` is valueless
-  then, equivalent to `*this = indirect(allocator_arg, allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value ? other.alloc : alloc, *other)`
-  Otherwise, if `is_copy_assignable_v<T>` is `true`, then equivalent to `*this = *other`,
-  Otherwise, equivalent to:
-  - `(allocator_traits<allocator_type>::destruct(alloc, p), allocator_traits<allocator_type>::construct(a, p, *other))`
+2. _Effects_: TODO. No effects if an exception is thrown.
 
 3. _Returns_: A reference to `*this`.
 
@@ -798,13 +789,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
     allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-4. _Effects_: If `&other == this`, then has no effects. Otherwise, if
-  `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value
- == true`, `alloc` is set to the allocator of `other`. If allocator is
-  propagated or is equal to the allocator of `other`, destroys the owned object,
-  if any, then takes ownership of the object owned by `other`.  Otherwise,
-  destroys the owned object if any, then move constructs an object from the
-  object owned by `other`.
+4. _Effects_: TODO. No effects if an exception is thrown.
 
 5. _Postconditions_: `other` is valueless.
 
@@ -1242,12 +1227,7 @@ constexpr polymorphic& operator=(const polymorphic& other);
 
 1. _Mandates_: `T` is a complete type.
 
-2. _Effects_: If `&other == this`, then has no effects. Otherwise, if `*this` is
-not valueless, destroys the owned object. If
-  `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value
-  == true`, `allocator_` is set to the allocator of `other`. If `other` is not
-  valueless, copy constructs a new object using the object owned by `other`.
-  Otherwise `*this` becomes valueless.
+2. _Effects_: TODO. No effects if an exception is thrown.
 
 ```c++
 constexpr polymorphic& operator=(polymorphic&& other) noexcept(
@@ -1255,17 +1235,9 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
     allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-3. _Effects_: If `&other == this`, then has no effects. Otherwise, if
-  `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value
-  == true`, `allocator_` is set to the allocator of `other`. If allocator is
-  propagated or is equal to the allocator of `other`, destroys the owned object
-  if any, then takes ownership of the object owned by `other`.  Otherwise,
-  destroys the owned object if any, then move constructs an object from the
-  object owned by `other`.
+3. _Effects_: TODO. No effects if an exception is thrown.
 
-4. _Postconditions_: `other` is valueless.
-
-5. _[Note: The use of this function may require that `T` be a complete type
+4. _[Note: The use of this function may require that `T` be a complete type
     dependent on behavour of the allocator. — end note]_
 
 #### X.Z.6 Observers [polymorphic.observers]

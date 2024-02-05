@@ -50,8 +50,8 @@ struct control_block {
 
   virtual constexpr ~control_block() = default;
   virtual constexpr void destroy(A& alloc) = 0;
-  virtual constexpr control_block<T, A>* clone(A& alloc) = 0;
-  virtual constexpr control_block<T, A>* move(A& alloc) = 0;
+  virtual constexpr control_block<T, A>* clone(const A& alloc) = 0;
+  virtual constexpr control_block<T, A>* move(const A& alloc) = 0;
 };
 
 template <class T, class U, class A>
@@ -66,7 +66,7 @@ class direct_control_block final : public control_block<T, A> {
     control_block<T, A>::p_ = &u_;
   }
 
-  constexpr control_block<T, A>* clone(A& alloc) override {
+  constexpr control_block<T, A>* clone(const A& alloc) override {
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<direct_control_block<T, U, A>>;
     cb_allocator cb_alloc(alloc);
@@ -81,7 +81,7 @@ class direct_control_block final : public control_block<T, A> {
     }
   }
 
-  constexpr control_block<T, A>* move(A& alloc) override {
+  constexpr control_block<T, A>* move(const A& alloc) override {
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<direct_control_block<T, U, A>>;
     cb_allocator cb_alloc(alloc);
@@ -228,18 +228,26 @@ class polymorphic {
 
   constexpr polymorphic& operator=(const polymorphic& other) {
     if (this == &other) return *this;
-    if constexpr (allocator_traits::propagate_on_container_copy_assignment::
-                      value) {
-      if (alloc_ != other.alloc_) {
-        reset();  // using current allocator.
-        alloc_ = other.alloc_;
-      }
-    }
-    reset();  // We may not have reset above and it's a no-op if valueless.
+
+    // Check to see if the allocators need to be updated.
+    // We defer actually updating the allocator until later because it may be
+    // needed to delete the current control block.
+    bool update_alloc =
+        allocator_traits::propagate_on_container_copy_assignment::value &&
+        alloc_ != other.alloc_;
+
     if (other.valueless_after_move()) {
-      return *this;
+      reset();
+    } else {
+      // Constructing a new control block could throw so we need to defer
+      // resetting or updating allocators until this is done.
+      auto tmp = other.cb_->clone(update_alloc ? other.alloc_ : alloc_);
+      reset();
+      cb_ = tmp;
     }
-    cb_ = other.cb_->clone(alloc_);
+    if (update_alloc) {
+      alloc_ = other.alloc_;
+    }
     return *this;
   }
 
@@ -247,21 +255,31 @@ class polymorphic {
       allocator_traits::propagate_on_container_move_assignment::value ||
       allocator_traits::is_always_equal::value) {
     if (this == &other) return *this;
-    if constexpr (allocator_traits::propagate_on_container_move_assignment::
-                      value) {
-      if (alloc_ != other.alloc_) {
-        reset();  // using current allocator.
-        alloc_ = other.alloc_;
+
+    // Check to see if the allocators need to be updated.
+    // We defer actually updating the allocator until later because it may be
+    // needed to delete the current control block.
+    bool update_alloc =
+        allocator_traits::propagate_on_container_move_assignment::value &&
+        alloc_ != other.alloc_;
+
+    if (other.valueless_after_move()) {
+      reset();
+    } else {
+      if (alloc_ == other.alloc_) {
+        std::swap(cb_, other.cb_);
+        other.reset();
+      } else {
+        // Constructing a new control block could throw so we need to defer
+        // resetting or updating allocators until this is done.
+        auto tmp = other.cb_->move(update_alloc ? other.alloc_ : alloc_);
+        reset();
+        cb_ = tmp;
       }
     }
-    reset();  // We may not have reset above and it's a no-op if valueless.
-    if (other.valueless_after_move()) {
-      return *this;
-    }
-    if (alloc_ == other.alloc_) {
-      std::swap(cb_, other.cb_);
-    } else {
-      cb_ = other.cb_->move(alloc_);
+
+    if (update_alloc) {
+      alloc_ = other.alloc_;
     }
     return *this;
   }
