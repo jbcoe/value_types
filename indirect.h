@@ -165,14 +165,16 @@ class indirect {
     } else {
       if (std::is_copy_assignable_v<T> && !valueless_after_move() &&
           alloc_ == other.alloc_) {
-        *p_ = *other;
+        T tmp(*other);
+        using std::swap;
+        swap(tmp, *p_);
       } else {
         // Constructing a new object could throw so we need to defer resetting
         // or updating allocators until this is done.
-        auto tmp =
-            construct_from(update_alloc ? other.alloc_ : alloc_, *other.p_);
-        reset();
-        p_ = tmp;
+        auto tmp = indirect(std::allocator_arg,
+                            update_alloc ? other.alloc_ : alloc_, other);
+        using std::swap;
+        swap(*this, tmp);
       }
     }
     if (update_alloc) {
@@ -202,10 +204,11 @@ class indirect {
       } else {
         // Constructing a new object could throw so we need to defer resetting
         // or updating allocators until this is done.
-        auto tmp = construct_from(update_alloc ? other.alloc_ : alloc_,
-                                  std::move(*other.p_));
-        reset();
-        p_ = tmp;
+        auto tmp =
+            indirect(std::allocator_arg, update_alloc ? other.alloc_ : alloc_,
+                     std::move(other));
+        using std::swap;
+        swap(*this, tmp);
       }
     }
     if (update_alloc) {
