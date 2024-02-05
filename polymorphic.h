@@ -239,11 +239,12 @@ class polymorphic {
     if (other.valueless_after_move()) {
       reset();
     } else {
-      // Constructing a new control block could throw so we need to defer
-      // resetting or updating allocators until this is done.
-      auto tmp = other.cb_->clone(update_alloc ? other.alloc_ : alloc_);
-      reset();
-      cb_ = tmp;
+      // Constructing a new object could throw so we need to defer resetting
+      // or updating allocators until this is done.
+      auto tmp = polymorphic(std::allocator_arg,
+                             update_alloc ? other.alloc_ : alloc_, other);
+      using std::swap;
+      swap(*this, tmp);
     }
     if (update_alloc) {
       alloc_ = other.alloc_;
@@ -266,16 +267,13 @@ class polymorphic {
     if (other.valueless_after_move()) {
       reset();
     } else {
-      if (alloc_ == other.alloc_) {
-        std::swap(cb_, other.cb_);
-        other.reset();
-      } else {
-        // Constructing a new control block could throw so we need to defer
-        // resetting or updating allocators until this is done.
-        auto tmp = other.cb_->move(update_alloc ? other.alloc_ : alloc_);
-        reset();
-        cb_ = tmp;
-      }
+      // Constructing a new object could throw so we need to defer resetting
+      // or updating allocators until this is done.
+      auto tmp =
+          polymorphic(std::allocator_arg, update_alloc ? other.alloc_ : alloc_,
+                      std::move(other));
+      using std::swap;
+      swap(*this, tmp);
     }
 
     if (update_alloc) {

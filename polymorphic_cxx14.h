@@ -274,17 +274,28 @@ class polymorphic : private detail::empty_base_optimization<A> {
 
   polymorphic& operator=(const polymorphic& other) {
     if (this == &other) return *this;
-    if (allocator_traits::propagate_on_container_copy_assignment::value) {
-      if (alloc_base::get() != other.alloc_base::get()) {
-        reset();  // using current allocator.
-        alloc_base::get() = other.alloc_base::get();
-      }
-    }
-    reset();  // We may not have reset above and it's a no-op if valueless.
+
+    // Check to see if the allocators need to be updated.
+    // We defer actually updating the allocator until later because it may be
+    // needed to delete the current control block.
+    bool update_alloc =
+        allocator_traits::propagate_on_container_copy_assignment::value &&
+        alloc_base::get() != other.alloc_base::get();
+
     if (other.valueless_after_move()) {
-      return *this;
+      reset();
+    } else {
+      // Constructing a new object could throw so we need to defer resetting
+      // or updating allocators until this is done.
+      auto tmp = polymorphic(
+          std::allocator_arg,
+          update_alloc ? other.alloc_base::get() : alloc_base::get(), other);
+      using std::swap;
+      swap(*this, tmp);
     }
-    cb_ = other.cb_->clone(alloc_base::get());
+    if (update_alloc) {
+      alloc_base::get() = other.alloc_base::get();
+    }
     return *this;
   }
 
@@ -292,20 +303,29 @@ class polymorphic : private detail::empty_base_optimization<A> {
       allocator_traits::propagate_on_container_move_assignment::value ||
       allocator_traits::is_always_equal::value) {
     if (this == &other) return *this;
-    if (allocator_traits::propagate_on_container_move_assignment::value) {
-      if (alloc_base::get() != other.alloc_base::get()) {
-        reset();  // using current allocator.
-        alloc_base::get() = other.alloc_base::get();
-      }
-    }
-    reset();  // We may not have reset above and it's a no-op if valueless.
+
+    // Check to see if the allocators need to be updated.
+    // We defer actually updating the allocator until later because it may be
+    // needed to delete the current control block.
+    bool update_alloc =
+        allocator_traits::propagate_on_container_move_assignment::value &&
+        alloc_base::get() != other.alloc_base::get();
+
     if (other.valueless_after_move()) {
-      return *this;
-    }
-    if (alloc_base::get() == other.alloc_base::get()) {
-      std::swap(cb_, other.cb_);
+      reset();
     } else {
-      cb_ = other.cb_->clone(alloc_base::get());
+      // Constructing a new object could throw so we need to defer resetting
+      // or updating allocators until this is done.
+      auto tmp = polymorphic(
+          std::allocator_arg,
+          update_alloc ? other.alloc_base::get() : alloc_base::get(),
+          std::move(other));
+      using std::swap;
+      swap(*this, tmp);
+    }
+
+    if (update_alloc) {
+      alloc_base::get() = other.alloc_base::get();
     }
     return *this;
   }
