@@ -790,6 +790,9 @@ constexpr indirect& operator=(const indirect& other);
   Otherwise, equivalent to:
   - `(allocator_traits<allocator_type>::destruct(alloc, p), allocator_traits<allocator_type>::construct(a, p, *other))`
 
+_[Drafting note: This wording needs amending to provide a strong exception
+guarantee.]_
+
 3. _Returns_: A reference to `*this`.
 
 ```c++
@@ -805,6 +808,9 @@ constexpr indirect& operator=(indirect&& other) noexcept(
   if any, then takes ownership of the object owned by `other`.  Otherwise,
   destroys the owned object if any, then move constructs an object from the
   object owned by `other`.
+
+_[Drafting note: This wording needs amending to provide a strong exception
+guarantee.]_
 
 5. _Postconditions_: `other` is valueless.
 
@@ -1249,6 +1255,9 @@ not valueless, destroys the owned object. If
   valueless, copy constructs a new object using the object owned by `other`.
   Otherwise `*this` becomes valueless.
 
+_[Drafting note: This wording needs amending to provide a strong exception
+guarantee.]_
+
 ```c++
 constexpr polymorphic& operator=(polymorphic&& other) noexcept(
     allocator_traits<Allocator>::propagate_on_container_move_assignment::value ||
@@ -1262,6 +1271,9 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
   if any, then takes ownership of the object owned by `other`.  Otherwise,
   destroys the owned object if any, then move constructs an object from the
   object owned by `other`.
+
+_[Drafting note: This wording needs amending to provide a strong exception
+guarantee.]_
 
 4. _Postconditions_: `other` is valueless.
 
