@@ -3,7 +3,7 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-P3019R4
+D3019R5
 
 Working Group: Library Evolution, Library
 
@@ -41,6 +41,10 @@ The design of the two proposed class templates is sufficiently similar that they
 should not be considered in isolation.
 
 ## History
+
+### Changes in R5
+
+* Fix wording for assignment operators to provide strong exception guarantee.
 
 ### Changes in R4
 
@@ -793,19 +797,31 @@ constexpr indirect& operator=(const indirect& other);
 
 1. _Mandates_: `T` is a complete type.
 
-2. _Effects_: If `this == &other` is `true`, then has no effects.
-  Otherwise, if either:
-  - `is_copy_assignable_v<T>` is `false` and `is_nothrow_copy_constructible_v<T>` is `false`, or
-  - `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value` is `true` and
-    `alloc == other.alloc` is `false`, or
-  - `*this` is valueless
-  then, equivalent to `*this = indirect(allocator_arg, allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value ? other.alloc : alloc, *other)`
-  Otherwise, if `is_copy_assignable_v<T>` is `true`, then equivalent to `*this = *other`,
-  Otherwise, equivalent to:
-  - `(allocator_traits<allocator_type>::destruct(alloc, p), allocator_traits<allocator_type>::construct(a, p, *other))`
+2. _Effects_: If `other == *this` then no effect.
 
-_[Drafting note: This wording needs amending to provide a strong exception
-guarantee.]_
+  If `std::allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
+  `true` and `alloc != other.alloc` then the allocator needs updating.
+
+  If `other` is valueless, `*this` is valueless and the owned value in this, if
+  any, is destroyed using `allocator_traits<allocator_type>::destroy` and then
+  deallocated using `allocator_traits<allocator_type>::deallocate`.
+
+  Otherwise, if `alloc == other.alloc` and `this` is not valueless, equivalent
+  to `T tmp(*other); std::swap(tmp, **this)`.
+
+  Otherwise , if `alloc != other.alloc` or `this` is valueless, the owned value
+  in this, if any, is destroyed using
+  `allocator_traits<allocator_type>::destroy` and then deallocated using
+  `allocator_traits<allocator_type>::deallocate`. A new owned object is
+  constructed in `this` using `allocator_traits<allocator_type>::construct` with
+  the owned object from `other` as the argument, with memory allocated using
+  either the allocator in `this` or the allocator in `other` if the allocator
+  needs updating.
+
+  If the allocator needs updating, the allocator in `this` is replaced with a
+  copy of the allocator in `other`.
+
+  No effects if an exception is thrown.
 
 3. _Returns_: A reference to `*this`.
 
@@ -815,16 +831,31 @@ constexpr indirect& operator=(indirect&& other) noexcept(
     allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-4. _Effects_: If `&other == this`, then has no effects. Otherwise, if
-  `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value
- == true`, `alloc` is set to the allocator of `other`. If allocator is
-  propagated or is equal to the allocator of `other`, destroys the owned object,
-  if any, then takes ownership of the object owned by `other`.  Otherwise,
-  destroys the owned object if any, then move constructs an object from the
-  object owned by `other`.
+4. _Effects_: If `std::allocator_traits<Alloc>::propagate_on_container_move_assignment` is
+  `true` and `alloc != other.alloc` then the allocator needs updating.
 
-_[Drafting note: This wording needs amending to provide a strong exception
-guarantee.]_
+  If `other` is valueless, `*this` is valueless and the owned value in this, if
+  any, is destroyed using `allocator_traits<allocator_type>::destroy` and then
+  deallocated using `allocator_traits<allocator_type>::deallocate`.
+
+  Otherwise if `alloc == other.alloc`, swaps the owned objects in `this` and
+  `other`; the owned object in `other`, if any, is then destroyed using
+  `allocator_traits<allocator_type>::destroy` and then deallocated using
+  `allocator_traits<allocator_type>::deallocate`.
+
+  Otherwise , if `alloc != other.alloc` or `this` is valueless, the owned value
+  in this, if any, is destroyed using
+  `allocator_traits<allocator_type>::destroy` and then deallocated using
+  `allocator_traits<allocator_type>::deallocate`. A new owned object is
+  constructed in `this` using `allocator_traits<allocator_type>::construct` with
+  the owned object from `other` as the argument, with memory allocated using
+  either the allocator in `this` or the allocator in `other` if the allocator
+  needs updating.
+
+  If the allocator needs updating, the allocator in `this` is replaced with a
+  copy of the allocator in `other`.
+
+  No effects if an exception is thrown.
 
 5. _Postconditions_: `other` is valueless.
 
@@ -1263,15 +1294,25 @@ constexpr polymorphic& operator=(const polymorphic& other);
 
 1. _Mandates_: `T` is a complete type.
 
-2. _Effects_: If `&other == this`, then has no effects. Otherwise, if `*this` is
-not valueless, destroys the owned object. If
-  `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value
-  == true`, `allocator_` is set to the allocator of `other`. If `other` is not
-  valueless, copy constructs a new object using the object owned by `other`.
-  Otherwise `*this` becomes valueless.
+2. _Effects_: If `other == *this` then no effect.
 
-_[Drafting note: This wording needs amending to provide a strong exception
-guarantee.]_
+  If `std::allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
+  `true` and `alloc != other.alloc` then the allocator needs updating.
+
+  The owned value in this, if any, is destroyed using
+  `allocator_traits<allocator_type>::destroy` and then deallocated using
+  `allocator_traits<allocator_type>::deallocate`. If `other` is not valueless, a
+  new owned object is constructed in `this` using
+  `allocator_traits<allocator_type>::construct` with the owned object from
+  `other` as the argument, with memory allocated using either the allocator in
+  `this` or the allocator in `other` if the allocator needs updating.
+
+  If the allocator needs updating, the allocator in `this` is replaced with a
+  copy of the allocator in `other`.
+
+  No effects if an exception is thrown.
+
+3. _Returns_: A reference to `*this`.
 
 ```c++
 constexpr polymorphic& operator=(polymorphic&& other) noexcept(
@@ -1279,20 +1320,32 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
     allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-3. _Effects_: If `&other == this`, then has no effects. Otherwise, if
-  `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value
-  == true`, `allocator_` is set to the allocator of `other`. If allocator is
-  propagated or is equal to the allocator of `other`, destroys the owned object
-  if any, then takes ownership of the object owned by `other`.  Otherwise,
-  destroys the owned object if any, then move constructs an object from the
-  object owned by `other`.
+4. _Effects_: If `other == *this` then no effect.
 
-_[Drafting note: This wording needs amending to provide a strong exception
-guarantee.]_
+  If `std::allocator_traits<Alloc>::propagate_on_container_move_assignment` is
+  `true` and `alloc != other.alloc` then the allocator needs updating.
 
-4. _Postconditions_: `other` is valueless.
+  If `alloc == other.alloc`, swaps the owned objects in `this` and `other`; the
+  owned object in `other`, if any, is then destroyed using
+  `allocator_traits<allocator_type>::destroy` and then deallocated using
+  `allocator_traits<allocator_type>::deallocate`. Otherwise if `alloc !=
+  other.alloc` and if `other` is not valueless, a new owned object is
+  constructed in `this` using `allocator_traits<allocator_type>::construct` with
+  the owned object from `other` as an rvalue as the argument, with memory
+  allocated using either the allocator in `this` or the allocator in `other` if
+  the allocator needs updating. The original owned object in `this` is destroyed
+  using `allocator_traits<allocator_type>::destroy` and then deallocated using
+  `allocator_traits<allocator_type>::deallocate` with the original allocator in
+  `this`.
 
-5. _[Note: The use of this function may require that `T` be a complete type
+  If the allocator needs updating, the allocator in `this` is replaced with a
+  copy of the allocator in `other`.
+
+  No effects if an exception is thrown.
+
+5. _Returns_: A reference to `*this`.
+
+6. _[Note: The use of this function may require that `T` be a complete type
     dependent on behavour of the allocator. — end note]_
 
 #### X.Z.6 Observers [polymorphic.observers]
