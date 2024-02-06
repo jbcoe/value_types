@@ -552,6 +552,7 @@ TEST(IndirectTest, CountAllocationsForMoveAssignment) {
 template <typename T>
 struct NonEqualTrackingAllocator : xyz::TrackingAllocator<T> {
   using xyz::TrackingAllocator<T>::TrackingAllocator;
+  using propagate_on_container_copy_assignment = std::true_type;
   using propagate_on_container_move_assignment = std::true_type;
 
   friend bool operator==(const NonEqualTrackingAllocator&,
@@ -564,6 +565,26 @@ struct NonEqualTrackingAllocator : xyz::TrackingAllocator<T> {
     return true;
   }
 };
+
+TEST(IndirectTest,
+     CountAllocationsForCopyAssignmentWhenAllocatorsDontCompareEqual) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+
+  {
+    xyz::indirect<int, NonEqualTrackingAllocator<int>> a(
+        std::allocator_arg,
+        NonEqualTrackingAllocator<int>(&alloc_counter, &dealloc_counter), 42);
+    xyz::indirect<int, NonEqualTrackingAllocator<int>> b(
+        std::allocator_arg,
+        NonEqualTrackingAllocator<int>(&alloc_counter, &dealloc_counter), 101);
+    EXPECT_EQ(alloc_counter, 2);
+    EXPECT_EQ(dealloc_counter, 0);
+    b = a;
+  }
+  EXPECT_EQ(alloc_counter, 3);
+  EXPECT_EQ(dealloc_counter, 3);
+}
 
 TEST(IndirectTest,
      CountAllocationsForMoveAssignmentWhenAllocatorsDontCompareEqual) {
