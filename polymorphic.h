@@ -241,7 +241,10 @@ class polymorphic {
     } else {
       // Constructing a new control block could throw so we need to defer
       // resetting or updating allocators until this is done.
-      auto tmp = other.cb_->clone(update_alloc ? other.alloc_ : alloc_);
+
+      // Inlining the allocator into the construct_from call confuses LCOV.
+      const auto& a = update_alloc ? other.alloc_ : alloc_;
+      auto tmp = other.cb_->clone(a);
       reset();
       cb_ = tmp;
     }
@@ -272,7 +275,10 @@ class polymorphic {
       } else {
         // Constructing a new control block could throw so we need to defer
         // resetting or updating allocators until this is done.
-        auto tmp = other.cb_->move(update_alloc ? other.alloc_ : alloc_);
+
+        // Inlining the allocator into the construct_from call confuses LCOV.
+        const auto& a = update_alloc ? other.alloc_ : alloc_;
+        auto tmp = other.cb_->move(a);
         reset();
         cb_ = tmp;
       }
