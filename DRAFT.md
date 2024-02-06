@@ -3,7 +3,7 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-P3019R4
+D3019R5
 
 Working Group: Library Evolution, Library
 
@@ -41,6 +41,10 @@ The design of the two proposed class templates is sufficiently similar that they
 should not be considered in isolation.
 
 ## History
+
+### Changes in R5
+
+* Fix wording for assignment operators to provide strong exception guarantee.
 
 ### Changes in R4
 
