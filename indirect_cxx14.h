@@ -29,6 +29,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "feature_check.h"
 
 namespace xyz {
+#ifndef XYZ_IN_PLACE_DEFINED
+#define XYZ_IN_PLACE_DEFINED
+struct in_place_t {};
+#endif  // XYZ_IN_PLACE_DEFINED
 
 #ifndef XYZ_UNREACHABLE_DEFINED
 #define XYZ_UNREACHABLE_DEFINED
@@ -115,46 +119,28 @@ class indirect : private detail::empty_base_optimization<A> {
                                     int>::type = 0>
   indirect() : indirect(std::allocator_arg, A()) {}
 
-  template <
-      class U, class... Us,
-      typename std::enable_if<std::is_constructible<T, U&&, Us&&...>::value,
-                              int>::type = 0,
-      typename std::enable_if<
-          !std::is_same<typename std::remove_const<
-                            typename std::remove_reference<U>::type>::type,
-                        indirect>::value,
-          int>::type = 0,
-      typename TT = T,
-      typename std::enable_if<std::is_copy_constructible<TT>::value,
-                              int>::type = 0>
-  indirect(std::allocator_arg_t, const A& alloc, U&& u, Us&&... us)
+  template <class... Us,
+            typename std::enable_if<std::is_constructible<T, Us&&...>::value,
+                                    int>::type = 0,
+            typename TT = T,
+            typename std::enable_if<std::is_copy_constructible<TT>::value,
+                                    int>::type = 0>
+  indirect(std::allocator_arg_t, const A& alloc, xyz::in_place_t, Us&&... us)
       : alloc_base(alloc) {
-    p_ = construct_from(alloc_base::get(), std::forward<U>(u),
-                        std::forward<Us>(us)...);
+    p_ = construct_from(alloc_base::get(), std::forward<Us>(us)...);
   }
 
-  template <
-      class U, class... Us,
-      typename std::enable_if<std::is_constructible<T, U&&, Us&&...>::value,
-                              int>::type = 0,
-      class AA = A,
-      typename std::enable_if<std::is_default_constructible<AA>::value,
-                              int>::type = 0,
-      typename std::enable_if<
-          !std::is_same<typename std::remove_const<
-                            typename std::remove_reference<U>::type>::type,
-                        indirect>::value,
-          int>::type = 0,
-      typename std::enable_if<
-          !std::is_same<typename std::remove_const<
-                            typename std::remove_reference<U>::type>::type,
-                        std::allocator_arg_t>::value,
-          int>::type = 0,
-      typename TT = T,
-      typename std::enable_if<std::is_copy_constructible<TT>::value,
-                              int>::type = 0>
-  explicit indirect(U&& u, Us&&... us)
-      : indirect(std::allocator_arg, A(), std::forward<U>(u),
+  template <class... Us,
+            typename std::enable_if<std::is_constructible<T, Us&&...>::value,
+                                    int>::type = 0,
+            class AA = A,
+            typename std::enable_if<std::is_default_constructible<AA>::value,
+                                    int>::type = 0,
+            typename TT = T,
+            typename std::enable_if<std::is_copy_constructible<TT>::value,
+                                    int>::type = 0>
+  explicit indirect(xyz::in_place_t, Us&&... us)
+      : indirect(std::allocator_arg, A(), xyz::in_place_t{},
                  std::forward<Us>(us)...) {}
 
   indirect(std::allocator_arg_t, const A& alloc, const indirect& other)
@@ -510,10 +496,10 @@ class indirect : private detail::empty_base_optimization<A> {
 
 #ifdef XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
 template <typename Value>
-indirect(Value) -> indirect<Value>;
+indirect(xyz::in_place_t, Value) -> indirect<Value>;
 
 template <typename Alloc, typename Value>
-indirect(std::allocator_arg_t, Alloc, Value) -> indirect<
+indirect(std::allocator_arg_t, Alloc, xyz::in_place_t, Value) -> indirect<
     Value, typename std::allocator_traits<Alloc>::template rebind_alloc<Value>>;
 #endif  // XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
 
