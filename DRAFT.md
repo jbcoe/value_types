@@ -1278,10 +1278,10 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
   `allocator_traits<allocator_type>::deallocate`. Otherwise if `alloc !=
   other.alloc` and if `other` is not valueless, a new owned object is
   constructed in `this` using `allocator_traits<allocator_type>::construct` with
-  the owned object from `other` as the argument, with memory allocated using
-  either the allocator in `this` or the allocator in `other` if the allocator
-  needs updating. The original owned object in `this` is destroyed using
-  `allocator_traits<allocator_type>::destroy` and then deallocated using
+  the owned object from `other` as an rvalue as the argument, with memory
+  allocated using either the allocator in `this` or the allocator in `other` if
+  the allocator needs updating. The original owned object in `this` is destroyed
+  using `allocator_traits<allocator_type>::destroy` and then deallocated using
   `allocator_traits<allocator_type>::deallocate` with the original allocator in
   `this`.
 
