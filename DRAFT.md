@@ -1269,7 +1269,7 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
 
 4. _Effects_: If `other == *this` then no effect.
 
-  If `std::allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
+  If `std::allocator_traits<Alloc>::propagate_on_container_move_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
   If `alloc == other.alloc`, swaps the owned objects in `this` and `other`; the
