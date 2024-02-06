@@ -43,7 +43,8 @@ namespace xyz {
 
 #ifndef XYZ_TRIVIALLY_RELOCATABLE_IF_DEFINED
 #define XYZ_TRIVIALLY_RELOCATABLE_IF_DEFINED
-#if defined(__cpp_impl_trivially_relocatable) && defined(__cpp_lib_trivially_relocatable)
+#if defined(__cpp_impl_trivially_relocatable) && \
+    defined(__cpp_lib_trivially_relocatable)
 #define XYZ_TRIVIALLY_RELOCATABLE_IF(x) [[trivially_relocatable(x)]]
 #else
 #define XYZ_TRIVIALLY_RELOCATABLE_IF(x)
@@ -133,7 +134,8 @@ inline constexpr bool polymorphic_be_trivially_relocatable_v =
 #endif
 
 template <class T, class A = std::allocator<T>>
-class XYZ_TRIVIALLY_RELOCATABLE_IF((polymorphic_be_trivially_relocatable_v<T, A>)) polymorphic {
+class XYZ_TRIVIALLY_RELOCATABLE_IF(
+    (polymorphic_be_trivially_relocatable_v<T, A>)) polymorphic {
   using cblock_t = detail::control_block<T, A>;
   cblock_t* cb_;
 

@@ -49,7 +49,8 @@ namespace xyz {
 
 #ifndef XYZ_TRIVIALLY_RELOCATABLE_IF_DEFINED
 #define XYZ_TRIVIALLY_RELOCATABLE_IF_DEFINED
-#if defined(__cpp_impl_trivially_relocatable) && defined(__cpp_lib_trivially_relocatable)
+#if defined(__cpp_impl_trivially_relocatable) && \
+    defined(__cpp_lib_trivially_relocatable)
 #define XYZ_TRIVIALLY_RELOCATABLE_IF(x) [[trivially_relocatable(x)]]
 #else
 #define XYZ_TRIVIALLY_RELOCATABLE_IF(x)
@@ -76,12 +77,14 @@ inline constexpr bool indirect_allocator_pocma_models_relocatable_v =
 template <class A>
 inline constexpr bool indirect_be_trivially_relocatable_v =
     std::is_trivially_relocatable_v<A> &&
-    std::is_trivially_relocatable_v<typename std::allocator_traits<A>::pointer> &&
+    std::is_trivially_relocatable_v<
+        typename std::allocator_traits<A>::pointer> &&
     indirect_allocator_pocma_models_relocatable_v<A>;
 #endif
 
 template <class T, class A = std::allocator<T>>
-class XYZ_TRIVIALLY_RELOCATABLE_IF(indirect_be_trivially_relocatable_v<A>) indirect {
+class XYZ_TRIVIALLY_RELOCATABLE_IF(
+    indirect_be_trivially_relocatable_v<A>) indirect {
   using allocator_traits = std::allocator_traits<A>;
 
  public:

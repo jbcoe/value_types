@@ -155,8 +155,10 @@ TEST(PolymorphicTest, SwapWithNoSBOAndSBO) {
 }
 
 TEST(PolymorphicTest, TriviallyRelocatable) {
-#if defined(__cpp_impl_trivially_relocatable) && defined(__cpp_lib_trivially_relocatable)
-  static_assert(std::is_trivially_relocatable<xyz::polymorphic<int>>::value, "");
+#if defined(__cpp_impl_trivially_relocatable) && \
+    defined(__cpp_lib_trivially_relocatable)
+  static_assert(std::is_trivially_relocatable<xyz::polymorphic<int>>::value,
+                "");
 #ifdef XYZ_HAS_STD_MEMORY_RESOURCE
   static_assert(!std::is_trivially_relocatable_v<
                 xyz::polymorphic<int, std::pmr::polymorphic_allocator<int>>>);

@@ -49,7 +49,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace {
 
 TEST(IndirectTest, TriviallyRelocatable) {
-#if defined(__cpp_impl_trivially_relocatable) && defined(__cpp_lib_trivially_relocatable)
+#if defined(__cpp_impl_trivially_relocatable) && \
+    defined(__cpp_lib_trivially_relocatable)
   static_assert(std::is_trivially_relocatable_v<xyz::indirect<int>>);
 #ifdef XYZ_HAS_STD_MEMORY_RESOURCE
   static_assert(!std::is_trivially_relocatable_v<
