@@ -171,8 +171,10 @@ class indirect {
       } else {
         // Constructing a new object could throw so we need to defer resetting
         // or updating allocators until this is done.
-        auto tmp =
-            construct_from(update_alloc ? other.alloc_ : alloc_, *other.p_);
+
+        // Inlining the allocator into the construct_from call confuses LCOV.
+        const auto& a = update_alloc ? other.alloc_ : alloc_;
+        auto tmp = construct_from(a, *other.p_);
         reset();
         p_ = tmp;
       }
@@ -204,8 +206,10 @@ class indirect {
       } else {
         // Constructing a new object could throw so we need to defer resetting
         // or updating allocators until this is done.
-        auto tmp = construct_from(update_alloc ? other.alloc_ : alloc_,
-                                  std::move(*other.p_));
+
+        // Inlining the allocator into the construct_from call confuses LCOV.
+        const auto& a = update_alloc ? other.alloc_ : alloc_;
+        auto tmp = construct_from(a, std::move(*other.p_));
         reset();
         p_ = tmp;
       }
