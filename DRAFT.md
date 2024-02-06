@@ -793,7 +793,23 @@ constexpr indirect& operator=(const indirect& other);
 
 1. _Mandates_: `T` is a complete type.
 
-2. _Effects_: TODO. No effects if an exception is thrown.
+2. _Effects_: If `other == *this` then no effect.
+
+  If `std::allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
+  `true` and `alloc != other.alloc` then the allocator needs updating.
+
+  The owned value in this, if any, is destroyed using
+  `allocator_traits<allocator_type>::destroy` and then deallocated using
+  `allocator_traits<allocator_type>::deallocate`.
+
+  If `alloc == other.alloc` TODO.
+
+  Otherwise if `alloc != other.alloc` TODO.
+
+  If the allocator needs updating, the allocator in `this` is replaced with a
+  copy of the allocator in `other`.
+
+  No effects if an exception is thrown.
 
 3. _Returns_: A reference to `*this`.
 
@@ -803,7 +819,19 @@ constexpr indirect& operator=(indirect&& other) noexcept(
     allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-4. _Effects_: TODO. No effects if an exception is thrown.
+4. _Effects_: If `other == *this` then no effect.
+
+  If `std::allocator_traits<Alloc>::propagate_on_container_move_assignment` is
+  `true` and `alloc != other.alloc` then the allocator needs updating.
+
+  If `alloc == other.alloc` TODO.
+
+  Otherwise if `alloc != other.alloc` TODO.
+
+  If the allocator needs updating, the allocator in `this` is replaced with a
+  copy of the allocator in `other`.
+
+  No effects if an exception is thrown.
 
 5. _Postconditions_: `other` is valueless.
 
