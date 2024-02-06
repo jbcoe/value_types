@@ -243,8 +243,7 @@ class polymorphic {
       // resetting or updating allocators until this is done.
 
       // Inlining the allocator into the construct_from call confuses LCOV.
-      const auto& a = update_alloc ? other.alloc_ : alloc_;
-      auto tmp = other.cb_->clone(a);
+      auto tmp = other.cb_->clone(update_alloc ? other.alloc_ : alloc_);
       reset();
       cb_ = tmp;
     }
@@ -277,8 +276,7 @@ class polymorphic {
         // resetting or updating allocators until this is done.
 
         // Inlining the allocator into the construct_from call confuses LCOV.
-        const auto& a = update_alloc ? other.alloc_ : alloc_;
-        auto tmp = other.cb_->move(a);
+        auto tmp = other.cb_->move(update_alloc ? other.alloc_ : alloc_);
         reset();
         cb_ = tmp;
       }
