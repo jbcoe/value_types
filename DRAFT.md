@@ -1018,11 +1018,12 @@ template <class T, class Alloc>
 struct hash<indirect<T, Alloc>>;
 ```
 
-1. The specialization `hash<indirect<T, Alloc>>` is enabled ([unord.hash]) if and
-only if `hash<remove_const_t<T>>` is enabled. When enabled for an object `i` of
-type `indirect<T, Alloc>`, then `hash<indirect<T, Alloc>>()(i)` evaluates to the
-same value as `hash<remove_const_t<T>>()(*i)`. The member functions are not
-guaranteed to be noexcept.
+1. The specialization `hash<indirect<T, Alloc>>` is enabled ([unord.hash]) if
+and only if `hash<remove_const_t<T>>` is enabled. When enabled for an object `i`
+of type `indirect<T, Alloc>`, then `hash<indirect<T, Alloc>>()(i)` evaluates to
+either the same value as `hash<remove_const_t<T>>()(*i)`, if `i` is not
+valueless; otherwise to an implementation-defined value. The member functions
+are not guaranteed to be noexcept.
 
 2. _Mandates_: `T` is a complete type.
 
