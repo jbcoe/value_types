@@ -81,7 +81,6 @@ should not be considered in isolation.
 * Add discussion on incomplete types.
 
 * Add discussion on explicit constructors.
-* Add discussion on explicit constructors.
 
 * Add discussion on arithmetic operators and update change table.
 
@@ -95,7 +94,7 @@ should not be considered in isolation.
 * Add constructor `indirect(U&& u, Us&&... us)` overload and requisite
   constraints.
 
-* Add constructor `polymorphic(allocator_arg_t, const Allocator& alloc)`
+* Add constructor `polymorphic(allocator_arg_t, const Allocator& a)`
   overload.
 
 * Add discussion on similarities and differences with variant.
@@ -626,23 +625,23 @@ class indirect {
 
   constexpr indirect();
 
-  explicit constexpr indirect(allocator_arg_t, const Allocator& alloc);
+  explicit constexpr indirect(allocator_arg_t, const Allocator& a);
 
   template <class... Us>
   explicit constexpr indirect(in_place_t, Us&&... us);
 
   template <class... Us>
-  explicit constexpr indirect(allocator_arg_t, const Allocator& alloc,
+  explicit constexpr indirect(allocator_arg_t, const Allocator& a,
                      in_place_t, Us&&... us);
 
   constexpr indirect(const indirect& other);
 
-  constexpr indirect(allocator_arg_t, const Allocator& alloc,
+  constexpr indirect(allocator_arg_t, const Allocator& a,
                      const indirect& other);
 
   constexpr indirect(indirect&& other) noexcept(see below);
 
-  constexpr indirect(allocator_arg_t, const Allocator& alloc,
+  constexpr indirect(allocator_arg_t, const Allocator& a,
                      indirect&& other) noexcept(see below);
 
   constexpr ~indirect();
@@ -722,7 +721,7 @@ explicit constexpr indirect()
   `allocator_traits<allocator_type>::construct` throws.
 
 ```c++
-explicit constexpr indirect(allocator_arg_t, const Allocator& alloc);
+explicit constexpr indirect(allocator_arg_t, const Allocator& a);
 ```
 
 6. _Constraints_: `is_default_constructible_v<T>` is `true`.
@@ -730,7 +729,7 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& alloc);
 
 7. _Mandates_: `T` is a complete type.
 
-8. _Effects_: `allocator` is direct-non-list-initialized with `alloc`. Value
+8. _Effects_: `alloc` is direct-non-list-initialized with `a`. Value
    initializes an owned object of type `T` using the specified allocator.
 
 9. _Postconditions_: `*this` is not valueless.
@@ -762,7 +761,7 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a, in_place_t, Us&
 
 15. _Mandates_: `T` is a complete type.
 
-16. _Effects_: `allocator` is direct-non-list-initialized with `alloc`.
+16. _Effects_: `alloc` is direct-non-list-initialized with `a`.
     Direct-non-list-initializes an owned object of type `T` using the specified
     allocator with `std​::​forward<Us>(us...)`.
 
@@ -777,13 +776,13 @@ constexpr indirect(const indirect& other);
     other)`
 
 ```c++
-constexpr indirect(allocator_arg_t, const Allocator& alloc,
+constexpr indirect(allocator_arg_t, const Allocator& a,
                    const indirect& other);
 ```
 
 19. _Mandates_: `T` is a complete type.
 
-20. _Effects_: `allocator` is direct-non-list-initialized with `alloc`. If
+20. _Effects_: `alloc` is direct-non-list-initialized with `a`. If
     `other` is valueless, `*this` is valueless. Otherwise, copy constructs an
     owned object of type `T` using the specified allocator with `*other`.
 
@@ -795,11 +794,11 @@ constexpr indirect(indirect&& other) noexcept;
     std::move(other))`.
 
 ```c++
-constexpr indirect(allocator_arg_t, const Allocator& alloc, indirect&& other)
+constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
   noexcept(allocator_traits<Allocator>::is_always_equal);
 ```
 
-22. _Effects_: `allocator` is direct-non-list-initialized with `alloc`. If
+22. _Effects_: `alloc` is direct-non-list-initialized with `a`. If
     `other` is valueless, `*this` is valueless. Otherwise, if `alloc ==
     other.alloc` constructs an object of type `indirect` that owns the owned
     value of other; `other` is valueless. Otherwise constructs an object of type
@@ -1126,23 +1125,23 @@ class polymorphic {
 
   explicit constexpr polymorphic();
 
-  explicit constexpr polymorphic(allocator_arg_t, const Allocator& alloc);
+  explicit constexpr polymorphic(allocator_arg_t, const Allocator& a);
 
   template <class U, class... Ts>
   explicit constexpr polymorphic(in_place_type_t<U>, Ts&&... ts);
 
   template <class U, class... Ts>
-  explicit constexpr polymorphic(allocator_arg_t, const Allocator& alloc,
+  explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                         in_place_type_t<U>, Ts&&... ts);
 
   constexpr polymorphic(const polymorphic& other);
 
-  constexpr polymorphic(allocator_arg_t, const Allocator& alloc,
+  constexpr polymorphic(allocator_arg_t, const Allocator& a,
                         const polymorphic& other);
 
   constexpr polymorphic(polymorphic&& other) noexcept(see below);
 
-  constexpr polymorphic(allocator_arg_t, const Allocator& alloc,
+  constexpr polymorphic(allocator_arg_t, const Allocator& a,
                         polymorphic&& other) noexcept(see below);
 
   constexpr ~polymorphic();
@@ -1190,7 +1189,7 @@ explicit constexpr polymorphic()
   `allocator_traits<allocator_type>::construct` throws.
 
 ```c++
-explicit constexpr polymorphic(allocator_arg_t, const Allocator& alloc);
+explicit constexpr polymorphic(allocator_arg_t, const Allocator& a);
 ```
 
 6. _Constraints_: `is_default_constructible_v<T>` is `true`,
@@ -1198,7 +1197,7 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& alloc);
 
 7. _Mandates_: `T` is a complete type.
 
-8. _Effects_: `allocator` is direct-non-list-initialized with `alloc`. Value
+8. _Effects_: `alloc` is direct-non-list-initialized with `a`. Value
 initializes an owned object of type `T` using the specified allocator.
 
 9. _Postconditions_: `*this` is not valueless.
@@ -1231,7 +1230,7 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
 
 14. _Mandates_: `T` is a complete type.
 
-15. _Effects_: `allocator` is direct-non-list-initialized with `alloc`.
+15. _Effects_: `alloc` is direct-non-list-initialized with `a`.
     Direct-non-list-initializes an owned object of type `U` using the specified
     allocator with `std​::​forward<Ts>(ts...)`.
 
