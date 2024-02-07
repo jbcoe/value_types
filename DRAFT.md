@@ -50,6 +50,8 @@ should not be considered in isolation.
 
 * Amend wording for swap to consider the valueless state.
 
+* Remove comparison operators for `indirect` where they can be compiler-synthesized.
+
 ### Changes in R5
 
 * Fix wording for assignment operators to provide strong exception guarantee.
@@ -687,15 +689,6 @@ class indirect {
     const indirect& lhs, const U& rhs) noexcept(see below)
     -> compare_three_way_result_t<T, U>;
 
-  template <class U>
-  friend constexpr bool operator==(
-    const U& lhs, const indirect& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr auto operator<=>(
-    const U& lhs, const indirect& rhs) noexcept(see below)
-    -> compare_three_way_result_t<T, U>;
-
 private:
   pointer p; // exposition only
   Allocator alloc; // exposition only
@@ -1050,36 +1043,6 @@ constexpr auto operator<=>(const indirect& lhs, const U& rhs)
 8. _Remarks_: Specializations of this function template for which `*lhs <=> rhs`
    is a core constant expression, are constexpr functions.
 
-```c++
-template <class U>
-constexpr bool operator==(const U& lhs, const indirect& rhs)
-  noexcept(noexcept(lhs == *rhs));
-```
-
-9. _Constraints_: `lhs == *rhs` is well-formed.
-
-10. _Mandates_: `T` is a complete type.
-
-11. _Returns_: If `rhs` is valueless, false; otherwise `lhs == *rhs`.
-
-12. _Remarks_: Specializations of this function template for which `lhs == *rhs`
-   is a core constant expression, are constexpr functions.
-
-```c++
-template <class U>
-constexpr auto operator<=>(const U& lhs, const indirect& rhs)
-  noexcept(noexcept(lhs <=> *rhs)) -> compare_three_way_result_t<T, U>;
-```
-
-13. _Constraints_: `lhs <=> *rhs` is well-formed.
-
-14. _Mandates_: `T` is a complete type.
-
-15. _Returns_: If `rhs` is valueless, `true <=> false`; otherwise `lhs <=>
-    *rhs`.
-
-16. _Remarks_: Specializations of this function template for which `lhs <=>
-    *rhs` is a core constant expression, are constexpr functions.
 
 #### X.Y.10 Hash support [indirect.hash]
 

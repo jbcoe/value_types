@@ -305,17 +305,6 @@ class indirect {
   }
 
   template <class U>
-  friend constexpr bool operator==(
-      const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs == *rhs))
-    requires(!is_indirect_v<U>)
-  {
-    if (rhs.valueless_after_move()) {
-      return false;
-    }
-    return lhs == *rhs;
-  }
-
-  template <class U>
   friend constexpr auto operator<=>(const indirect<T, A>& lhs,
                                     const U& rhs) noexcept(noexcept(*lhs <=>
                                                                     rhs))
@@ -326,18 +315,6 @@ class indirect {
       return false <=> true;
     }
     return *lhs <=> rhs;
-  }
-
-  template <class U>
-  friend constexpr auto operator<=>(
-      const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs <=> *rhs))
-      -> std::compare_three_way_result_t<T, U>
-    requires(!is_indirect_v<U>)
-  {
-    if (rhs.valueless_after_move()) {
-      return true <=> false;
-    }
-    return lhs <=> *rhs;
   }
 
  private:
