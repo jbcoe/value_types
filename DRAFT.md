@@ -3,7 +3,7 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-D3019R6
+P3019R6
 
 Working Group: Library Evolution, Library
 
@@ -55,6 +55,8 @@ should not be considered in isolation.
 ### Changes in R5
 
 * Fix wording for assignment operators to provide strong exception guarantee.
+
+* Add missing wording for valueless hash.
 
 ### Changes in R4
 
