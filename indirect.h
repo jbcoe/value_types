@@ -87,26 +87,23 @@ class indirect {
 
   // The template type TT defers the constraint evaluation until the constructor
   // is instantiated.
-  template <class U, class... Us, class TT = T>
-  explicit constexpr indirect(std::allocator_arg_t, const A& alloc, U&& u,
-                              Us&&... us)
-    requires(std::constructible_from<T, U &&, Us && ...> &&
-             !std::is_same_v<std::remove_cvref_t<U>, indirect> &&
+  template <class... Us, class TT = T>
+  explicit constexpr indirect(std::allocator_arg_t, const A& alloc,
+                              std::in_place_t, Us&&... us)
+    requires(std::constructible_from<T, Us && ...> &&
              std::is_copy_constructible_v<TT>)
       : alloc_(alloc) {
-    p_ = construct_from(alloc_, std::forward<U>(u), std::forward<Us>(us)...);
+    p_ = construct_from(alloc_, std::forward<Us>(us)...);
   }
 
   // The template type TT defers the constraint evaluation until the constructor
   // is instantiated.
-  template <class U, class... Us, class TT = T>
-  explicit constexpr indirect(U&& u, Us&&... us)
-    requires(std::constructible_from<T, U &&, Us && ...> &&
+  template <class... Us, class TT = T>
+  explicit constexpr indirect(std::in_place_t, Us&&... us)
+    requires(std::constructible_from<T, Us && ...> &&
              std::is_default_constructible_v<A> &&
-             !std::is_same_v<std::remove_cvref_t<U>, indirect> &&
-             !std::is_same_v<std::remove_cvref_t<U>, std::allocator_arg_t> &&
              std::is_copy_constructible_v<TT>)
-      : indirect(std::allocator_arg, A{}, std::forward<U>(u),
+      : indirect(std::allocator_arg, A{}, std::in_place,
                  std::forward<Us>(us)...) {}
 
   constexpr indirect(std::allocator_arg_t, const A& alloc,
@@ -382,10 +379,10 @@ template <class T>
 concept is_hashable = requires(T t) { std::hash<T>{}(t); };
 
 template <typename Value>
-indirect(Value) -> indirect<Value>;
+indirect(std::in_place_t, Value) -> indirect<Value>;
 
 template <typename Alloc, typename Value>
-indirect(std::allocator_arg_t, Alloc, Value) -> indirect<
+indirect(std::allocator_arg_t, Alloc, std::in_place_t, Value) -> indirect<
     Value, typename std::allocator_traits<Alloc>::template rebind_alloc<Value>>;
 
 }  // namespace xyz

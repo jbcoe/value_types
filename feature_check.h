@@ -51,6 +51,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #endif  //(__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >=
         // 201703L)
 
+#ifdef XYZ_HAS_STD_IN_PLACE_T
+#error "XYZ_HAS_STD_IN_PLACE_T is already defined"
+#endif  // XYZ_HAS_STD_IN_PLACE_T
+
+#if (__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+#define XYZ_HAS_STD_IN_PLACE_T
+#endif  //(__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >=
+        // 201703L)
+
 #if (__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
 #define XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
 #endif  //(__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >=

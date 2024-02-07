@@ -3,11 +3,11 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-D3019R5
+D3019R6
 
 Working Group: Library Evolution, Library
 
-Date: 2024-02-05
+Date: 2024-02-06
 
 _Jonathan Coe \<<jonathanbcoe@gmail.com>\>_
 
@@ -42,13 +42,18 @@ should not be considered in isolation.
 
 ## History
 
+### Changes in R6
+
+* Add `std::in_place_t` argument to indirect constructors.
+
 ### Changes in R5
 
 * Fix wording for assignment operators to provide strong exception guarantee.
 
 ### Changes in R4
 
-* Use constraints to require that the object owned by `indirect` is copy-constructible.
+* Use constraints to require that the object owned by `indirect` is
+  copy-constructible.
 
 * Allow comparison of valueless `indirect` objects.
 
@@ -56,7 +61,8 @@ should not be considered in isolation.
 
 * Remove `std::format` support for `std::indirect`.
 
-* Allow copy and move of valueless objects, discuss similarities with variant.
+* Allow copy, move, assign and swap of valueless objects, discuss similarities
+  with variant.
 
 * No longer specify constructors as uses-allocator constructing anything.
 
@@ -66,15 +72,14 @@ should not be considered in isolation.
 
 * Update constructor wording
 
-* Added discussion on incomplete types.
+* Add discussion on incomplete types.
 
-* Added discussion on explicit constructors.
+* Add discussion on explicit constructors.
 
-* Added discussion on arithmetic operators and update change table.
+* Add discussion on arithmetic operators and update change table.
 
-* Remove mandates on `std::indirect` move assignment.
-
-* Remove references to `std::indirect`/`std::polymorphic` values terms under `[*.general]` sections.
+* Remove references to `std::indirect`/`std::polymorphic` values terms under
+  `[*.general]` sections.
 
 ### Changes in R3
 
@@ -431,6 +436,20 @@ Not marking `operator->` and `operator*` as `noexcept` for `indirect` and
 `polymorphic` would make them strictly less useful than `unique_ptr` in contexts
 where they would otherwise be a valid replacement.
 
+### Tagged constructors
+
+Constructors for `indirect` and `polymorphic` taking an allocator or owned
+object constructor arguments are tagged with `allocator_arg_t` and `in_place_t`
+(or `in_place_type_t`) respectively. This is consistent with the standard
+library’s use of tagged constructors in `optional`, `any` and `variant`.
+
+Without `in_place_t` the constructor of `indirect` would not be able to
+construct an owned object using that owned object’s allocator-extended
+constructor. `indirect(std::in_place, std::allocator_arg, alloc, args)`
+unambiguously constructs an `indirect` with a default constructed allocator and
+an owned object constructed with an allocator extended constructor taking an
+allocator `alloc` and constructor arguments `args`.
+
 ### Explicit constructors
 
 Constructors for `indirect` and `polymorphic` are marked as explicit. This
@@ -589,12 +608,12 @@ class indirect {
 
   explicit constexpr indirect(allocator_arg_t, const Allocator& alloc);
 
-  template <class U, class... Us>
-  explicit constexpr indirect(U&& u, Us&&... us);
+  template <class... Us>
+  explicit constexpr indirect(in_place_t, Us&&... us);
 
-  template <class U, class... Us>
+  template <class... Us>
   explicit constexpr indirect(allocator_arg_t, const Allocator& alloc,
-                     U&& u, Us&&... us);
+                     in_place_t, Us&&... us);
 
   constexpr indirect(const indirect& other);
 
@@ -709,34 +728,31 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& alloc);
   `allocator_traits<allocator_type>::construct` throws.
 
 ```c++
-template <class U, class... Us>
-explicit constexpr indirect(U&& u, Us&&... us);
+template <class... Us>
+explicit constexpr indirect(in_place_t, Us&&... us);
 ```
 
-11. _Constraints_: `is_constructible_v<T, U, Us...>` is `true`.
+11. _Constraints_: `is_constructible_v<T, Us...>` is `true`.
    `is_copy_constructible_v<T>` is `true`.
-   `is_same_v<remove_cvref_t<U>, allocator_arg_t>` is `false`.
-   `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
    `is_default_constructible_v<allocator_type>` is `true`.
 
 12. _Mandates_: `T` is a complete type.
 
-13. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(), std::forward<U>(u), std::forward<Us>(us)...)`.
+13. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(), std::forward<Us>(us)...)`.
 
 ```c++
-template <class U, class... Us>
-explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u, Us&& ...us);
+template <class... Us>
+explicit constexpr indirect(allocator_arg_t, const Allocator& a, in_place_t, Us&& ...us);
 ```
 
-14. _Constraints_: `is_constructible_v<T, U, Us...>` is `true`.
+14. _Constraints_: `is_constructible_v<T, Us...>` is `true`.
   `is_copy_constructible_v<T>` is `true`.
-  `is_same_v<remove_cvref_t<U>, indirect>` is `false`, .
 
 15. _Mandates_: `T` is a complete type.
 
 16. _Effects_: `allocator` is direct-non-list-initialized with `alloc`.
     Direct-non-list-initializes an owned object of type `T` using the specified
-    allocator with `std::forward<U>(u), std​::​forward<Us>(us...)`.
+    allocator with `std​::​forward<Us>(us...)`.
 
 17. _Postconditions_: `*this` is not valueless.
 
