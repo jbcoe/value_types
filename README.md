@@ -117,7 +117,7 @@ and made the null state unobservable.
 
 ## Developer Guide
 
-For building and working with the project, please see the [developer guide](docs/developer-guide.md).
+For building and working with the project, please see the [developer guide](DEVELOPMENT.md).
 
 ## GitHub codespaces
 
