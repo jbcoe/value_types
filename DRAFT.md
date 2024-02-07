@@ -7,7 +7,7 @@ D3019R6
 
 Working Group: Library Evolution, Library
 
-Date: 2024-02-06
+Date: 2024-02-07
 
 _Jonathan Coe \<<jonathanbcoe@gmail.com>\>_
 
@@ -45,6 +45,8 @@ should not be considered in isolation.
 ### Changes in R6
 
 * Add `std::in_place_t` argument to indirect constructors.
+
+* Amend wording for assignment operators to provide strong exception guarantee.
 
 ### Changes in R5
 
@@ -825,14 +827,14 @@ constexpr indirect& operator=(const indirect& other);
   Otherwise, if `alloc == other.alloc` and `this` is not valueless, equivalent
   to `T tmp(*other); std::swap(tmp, **this)`.
 
-  Otherwise , if `alloc != other.alloc` or `this` is valueless, the owned value
-  in this, if any, is destroyed using
+  Otherwise , if `alloc != other.alloc` or `this` is valueless, a new owned
+  object is constructed in `this` using
+  `allocator_traits<allocator_type>::construct` with the owned object from
+  `other` as the argument, with memory allocated using either the allocator in
+  `this` or the allocator in `other` if the allocator needs updating. The
+  previous owned object in this, if any, is destroyed using
   `allocator_traits<allocator_type>::destroy` and then deallocated using
-  `allocator_traits<allocator_type>::deallocate`. A new owned object is
-  constructed in `this` using `allocator_traits<allocator_type>::construct` with
-  the owned object from `other` as the argument, with memory allocated using
-  either the allocator in `this` or the allocator in `other` if the allocator
-  needs updating.
+  `allocator_traits<allocator_type>::deallocate`.
 
   If the allocator needs updating, the allocator in `this` is replaced with a
   copy of the allocator in `other`.
@@ -859,14 +861,14 @@ constexpr indirect& operator=(indirect&& other) noexcept(
   `allocator_traits<allocator_type>::destroy` and then deallocated using
   `allocator_traits<allocator_type>::deallocate`.
 
-  Otherwise , if `alloc != other.alloc` or `this` is valueless, the owned value
-  in this, if any, is destroyed using
+  Otherwise , if `alloc != other.alloc` or `this` is valueless, a new owned
+  object is constructed in `this` using
+  `allocator_traits<allocator_type>::construct` with the owned object from
+  `other` as the argument as an rvalue, with memory allocated using either the
+  allocator in `this` or the allocator in `other` if the allocator needs
+  updating. The previous owned object in this, if any, is destroyed using
   `allocator_traits<allocator_type>::destroy` and then deallocated using
-  `allocator_traits<allocator_type>::deallocate`. A new owned object is
-  constructed in `this` using `allocator_traits<allocator_type>::construct` with
-  the owned object from `other` as the argument, with memory allocated using
-  either the allocator in `this` or the allocator in `other` if the allocator
-  needs updating.
+  `allocator_traits<allocator_type>::deallocate`.
 
   If the allocator needs updating, the allocator in `this` is replaced with a
   copy of the allocator in `other`.
@@ -1315,13 +1317,14 @@ constexpr polymorphic& operator=(const polymorphic& other);
   If `std::allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
-  The owned value in this, if any, is destroyed using
-  `allocator_traits<allocator_type>::destroy` and then deallocated using
-  `allocator_traits<allocator_type>::deallocate`. If `other` is not valueless, a
-  new owned object is constructed in `this` using
+  If `other` is not valueless, a new owned object is constructed in `this` using
   `allocator_traits<allocator_type>::construct` with the owned object from
   `other` as the argument, with memory allocated using either the allocator in
   `this` or the allocator in `other` if the allocator needs updating.
+
+  The previous owned object in this, if any, is destroyed using
+  `allocator_traits<allocator_type>::destroy` and then deallocated using
+  `allocator_traits<allocator_type>::deallocate`.
 
   If the allocator needs updating, the allocator in `this` is replaced with a
   copy of the allocator in `other`.
@@ -1338,21 +1341,22 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
 
 4. _Effects_: If `other == *this` then no effect.
 
-  If `std::allocator_traits<Alloc>::propagate_on_container_move_assignment` is
+  If `std::allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
   If `alloc == other.alloc`, swaps the owned objects in `this` and `other`; the
   owned object in `other`, if any, is then destroyed using
   `allocator_traits<allocator_type>::destroy` and then deallocated using
-  `allocator_traits<allocator_type>::deallocate`. Otherwise if `alloc !=
-  other.alloc` and if `other` is not valueless, a new owned object is
-  constructed in `this` using `allocator_traits<allocator_type>::construct` with
-  the owned object from `other` as an rvalue as the argument, with memory
-  allocated using either the allocator in `this` or the allocator in `other` if
-  the allocator needs updating. The original owned object in `this` is destroyed
-  using `allocator_traits<allocator_type>::destroy` and then deallocated using
-  `allocator_traits<allocator_type>::deallocate` with the original allocator in
-  `this`.
+  `allocator_traits<allocator_type>::deallocate`.
+
+  Otherwise if `alloc != other.alloc`; if `other` is not valueless, a new owned
+  object is constructed in `this` using
+  `allocator_traits<allocator_type>::construct` with the owned object from
+  `other` as the argument as an rvalue, with memory allocated using either the
+  allocator in `this` or the allocator in `other` if the allocator needs
+  updating. The previous owned object in this, if any, is destroyed using
+  `allocator_traits<allocator_type>::destroy` and then deallocated using
+  `allocator_traits<allocator_type>::deallocate`.
 
   If the allocator needs updating, the allocator in `this` is replaced with a
   copy of the allocator in `other`.
