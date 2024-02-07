@@ -79,6 +79,7 @@ should not be considered in isolation.
 * Add discussion on incomplete types.
 
 * Add discussion on explicit constructors.
+* Add discussion on explicit constructors.
 
 * Add discussion on arithmetic operators and update change table.
 
