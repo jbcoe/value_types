@@ -589,13 +589,16 @@ move assignment, or swapping of the allocator only if
 
     is `true` within the implementation of the corresponding indirect value operation.
 
-4. A program that instantiates the definition of indirect for a non-object type, an array type, or a cv-qualified type is ill-formed.
+4. A program that instantiates the definition of indirect for a non-object type,
+   an array type, or a cv-qualified type is ill-formed.
 
 5. The template parameter `T` of `indirect` may be an incomplete type.
 
-6. The template parameter `Allocator` of `indirect` shall meet the _Cpp17Allocator_ requirements.
+6. The template parameter `Allocator` of `indirect` shall meet the
+   _Cpp17Allocator_ requirements.
 
-7. If a program declares an explicit or partial specialization of `indirect`, the behavior is undefined.
+7. If a program declares an explicit or partial specialization of `indirect`,
+   the behavior is undefined.
 
 #### X.Y.2 Class template indirect synopsis [indirect.syn]
 
@@ -1114,13 +1117,16 @@ or (64.3) `allocator_traits<allocator_type>::propagate_on_container_swap::value`
 is true within the implementation of the corresponding polymorphic value
 operation.
 
-4. A program that instantiates the definition of polymorphic for a non-object type, an array type, or a cv-qualified type is ill-formed.
+4. A program that instantiates the definition of polymorphic for a non-object
+   type, an array type, or a cv-qualified type is ill-formed.
 
 5. The template parameter `T` of `polymorphic` may be an incomplete type.
 
-6. The template parameter `Allocator` of `polymorphic` shall meet the requirements of _Cpp17Allocator_.
+6. The template parameter `Allocator` of `polymorphic` shall meet the
+   requirements of _Cpp17Allocator_.
 
-7. If a program declares an explicit or partial specialization of `polymorphic`, the behavior is undefined.
+7. If a program declares an explicit or partial specialization of `polymorphic`,
+   the behavior is undefined.
 
 #### X.Z.2 Class template polymorphic synopsis [polymorphic.syn]
 
