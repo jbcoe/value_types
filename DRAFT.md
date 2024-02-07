@@ -911,7 +911,7 @@ constexpr T& operator*() & noexcept;
 
 1. _Preconditions_: `*this` is not valueless.
 
-2. _Returns_: `*p_`.
+2. _Returns_: `*p`.
 
 3. [Note: The use of these functions typically requires that `T` be a complete
    type. —end note]
@@ -923,7 +923,7 @@ constexpr T&& operator*() && noexcept;
 
 4. _Preconditions_: `*this` is not valueless.
 
-5. _Returns_: `std::move(*p_)`.
+5. _Returns_: `std::move(*p)`.
 
 6. [Note: The use of these functions typically requires that `T` be a complete
    type. —end note]
@@ -935,7 +935,7 @@ constexpr pointer operator->() noexcept;
 
 7. _Preconditions_: `*this` is not valueless.
 
-8. _Returns_: `p_`.
+8. _Returns_: `p`.
 
 9. [Note: The use of these functions typically requires that `T` be a complete
    type. —end note]
@@ -1299,7 +1299,7 @@ constexpr polymorphic(polymorphic&& other) noexcept;
 ```
 
 20. _Effects_: Equivalent to `polymorphic(allocator_arg_t{},
-    Allocator(other.alloc_), other)`.
+    Allocator(other.alloc), other)`.
 
 ```c++
 constexpr polymorphic(allocator_arg_t, const Allocator& a,
