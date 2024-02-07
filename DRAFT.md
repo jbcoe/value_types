@@ -57,13 +57,15 @@ should not be considered in isolation.
 ### Changes in R4
 
 * Use constraints to require that the object owned by `indirect` is
-  copy-constructible.
+  copy-constructible. This ensures that `std::is_copy_constructible_v` does not
+  give misleading results.
 
-* Allow comparison of valueless `indirect` objects.
+* Modify comparison of `indirect` allow comparsion of valueless objects.
+  Comparisons are implemented in terms of `operator==` and `operator<=>`
+  returning `bool` and `auto`.
 
-* Implement comparison in terms of `operator<=>` and `operator==` returning bool.
-
-* Remove `std::format` support for `std::indirect`.
+* Remove `std::format` support for `std::indirect` as it cannot handle a
+  valueless state.
 
 * Allow copy, move, assign and swap of valueless objects, discuss similarities
   with variant.
@@ -73,8 +75,6 @@ should not be considered in isolation.
 * Require `T` to satisfy the requirements of `Cpp17Destructible`.
 
 * Rename exposition only variables `p_` to `p` and `allocator_` to `alloc`.
-
-* Update constructor wording
 
 * Add discussion on incomplete types.
 
