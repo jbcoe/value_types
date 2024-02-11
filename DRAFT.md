@@ -54,6 +54,8 @@ should not be considered in isolation.
 
 * Rename erroneous exposition only variable `allocator` to `alloc`.
 
+* Add drafting note on exception guarantees behaviour to `swap`.
+
 ### Changes in R5
 
 * Fix wording for assignment operators to provide strong exception guarantee.
@@ -971,6 +973,9 @@ constexpr void swap(indirect& other) noexcept(
 2. _[Note 2: The use of this function may require that `T` be a complete type
 dependent on behavour of the allocator. — end note]_
 
+3. _[Note 3: Exception guarantees for `swap` are intended model the behavior
+of exception guarantees for `std::vector::swap`. — end note]_
+
 ```c++
 constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
   noexcept(lhs.swap(rhs)));
@@ -1421,6 +1426,9 @@ constexpr void swap(polymorphic& other) noexcept(
   and the behavior is undefined unless `(*this).get_allocator() ==
   other.get_allocator()`. _[Note: Does not call `swap` on the owned objects
   directly. --end note]_
+
+2. _[Note 2: Exception guarantees for `swap` are intended model the behavior
+of exception guarantees for `std::vector::swap`. — end note]_
 
 ```c++
 constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(
