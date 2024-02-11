@@ -52,6 +52,8 @@ should not be considered in isolation.
 
 * Remove comparison operators for `indirect` where they can be compiler-synthesized.
 
+* Rename erroneous exposition only variable `allocator` to `alloc`.
+
 ### Changes in R5
 
 * Fix wording for assignment operators to provide strong exception guarantee.
@@ -1254,7 +1256,7 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
 
 18. _Mandates_: `T` is a complete type.
 
-19. _Effects_: `allocator` is direct-non-list-initialized with `alloc`. If
+19. _Effects_: `alloc` is direct-non-list-initialized with `alloc`. If
     `other` is valueless, `*this` is valueless. Otherwise, copy constructs an
     owned object of type `U`, where `U` is the type of the owned object in
     `other`, using the specified allocator with the owned object in `other`.
@@ -1271,7 +1273,7 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       polymorphic&& other) noexcept(allocator_traits::is_always_equal::value);
 ```
 
-21. _Effects_: `allocator` is direct-non-list-initialized with `alloc`. If
+21. _Effects_: `alloc` is direct-non-list-initialized with `a`. If
     `other` is valueless, `*this` is valueless. Otherwise, if `alloc ==
     other.alloc` either constructs an object of type `polymorphic` that owns the
     owned value of other, making `other` valueless; or, owns an object of the
