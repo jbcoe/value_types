@@ -41,6 +41,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifdef XYZ_HAS_STD_OPTIONAL
 #include <optional>
 #endif  // XYZ_HAS_STD_OPTIONAL
+#include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -54,8 +55,8 @@ using std::in_place_t;
 namespace {
 
 TEST(IndirectTest, ValueAccessFromInPlaceConstructedObject) {
-  xyz::indirect<int> a(xyz::in_place_t{}, 42);
-  EXPECT_EQ(*a, 42);
+  xyz::indirect<std::tuple<int, int>> a(xyz::in_place_t{}, 42, 42);
+  EXPECT_EQ(*a, (std::tuple<int, int>{42, 42}));
 }
 
 TEST(IndirectTest, ValueAccessFromDefaultConstructedObject) {
@@ -65,6 +66,11 @@ TEST(IndirectTest, ValueAccessFromDefaultConstructedObject) {
 
 #ifdef XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
 TEST(IndirectTest, TemplateArgumentDeduction) {
+  xyz::indirect a(42);
+  EXPECT_EQ(*a, 42);
+}
+
+TEST(IndirectTest, TemplateArgumentDeductionInPlace) {
   xyz::indirect a(xyz::in_place_t{}, 42);
   EXPECT_EQ(*a, 42);
 }

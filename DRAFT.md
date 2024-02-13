@@ -3,7 +3,7 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-P3019R6
+D3019R7
 
 Working Group: Library Evolution, Library
 
@@ -41,6 +41,14 @@ The design of the two proposed class templates is sufficiently similar that they
 should not be considered in isolation.
 
 ## History
+
+### Changes in R7
+
+* Reordereed comparison operators in `[indirect.syn]`.
+
+* Wording fixes in `[indirect.observers]` and `[polymorphic.observers]`.
+
+* Add construction from single argument.
 
 ### Changes in R6
 
@@ -633,6 +641,9 @@ class indirect {
 
   explicit constexpr indirect(allocator_arg_t, const Allocator& a);
 
+  template <class U>
+  explicit constexpr indirect(U&& u);
+
   template <class... Us>
   explicit constexpr indirect(in_place_t, Us&&... us);
 
@@ -702,6 +713,9 @@ private:
 template <typename Value>
 indirect(Value) -> indirect<Value>;
 
+template <typename Value>
+indirect(std::in_place_t, Value) -> indirect<Value>;
+
 template <typename Alloc, typename Value>
 indirect(std::allocator_arg_t, Alloc, Value) -> indirect<
     Value, typename std::allocator_traits<Alloc>::template rebind_alloc<Value>>;
@@ -744,17 +758,31 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a);
   `allocator_traits<allocator_type>::construct` throws.
 
 ```c++
+template <class U>
+explicit constexpr indirect(U&& u);
+```
+
+11. _Constraints_: `is_constructible_v<T, U&&>` is `true`.
+   `is_copy_constructible_v<T>` is `true`.
+   `is_default_constructible_v<allocator_type>` is `true`.
+   `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`.
+12. _Mandates_: `T` is a complete type.
+
+13. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(), in_place_t{}
+    std::forward<U>(u))`.
+
+```c++
 template <class... Us>
 explicit constexpr indirect(in_place_t, Us&&... us);
 ```
 
-11. _Constraints_: `is_constructible_v<T, Us...>` is `true`.
+14. _Constraints_: `is_constructible_v<T, Us...>` is `true`.
    `is_copy_constructible_v<T>` is `true`.
    `is_default_constructible_v<allocator_type>` is `true`.
 
-12. _Mandates_: `T` is a complete type.
+15. _Mandates_: `T` is a complete type.
 
-13. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(),
+16. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(),
     std::forward<Us>(us)...)`.
 
 ```c++
@@ -762,22 +790,22 @@ template <class... Us>
 explicit constexpr indirect(allocator_arg_t, const Allocator& a, in_place_t, Us&& ...us);
 ```
 
-14. _Constraints_: `is_constructible_v<T, Us...>` is `true`.
+17. _Constraints_: `is_constructible_v<T, Us...>` is `true`.
   `is_copy_constructible_v<T>` is `true`.
 
-15. _Mandates_: `T` is a complete type.
+18. _Mandates_: `T` is a complete type.
 
-16. _Effects_: `alloc` is direct-non-list-initialized with `a`.
+19. _Effects_: `alloc` is direct-non-list-initialized with `a`.
     Direct-non-list-initializes an owned object of type `T` using the specified
     allocator with `std​::​forward<Us>(us...)`.
 
-17. _Postconditions_: `*this` is not valueless.
+20. _Postconditions_: `*this` is not valueless.
 
 ```c++
 constexpr indirect(const indirect& other);
 ```
 
-18. _Effects_: Equivalent to `indirect(allocator_arg_t{},
+21. _Effects_: Equivalent to `indirect(allocator_arg_t{},
     allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc),
     other)`
 
@@ -786,9 +814,9 @@ constexpr indirect(allocator_arg_t, const Allocator& a,
                    const indirect& other);
 ```
 
-19. _Mandates_: `T` is a complete type.
+22. _Mandates_: `T` is a complete type.
 
-20. _Effects_: `alloc` is direct-non-list-initialized with `a`. If
+23. _Effects_: `alloc` is direct-non-list-initialized with `a`. If
     `other` is valueless, `*this` is valueless. Otherwise, copy constructs an
     owned object of type `T` using the specified allocator with `*other`.
 
@@ -796,7 +824,7 @@ constexpr indirect(allocator_arg_t, const Allocator& a,
 constexpr indirect(indirect&& other) noexcept;
 ```
 
-21. _Effects_: Equivalent to `indirect(allocator_arg_t{}, other.alloc,
+24. _Effects_: Equivalent to `indirect(allocator_arg_t{}, other.alloc,
     std::move(other))`.
 
 ```c++
@@ -804,13 +832,13 @@ constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
   noexcept(allocator_traits<Allocator>::is_always_equal);
 ```
 
-22. _Effects_: `alloc` is direct-non-list-initialized with `a`. If
+25. _Effects_: `alloc` is direct-non-list-initialized with `a`. If
     `other` is valueless, `*this` is valueless. Otherwise, if `alloc ==
     other.alloc` constructs an object of type `indirect` that owns the owned
     value of other; `other` is valueless. Otherwise constructs an object of type
     `indirect` using the specified allocator with `*other` used as an rvalue.
 
-23. _[Note: The use of this function may require that `T` be a complete type
+26. _[Note: The use of this function may require that `T` be a complete type
     dependent on behavour of the allocator. — end note]_
 
 #### X.Y.4 Destructor [indirect.dtor]

@@ -87,6 +87,16 @@ class indirect {
 
   // The template type TT defers the constraint evaluation until the constructor
   // is instantiated.
+  template <class U = T, class TT = T>
+  explicit constexpr indirect(U&& u)
+    requires(std::is_constructible_v<TT, U &&> &&
+             std::is_default_constructible_v<TT> &&
+             std::is_copy_constructible_v<TT> &&
+             not std::is_same_v<std::remove_cvref_t<U>, std::in_place_t>)
+      : indirect(std::in_place_t{}, std::forward<U>(u)) {}
+
+  // The template type TT defers the constraint evaluation until the constructor
+  // is instantiated.
   template <class... Us, class TT = T>
   explicit constexpr indirect(std::allocator_arg_t, const A& alloc,
                               std::in_place_t, Us&&... us)
@@ -354,6 +364,9 @@ class indirect {
 
 template <class T>
 concept is_hashable = requires(T t) { std::hash<T>{}(t); };
+
+template <typename Value>
+indirect(Value) -> indirect<Value>;
 
 template <typename Value>
 indirect(std::in_place_t, Value) -> indirect<Value>;
