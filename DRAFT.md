@@ -680,14 +680,14 @@ class indirect {
   friend constexpr bool operator==(
     const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below);
 
+  template <class U>
+  friend constexpr bool operator==(
+    const indirect& lhs, const U& rhs) noexcept(see below);
+
   template <class U, class AA>
   friend constexpr auto operator<=>(
     const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below)
     -> compare_three_way_result_t<T, U>;
-
-  template <class U>
-  friend constexpr bool operator==(
-    const indirect& lhs, const U& rhs) noexcept(see below);
 
   template <class U>
   friend constexpr auto operator<=>(
@@ -838,8 +838,8 @@ constexpr indirect& operator=(const indirect& other);
   If `std::allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
-  If `other` is valueless, `*this` is valueless and the owned value in this, if
-  any, is destroyed using `allocator_traits<allocator_type>::destroy` and then
+  If `other` is valueless, `*this` becomes valueless and the owned value in this,
+  if any, is destroyed using `allocator_traits<allocator_type>::destroy` and then
   deallocated using `allocator_traits<allocator_type>::deallocate`.
 
   Otherwise, if `alloc == other.alloc` and `this` is not valueless, equivalent
@@ -871,8 +871,8 @@ constexpr indirect& operator=(indirect&& other) noexcept(
   `std::allocator_traits<Alloc>::propagate_on_container_move_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
-  If `other` is valueless, `*this` is valueless and the owned value in this, if
-  any, is destroyed using `allocator_traits<allocator_type>::destroy` and then
+  If `other` is valueless, `*this` becomes valueless and the owned value in this,
+  if any, is destroyed using `allocator_traits<allocator_type>::destroy` and then
   deallocated using `allocator_traits<allocator_type>::deallocate`.
 
   Otherwise if `alloc == other.alloc`, swaps the owned objects in `this` and
@@ -949,8 +949,7 @@ constexpr bool valueless_after_move() const noexcept;
 constexpr allocator_type get_allocator() const noexcept;
 ```
 
-11. _Returns_: A copy of the `Allocator` object used to construct the owned
-    object.
+11. _Returns_: `alloc`.
 
 #### X.Y.7 Swap [indirect.swap]
 
@@ -973,7 +972,7 @@ constexpr void swap(indirect& other) noexcept(
 2. _[Note 2: The use of this function may require that `T` be a complete type
 dependent on behavour of the allocator. — end note]_
 
-3. _[Note 3: Exception guarantees for `swap` are intended model the behavior
+3. _[Note 3: Exception guarantees for `swap` are intended to model the behavior
 of exception guarantees for `std::vector::swap`. — end note]_
 
 ```c++
@@ -1407,8 +1406,7 @@ constexpr bool valueless_after_move() const noexcept;
 constexpr allocator_type get_allocator() const noexcept;
 ```
 
-8. _Returns_: A copy of the `Allocator` object used to construct the owned
-   object.
+8. _Returns_: `alloc`.
 
 #### X.Z.7 Swap [polymorphic.swap]
 
@@ -1427,7 +1425,7 @@ constexpr void swap(polymorphic& other) noexcept(
   other.get_allocator()`. _[Note: Does not call `swap` on the owned objects
   directly. --end note]_
 
-2. _[Note 2: Exception guarantees for `swap` are intended model the behavior
+2. _[Note 2: Exception guarantees for `swap` are intended to model the behavior
 of exception guarantees for `std::vector::swap`. — end note]_
 
 ```c++
