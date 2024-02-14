@@ -1154,6 +1154,9 @@ class polymorphic {
 
   constexpr ~polymorphic();
 
+  template <class U>
+  constexpr polymorphic& operator=(U&& u);
+
   constexpr polymorphic& operator=(const polymorphic& other);
 
   constexpr polymorphic& operator=(polymorphic&& other) noexcept(see below);
@@ -1309,12 +1312,28 @@ constexpr ~polymorphic();
 #### X.Z.5 Assignment [polymorphic.assign]
 
 ```c++
-constexpr polymorphic& operator=(const polymorphic& other);
+template <class U>
+constexpr polymorphic& operator=(U&& u);
 ```
 
 1. _Mandates_: `T` is a complete type.
 
-2. _Effects_: If `other == *this` then no effect.
+2. _Effects_: If `valueless_after_move()` then move assigns from
+  `polymorphic<T>(std::in_place_type_t<std::remove_cvref_t<U>>{}, u)`.
+
+  If not valueless, then call the underlying move assignment on `U`.
+
+  No effects if an exception is thrown.
+
+3. _Returns_: A reference to `*this`.
+
+```c++
+constexpr polymorphic& operator=(const polymorphic& other);
+```
+
+4. _Mandates_: `T` is a complete type.
+
+5. _Effects_: If `other == *this` then no effect.
 
   If `std::allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
@@ -1333,7 +1352,7 @@ constexpr polymorphic& operator=(const polymorphic& other);
 
   No effects if an exception is thrown.
 
-3. _Returns_: A reference to `*this`.
+6. _Returns_: A reference to `*this`.
 
 ```c++
 constexpr polymorphic& operator=(polymorphic&& other) noexcept(
@@ -1341,7 +1360,7 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
     allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-4. _Effects_: If `other == *this` then no effect.
+7. _Effects_: If `other == *this` then no effect.
 
   If `std::allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
@@ -1365,9 +1384,9 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
 
   No effects if an exception is thrown.
 
-5. _Returns_: A reference to `*this`.
+8. _Returns_: A reference to `*this`.
 
-6. _[Note: The use of this function may require that `T` be a complete type
+9. _[Note: The use of this function may require that `T` be a complete type
     dependent on behavour of the allocator. — end note]_
 
 #### X.Z.6 Observers [polymorphic.observers]
