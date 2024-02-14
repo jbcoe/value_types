@@ -48,7 +48,7 @@ should not be considered in isolation.
 
 * Wording fixes in `[indirect.observers]` and `[polymorphic.observers]`.
 
-* Add construction from single argument.
+* Add converting construction from single argument of the underlying type.
 
 ### Changes in R6
 
@@ -1603,8 +1603,8 @@ in a future version of the C++ standard.
 
 After reciving feedback from LEWG, converting constructors were added to
 support conversion from `T` to an `indirect<T>` or `polymorphic<T>`. Because
-these operation allocate they memory are marked explicit so it the intent is
-clear.
+these operation allocate memory they are marked explicit so the intent to use
+them is clear.
 
 ```c++
 int i = 42;
