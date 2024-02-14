@@ -1170,6 +1170,9 @@ class polymorphic {
   explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                         in_place_type_t<U>, Ts&&... ts);
 
+  template <class U>
+  explicit constexpr polymorphic(U&& u);
+
   constexpr polymorphic(const polymorphic& other);
 
   constexpr polymorphic(allocator_arg_t, const Allocator& a,
@@ -1274,10 +1277,24 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
   object of type `U` constructed  with `std::forward<Ts>(ts)...`.
 
 ```c++
+template <class U>
+explicit constexpr polymorphic(U&& u);
+```
+
+17. _Constraints_: `is_same_v<polymorphic, remove_cvref_t<U>>` is `false`.
+   `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
+   `is_base_of_v<T, std::remove_cvref_t<U>>` is `true`.
+
+18. _Mandates_: `T` is a complete type.
+
+19. _Effects_: Equivalent to `polymorphic(std::allocator_arg_t{}, A{},
+  std::in_place_type_t<std::remove_cvref_t<U>>{}, std::forward<U>(u))`.
+
+```c++
 constexpr polymorphic(const polymorphic& other);
 ```
 
-17. _Effects_: Equivalent to `polymorphic(allocator_arg_t{},
+20. _Effects_: Equivalent to `polymorphic(allocator_arg_t{},
   allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc),
   other)`.
 
@@ -1286,9 +1303,9 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       const polymorphic& other);
 ```
 
-18. _Mandates_: `T` is a complete type.
+21. _Mandates_: `T` is a complete type.
 
-19. _Effects_: `alloc` is direct-non-list-initialized with `alloc`. If
+22. _Effects_: `alloc` is direct-non-list-initialized with `alloc`. If
     `other` is valueless, `*this` is valueless. Otherwise, copy constructs an
     owned object of type `U`, where `U` is the type of the owned object in
     `other`, using the specified allocator with the owned object in `other`.
@@ -1297,7 +1314,7 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
 constexpr polymorphic(polymorphic&& other) noexcept;
 ```
 
-20. _Effects_: Equivalent to `polymorphic(allocator_arg_t{},
+23. _Effects_: Equivalent to `polymorphic(allocator_arg_t{},
     Allocator(other.alloc), other)`.
 
 ```c++
@@ -1305,7 +1322,7 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       polymorphic&& other) noexcept(allocator_traits::is_always_equal::value);
 ```
 
-21. _Effects_: `alloc` is direct-non-list-initialized with `a`. If
+24. _Effects_: `alloc` is direct-non-list-initialized with `a`. If
     `other` is valueless, `*this` is valueless. Otherwise, if `alloc ==
     other.alloc` either constructs an object of type `polymorphic` that owns the
     owned value of other, making `other` valueless; or, owns an object of the
@@ -1318,7 +1335,7 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
   and handle the case where allocators compare equal but we do not want to swap
   pointers.]_
 
-22. _[Note: The use of this function may require that `T` be a complete type
+25. _[Note: The use of this function may require that `T` be a complete type
     dependent on behavour of the allocator. — end note]_
 
 
