@@ -652,6 +652,9 @@ class indirect {
 
   constexpr ~indirect();
 
+  template <class U>
+  constexpr indirect& operator=(U&& u);
+
   constexpr indirect& operator=(const indirect& other);
 
   constexpr indirect& operator=(indirect&& other) noexcept(see below);
@@ -828,12 +831,28 @@ constexpr ~indirect();
 #### X.Y.5 Assignment [indirect.assign]
 
 ```c++
-constexpr indirect& operator=(const indirect& other);
+template <class U>
+constexpr indirect& operator=(U&& u);
 ```
 
 1. _Mandates_: `T` is a complete type.
 
-2. _Effects_: If `other == *this` then no effect.
+2. _Effects_: If `valueless_after_move()` then move assigns from
+  `polymorphic<T>(std::in_place_type_t<std::remove_cvref_t<U>>{}, u)`.
+
+  If not valueless, then call the underlying move assignment on `U`.
+
+  No effects if an exception is thrown.
+
+3. _Returns_: A reference to `*this`.
+
+```c++
+constexpr indirect& operator=(const indirect& other);
+```
+
+4. _Mandates_: `T` is a complete type.
+
+5. _Effects_: If `other == *this` then no effect.
 
   If `std::allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
@@ -859,7 +878,7 @@ constexpr indirect& operator=(const indirect& other);
 
   No effects if an exception is thrown.
 
-3. _Returns_: A reference to `*this`.
+6. _Returns_: A reference to `*this`.
 
 ```c++
 constexpr indirect& operator=(indirect&& other) noexcept(
@@ -867,7 +886,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
     allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-4. _Effects_: If
+7. _Effects_: If
   `std::allocator_traits<Alloc>::propagate_on_container_move_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
@@ -894,11 +913,11 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 
   No effects if an exception is thrown.
 
-5. _Postconditions_: `other` is valueless.
+8. _Postconditions_: `other` is valueless.
 
-6. _Returns_: A reference to `*this`.
+9. _Returns_: A reference to `*this`.
 
-7. _[Note: The use of this function may require that `T` be a complete type
+10. _[Note: The use of this function may require that `T` be a complete type
    dependent on behavour of the allocator. — end note]_
 
 #### X.Y.6 Observers [indirect.observers]
