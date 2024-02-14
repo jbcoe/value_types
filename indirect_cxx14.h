@@ -182,6 +182,30 @@ class indirect : private detail::empty_base_optimization<A> {
 
   ~indirect() { reset(); }
 
+  template <class U, class TT = T,
+            typename std::enable_if<
+                std::is_same<
+                    TT, typename std::remove_reference<
+                            typename std::remove_const<U>::type>::type>::value,
+                int>::type = 0,
+            typename std::enable_if<std::is_default_constructible<TT>::value,
+                                    int>::type = 0,
+            typename std::enable_if<std::is_copy_constructible<TT>::value,
+                                    int>::type = 0,
+            typename std::enable_if<
+                !std::is_same<typename std::remove_reference<
+                                  typename std::remove_const<U>::type>::type,
+                              xyz::in_place_t>::value,
+                int>::type = 0>
+  constexpr indirect& operator=(U&& u) {
+    if (valueless_after_move()) {
+      *this = indirect<TT>(in_place_t{}, u);
+    } else {
+      this->operator*() = std::forward<U>(u);
+    }
+    return *this;
+  }
+
   constexpr indirect& operator=(const indirect& other) {
     if (this == &other) return *this;
 

@@ -147,6 +147,21 @@ class indirect {
 
   constexpr ~indirect() { reset(); }
 
+  template <class U, class TT = T>
+  constexpr indirect& operator=(U&& u)
+    requires(std::same_as<TT, std::remove_cvref_t<U>> &&
+             std::is_default_constructible_v<TT> &&
+             std::is_copy_constructible_v<TT> &&
+             not std::is_same_v<std::remove_cvref_t<U>, std::in_place_t>)
+  {
+    if (valueless_after_move()) {
+      *this = indirect<TT>(std::in_place_t{}, std::forward<U>(u));
+    } else {
+      this->operator*() = std::forward<U>(u);
+    }
+    return *this;
+  }
+
   constexpr indirect& operator=(const indirect& other) {
     if (this == &other) return *this;
 

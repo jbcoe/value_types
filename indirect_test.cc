@@ -163,6 +163,16 @@ TEST(IndirectTest, CopyAssignment) {
   EXPECT_NE(&*a, &*b);
 }
 
+TEST(IndirectTest, ConvertingCopyAssignment) {
+  xyz::indirect<int> a(xyz::in_place_t{}, 42);
+  int b = 101;
+  EXPECT_EQ(*a, 42);
+  a = b;
+
+  EXPECT_EQ(*a, 101);
+  EXPECT_NE(&*a, &b);
+}
+
 TEST(IndirectTest, CopyAssignmentSelf) {
   xyz::indirect<int> a(xyz::in_place_t{}, 42);
   a = a;
@@ -178,6 +188,49 @@ TEST(IndirectTest, MoveAssignment) {
 
   EXPECT_TRUE(b.valueless_after_move());
   EXPECT_EQ(*a, 101);
+}
+
+struct CountMoveAssign {
+  CountMoveAssign() = default;
+  CountMoveAssign(int v) : value(v) {}
+  CountMoveAssign(CountMoveAssign const&) = default;
+  CountMoveAssign& operator=(CountMoveAssign const&) = default;
+
+  CountMoveAssign(CountMoveAssign&&) = default;
+  CountMoveAssign& operator=(CountMoveAssign&& rhs) {
+    value = std::move(rhs.value);
+    numMoveAssigns = std::move(rhs.numMoveAssigns);
+    numMoveAssigns++;
+    return *this;
+  }
+
+  int value = 0;
+  int numMoveAssigns = 0;
+};
+
+TEST(IndirectTest, ConvertingMoveAssignment) {
+  xyz::indirect<CountMoveAssign> a(xyz::in_place_t{}, 42);
+  CountMoveAssign b(101);
+
+  EXPECT_EQ(a->value, 42);
+  a = std::move(b);
+
+  EXPECT_EQ(a->value, 101);
+  EXPECT_EQ(a->numMoveAssigns, 1);
+}
+
+TEST(IndirectTest, ConvertingMoveAssignmentValueless) {
+  xyz::indirect<CountMoveAssign> a(xyz::in_place_t{}, 42);
+  auto aa = std::move(a);
+
+  EXPECT_TRUE(a.valueless_after_move());
+
+  CountMoveAssign b(101);
+
+  EXPECT_EQ(aa->value, 42);
+  a = std::move(b);
+
+  EXPECT_EQ(a->value, 101);
 }
 
 TEST(IndirectTest, MoveAssignmentSelf) {

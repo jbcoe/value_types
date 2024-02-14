@@ -293,7 +293,7 @@ class polymorphic : private detail::empty_base_optimization<A> {
       *this =
           polymorphic<T>(in_place_type_t<typename std::remove_cv<
                              typename std::remove_reference<U>::type>::type>{},
-                         u);
+                         std::forward<U>(u));
     } else {
       this->operator*() = std::forward<U>(u);
     }
