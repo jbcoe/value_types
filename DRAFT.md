@@ -1337,10 +1337,8 @@ constexpr polymorphic& operator=(U&& u);
 
 1. _Mandates_: `T` is a complete type.
 
-2. _Effects_: If `valueless_after_move()` then move assigns from
+2. _Effects_: Move assigns from
   `polymorphic<T>(std::in_place_type_t<std::remove_cvref_t<U>>{}, u)`.
-
-  If not valueless, then call the underlying move assignment on `U`.
 
   No effects if an exception is thrown.
 

@@ -289,14 +289,10 @@ class polymorphic : private detail::empty_base_optimization<A> {
                      typename std::remove_reference<U>::type>::type>::value,
           int>::type = 0>
   constexpr polymorphic& operator=(U&& u) {
-    if (valueless_after_move()) {
-      *this =
-          polymorphic<T>(in_place_type_t<typename std::remove_cv<
-                             typename std::remove_reference<U>::type>::type>{},
-                         std::forward<U>(u));
-    } else {
-      this->operator*() = std::forward<U>(u);
-    }
+    *this =
+        polymorphic<T>(in_place_type_t<typename std::remove_cv<
+                           typename std::remove_reference<U>::type>::type>{},
+                       std::forward<U>(u));
     return *this;
   }
 

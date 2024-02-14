@@ -232,12 +232,8 @@ class polymorphic {
             std::is_copy_assignable_v<std::remove_cvref_t<U>> &&
             std::derived_from<std::remove_cvref_t<U>, T>
   {
-    if (valueless_after_move()) {
-      *this = polymorphic<T>(std::in_place_type_t<std::remove_cvref_t<U>>{},
-                             std::forward<U>(u));
-    } else {
-      this->operator*() = std::forward<U>(u);
-    }
+    *this = polymorphic<T>(std::in_place_type_t<std::remove_cvref_t<U>>{},
+                           std::forward<U>(u));
     return *this;
   }
 
