@@ -119,18 +119,22 @@ class indirect : private detail::empty_base_optimization<A> {
                                     int>::type = 0>
   indirect() : indirect(std::allocator_arg, A()) {}
 
-  template <class U, class TT = T,
-            typename std::enable_if<std::is_constructible<TT, U&&>::value,
-                                    int>::type = 0,
-            typename std::enable_if<std::is_default_constructible<TT>::value,
-                                    int>::type = 0,
-            typename std::enable_if<std::is_copy_constructible<TT>::value,
-                                    int>::type = 0,
-            typename std::enable_if<
-                !std::is_same<typename std::remove_const<
-                                  typename std::remove_const<U>::type>::type,
-                              xyz::in_place_t>::value,
-                int>::type = 0>
+  template <
+      class U, class TT = T,
+      typename std::enable_if<
+          std::is_same<
+              T, typename std::remove_cv<
+                     typename std::remove_reference<U>::type>::type>::value,
+          int>::type = 0,
+      typename std::enable_if<std::is_default_constructible<TT>::value,
+                              int>::type = 0,
+      typename std::enable_if<std::is_copy_constructible<TT>::value,
+                              int>::type = 0,
+      typename std::enable_if<
+          !std::is_same<typename std::remove_cv<
+                            typename std::remove_reference<U>::type>::type,
+                        xyz::in_place_t>::value,
+          int>::type = 0>
   explicit constexpr indirect(U&& u)
       : indirect(xyz::in_place_t{}, std::forward<U>(u)) {}
 

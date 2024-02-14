@@ -762,7 +762,7 @@ template <class U>
 explicit constexpr indirect(U&& u);
 ```
 
-11. _Constraints_: `is_constructible_v<T, U&&>` is `true`.
+11. _Constraints_: `is_same_v<T, remove_cvref_t<U>>` is `true`.
    `is_copy_constructible_v<T>` is `true`.
    `is_default_constructible_v<allocator_type>` is `true`.
    `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`.

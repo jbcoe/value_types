@@ -89,7 +89,7 @@ class indirect {
   // is instantiated.
   template <class U = T, class TT = T>
   explicit constexpr indirect(U&& u)
-    requires(std::is_constructible_v<TT, U &&> &&
+    requires(std::is_same_v<TT, std::remove_cvref_t<U>> &&
              std::is_default_constructible_v<TT> &&
              std::is_copy_constructible_v<TT> &&
              not std::is_same_v<std::remove_cvref_t<U>, std::in_place_t>)
