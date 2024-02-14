@@ -305,6 +305,20 @@ class polymorphic {
 
   constexpr ~polymorphic() { reset(); }
 
+  template <class U>
+  constexpr polymorphic& operator=(U&& u)
+    requires(not std::same_as<polymorphic, std::remove_cvref_t<U>>) &&
+            std::is_copy_assignable_v<std::remove_cvref_t<U>> &&
+            std::derived_from<std::remove_cvref_t<U>, T>
+  {
+    if (valueless_after_move()) {
+      *this = polymorphic<T>(std::in_place_type_t<std::remove_cvref_t<U>>{}, u);
+    } else {
+      this->operator*() = std::forward<U>(u);
+    }
+    return *this;
+  }
+
   constexpr polymorphic& operator=(const polymorphic& other) {
     assert(!other.valueless_after_move());  // LCOV_EXCL_LINE
     if (this != &other) {

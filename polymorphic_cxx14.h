@@ -272,6 +272,34 @@ class polymorphic : private detail::empty_base_optimization<A> {
 
   ~polymorphic() { reset(); }
 
+  template <
+      class U,
+      typename std::enable_if<
+          !std::is_same<polymorphic,
+                        typename std::remove_cv<typename std::remove_reference<
+                            U>::type>::type>::value,
+          int>::type = 0,
+      typename std::enable_if<
+          std::is_copy_assignable<typename std::remove_cv<
+              typename std::remove_reference<U>::type>::type>::value,
+          int>::type = 0,
+      typename std::enable_if<
+          std::is_base_of<
+              T, typename std::remove_cv<
+                     typename std::remove_reference<U>::type>::type>::value,
+          int>::type = 0>
+  constexpr polymorphic& operator=(U&& u) {
+    if (valueless_after_move()) {
+      *this =
+          polymorphic<T>(in_place_type_t<typename std::remove_cv<
+                             typename std::remove_reference<U>::type>::type>{},
+                         u);
+    } else {
+      this->operator*() = std::forward<U>(u);
+    }
+    return *this;
+  }
+
   constexpr polymorphic& operator=(const polymorphic& other) {
     if (this == &other) return *this;
 
