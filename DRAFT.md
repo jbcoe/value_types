@@ -1599,24 +1599,21 @@ such types are copy constructible. We make `polymorphic` unconditionally copy
 and move constructible. The authors do not envisage that this could be relaxed
 in a future version of the C++ standard.
 
-### Implicit conversions
+### Converting constructors
 
-We decided that there should be no implicit conversion of a value `T` to an
-`indirect<T>` or `polymorphic<T>`. An implicit conversion would require using
-the free store and memory allocation, which is best made explicit by the user.
-
-```c++
-Rectangle r(w, h);
-polymorphic<Shape> s = r; // error
-```
-
-To transform a value into `indirect` or `polymorphic`, the user must use the
-appropriate constructor.
+After reciving feedback from LEWG, converting constructors were added to
+support conversion from `T` to an `indirect<T>` or `polymorphic<T>`. Because
+these operation allocate they memory are marked explicit so it the intent is
+clear.
 
 ```c++
+int i = 42;
+indirect<int> i1 = r; // error
+indirect<int> i2(r); // supported
+
 Rectangle r(w, h);
-polymorphic<Shape> s(std::in_place_type<Rectangle>, r);
-assert(dynamic_cast<Rectangle*>(&*s) != nullptr);
+polymorphic<Shape> s1 = r; // error
+polymorphic<Shape> s2(r); // supported
 ```
 
 ### Explicit conversions
