@@ -28,10 +28,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <type_traits>
 #include <utility>
 
-#if __has_include(<format>)
-#include <format>
-#endif
-
 namespace xyz {
 
 #ifndef XYZ_UNREACHABLE_DEFINED
