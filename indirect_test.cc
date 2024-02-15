@@ -326,7 +326,7 @@ TEST(IndirectTest, HashValueless) {
 }
 
 TEST(IndirectTest, InitializerListConstructor) {
-  xyz::indirect<std::vector<int>> i({1, 2, 3});
+  xyz::indirect<std::vector<int>> i(xyz::in_place_t{}, {1, 2, 3});
   EXPECT_EQ(i->size(), 3);
 }
 

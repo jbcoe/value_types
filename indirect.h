@@ -98,23 +98,26 @@ class indirect {
 
   // The template type TT defers the constraint evaluation until the constructor
   // is instantiated.
-  template <class U = T, class TT = T>
+  template <class U = T, class TT = T, class... Ts>
   explicit constexpr indirect(std::allocator_arg_t, const A& alloc,
-                              std::initializer_list<U> ilist)
+                              std::in_place_t, std::initializer_list<U> ilist,
+                              Ts&&... ts)
     requires(std::is_constructible_v<TT, std::initializer_list<U>> &&
              std::is_copy_constructible_v<TT>)
       : alloc_(alloc) {
-    p_ = construct_from(alloc_, ilist);
+    p_ = construct_from(alloc_, ilist, std::forward<Ts>(ts)...);
   }
 
   // The template type TT defers the constraint evaluation until the constructor
   // is instantiated.
-  template <class U = T, class TT = T>
-  explicit constexpr indirect(std::initializer_list<U> ilist)
+  template <class U = T, class TT = T, class... Ts>
+  explicit constexpr indirect(std::in_place_t, std::initializer_list<U> ilist,
+                              Ts&&... ts)
     requires(std::is_default_constructible_v<A> &&
              std::is_constructible_v<TT, std::initializer_list<U>> &&
              std::is_copy_constructible_v<TT>)
-      : indirect(std::allocator_arg, A{}, ilist) {}
+      : indirect(std::allocator_arg, A{}, std::in_place, ilist,
+                 std::forward<Ts>(ts)...) {}
 
   // The template type TT defers the constraint evaluation until the constructor
   // is instantiated.
