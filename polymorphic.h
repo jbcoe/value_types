@@ -185,6 +185,36 @@ class polymorphic {
       : polymorphic(std::allocator_arg_t{}, A{}, std::in_place_type<U>,
                     std::forward<Ts>(ts)...) {}
 
+  template <class U, class I, class... Ts>
+  explicit constexpr polymorphic(std::allocator_arg_t, const A& alloc,
+                                 std::in_place_type_t<U>,
+                                 std::initializer_list<I> ilist, Ts&&... ts)
+    requires std::constructible_from<U, Ts&&...> &&
+             std::copy_constructible<U> &&
+             (std::derived_from<U, T> || std::same_as<U, T>)
+      : alloc_(alloc) {
+    using cb_allocator = typename std::allocator_traits<
+        A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
+    using cb_traits = std::allocator_traits<cb_allocator>;
+    cb_allocator cb_alloc(alloc_);
+    auto mem = cb_traits::allocate(cb_alloc, 1);
+    try {
+      cb_traits::construct(cb_alloc, mem, ilist, std::forward<Ts>(ts)...);
+      cb_ = mem;
+    } catch (...) {
+      cb_traits::deallocate(cb_alloc, mem, 1);
+      throw;
+    }
+  }
+
+  template <class U, class I, class... Ts>
+  explicit constexpr polymorphic(std::in_place_type_t<U>,
+                                 std::initializer_list<I> ilist, Ts&&... ts)
+    requires std::constructible_from<U, std::initializer_list<I>, Ts&&...> &&
+             std::copy_constructible<U> && std::derived_from<U, T>
+      : polymorphic(std::allocator_arg_t{}, A{}, std::in_place_type<U>, ilist,
+                    std::forward<Ts>(ts)...) {}
+
   constexpr polymorphic(std::allocator_arg_t, const A& alloc,
                         const polymorphic& other)
       : alloc_(alloc) {
