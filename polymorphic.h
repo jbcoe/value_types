@@ -23,6 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <cassert>
 #include <concepts>
+#include <initializer_list>
 #include <memory>
 #include <utility>
 
@@ -178,6 +179,24 @@ class polymorphic {
     }
   }
 
+  template <class U, class I, class... Ts>
+  explicit constexpr polymorphic(std::in_place_type_t<U>,
+                                 std::initializer_list<I> ilist, Ts&&... ts)
+    requires std::constructible_from<U, std::initializer_list<I>, Ts&&...> &&
+             std::copy_constructible<U> && std::derived_from<U, T>
+      : polymorphic(std::allocator_arg_t{}, A{}, std::in_place_type<U>, ilist,
+                    std::forward<Ts>(ts)...) {}
+
+  constexpr polymorphic(std::allocator_arg_t, const A& alloc,
+                        const polymorphic& other)
+      : alloc_(alloc) {
+    if (!other.valueless_after_move()) {
+      cb_ = other.cb_->clone(alloc_);
+    } else {
+      cb_ = nullptr;
+    }
+  }
+
   template <class U, class... Ts>
   explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts)
     requires std::constructible_from<U, Ts&&...> &&
@@ -204,24 +223,6 @@ class polymorphic {
     } catch (...) {
       cb_traits::deallocate(cb_alloc, mem, 1);
       throw;
-    }
-  }
-
-  template <class U, class I, class... Ts>
-  explicit constexpr polymorphic(std::in_place_type_t<U>,
-                                 std::initializer_list<I> ilist, Ts&&... ts)
-    requires std::constructible_from<U, std::initializer_list<I>, Ts&&...> &&
-             std::copy_constructible<U> && std::derived_from<U, T>
-      : polymorphic(std::allocator_arg_t{}, A{}, std::in_place_type<U>, ilist,
-                    std::forward<Ts>(ts)...) {}
-
-  constexpr polymorphic(std::allocator_arg_t, const A& alloc,
-                        const polymorphic& other)
-      : alloc_(alloc) {
-    if (!other.valueless_after_move()) {
-      cb_ = other.cb_->clone(alloc_);
-    } else {
-      cb_ = nullptr;
     }
   }
 

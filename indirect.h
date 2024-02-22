@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <cassert>
 #include <compare>
 #include <concepts>
+#include <initializer_list>
 #include <memory>
 #include <type_traits>
 #include <utility>
