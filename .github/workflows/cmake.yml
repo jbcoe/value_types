@@ -71,18 +71,18 @@ jobs:
               os: windows-latest,
               compiler: { type: VISUAL, version: 17, cc: "cl", cxx: "cl" },
             }
-#          - {
-#              name: "MacOS Apple Clang 14",
-#              os: macos-14,
-#              compiler:
-#                {
-#                  type: APPLE_CLANG,
-#                  version: "14.0",
-#                  cc: "clang",
-#                  cxx: "clang++",
-#                  std: 20,
-#                },
-#            }
+          - {
+              name: "MacOS Apple Clang 15",
+              os: macos-14,
+              compiler:
+                {
+                  type: APPLE_CLANG,
+                  version: "15.0",
+                  cc: "clang",
+                  cxx: "clang++",
+                  std: 20,
+                },
+            }
     steps:
       - uses: actions/checkout@v2
       - name: Add msbuild to PATH
