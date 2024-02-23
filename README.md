@@ -4,7 +4,7 @@
 [![license][badge.license]][license] [![issues][badge.issues]][issues]
 [![pre-commit][badge.pre-commit]][pre-commit]
 
-[badge.language]: https://img.shields.io/badge/language-C%2B%2B20-yellow.svg
+[badge.language]: https://img.shields.io/badge/language-C%2B%2B14-yellow.svg
 [badge.codecov]:
     https://img.shields.io/codecov/c/github/jbcoe/value_types/master.svg?logo=codecov
 [badge.license]: https://img.shields.io/badge/license-MIT-blue.svg
@@ -12,7 +12,7 @@
 [badge.pre-commit]: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit
 
 [codecov]: https://codecov.io/gh/jbcoe/value_types
-[language]: https://en.wikipedia.org/wiki/C%2B%2B20
+[language]: https://en.wikipedia.org/wiki/C%2B%2B14
 [license]: https://en.wikipedia.org/wiki/MIT_License
 [issues]: http://github.com/jbcoe/value_types/issues
 [pre-commit]: https://github.com/pre-commit/pre-commit
