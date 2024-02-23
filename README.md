@@ -139,3 +139,6 @@ the dependencies required to build and test the project.
 
 * [GitHub codepsaces]
   (https://docs.github.com/en/codespaces/getting-started/deep-dive)
+
+* [ISO C++ Standard - Draft]
+  (https://eel.is/c++draft/)
