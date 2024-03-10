@@ -23,6 +23,7 @@ _Sean Parent \<<sparent@adobe.com>\>_
  - [Reference implementation](#reference-implementation)
  - [Acknowledgements](#acknowledgements)
  - [References](#references)
+ - [Appendix A](#appendix-a)
 
 [//]: <> (<=============================================================================>)
 
@@ -312,11 +313,32 @@ constexpr polymorphic& operator=(U&& u);
 
 ## Reference implementation
 
-A C++20 reference implementation of the work discussed in this proposal is available on GitHub at [https://www.github.com/jbcoe/value_types].
+A C++20 reference implementation of the work discussed in this proposal is 
+available on GitHub at [https://www.github.com/jbcoe/value_types].
 
 ## Acknowledgements
 
 ## References
 
-_`indirect` and `polymorphic`: Vocabulary Types for Composite Class Design, J. B. Coe, A. Peacock, and S. Parent 2024
+_`indirect` and `polymorphic`: Vocabulary Types for Composite Class Design, J. B. Coe, 
+A. Peacock, and S. Parent 2024
 [https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p3019r6.html]
+
+## Appendix A: Design choices, alternatives and breaking changes
+
+//TODO:UPDATE 
+The table below shows the relevant updated rows of the table in [Appendix C/P3019R6]. 
+The table shows the design components, the design decisions made, and the cost and 
+impact of alternative design choices. As presented in paper [P3019R6], the design of 
+class templates `indirect` and `polymorphic` has been approved by the LEWG. 
+The authors have until C++26 is standardized to consider making any breaking changes; 
+after C++26, whilst breaking changes will still be possible, the impact of these changes 
+on users could be potentially significant and unwelcome.
+
+| Component | Decision | Alternative | Change impact | Breaking change? |
+|--|--|--|--|--|
+|Previous|--|--|--|--|
+|Explicit constructors|Constructors are marked `explicit`|Non-explicit constructors|Conversion for single arguments or braced initializers becomes valid| No |
+|Updated|--|--|--|--|
+|Explicit constructors|Constructors are marked `explicit`|Non-explicit constructors|Conversion for single arguments or braced initializers becomes valid| No |
+
