@@ -1,4 +1,4 @@
-# Converting constructors and assignment for `indirect` and `polymorphic`
+# Converting construction and assignment for `indirect` and `polymorphic`
  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
@@ -18,44 +18,57 @@ _Sean Parent \<<sparent@adobe.com>\>_
 # Contents
  - [Abstract](#abstract) 
  - [Introduction](#introduction)
- - [Constructors overview](#constructor-overview)
- - [Assignment overview](#assignment-overview)
+ - [Converting construction and assignment](#converting-construction-and-assignment)
  - [Technical specifictions](#technical-specifications)
  - [Reference implementation](#reference-implementation)
  - [Acknowledgements](#acknowledgements)
  - [References](#references)
 
-<=============================================================================>
+[//]: <> (<=============================================================================>)
 
 ## Abstract
 New vocabulary types `indirect` and `polymorphic` for composite class design are 
-proposed in P3019R6 [REF]. This paper is an auxiliary proposal for the addition 
-of converting constructors and assignment to the design of `indirect`
-and `polymorphic`.
+proposed in P3019R6 [REF]. This corollary proposal details adding support 
+for converting construction and assignment to `indirect` and `polymorphic`.
 
 ## Introduction
 
-- Briefly describe `indirect` and `polymorphic` [REF]
+//TODO:ADD
+- Briefly describe `indirect` and `polymorphic` [P3019]
 - Briefly motivate need for converting construction and assignment
 
-//TODO:REVISE better headings please
-## Overview of additions ?
+## Converting construction and assignment
 
-### Converting constructors 
+### Constructors
+After reciving feedback from LEWG, converting constructors were added to
+support conversion from `T` to an `indirect<T>` or `polymorphic<T>`. Because
+these operation allocate memory they are marked explicit so the intent to use
+them is clear.
 
-### Converting assignment
+```c++
+int i = 42;
+indirect<int> i1 = r; // error
+indirect<int> i2(r); // supported
+
+polymorphic<Shape> s1 = r; // error
+polymorphic<Shape> s2(r); // supported
+```
+
+### Assignment
+
+//TODO:ADD
 
 ## Technical specifications
+
+We update the technical specifications detailed in [P3019R6] to include 
+converting construction and assignment.
 
 ### X.Y Class template indirect [indirect]
 
 #### X.Y.1 Class template indirect synopsis [indirect.syn]
 
-The addition of the above converting constructors and assignment for 
-`indrect` gives the following updated class template for `indirect`.
-
-//TODO:ADD new constructors and assignment
-//TODO:CHECK does the whole whole class template require including here?
+The updated class template `indirect` with support for 
+converting construction and assignment added is as follows:
 
 ```c++
 template <class T, class Allocator = allocator<T>>
@@ -69,6 +82,10 @@ class indirect {
   constexpr indirect();
 
   explicit constexpr indirect(allocator_arg_t, const Allocator& a);
+
+  //TODO:CHECK here
+  template <class U>
+  explicit constexpr indirect(U&& u);
 
   template <class... Us>
   explicit constexpr indirect(in_place_t, Us&&... us);
@@ -88,6 +105,10 @@ class indirect {
                      indirect&& other) noexcept(see below);
 
   constexpr ~indirect();
+
+  //TODO:CHECK here
+  template <class U>
+  constexpr indirect& operator=(U&& u);
 
   constexpr indirect& operator=(const indirect& other);
 
@@ -139,6 +160,10 @@ private:
 template <typename Value>
 indirect(Value) -> indirect<Value>;
 
+//TODO:CHECK here
+template <typename Value>
+indirect(std::in_place_t, Value) -> indirect<Value>;
+
 template <typename Alloc, typename Value>
 indirect(std::allocator_arg_t, Alloc, Value) -> indirect<
     Value, typename std::allocator_traits<Alloc>::template rebind_alloc<Value>>;
@@ -146,54 +171,46 @@ indirect(std::allocator_arg_t, Alloc, Value) -> indirect<
 
 ### X.Y.2 Constructors [indirect.ctor]
 
-//TODO:REVISE add converting constructors for indirect
-
 ```c++
-explicit constexpr indirect(???);
+template <class U>
+explicit constexpr indirect(U&& u);
 ```
 
-N?. _Constraints_: ? `is_default_constructible_v<T>` is `true`.
-  `is_copy_constructible_v<T>` is `true`.
+10.1?. _Constraints_: `is_same_v<T, remove_cvref_t<U>>` is `true`.
+   `is_copy_constructible_v<T>` is `true`.
+   `is_default_constructible_v<allocator_type>` is `true`.
+   `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`.
+10.2?. _Mandates_: `T` is a complete type.
 
-N?. _Mandates_: ? `T` is a complete type.
-
-N?. _Effects_: ...
-
-N?. _Postconditions_: ...
-
-N?. _Throws_: ...
+10.3?. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(), in_place_t{}
+    std::forward<U>(u))`.
+    
 
 ### X.Y.3 Assignment [indirect.assign]
 
-//TODO:REVISE add converting assignment for indirect
-
 ```c++
-constexpr indirect& operator=(???);
+template <class U>
+constexpr indirect& operator=(U&& u);
 ```
 
-//TODO:REVISE copied verbatim from P3019R6 - what's needed?
+0.0? _Mandates_: `T` is a complete type.
 
-```c++
-constexpr indirect& operator=(const indirect& other);
-```
+0.1? _Effects_: If `valueless_after_move()` then move assigns from
+  `polymorphic<T>(std::in_place_type_t<std::remove_cvref_t<U>>{}, u)`.
 
-1. _Mandates_: `T` is a complete type.
+  If not valueless, then call the underlying move assignment on `U`.
 
-2. _Effects_: ...
+  No effects if an exception is thrown.
 
-3. _Returns_: ...
+0.2? _Returns_: A reference to `*this`.
+
  
-
 ### X.Y Class template polymorphic [polymorphic]
 
-#### X.Y.1? Class template polymorphic synopsis [polymomrphic.syn]
+#### X.Y.1? Class template polymorphic synopsis [polymorphic.syn]
 
-The addition of the above converting constructors and assignment for 
-`polymmorphic` gives the following updated class template for 
-`polymorphic`.
-
-//TODO:ADD new constructors and assignment
-//TODO:CHECK does the whole whole class template require including here?
+The updated class template `polymorphic` with support for 
+converting construction and assignment added is as follows:
 
 ```c++
 template <class T, class Allocator = allocator<T>>
@@ -216,6 +233,10 @@ class polymorphic {
   explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                         in_place_type_t<U>, Ts&&... ts);
 
+  //TODO:CHECK here
+  template <class U>
+  explicit constexpr polymorphic(U&& u);
+
   constexpr polymorphic(const polymorphic& other);
 
   constexpr polymorphic(allocator_arg_t, const Allocator& a,
@@ -227,6 +248,10 @@ class polymorphic {
                         polymorphic&& other) noexcept(see below);
 
   constexpr ~polymorphic();
+
+  //TODO:CHECK here
+  template <class U>
+  constexpr polymorphic& operator=(U&& u);
 
   constexpr polymorphic& operator=(const polymorphic& other);
 
@@ -251,40 +276,38 @@ class polymorphic {
 };
 ```
 
-
 #### X.Z.2 Constructors [polymorphic.ctor]
 
-//TODO:REVISE add converting constructors for polymorphic
-
 ```c++
-explicit constexpr polymorphic(???)
+template <class U>
+explicit constexpr polymorphic(U&& u);
 ```
 
-N?. _Constraints_: `is_default_constructible_v<T>` is `true`,
-  `is_copy_constructible_v<T>` is `true`.
-  `is_default_constructible_v<allocator_type>` is `true`.
+16.1? _Constraints_: `is_same_v<polymorphic, remove_cvref_t<U>>` is `false`.
+   `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
+   `is_base_of_v<T, std::remove_cvref_t<U>>` is `true`.
 
-N?. Mandates: `T` is a complete type.
+16.2? _Mandates_: `T` is a complete type.
 
-N?. _Effects_: ...
+16.3? _Effects_: Equivalent to `polymorphic(std::allocator_arg_t{}, A{},
+  std::in_place_type_t<std::remove_cvref_t<U>>{}, std::forward<U>(u))`.
 
-N?. _Postconditions_: ...
 
-N?. _Throws_: ...
-
-#### X.Z.3 Assignment [polymorphic.ctor]
-
-//TODO:REVISE add converting assignment for polymorphic
+#### X.Z.3 Assignment [polymorphic.assign]
 
 ```c++
-constexpr polymorphic& operator=(???);
+template <class U>
+constexpr polymorphic& operator=(U&& u);
 ```
 
-1. _Mandates_: `T` is a complete type.
+0.0? _Mandates_: `T` is a complete type.
 
-2. _Effects_: ...
+0.1? _Effects_: Move assigns from
+  `polymorphic<T>(std::in_place_type_t<std::remove_cvref_t<U>>{}, u)`.
 
-3. _Returns_: ...
+  No effects if an exception is thrown.
+
+0.2? _Returns_: A reference to `*this`.
 
 
 ## Reference implementation
