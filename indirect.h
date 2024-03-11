@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <cassert>
 #include <compare>
 #include <concepts>
+#include <initializer_list>
 #include <memory>
 #include <type_traits>
 #include <utility>
@@ -145,35 +146,27 @@ class indirect {
     p_ = construct_from(alloc_, std::forward<Us>(us)...);
   }
 
-  // TODO:REVISE initializer_list without allocator
-  //  The template type TT defers the constraint evaluation until the
-  //  constructor is instantiated.
-  template <class U = T, class... Us, class TT = T>
-  explicit constexpr indirect(st::in_place_t, std::initializer_list<U> il,
-                              Us&& us)
-    requires(std::is_same_v<TT, std::remove_cvref_t<U>> &&
-             std::is_default_constructible_v<T, std::initializer_list<U>,
-                                             Us && ...> &&
-             std::is_copy_constructible_v<TT> &&
-             std::is_default_constructible_v<A>)
-      : indirect(std::allocator_arg, A{}, std::in_place_t{},
-                 std::forward<std::initializer_list<U>>(il),
-                 std::forward<Us>(us)) {}
+  // The template type TT defers the constraint evaluation until the constructor
+  // is instantiated.
+  template <class U = T, class TT = T, class... Us>
+  explicit constexpr indirect(std::in_place_t, std::initializer_list<U> ilist,
+                              Us&&... us)
+    requires(std::is_default_constructible_v<A> &&
+             std::is_constructible_v<TT, std::initializer_list<U>, Us...> &&
+             std::is_copy_constructible_v<TT>)
+      : indirect(std::allocator_arg, A{}, std::in_place, ilist,
+                 std::forward<Us>(us)...) {}
 
-  // TODO:REVISE initializer_list with allocator
-  //  The template type TT defers the constraint evaluation until the
-  //  constructor is instantiated.
-  template <class U = T, class... Us, class TT = T>
+  // The template type TT defers the constraint evaluation until the constructor
+  // is instantiated.
+  template <class U = T, class TT = T, class... Us>
   explicit constexpr indirect(std::allocator_arg_t, const A& alloc,
-                              std::in_place_t, std::initializer_list<U> il,
-                              Us&& us)
-    requires(std::is_same_v<TT, std::remove_cvref_t<U>> &&
-             std::is_default_constructible_v<T, std::initializer_list<U>,
-                                             Us && ...> &&
+                              std::in_place_t, std::initializer_list<U> ilist,
+                              Us&&... us)
+    requires(std::is_constructible_v<TT, std::initializer_list<U>, Us...> &&
              std::is_copy_constructible_v<TT>)
       : alloc_(alloc) {
-    p_ = construct_from(alloc_, std::forward<std::initializer_list<U>>(il),
-                        std::forward<Us>(us))
+    p_ = construct_from(alloc_, ilist, std::forward<Us>(us)...);
   }
 
   constexpr indirect(const indirect& other)
