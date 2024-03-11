@@ -333,6 +333,11 @@ TEST(IndirectTest, HashValueless) {
   EXPECT_EQ(std::hash<xyz::indirect<int>>()(v), static_cast<size_t>(-1));
 }
 
+TEST(IndirectTest, InitializerListConstructor) {
+  xyz::indirect<std::vector<int>> i(xyz::in_place_t{}, {1, 2, 3});
+  EXPECT_EQ(i->size(), 3);
+}
+
 #ifdef XYZ_HAS_STD_OPTIONAL
 TEST(IndirectTest, Optional) {
   std::optional<xyz::indirect<int>> a;
