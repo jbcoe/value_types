@@ -876,7 +876,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
     allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-4. _Effects_: If
+5. _Effects_: If
   `std::allocator_traits<Alloc>::propagate_on_container_move_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
@@ -901,16 +901,16 @@ constexpr indirect& operator=(indirect&& other) noexcept(
   If the allocator needs updating, the allocator in `this` is replaced with a
   copy of the allocator in `other`.
 
-5. _Postconditions_: `other` is valueless.
+6. _Postconditions_: `other` is valueless.
 
-6. _Returns_: A reference to `*this`.
+7. _Returns_: A reference to `*this`.
 
-7. _Remarks_: If any exception is thrown, the results of the expressions
+8. _Remarks_: If any exception is thrown, the results of the expressions
    `this->valueless_after_move()` and `other.valueless_after_move()` remain
    unchanged. If an exception is thrown during the call to `T`'s selected move
    constructor, no effect.
 
-8. _[Note: The use of this function may require that `T` be a complete type
+9. _[Note: The use of this function may require that `T` be a complete type
    dependent on behavour of the allocator. — end note]_
 
 #### X.Y.6 Observers [indirect.observers]
