@@ -158,9 +158,7 @@ class indirect {
     } else {
       if (std::is_copy_assignable_v<T> && !valueless_after_move() &&
           alloc_ == other.alloc_) {
-        T tmp(*other);
-        using std::swap;
-        swap(tmp, *p_);
+        *p_ = *other;
       } else {
         // Constructing a new object could throw so we need to defer resetting
         // or updating allocators until this is done.
