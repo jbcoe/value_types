@@ -22,6 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define XYZ_INDIRECT_H
 
 #include <cassert>
+#include <initializer_list>
 #include <memory>
 #include <type_traits>
 #include <utility>
@@ -160,6 +161,32 @@ class indirect : private detail::empty_base_optimization<A> {
                                     int>::type = 0>
   explicit indirect(xyz::in_place_t, Us&&... us)
       : indirect(std::allocator_arg, A(), xyz::in_place_t{},
+                 std::forward<Us>(us)...) {}
+
+  template <
+      class U, class... Us,
+      typename std::enable_if<
+          std::is_constructible<T, std::initializer_list<U>, Us&&...>::value,
+          int>::type = 0,
+      typename TT = T,
+      typename std::enable_if<std::is_copy_constructible<TT>::value,
+                              int>::type = 0>
+  indirect(std::allocator_arg_t, const A& alloc, xyz::in_place_t,
+           std::initializer_list<U> ilist, Us&&... us)
+      : alloc_base(alloc) {
+    p_ = construct_from(alloc_base::get(), ilist, std::forward<Us>(us)...);
+  }
+
+  template <
+      class AA = A,
+      typename std::enable_if<std::is_default_constructible<AA>::value,
+                              int>::type = 0,
+      class TT = T, class U, class... Us,
+      typename std::enable_if<
+          std::is_constructible<T, std::initializer_list<U>, Us&&...>::value,
+          int>::type = 0>
+  indirect(xyz::in_place_t, std::initializer_list<U> ilist, Us&&... us)
+      : indirect(std::allocator_arg, A(), xyz::in_place_t{}, ilist,
                  std::forward<Us>(us)...) {}
 
   indirect(std::allocator_arg_t, const A& alloc, const indirect& other)
