@@ -20,7 +20,7 @@ _Sean Parent \<<sparent@adobe.com>\>_
  - [Introduction](#introduction)
  - [Additional constructors](#additional-constructors)
  - [Converting assignment](#converting-assignment)
- - [Technical specifictions](#technical-specifications)
+ - [Technical specifications](#technical-specifications)
  - [Reference implementation](#reference-implementation)
  - [Acknowledgements](#acknowledgements)
  - [References](#references)
