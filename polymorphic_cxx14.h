@@ -239,6 +239,28 @@ class polymorphic : private detail::empty_base_optimization<A> {
     }
   }
 
+  template <
+      class U,
+      typename std::enable_if<
+          !std::is_same<polymorphic,
+                        typename std::remove_cv<typename std::remove_reference<
+                            U>::type>::type>::value,
+          int>::type = 0,
+      typename std::enable_if<
+          std::is_copy_constructible<typename std::remove_cv<
+              typename std::remove_reference<U>::type>::type>::value,
+          int>::type = 0,
+      typename std::enable_if<
+          std::is_base_of<
+              T, typename std::remove_cv<
+                     typename std::remove_reference<U>::type>::type>::value,
+          int>::type = 0>
+  explicit polymorphic(U&& u)
+      : polymorphic(std::allocator_arg_t{}, A{},
+                    in_place_type_t<typename std::remove_cv<
+                        typename std::remove_reference<U>::type>::type>{},
+                    std::forward<U>(u)) {}
+
   polymorphic(const polymorphic& other)
       : polymorphic(std::allocator_arg,
                     allocator_traits::select_on_container_copy_construction(

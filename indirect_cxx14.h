@@ -119,6 +119,25 @@ class indirect : private detail::empty_base_optimization<A> {
                                     int>::type = 0>
   indirect() : indirect(std::allocator_arg, A()) {}
 
+  template <
+      class U, class TT = T,
+      typename std::enable_if<
+          std::is_same<
+              T, typename std::remove_cv<
+                     typename std::remove_reference<U>::type>::type>::value,
+          int>::type = 0,
+      typename std::enable_if<std::is_default_constructible<TT>::value,
+                              int>::type = 0,
+      typename std::enable_if<std::is_copy_constructible<TT>::value,
+                              int>::type = 0,
+      typename std::enable_if<
+          !std::is_same<typename std::remove_cv<
+                            typename std::remove_reference<U>::type>::type,
+                        xyz::in_place_t>::value,
+          int>::type = 0>
+  explicit constexpr indirect(U&& u)
+      : indirect(xyz::in_place_t{}, std::forward<U>(u)) {}
+
   template <class... Us,
             typename std::enable_if<std::is_constructible<T, Us&&...>::value,
                                     int>::type = 0,
@@ -495,6 +514,9 @@ class indirect : private detail::empty_base_optimization<A> {
 };
 
 #ifdef XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
+template <typename Value>
+indirect(Value) -> indirect<Value>;
+
 template <typename Value>
 indirect(xyz::in_place_t, Value) -> indirect<Value>;
 

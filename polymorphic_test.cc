@@ -100,6 +100,17 @@ TEST(PolymorphicTest, ValueAccessFromInPlaceConstructedObject) {
   EXPECT_EQ(a->value(), 42);
 }
 
+TEST(PolymorphicTest, ValueAccessFromSingleValueConstructedLValueObject) {
+  Derived const derived{42};
+  xyz::polymorphic<Base> a(derived);
+  EXPECT_EQ(a->value(), 42);
+}
+
+TEST(PolymorphicTest, ValueAccessFromSingleValueConstructedRValueObject) {
+  xyz::polymorphic<Base> a(Derived{42});
+  EXPECT_EQ(a->value(), 42);
+}
+
 TEST(PolymorphicTest, ValueAccessFromDefaultConstructedObject) {
   xyz::polymorphic<Derived> a;
   EXPECT_EQ(a->value(), 0);

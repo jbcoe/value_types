@@ -179,6 +179,15 @@ class polymorphic {
     }
   }
 
+  template <class U>
+  constexpr explicit polymorphic(U&& u)
+    requires(not std::same_as<polymorphic, std::remove_cvref_t<U>>) &&
+            std::copy_constructible<std::remove_cvref_t<U>> &&
+            std::derived_from<std::remove_cvref_t<U>, T>
+      : polymorphic(std::allocator_arg_t{}, A{},
+                    std::in_place_type_t<std::remove_cvref_t<U>>{},
+                    std::forward<U>(u)) {}
+
   constexpr polymorphic(const polymorphic& other)
       : alloc_(allocator_traits::select_on_container_copy_construction(
             other.alloc_)) {
