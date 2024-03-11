@@ -30,10 +30,10 @@ _Sean Parent \<<sparent@adobe.com>\>_
 
 ## Introduction
 New vocabulary types `indirect` and `polymorphic` for composite class design are 
-proposed in [P3019]. Based on recommendations from LEWG, we follow up this work by 
+proposed in [P3019R6]. Based on recommendations from LEWG, we follow up this work by 
 adding support for converting construction, initializer-list construction and 
 converting assignment to `indirect` and  `polymorphic`. These additions are the 
-focus of this corollary proposal. Please refer to [P3019] for details on `indirect'
+focus of this corollary proposal. Please refer to [P3019R6] for details on `indirect`
 and `polymorphic`.
 
 ## Additional constructors
@@ -43,7 +43,7 @@ and `polymorphic`.
 //TODO:CHECK 
 
 We add converting constructors to support conversion from `T` to `indirect<T>` 
-or to `polymorphic<T>`. Since these operations allocate memory, the constructors 
+or `polymorphic<T>`. Since these operations allocate memory, the constructors 
 are marked explicit so the intent to use them is clear. 
 
 ```c++
@@ -59,10 +59,10 @@ polymorphic<Shape> s2(r); // supported
 
 //TODO:ADD //TODO:CHECK
 
-As stated in [P3019], class templates `indirect` and `polymorphic` have strong 
+As stated in [P3019R6], class templates `indirect` and `polymorphic` have strong 
 similarities to existing class templates by design. To ensure consistency with 
-existing library types, we add support for list-initilized constructors to 
-both `indirect` and `polymorphic`.
+existing library types, we add support for list-initialized constructors to 
+`indirect` and `polymorphic`.
 
 ```c++
 
@@ -451,17 +451,18 @@ A. Peacock, and S. Parent 2024
 
 //TODO:UPDATE 
 
-The table below shows the relevant updated rows of the table in [Appendix C/P3019R6]. 
-The table shows the design components, the design decisions made, and the cost and 
-impact of alternative design choices. As presented in paper [P3019R6], the design of 
-class templates `indirect` and `polymorphic` has been approved by the LEWG. 
-The authors have until C++26 is standardized to consider making any breaking changes; 
-after C++26, whilst breaking changes will still be possible, the impact of these changes 
-on users could be potentially significant and unwelcome.
+The design components, design decisions, and the cost and impact of alternative 
+design choices for `indirect` and `polymorphc` are detailed in [Appendix C:P3019R6].
+Whilst breaking changes to the design of `indirect` and `polymorphic` would be
+possible after C++26 is standardized, such changes are likely to negatively impact 
+users.
+ 
+The relevant design components affected by the additions discussed in this proposal 
+are shown below.
 
 | Component | Decision | Alternative | Change impact | Breaking change? |
 |--|--|--|--|--|
-|Previous|--|--|--|--|
+|Original|--|--|--|--|
 |Explicit constructors|Constructors are marked `explicit`|Non-explicit constructors|Conversion for single arguments or braced initializers becomes valid| No |
 |Updated|--|--|--|--|
 |Explicit constructors|Constructors are marked `explicit`|Non-explicit constructors|Conversion for single arguments or braced initializers becomes valid| No |
