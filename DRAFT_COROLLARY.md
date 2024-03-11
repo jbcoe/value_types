@@ -36,15 +36,12 @@ converting assignment to `indirect` and  `polymorphic`. These additions are the
 focus of this corollary proposal. Please refer to [P3019] for details on `indirect'
 and `polymorphic`.
 
-//TODO:CHECK - leave this out?
-//- Briefly describe `indirect` and `polymorphic` [P3019]
-//- Briefly motivate additional constructors and assignment - done below?
-
 ## Additional constructors
 
 ### Converting constructors
 
 //TODO:CHECK 
+
 We add converting constructors to support conversion from `T` to `indirect<T>` 
 or to `polymorphic<T>`. Since these operations allocate memory, the constructors 
 are marked explicit so the intent to use them is clear. 
@@ -61,6 +58,7 @@ polymorphic<Shape> s2(r); // supported
 ### Initializer-list constructors
 
 //TODO:ADD //TODO:CHECK
+
 As stated in [P3019], class templates `indirect` and `polymorphic` have strong 
 similarities to existing class templates by design. To ensure consistency with 
 existing library types, we add support for list-initilized constructors to 
@@ -219,6 +217,7 @@ explicit constexpr indirect(U&& u);
     std::forward<U>(u))`.
     
 //TODO:ADD 
+
 ```c++
 template<class U, class... Us>
 explicit constexpr indirect(in_place_t, std::initializer_list<U> il,
@@ -237,6 +236,7 @@ explicit constexpr indirect(in_place_t, std::initializer_list<U> il,
 of type `T` with arguments `il`, `std​::​forward<Ts>(ts...)`. 
 
 //TODO:ADD
+
 ```c++
 template<class U, class... Us>
 explicit constexpr indirect(allocator_arg_t, const Allocator& a,
@@ -256,6 +256,8 @@ type `T` with arguments `il`, `std​::​forward<Ts>(ts...)`.
     
 
 ### X.Y.3 Assignment [indirect.assign]
+
+//TODO:CHECK
 
 ```c++
 template <class U>
@@ -355,6 +357,8 @@ class polymorphic {
 
 #### X.Z.2 Constructors [polymorphic.ctor]
 
+//TODO:ADD //TODO:CHECK
+
 ```c++
 template <class U>
 explicit constexpr polymorphic(U&& u);
@@ -411,6 +415,8 @@ specified allocator. ??
 
 #### X.Z.3 Assignment [polymorphic.assign]
 
+//TODO:CHECK
+
 ```c++
 template <class U>
 constexpr polymorphic& operator=(U&& u);
@@ -439,9 +445,12 @@ _`indirect` and `polymorphic`: Vocabulary Types for Composite Class Design, J. B
 A. Peacock, and S. Parent 2024
 [https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p3019r6.html]
 
-## Appendix A: Design choices, alternatives and breaking changes
+## Appendix A
+
+### Design choices, alternatives and breaking changes
 
 //TODO:UPDATE 
+
 The table below shows the relevant updated rows of the table in [Appendix C/P3019R6]. 
 The table shows the design components, the design decisions made, and the cost and 
 impact of alternative design choices. As presented in paper [P3019R6], the design of 
