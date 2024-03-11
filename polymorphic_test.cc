@@ -630,6 +630,14 @@ TEST(PolymorphicTest, ConstructorWithExceptionsTrackingAllocations) {
   EXPECT_EQ(dealloc_counter, 1);
 }
 
+#ifdef XYZ_POLYMORPHIC_HAS_INITIALIZER_LIST_CTOR
+TEST(PolymorphicTest, InitializerListConstructor) {
+  xyz::polymorphic<std::vector<int>> i(xyz::in_place_type_t<std::vector<int>>{},
+                                       {1, 2, 3});
+  EXPECT_EQ(i->size(), 3);
+}
+#endif  // XYZ_POLYMORPHIC_HAS_INITIALIZER_LIST_CTOR
+
 #ifdef XYZ_HAS_STD_OPTIONAL
 TEST(PolymorphicTest, InteractionWithOptional) {
   std::optional<xyz::polymorphic<Base>> a;
