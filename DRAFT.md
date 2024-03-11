@@ -42,6 +42,10 @@ should not be considered in isolation.
 
 ## History
 
+### Changes in R7
+
+* Improve wording for assignment operators to remove ambiguity.
+
 ### Changes in R6
 
 * Add `std::in_place_t` argument to indirect constructors.
