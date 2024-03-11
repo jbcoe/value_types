@@ -454,7 +454,7 @@ A. Peacock, and S. Parent 2024
 The design components, design decisions, and the cost and impact of alternative 
 design choices for `indirect` and `polymorphc` are detailed in [Appendix C:P3019R6].
 Whilst breaking changes to the design of `indirect` and `polymorphic` would be
-possible after C++26 is standardized, such changes are likely to negatively impact 
+possible after C++26 standardization, such changes are likely to negatively impact 
 users.
  
 The relevant design components affected by the additions discussed in this proposal 
