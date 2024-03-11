@@ -248,9 +248,8 @@ explicit constexpr indirect(in_place_t, std::initializer_list<U> il,
 ```
 
 13.1?. _Constraints_: `is_same_v<T, remove_cvref_t<U>>` is `true`.
-   `is_constructible_v<T, Us...>` is `true`.
    `is_copy_constructible_v<U>` is `true`.
-   `is_constructible_v<U, initializer_list<I>&, Us...>` is `true`.
+   `is_constructible_v<T, initializer_list<I>&, Us...>` is `true`.
    `is_default_constructible_v<allocator_type>` is `true`.
 
 13.2?. _Mandates_: `T` is a complete type.
@@ -268,9 +267,9 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a,
                             Us&&... us);
 ```
 
-13.4?. _Constraints_: `is_constructible_v<T, Us...>` is `true`.
+13.4?. _Constraints_: `is_same_v<T, remove_cvref_t<U>>` is `true`.
    `is_copy_constructible_v<U>` is `true`.
-   `is_constructible_v<U, initializer_list<I>&, Us...>` is `true`.
+   `is_constructible_v<T, initializer_list<I>&, Us...>` is `true`.
 
 13.5?. _Mandates_: `T` is a complete type.
 
