@@ -120,13 +120,13 @@ class indirect {
 
   //TODO:CHECK here
   template<class U, class... Us>
-  explicit constexpr indirect(in_place_t, std::initializer_list<U> il,
+  explicit constexpr indirect(in_place_t, std::initializer_list<U> ilist,
                               Us&&... us);
 
   //TODO:CHECK here
   template<class U, class... Us>
   explicit constexpr indirect(allocator_arg_t, const Allocator& a,
-                              in_place_t, std::initializer_list<U> il,
+                              in_place_t, std::initializer_list<U> ilist,
                               Us&&... us);
 
   constexpr indirect(const indirect& other);
@@ -243,7 +243,7 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a,
 
 ```c++
 template<class U = T, class... Us>
-explicit constexpr indirect(in_place_t, std::initializer_list<U> il,
+explicit constexpr indirect(in_place_t, std::initializer_list<U> ilist,
                             Us&&... us);
 ```
 
@@ -255,15 +255,15 @@ explicit constexpr indirect(in_place_t, std::initializer_list<U> il,
 13.2?. _Mandates_: `T` is a complete type.
 
 13.3?. _Effects_: Value direct-non-list-initializes an owned object
-   of type `T` with arguments `il`, `std::forward<Us>(us...)`.
+   of type `T` with arguments `ilist`, `std::forward<Us>(us...)`.
    Equivalent to `indirect(allocator_arg_t{}, Allocator(),
-   in_place_t{}, std::forward<initializer_list<U>><il>,
-   std::forward<Us><us>)`.
+   in_place_t{}, std::forward<initializer_list<U>>(ilist),
+   std::forward<Us>(us))`.
 
 ```c++
 template<class U = T, class... Us>
 explicit constexpr indirect(allocator_arg_t, const Allocator& a,
-                            in_place_t, std::initializer_list<U> il,
+                            in_place_t, std::initializer_list<U> ilist,
                             Us&&... us);
 ```
 
@@ -274,7 +274,7 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a,
 13.5?. _Mandates_: `T` is a complete type.
 
 13.6?. _Effects_: Value direct-non-list-initializes an owned object
-   of type `T` with arguments `il`, `std::forward<Us>(us...)`.
+   of type `T` with arguments `ilist`, `std::forward<Us>(us)`.
    `alloc` is direct-non-list-initialized with `a`.
 
 
@@ -315,12 +315,12 @@ class polymorphic {
 
   explicit constexpr polymorphic(allocator_arg_t, const Allocator& a);
 
-  template <class U, class... Ts>
-  explicit constexpr polymorphic(in_place_type_t<U>, Ts&&... ts);
+  template <class U, class... Us>
+  explicit constexpr polymorphic(in_place_type_t<U>, Us&&... us);
 
-  template <class U, class... Ts>
+  template <class U, class... Us>
   explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
-                                 in_place_type_t<U>, Ts&&... ts);
+                                 in_place_type_t<U>, Us&&... us);
 
   //TODO:CHECK here
   template <class U>
@@ -337,15 +337,15 @@ class polymorphic {
                         const polymorphic& other);
 
   //TODO:CHECK here
-  template <class U, class I, class... Ts>
+  template <class U, class I, class... Us>
   explicitconstexpr polymorphic(in_place_type_t<U>,
-                                initializer_list<I> il, Ts&&... ts)
+                                initializer_list<I> ilist, Us&&... us)
 
   //TODO:CHECK here
-  template <class U, class I, class... Ts>
+  template <class U, class I, class... Us>
   explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                                  in_place_type_t<U>,
-                                 initializer_list<I> il, Ts&&... ts)
+                                 initializer_list<I> ilist, Us&&... us)
 
   constexpr polymorphic(polymorphic&& other) noexcept(see below);
 
@@ -417,42 +417,42 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
 
 
 ```c++
-  template <class U = T, class I, class... Ts>
+  template <class U = T, class I, class... Us>
   explicit constexpr polymorphic(in_place_type_t<U>,
-                                 initializer_list<I> il, Ts&&... ts)
+                                 initializer_list<I> ilist, Us&&... us)
 ```
 19.1? _Constraints_: ?? `is_base_of_v<T, U>` is `true`.
-  `is_constructible_v<U, Ts...>` is `true`.
+  `is_constructible_v<U, Us...>` is `true`.
   `is_copy_constructible_v<U>` is `true`.
-  `is_constructible_v<T, initializer_list<I>&, Ts...>` is `true`.
+  `is_constructible_v<T, initializer_list<I>&, Us...>` is `true`.
   `is_default_constructible_v<allocator_type>` is `true`.
 
 19.2? _Mandates_: `T` is a complete type.
 
 19.3? _Effects_: Equivalent to `polymorphic(std::allocator_arg_t{}, A{},
   std::in_place_type_t<std::remove_cvref_t<U>>{}, std::forward<U>(u),
-  std::forward<initializer_list<I>>(il))`.
+  std::forward<initializer_list<I>>(ilist), std::forward<Us>(us))`.
   ??? Value direct-non-list-initializes an owned object of
-  type `T` with arguments `il`, `std::forward<Ts>(ts...)` using
+  type `T` with arguments `ilist`, `std::forward<Us>(us)` using
   default-constructed allocator `A{}`. ???
 
 
 ```c++
-  template <class U = T, class I, class... Ts>
+  template <class U = T, class I, class... Us>
   explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                                  in_place_type_t<U>,
-                                 initializer_list<I> il, Ts&&... ts)
+                                 initializer_list<I> ilist, Us&&... us)
 ```
 
 19.4? _Constraints_: ?? `is_base_of_v<T, U>` is `true`.
-  `is_constructible_v<U, Ts...>` is `true`.
+  `is_constructible_v<U, Us...>` is `true`.
   `is_copy_constructible_v<U>` is `true`.
-  `is_constructible_v<T, initializer_list<I>&, Ts...>` is `true`.
+  `is_constructible_v<T, initializer_list<I>&, Us...>` is `true`.
 
 19.5? _Mandates_: `T` is a complete type.
 
 19.6? _Effects_: ??? Value direct-non-list-initializes an owned object of
-  type `T` with arguments `il`, `std::forward<Ts>(ts...)` using the
+  type `T` with arguments `ilist`, `std::forward<Us>(us)` using the
   specified allocator `a`. ???
   `alloc` is direct-non-list-initialized with `a`.
 
