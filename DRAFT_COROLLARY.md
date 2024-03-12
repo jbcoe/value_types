@@ -509,7 +509,7 @@ are shown below.
 
 | Component | Decision | Alternative | Change impact | Breaking change? |
 |--|--|--|--|--|
-|Original|--|--|--|--|
+|*Original*|--|--|--|--|
 |Explicit constructors|Constructors are marked `explicit`|Non-explicit constructors|Conversion for single arguments or braced initializers becomes valid| No |
-|Updated|--|--|--|--|
+|*Updated*|--|--|--|--|
 |Explicit constructors|Constructors are marked `explicit`|Non-explicit constructors|Conversion for single arguments or braced initializers becomes valid| No |
