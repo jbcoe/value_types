@@ -47,12 +47,12 @@ or `polymorphic<T>`. Since these operations allocate memory, the constructors
 are marked explicit so the intent to use them is clear.
 
 //TODO:ADD examples before/after with/without allocator
- 
-#### Before and after converting constructors 
+
+#### Before and after converting constructors
 
 ```c++
 int i = 42;
-indirect<int> i1 = r; // before, error 
+indirect<int> i1 = r; // before, error
 indirect<int> i2(r); // after, supported
 
 polymorphic<Shape> s1 = r; // before, error
@@ -81,9 +81,9 @@ polymorphic<Shape> ???; // after, supported
 
 ## Converting assignment
 
-//TODO:ADD motivation and examples before/after 
+//TODO:ADD motivation and examples before/after
 
-#### Before and after converting assignment 
+#### Before and after converting assignment
 
 ```c++
 

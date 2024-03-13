@@ -22,8 +22,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define XYZ_POLYMORPHIC_H_
 
 #include <cassert>
-#include <initializer_list>
 #include <concepts>
+#include <initializer_list>
 #include <memory>
 #include <utility>
 
@@ -209,7 +209,7 @@ class polymorphic {
       : polymorphic(std::allocator_arg_t{}, A{},
                     std::in_place_type_t<std::remove_cvref_t<U>>{},
                     std::forward<U>(u)) {}
-template <class U, class... Ts>
+  template <class U, class... Ts>
   explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts)
     requires std::constructible_from<U, Ts&&...> &&
              std::copy_constructible<U> && std::derived_from<U, T>

@@ -221,7 +221,7 @@ class polymorphic : private detail::empty_base_optimization<A> {
     }
   }
 
-template <
+  template <
       class U, class I, class... Ts,
       typename std::enable_if<
           std::is_constructible<U, std::initializer_list<I>, Ts&&...>::value,
@@ -261,8 +261,6 @@ template <
                        Ts&&... ts)
       : polymorphic(std::allocator_arg, A(), in_place_type_t<U>{}, ilist,
                     std::forward<Ts>(ts)...) {}
-
-
 
   template <
       class U, class... Ts,
