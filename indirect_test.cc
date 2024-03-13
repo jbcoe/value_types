@@ -57,8 +57,10 @@ namespace {
 TEST(IndirectTest, ValueAccessFromInPlaceConstructedObject) {
   xyz::indirect<int> a(xyz::in_place_t{}, 42);
   EXPECT_EQ(*a, 42);
-  xyz::indirect<std::tuple<int, int>> a(xyz::in_place_t{}, 42, 42);
-  EXPECT_EQ(*a, (std::tuple<int, int>{42, 42}));
+
+  // TODO: Split this test.
+  xyz::indirect<std::tuple<int, int>> aa(xyz::in_place_t{}, 42, 42);
+  EXPECT_EQ(*aa, (std::tuple<int, int>{42, 42}));
 }
 
 TEST(IndirectTest, ValueAccessFromDefaultConstructedObject) {

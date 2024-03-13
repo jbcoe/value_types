@@ -92,11 +92,10 @@ class indirect {
   template <class U = T, class TT = T>
   explicit constexpr indirect(U&& u)
     requires(std::is_same_v<TT, std::remove_cvref_t<U>> &&
-                 std::is_default_constructible_v<TT> &&
-                 std::is_copy_constructible_v<TT> &&
-                 not std::is_same_v<std::remove_cvref_t<U>, std::in_place_t> &&
-                 not std::is_same_v < std::remove_cvref_t<U>,
-             indirect >>)
+             std::is_default_constructible_v<TT> &&
+             std::is_copy_constructible_v<TT> &&
+             not std::is_same_v<std::remove_cvref_t<U>, std::in_place_t> &&
+             not std::is_same_v<std::remove_cvref_t<U>, indirect>)
       : indirect(std::in_place_t{}, std::forward<U>(u)) {}
 
   // TODO:REVISE
@@ -106,13 +105,12 @@ class indirect {
   explicit constexpr indirect(std::allocator_arg_t, const A& alloc,
                               std::in_place_t, U&& u)
     requires(std::is_same_v<TT, std::remove_cvref_t<U>> &&
-                 std::is_default_constructible_v<TT> &&
-                 std::is_copy_constructible_v<TT> &&
-                 not std::is_same_v<std::remove_cvref_t<U>, std::in_place_t> &&
-                 not std::is_same_v < std::remove_cvref_t<U>,
-             indirect >>)
+             std::is_default_constructible_v<TT> &&
+             std::is_copy_constructible_v<TT> &&
+             not std::is_same_v<std::remove_cvref_t<U>, std::in_place_t> &&
+             not std::is_same_v<std::remove_cvref_t<U>, indirect>)
       : alloc_(alloc) {
-    p_ = construct_from(alloc_, std::forward<U>(u))
+    p_ = construct_from(alloc_, std::forward<U>(u));
   }
 
   // The template type TT defers the constraint evaluation until the constructor
