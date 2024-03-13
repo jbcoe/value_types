@@ -89,7 +89,7 @@ the constructors and assignment operatorsdiscussed above. Please see
 
 ### X.Y Class template indirect [indirect]
 
-#### X.Y.1 Class template indirect additions [indirect.syn]
+#### X.Y.1 Class template indirect additions [indirect.add???]
 
 ```c++
 template <class T, class Allocator = allocator<T>>
@@ -240,7 +240,7 @@ constexpr indirect& operator=(U&& u);
 
 ### X.Y Class template polymorphic [polymorphic]
 
-#### X.Y.1 Class template polymorphic synopsis [polymorphic.syn]
+#### X.Y.1 Class template polymorphic additions [polymorphic.add??]
 
 ```c++
 template <class T, class Allocator = allocator<T>>
