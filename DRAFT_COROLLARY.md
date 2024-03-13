@@ -16,7 +16,6 @@ _Antony Peacock \<<ant.peacock@gmail.com>\>_
 _Sean Parent \<<sparent@adobe.com>\>_
 
 # Contents
- - [Abstract](#abstract)
  - [Introduction](#introduction)
  - [Additional constructors](#additional-constructors)
  - [Converting assignment](#converting-assignment)
@@ -85,7 +84,7 @@ polymorphic<Shape> ??? ; // supported
 
 We update the technical specifications detailed in [P3019R6] to include
 the constructors and assignment operatorsdiscussed above. Please see
-(Appendix A){#appendix-a] for the complete class templates.
+[Appendix A](#appendix-a) for the complete class templates.
 
 ### X.Y Class template indirect [indirect]
 
