@@ -86,7 +86,19 @@ class indirect {
              std::is_copy_constructible_v<TT>)
       : indirect(std::allocator_arg, A{}) {}
 
-  // TODO:REVISE
+  //  The template type TT defers the constraint evaluation until the
+  //  constructor is instantiated.
+  template <class U = T, class TT = T>
+  explicit constexpr indirect(std::allocator_arg_t, const A& alloc, U&& u)
+    requires(std::is_same_v<TT, std::remove_cvref_t<U>> &&
+             std::is_default_constructible_v<TT> &&
+             std::is_copy_constructible_v<TT> &&
+             not std::is_same_v<std::remove_cvref_t<U>, std::in_place_t> &&
+             not std::is_same_v<std::remove_cvref_t<U>, indirect>)
+      : alloc_(alloc) {
+    p_ = construct_from(alloc_, std::forward<U>(u));
+  }
+
   //  The template type TT defers the constraint evaluation until the
   //  constructor is instantiated.
   template <class U = T, class TT = T>
@@ -96,9 +108,9 @@ class indirect {
              std::is_copy_constructible_v<TT> &&
              not std::is_same_v<std::remove_cvref_t<U>, std::in_place_t> &&
              not std::is_same_v<std::remove_cvref_t<U>, indirect>)
-      : indirect(std::in_place_t{}, std::forward<U>(u)) {}
+      : indirect(std::allocator_arg, A{}, std::in_place_t{},
+                 std::forward<U>(u)) {}
 
-  // TODO:REVISE
   //  The template type TT defers the constraint evaluation until the
   //  constructor is instantiated.
   template <class U = T, class TT = T>
@@ -107,7 +119,6 @@ class indirect {
     requires(std::is_same_v<TT, std::remove_cvref_t<U>> &&
              std::is_default_constructible_v<TT> &&
              std::is_copy_constructible_v<TT> &&
-             not std::is_same_v<std::remove_cvref_t<U>, std::in_place_t> &&
              not std::is_same_v<std::remove_cvref_t<U>, indirect>)
       : alloc_(alloc) {
     p_ = construct_from(alloc_, std::forward<U>(u));

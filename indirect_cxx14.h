@@ -127,8 +127,25 @@ class indirect : private detail::empty_base_optimization<A> {
               T, typename std::remove_cv<
                      typename std::remove_reference<U>::type>::type>::value,
           int>::type = 0,
-      typename std::enable_if<std::is_default_constructible<TT>::value,
+      typename std::enable_if<std::is_copy_constructible<TT>::value,
                               int>::type = 0,
+      typename std::enable_if<
+          !std::is_same<typename std::remove_cv<
+                            typename std::remove_reference<U>::type>::type,
+                        xyz::in_place_t>::value,
+          int>::type = 0>
+  explicit constexpr indirect(std::allocator_arg_t, const A& alloc, U&& u)
+      : alloc_base(alloc) {
+    p_ = construct_from(alloc_base::get(), std::forward<U>(u));
+  }
+
+  template <
+      class U, class TT = T,
+      typename std::enable_if<
+          std::is_same<
+              T, typename std::remove_cv<
+                     typename std::remove_reference<U>::type>::type>::value,
+          int>::type = 0,
       typename std::enable_if<std::is_copy_constructible<TT>::value,
                               int>::type = 0,
       typename std::enable_if<
@@ -137,7 +154,7 @@ class indirect : private detail::empty_base_optimization<A> {
                         xyz::in_place_t>::value,
           int>::type = 0>
   explicit constexpr indirect(U&& u)
-      : indirect(xyz::in_place_t{}, std::forward<U>(u)) {}
+      : indirect(std::allocator_arg, A{}, std::forward<U>(u)) {}
 
   template <class... Us,
             typename std::enable_if<std::is_constructible<T, Us&&...>::value,
