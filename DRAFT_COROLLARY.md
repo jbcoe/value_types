@@ -23,8 +23,10 @@ _Sean Parent \<<sparent@adobe.com>\>_
  - [Reference implementation](#reference-implementation)
  - [Acknowledgements](#acknowledgements)
  - [References](#references)
- - [Appendix A](#appendix-a)
- - [Appendix B](#appendix-b)
+ - [Appendix A: complete class template specifications](
+   #appendix-a-complete-class-template-specifications)
+ - [Appendix B: design choices, alternatives and breaking changes](
+   #appendix-b-design-choices-alternatives-and-breaking-changes)
 
 [//]: <> (<=============================================================================>)
 
@@ -40,50 +42,62 @@ and `polymorphic`.
 
 ### Converting constructors
 
-//TODO:CHECK
-
 We add converting constructors to support conversion from `T` to `indirect<T>`
 or `polymorphic<T>`. Since these operations allocate memory, the constructors
 are marked explicit so the intent to use them is clear.
 
+//TODO:ADD examples before/after with/without allocator
+ 
+#### Before and after converting constructors 
+
 ```c++
 int i = 42;
-indirect<int> i1 = r; // error ?
-indirect<int> i2(r); // supported
+indirect<int> i1 = r; // before, error 
+indirect<int> i2(r); // after, supported
 
-polymorphic<Shape> s1 = r; // error ?
-polymorphic<Shape> s2(r); // supported
+polymorphic<Shape> s1 = r; // before, error
+polymorphic<Shape> s2(r); // after, supported
 ```
 
 ### Initializer-list constructors
 
-//TODO:ADD //TODO:CHECK
+//TODO:ADD before/after examples with/without allocator
 
 As stated in [P3019R6], class templates `indirect` and `polymorphic` have strong
 similarities to existing class templates by design. To ensure consistency with
 existing library types, we add support for list-initialized constructors to
 `indirect` and `polymorphic`.
 
+#### Before and after initializer-list constructors
+
 ```c++
 
-indirect<> ??? ; // supported
+indirect<> ??? ; // before, error
+indirect<> ??? ; // after, supported
 
-polymorphic<Shape> ??? ; // supported
-
+polymorphic<Shape> ???; // before, error
+polymorphic<Shape> ???; // after, supported
 ```
 
 ## Converting assignment
 
-//TODO:ADD
+//TODO:ADD motivation and examples before/after 
+
+#### Before and after converting assignment 
 
 ```c++
-???
+
+indirect<> ??? ; // before, error
+indirect<> ??? ; // after, supported
+
+polymorphic<Shape> ???; // before, error
+polymorphic<Shape> ???; // after, supported
 ```
 
 ## Technical specifications
 
 We update the technical specifications detailed in [P3019R6] to include
-the constructors and assignment operatorsdiscussed above. Please see
+the constructors and assignment operators discussed above. Please see
 [Appendix A](#appendix-a) for the complete class templates.
 
 ### X.Y Class template indirect [indirect]
@@ -141,7 +155,6 @@ template <typename Value>
 indirect(std::in_place_t, Value) -> indirect<Value>;
 
 ...
-
 ```
 
 ### X.Y.2 Constructors [indirect.ctor]
@@ -261,7 +274,6 @@ class polymorphic {
   template <class U>
   explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                                  in_place_type_t<U>, U&& u);
-
   ...
 
   //TODO:CHECK here
@@ -274,7 +286,6 @@ class polymorphic {
   explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                                  in_place_type_t<U>,
                                  initializer_list<I> ilist, Us&&... us)
-
   ...
 
   //TODO:CHECK here
@@ -392,15 +403,16 @@ available on GitHub at [https://www.github.com/jbcoe/valuei_types].
 
 ## References
 
-_`indirect` and `polymorphic`: Vocabulary Types for Composite Class Design, J. B. Coe,
-A. Peacock, and S. Parent 2024
+_`indirect` and `polymorphic`: Vocabulary Types for Composite Class Design_, J. B. Coe,
+A. Peacock, and S. Parent, 2024
 [https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p3019r6.html]
 
-## Appendix A
+_An allocator-aware optional type_, P. Halpern, N. D. Ranns, V. Voutilainen, 2024
+[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p2047r7.html]
 
-### Complete class templates
+## Appendix A: complete class template specifications
 
-#### X.Y.1 Class template indirect synopsis [indirect.syn]
+### X.Y.1 Class template indirect synopsis [indirect.syn]
 
 ```c++
 template <class T, class Allocator = allocator<T>>
@@ -517,7 +529,7 @@ indirect(std::allocator_arg_t, Alloc, Value) -> indirect<
     Value, typename std::allocator_traits<Alloc>::template rebind_alloc<Value>>;
 ```
 
-#### X.Y.1 Class template polymorphic synopsis [polymorphic.syn]
+### X.Y.1 Class template polymorphic synopsis [polymorphic.syn]
 
 ```c++
 template <class T, class Allocator = allocator<T>>
@@ -599,9 +611,7 @@ class polymorphic {
 };
 ```
 
-## Appendix B
-
-### Design choices, alternatives and breaking changes
+## Appendix B: design choices, alternatives and breaking changes
 
 //TODO:UPDATE
 
