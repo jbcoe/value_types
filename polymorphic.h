@@ -71,6 +71,10 @@ class direct_control_block final : public control_block<T, A> {
     control_block<T, A>::p_ = &u_;
   }
 
+  constexpr direct_control_block(U&& u) : u_(std::move(u)) {
+    control_block<T, A>::p_ = &u_;
+  }
+
   constexpr control_block<T, A>* clone(const A& alloc) override {
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<direct_control_block<T, U, A>>;
