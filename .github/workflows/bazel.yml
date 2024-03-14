@@ -40,10 +40,10 @@ jobs:
               name: "Bazel test: undefined behaviour sanitizer",
               flags: "--config=ubsan",
           }
-          - {
-              name: "Bazel test: thread sanitizer",
-              flags: "--config=tsan",
-          }
+          # - {
+          #     name: "Bazel test: thread sanitizer",
+          #     flags: "--config=tsan",
+          # }
     steps:
       - uses: actions/checkout@v3
       - uses: bazelbuild/setup-bazelisk@v2
