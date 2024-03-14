@@ -26,7 +26,7 @@ cmake ../            # Generate build system specified in root with cmake
 cmake --build ./     # Build the underlying build system via CMake
 ```
 
-## Including value_types your own project
+## Including value_types to your own project
 
 To use the value types code in your own CMake project then you can pull
 the project in as a dependency via CMake's FetchContent module as follows:

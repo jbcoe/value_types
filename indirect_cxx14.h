@@ -260,9 +260,7 @@ class indirect : private detail::empty_base_optimization<A> {
     } else {
       if (std::is_copy_assignable<T>::value && !valueless_after_move() &&
           alloc_base::get() == other.alloc_base::get()) {
-        T tmp(*other);
-        using std::swap;
-        swap(tmp, *p_);
+        *p_ = *other;
       } else {
         // Constructing a new object could throw so we need to defer resetting
         // or updating allocators until this is done.
