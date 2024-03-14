@@ -54,14 +54,54 @@ using std::in_place_t;
 
 namespace {
 
-TEST(IndirectTest, ValueAccessFromInPlaceConstructedObject) {
-  xyz::indirect<int> a(xyz::in_place_t{}, 42);
-  EXPECT_EQ(*a, 42);
+TEST(IndirectTest, DefaultConstructor) {
+  xyz::indirect<int> i;
+  EXPECT_EQ(*i, 0);
 }
 
-TEST(IndirectTest, ValueAccessFromDefaultConstructedObject) {
-  xyz::indirect<int> a;
-  EXPECT_EQ(*a, 0);
+TEST(IndirectTest, AllocatorExtendedDefaultConstructor) {
+  xyz::TaggedAllocator<int> a(42);
+  xyz::indirect<int, xyz::TaggedAllocator<int>> i(std::allocator_arg, a);
+  EXPECT_EQ(*i, 0);
+  EXPECT_EQ(i.get_allocator(), a);
+}
+
+TEST(IndirectTest, SingleValueConstructor) {
+  xyz::indirect<int> i(42);
+  EXPECT_EQ(*i, 42);
+}
+
+TEST(IndirectTest, AllocatorExtendedSingleValueConstructor) {
+  xyz::TaggedAllocator<int> a(42);
+  xyz::indirect<int, xyz::TaggedAllocator<int>> i(std::allocator_arg, a, 42);
+  EXPECT_EQ(*i, 42);
+  EXPECT_EQ(i.get_allocator(), a);
+}
+
+TEST(IndirectTest, InPlaceConstructor) {
+  xyz::indirect<int> i(xyz::in_place_t{}, 42);
+  EXPECT_EQ(*i, 42);
+}
+
+TEST(IndirectTest, AllocatorExtendedInPlaceConstructor) {
+  xyz::TaggedAllocator<int> a(42);
+  xyz::indirect<int, xyz::TaggedAllocator<int>> i(std::allocator_arg, a,
+                                                  xyz::in_place_t{}, 42);
+  EXPECT_EQ(*i, 42);
+  EXPECT_EQ(i.get_allocator(), a);
+}
+
+TEST(IndirectTest, InitializerListConstructor) {
+  xyz::indirect<std::vector<int>> i(xyz::in_place_t{}, {10, 11});
+  EXPECT_EQ(i->size(), 2);
+}
+
+TEST(IndirectTest, AllocatorExtendedInitializerListConstructor) {
+  xyz::TaggedAllocator<std::vector<int>> a(42);
+  xyz::indirect<std::vector<int>, xyz::TaggedAllocator<std::vector<int>>> i(
+      std::allocator_arg, a, xyz::in_place_t{}, {10, 11});
+  EXPECT_EQ(i->size(), 2);
+  EXPECT_EQ(i.get_allocator(), a);
 }
 
 #ifdef XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
@@ -329,11 +369,6 @@ TEST(IndirectTest, HashValueless) {
   xyz::indirect<int> v = make_valueless_indirect();
   // The value here is implementation-defined but behaviour is well-defined.
   EXPECT_EQ(std::hash<xyz::indirect<int>>()(v), static_cast<size_t>(-1));
-}
-
-TEST(IndirectTest, InitializerListConstructor) {
-  xyz::indirect<std::vector<int>> i(xyz::in_place_t{}, {1, 2, 3});
-  EXPECT_EQ(i->size(), 3);
 }
 
 #ifdef XYZ_HAS_STD_OPTIONAL
