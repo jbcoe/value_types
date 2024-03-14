@@ -27,10 +27,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <type_traits>
 #include <utility>
 
-#ifndef XYZ_POLYMORPHIC_HAS_INITIALIZER_LIST_CTOR
-#define XYZ_POLYMORPHIC_HAS_INITIALIZER_LIST_CTOR 1
-#endif  // XYZ_POLYMORPHIC_HAS_INITIALIZER_LIST_CTOR
-
 #ifndef XYZ_IN_PLACE_TYPE_DEFINED
 #define XYZ_IN_PLACE_TYPE_DEFINED
 namespace xyz {
@@ -284,6 +280,28 @@ class polymorphic : private detail::empty_base_optimization<A> {
       cb_ = nullptr;
     }
   }
+
+  template <
+      class U,
+      typename std::enable_if<
+          !std::is_same<polymorphic,
+                        typename std::remove_cv<typename std::remove_reference<
+                            U>::type>::type>::value,
+          int>::type = 0,
+      typename std::enable_if<
+          std::is_copy_constructible<typename std::remove_cv<
+              typename std::remove_reference<U>::type>::type>::value,
+          int>::type = 0,
+      typename std::enable_if<
+          std::is_base_of<
+              T, typename std::remove_cv<
+                     typename std::remove_reference<U>::type>::type>::value,
+          int>::type = 0>
+  explicit polymorphic(std::allocator_arg_t, const A& alloc, U&& u)
+      : polymorphic(std::allocator_arg_t{}, alloc,
+                    in_place_type_t<typename std::remove_cv<
+                        typename std::remove_reference<U>::type>::type>{},
+                    std::forward<U>(u)) {}
 
   template <
       class U,
