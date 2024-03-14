@@ -71,6 +71,8 @@ template <class U = T>
 constexpr optional& operator=(U&& u);
 ```
 
+### Converting assignment for `indirect`
+
 When assigning to an `indirect` there is potential for optimisation if there is
 an existing owned object to be assigned to:
 
@@ -93,6 +95,8 @@ indirect<int> i;
 foo(i); // could move from `i`.
 i = 5;
 ```
+
+### Converting assignment for `polymorphic`
 
 There is no converting assignment for `polymorphic` as type information is
 erased. There is no optimisation opportunity to be made as a new object will
