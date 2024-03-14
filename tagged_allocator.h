@@ -18,8 +18,8 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==============================================================================*/
 
-#ifndef XYZ_TAGGED_ALLOCATOR_H
-#define XYZ_TAGGED_ALLOCATOR_H
+#ifndef XYZ_TAGGED_ALLOCATOR_H_
+#define XYZ_TAGGED_ALLOCATOR_H_
 
 namespace xyz {
 
@@ -62,4 +62,4 @@ struct TaggedAllocator {
 
 }  // namespace xyz
 
-#endif  // XYZ_TAGGED_ALLOCATOR_H
+#endif  // XYZ_TAGGED_ALLOCATOR_H_
