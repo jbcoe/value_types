@@ -162,23 +162,23 @@ class polymorphic {
              std::is_copy_constructible_v<TT>)
       : polymorphic(std::allocator_arg_t{}, A{}) {}
 
-  template <class U>
-  constexpr explicit polymorphic(std::allocator_arg_t, const A& alloc, U&& u)
-    requires(not std::same_as<polymorphic, std::remove_cvref_t<U>>) &&
-            std::copy_constructible<std::remove_cvref_t<U>> &&
-            std::derived_from<std::remove_cvref_t<U>, T>
-      : polymorphic(std::allocator_arg_t{}, alloc,
-                    std::in_place_type_t<std::remove_cvref_t<U>>{},
-                    std::forward<U>(u)) {}
+  // template <class U>
+  // constexpr explicit polymorphic(std::allocator_arg_t, const A& alloc, U&& u)
+  //   requires(not std::same_as<polymorphic, std::remove_cvref_t<U>>) &&
+  //           std::copy_constructible<std::remove_cvref_t<U>> &&
+  //           std::derived_from<std::remove_cvref_t<U>, T>
+  //     : polymorphic(std::allocator_arg_t{}, alloc,
+  //                   std::in_place_type_t<std::remove_cvref_t<U>>{},
+  //                   std::forward<U>(u)) {}
 
-  template <class U>
-  constexpr explicit polymorphic(U&& u)
-    requires(not std::same_as<polymorphic, std::remove_cvref_t<U>>) &&
-            std::copy_constructible<std::remove_cvref_t<U>> &&
-            std::derived_from<std::remove_cvref_t<U>, T>
-      : polymorphic(std::allocator_arg_t{}, A{},
-                    std::in_place_type_t<std::remove_cvref_t<U>>{},
-                    std::forward<U>(u)) {}
+  // template <class U>
+  // constexpr explicit polymorphic(U&& u)
+  //   requires(not std::same_as<polymorphic, std::remove_cvref_t<U>>) &&
+  //           std::copy_constructible<std::remove_cvref_t<U>> &&
+  //           std::derived_from<std::remove_cvref_t<U>, T>
+  //     : polymorphic(std::allocator_arg_t{}, A{},
+  //                   std::in_place_type_t<std::remove_cvref_t<U>>{},
+  //                   std::forward<U>(u)) {}
 
   template <class U, class... Ts>
   explicit constexpr polymorphic(std::allocator_arg_t, const A& alloc,
