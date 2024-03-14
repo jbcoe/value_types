@@ -108,6 +108,7 @@ TEST(PolymorphicTest, AllocatorExtendedDefaultConstructor) {
   EXPECT_EQ(p.get_allocator(), a);
 }
 
+#ifdef XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS
 TEST(PolymorphicTest, SingleValueConstructor) {
   xyz::polymorphic<Base> p(Derived(42));
   EXPECT_EQ(p->value(), 42);
@@ -120,6 +121,7 @@ TEST(PolymorphicTest, AllocatorExtendedSingleValueConstructor) {
   EXPECT_EQ(p->value(), 42);
   EXPECT_EQ(p.get_allocator(), a);
 }
+#endif  // XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS
 
 TEST(PolymorphicTest, InPlaceConstructor) {
   xyz::polymorphic<Base> p(xyz::in_place_type_t<Derived>{}, 42);
@@ -134,6 +136,7 @@ TEST(PolymorphicTest, AllocatorExtendedInPlaceConstructor) {
   EXPECT_EQ(p.get_allocator(), a);
 }
 
+#ifdef XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS
 TEST(PolymorphicTest, InitializerListConstructor) {
   xyz::polymorphic<std::vector<int>> i(xyz::in_place_type_t<std::vector<int>>{},
                                        {10, 11});
@@ -148,6 +151,7 @@ TEST(PolymorphicTest, AllocatorExtendedInitializerListConstructor) {
   EXPECT_EQ(p->size(), 2);
   EXPECT_EQ(p.get_allocator(), a);
 }
+#endif  // XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS
 
 TEST(PolymorphicTest, CopiesAreDistinct) {
   xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
