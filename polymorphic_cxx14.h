@@ -276,15 +276,6 @@ class polymorphic : private detail::empty_base_optimization<A> {
       : polymorphic(std::allocator_arg, A(), in_place_type_t<U>{},
                     std::forward<Ts>(ts)...) {}
 
-  polymorphic(std::allocator_arg_t, const A& alloc, const polymorphic& other)
-      : alloc_base(alloc) {
-    if (!other.valueless_after_move()) {
-      cb_ = other.cb_->clone(alloc_base::get());
-    } else {
-      cb_ = nullptr;
-    }
-  }
-
   template <
       class U,
       typename std::enable_if<
@@ -328,6 +319,15 @@ class polymorphic : private detail::empty_base_optimization<A> {
                     in_place_type_t<typename std::remove_cv<
                         typename std::remove_reference<U>::type>::type>{},
                     std::forward<U>(u)) {}
+
+  polymorphic(std::allocator_arg_t, const A& alloc, const polymorphic& other)
+      : alloc_base(alloc) {
+    if (!other.valueless_after_move()) {
+      cb_ = other.cb_->clone(alloc_base::get());
+    } else {
+      cb_ = nullptr;
+    }
+  }
 
   polymorphic(const polymorphic& other)
       : polymorphic(std::allocator_arg,
