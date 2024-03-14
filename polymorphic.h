@@ -139,20 +139,7 @@ class polymorphic {
   explicit constexpr polymorphic(std::allocator_arg_t, const A& alloc)
     requires(std::is_default_constructible_v<TT> &&
              std::is_copy_constructible_v<TT>)
-      : alloc_(alloc) {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
-    using cb_traits = std::allocator_traits<cb_allocator>;
-    cb_allocator cb_alloc(alloc_);
-    auto mem = cb_traits::allocate(cb_alloc, 1);
-    try {
-      cb_traits::construct(cb_alloc, mem);
-      cb_ = mem;
-    } catch (...) {
-      cb_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
-  }
+      : polymorphic(std::allocator_arg_t{}, alloc, std::in_place_type_t<T>{}) {}
 
   // The template type TT defers the constraint evaluation until the constructor
   // is instantiated.
