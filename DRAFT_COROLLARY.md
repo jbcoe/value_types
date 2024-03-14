@@ -23,160 +23,136 @@ _Sean Parent \<<sparent@adobe.com>\>_
  - [Reference implementation](#reference-implementation)
  - [Acknowledgements](#acknowledgements)
  - [References](#references)
- - [Appendix A: complete class template specifications](
-   #appendix-a-complete-class-template-specifications)
- - [Appendix B: design choices, alternatives and breaking changes](
-   #appendix-b-design-choices-alternatives-and-breaking-changes)
 
 [//]: <> (<=============================================================================>)
 
 ## Introduction
+
 New vocabulary types `indirect` and `polymorphic` for composite class design are
-proposed in [P3019R6]. Based on recommendations from LEWG, we follow up this work by
-adding support for converting construction, initializer-list construction and
-converting assignment to `indirect` and  `polymorphic`. These additions are the
-focus of this corollary proposal. Please refer to [P3019R6] for details on `indirect`
-and `polymorphic`.
+proposed in P3019 [1]. Based on recommendations from LEWG, we follow up this
+work by adding support for converting construction, initializer-list
+construction and converting assignment to `indirect` and `polymorphic` where
+appropriate.
 
 ## Additional constructors
 
 ### Converting constructors
 
-We add converting constructors to support conversion from `T` to `indirect<T>`
-or `polymorphic<T>`. Since these operations allocate memory, the constructors
-are marked explicit so the intent to use them is clear.
+We add converting constructors to both indirect and polymorphic so that they can
+be constructed from single values without the need to use `in_place` or
+`in_place_type` in line with optional and variant. As `indirect` and
+`polymorphic` are allocator-aware types, we provide allocator-extended versions
+of these constructors in line with those from `basic_optional` [2] and
+existing constructors from `indirect` and `polymorphic`.
 
-//TODO:ADD examples before/after with/without allocator
-
-#### Before and after converting constructors
-
-```c++
-int i = 42;
-indirect<int> i1 = r; // before, error
-indirect<int> i2(r); // after, supported
-
-polymorphic<Shape> s1 = r; // before, error
-polymorphic<Shape> s2(r); // after, supported
-```
+As `indirect` and `polymorphic` will use dynamic memory, the converting
+constructors are marked as explicit, the same as other constructors in
+`indirect` and `polymorphic`.
 
 ### Initializer-list constructors
 
-//TODO:ADD before/after examples with/without allocator
+We add initializer-list constructors to both `indirect` and `polymorphic` in
+line with those in optional and variant. As `indirect` and `polymorphic` are
+allocator-aware types, we provide allocator-extended versions of these
+constructors in line with those from `basic_optional` [2] and existing
+constructors from `indirect` and `polymorphic`.
 
-As stated in [P3019R6], class templates `indirect` and `polymorphic` have strong
-similarities to existing class templates by design. To ensure consistency with
-existing library types, we add support for list-initialized constructors to
+As `indirect` and `polymorphic` will use dynamic memory, the initializer-list
+constructors are marked as explicit, the same as other constructors in
 `indirect` and `polymorphic`.
-
-#### Before and after initializer-list constructors
-
-```c++
-
-indirect<> ??? ; // before, error
-indirect<> ??? ; // after, supported
-
-polymorphic<Shape> ???; // before, error
-polymorphic<Shape> ???; // after, supported
-```
 
 ## Converting assignment
 
-//TODO:ADD motivation and examples before/after
+We add a converting assignment for `indirect` in line with the converting
+assignment operators from optional and variant.
 
-#### Before and after converting assignment
+```
+template <class U = T>
+constexpr optional& operator=(U&& u);
+```
+
+When assigning to an `indirect` there is potential for optimisation if there is
+an existing owned object to be assigned to.
 
 ```c++
-
-indirect<> ??? ; // before, error
-indirect<> ??? ; // after, supported
-
-polymorphic<Shape> ???; // before, error
-polymorphic<Shape> ???; // after, supported
+indirect<int> i;
+foo(i);  // could move from `i`.
+if (!i.valueless_after_move()) {
+  *i = 5;
+} else {
+  i = indirect(5);
+}
 ```
+
+Handling the valueless state and potentially creating a new indirect object is
+done within the converting assignment
+
+```c++
+indirect<int> i;
+foo(i); // could move from `i`.
+i = 5;
+```
+
+We have no converting assignment for `polymorphic` as type information is
+erased. There is no optimisation opportunity to be made as a new object will
+need creating regardless of whether the target of assignment is valueless or
+not.
 
 ## Technical specifications
 
 We update the technical specifications detailed in [P3019R6] to include
-the constructors and assignment operators discussed above. Please see
-[Appendix A](#appendix-a) for the complete class templates.
+the constructors and assignment operators discussed above.
 
 ### X.Y Class template indirect [indirect]
 
-#### X.Y.1 Class template indirect additions [indirect.add???]
+#### X.Y.1 Class template indirect synopsis [indirect.syn]
 
 ```c++
 template <class T, class Allocator = allocator<T>>
 class indirect {
- public:
-  using value_type = T;
-  using allocator_type = Allocator;
-  using pointer = typename allocator_traits<Allocator>::pointer;
-  using const_pointer = typename allocator_traits<Allocator>::const_pointer;
 
-  ...
+  // ... existing constructors
 
-  //TODO:CHECK here
   template <class U>
   explicit constexpr indirect(U&& u);
 
-  //TODO:CHECK here
   template <class U>
-  explicit constexpr indirect(allocator_arg_t, const Allocator& a,
-                              in_place_t, U&& u);
-  ...
+  explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u);
 
-  //TODO:CHECK here
   template<class U, class... Us>
   explicit constexpr indirect(in_place_t, std::initializer_list<U> ilist,
                               Us&&... us);
 
-  //TODO:CHECK here
   template<class U, class... Us>
   explicit constexpr indirect(allocator_arg_t, const Allocator& a,
                               in_place_t, std::initializer_list<U> ilist,
                               Us&&... us);
-  ...
 
-  //TODO:CHECK here
+  // Remaining constructors and assignment ...
+
   template <class U>
   constexpr indirect& operator=(U&& u);
 
-  ...
-
-private:
-  pointer p; // exposition only
-  Allocator alloc; // exposition only
+  // Remaining member functions ...
 };
-
-...
-
-//TODO:CHECK here
-template <typename Value>
-indirect(std::in_place_t, Value) -> indirect<Value>;
-
-...
 ```
 
-### X.Y.2 Constructors [indirect.ctor]
-
-//TODO:CHECK
+### X.Y.3 Constructors [indirect.ctor]
 
 ```c++
 template <class U = T>
 explicit constexpr indirect(U&& u);
 ```
 
-10.1?. _Constraints_: `is_same_v<T, remove_cvref_t<U>>` is `true`.
-   `is_constructible_v<T, U>`.
+A. _Constraints_: `is_constructible_v<T, U>` is true.
    `is_copy_constructible_v<U>` is `true`.
    `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`.
    `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
    `is_default_constructible_v<allocator_type>` is `true`.
 
-10.2?. _Mandates_: `T` is a complete type.
+B. _Mandates_: `T` is a complete type.
 
-10.3?. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(),
-   in_place_t{}, std::forward<U>(u))`.
+C. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(), std::forward<U>(u))`.
 
 ```c++
 template <class U = T>
@@ -184,151 +160,129 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a,
                             in_place_t, U&& u);
 ```
 
-10.4?. _Constraints_: `is_same_v<T, remove_cvref_t<U>>` is `true`.
-   `is_constructible_v<T, U>`.
+D. _Constraints_: `is_constructible_v<T, U>` is true.
    `is_copy_constructible_v<U>` is `true`.
    `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`.
    `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
 
-10.5?. _Mandates_: `T` is a complete type.
+E. _Mandates_: `T` is a complete type.
 
-10.6?. _Effects_: `alloc` is direct-non-list-initialized with `a`.
+F. _Effects_: `alloc` is direct-non-list-initialized with `a`.
+    Direct-non-list-initializes an owned object of type `T` using the specified
+    allocator with `std​::​forward<U>(u)`.
 
 ```c++
-template<class U = T, class... Us>
-explicit constexpr indirect(in_place_t, std::initializer_list<U> ilist,
+template<class I, class... Us>
+explicit constexpr indirect(in_place_t, std::initializer_list<I> ilist,
                             Us&&... us);
 ```
 
-13.1?. _Constraints_: `is_same_v<T, remove_cvref_t<U>>` is `true`.
-   `is_copy_constructible_v<U>` is `true`.
-   `is_constructible_v<T, initializer_list<I>&, Us...>` is `true`.
+G. _Constraints_: `is_copy_constructible_v<T>` is `true`.
+   `is_constructible_v<T, initializer_list<I>, Us...>` is `true`.
    `is_default_constructible_v<allocator_type>` is `true`.
 
-13.2?. _Mandates_: `T` is a complete type.
+H. _Mandates_: `T` is a complete type.
 
-13.3?. _Effects_: Value direct-non-list-initializes an owned object
-   of type `T` with arguments `ilist`, `std::forward<Us>(us...)`.
-   Equivalent to `indirect(allocator_arg_t{}, Allocator(),
+I. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(),
    in_place_t{}, std::forward<initializer_list<U>>(ilist),
    std::forward<Us>(us))`.
 
 ```c++
-template<class U = T, class... Us>
+template<class I, class... Us>
 explicit constexpr indirect(allocator_arg_t, const Allocator& a,
-                            in_place_t, std::initializer_list<U> ilist,
+                            in_place_t, std::initializer_list<I> ilist,
                             Us&&... us);
 ```
 
-13.4?. _Constraints_: `is_same_v<T, remove_cvref_t<U>>` is `true`.
-   `is_copy_constructible_v<U>` is `true`.
-   `is_constructible_v<T, initializer_list<I>&, Us...>` is `true`.
+J. _Constraints_: `is_copy_constructible_v<T>` is `true`.
+   `is_constructible_v<T, initializer_list<I>, Us...>` is `true`.
 
-13.5?. _Mandates_: `T` is a complete type.
+K. _Mandates_: `T` is a complete type.
 
-13.6?. _Effects_: Value direct-non-list-initializes an owned object
-   of type `T` with arguments `ilist`, `std::forward<Us>(us)`.
-   `alloc` is direct-non-list-initialized with `a`.
+L. _Effects_: `alloc` is direct-non-list-initialized with `a`.
+    Direct-non-list-initializes an owned object of type `T` using the specified
+    allocator with `ilist, std​::​forward<U>(u)`.
 
 
-### X.Y.3 Assignment [indirect.assign]
-
-//TODO:REVISE
+### X.Y.5 Assignment [indirect.assign]
 
 ```c++
 template <class U>
 constexpr indirect& operator=(U&& u);
 ```
 
-0.0? _Mandates_: `T` is a complete type.
+A. _Constraints_: `is_constructible<T, U>` is true.
+  `is_assignable<T,U>` is true.
 
-0.1? _Effects_: If `valueless_after_move()` then move assigns from
-   `polymorphic<T>(std::in_place_type_t<std::remove_cvref_t<U>>{}, u)`.
-   If not valueless, then call the underlying move assignment on `U`.
-   No effects if an exception is thrown.
+B. _Mandates_: `T` is a complete type.
 
-0.2? _Returns_: A reference to `*this`.
+C. _Effects_: If `this` is valueless then equivalent to
+   `*this = std::move(indirect<T>(std::forward<U>(u)))`.
+   Otherwise, equivalent to `**this = std::forward<U>(u)`.
+
+D. _Returns_: A reference to `*this`.
 
 
 ### X.Y Class template polymorphic [polymorphic]
 
-#### X.Y.1 Class template polymorphic additions [polymorphic.add??]
+#### X.Y.1 Class template polymorphic synopsis [polymorphic.syn]
 
 ```c++
 template <class T, class Allocator = allocator<T>>
 class polymorphic {
-  Allocator alloc; // exposition only
- public:
-  using value_type = T;
-  using allocator_type = Allocator;
-  using pointer = typename allocator_traits<Allocator>::pointer;
-  using const_pointer  = typename allocator_traits<Allocator>::const_pointer;
 
-  ...
+  // ... existing constructors
 
-  //TODO:CHECK here
   template <class U>
   explicit constexpr polymorphic(U&& u);
 
-  //TODO:CHECK here
   template <class U>
-  explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
-                                 in_place_type_t<U>, U&& u);
-  ...
+  explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
 
-  //TODO:CHECK here
   template <class U, class I, class... Us>
   explicitconstexpr polymorphic(in_place_type_t<U>,
                                 initializer_list<I> ilist, Us&&... us)
 
-  //TODO:CHECK here
   template <class U, class I, class... Us>
   explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                                  in_place_type_t<U>,
                                  initializer_list<I> ilist, Us&&... us)
-  ...
 
-  //TODO:CHECK here
-  template <class U>
-  constexpr polymorphic& operator=(U&& u);
-
-  ...
+  // Remaining constructors and member functions...
 };
 ```
 
-#### X.Z.2 Constructors [polymorphic.ctor]
-
-//TODO:CHECK
+#### X.Z.3 Constructors [polymorphic.ctor]
 
 ```c++
 template <class U>
 explicit constexpr polymorphic(U&& u);
 ```
 
-16.1? _Constraints_: `is_same_v<polymorphic, remove_cvref_t<U>>` is `false`.
+A. _Constraints_: `is_base_of_v<T, std::remove_cvref_t<U>>` is `true`.
    `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
-   `is_base_of_v<T, std::remove_cvref_t<U>>` is `true`.
+   `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
    `is_default_constructible_v<allocator_type>` is `true`.
 
-16.2? _Mandates_: `T` is a complete type.
+B. _Mandates_: `T` is a complete type.
 
-16.3? _Effects_: Equivalent to `polymorphic(std::allocator_arg_t{}, A{},
+C. _Effects_: Equivalent to `polymorphic(std::allocator_arg_t{}, A{},
    std::in_place_type_t<std::remove_cvref_t<U>>{}, std::forward<U>(u))`.
 
 
 ```c++
 template <class U>
-explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
-                               in_place_type_t<U>, U&& u);
+explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
 ```
 
-16.4? _Constraints_: `is_same_v<polymorphic, remove_cvref_t<U>>` is `false`.
+D. _Constraints_: `is_base_of_v<T, std::remove_cvref_t<U>>` is `true`.
    `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
-   `is_base_of_v<T, std::remove_cvref_t<U>>` is `true`.
+   `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
 
-16.5? _Mandates_: `T` is a complete type.
+E. _Mandates_: `T` is a complete type.
 
-16.6? _Effects_: `alloc` is direct-non-list-initialized with `a`.
+F. _Effects_: Equivalent to `polymorphic(std::allocator_arg_t{}, a,
+   std::in_place_type_t<U>{}, std::forward<U>(u))`.
 
 
 ```c++
@@ -336,21 +290,15 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
   explicit constexpr polymorphic(in_place_type_t<U>,
                                  initializer_list<I> ilist, Us&&... us)
 ```
-19.1? _Constraints_: ?? `is_base_of_v<T, U>` is `true`.
-  `is_constructible_v<U, Us...>` is `true`.
+A. _Constraints_: `is_base_of_v<T, U>` is `true`.
   `is_copy_constructible_v<U>` is `true`.
-  `is_constructible_v<T, initializer_list<I>&, Us...>` is `true`.
+  `is_constructible_v<U, initializer_list<I>, Us...>` is `true`.
   `is_default_constructible_v<allocator_type>` is `true`.
 
-19.2? _Mandates_: `T` is a complete type.
+B. _Mandates_: `T` is a complete type.
 
-19.3? _Effects_: Equivalent to `polymorphic(std::allocator_arg_t{}, A{},
-  std::in_place_type_t<std::remove_cvref_t<U>>{}, std::forward<U>(u),
-  std::forward<initializer_list<I>>(ilist), std::forward<Us>(us))`.
-  ??? Value direct-non-list-initializes an owned object of
-  type `T` with arguments `ilist`, `std::forward<Us>(us)` using
-  default-constructed allocator `A{}`. ???
-
+C. _Effects_: Equivalent to `polymorphic(std::allocator_arg_t{}, A{},
+  std::in_place_type_t<U>{}, initializer_list<I>(ilist), std::forward<Us>(us))`.
 
 ```c++
   template <class U = T, class I, class... Us>
@@ -359,274 +307,32 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                                  initializer_list<I> ilist, Us&&... us)
 ```
 
-19.4? _Constraints_: ?? `is_base_of_v<T, U>` is `true`.
-  `is_constructible_v<U, Us...>` is `true`.
+D. _Constraints_: ?? `is_base_of_v<T, U>` is `true`.
   `is_copy_constructible_v<U>` is `true`.
-  `is_constructible_v<T, initializer_list<I>&, Us...>` is `true`.
+  `is_constructible_v<U, initializer_list<I>, Us...>` is `true`.
 
-19.5? _Mandates_: `T` is a complete type.
+E. _Mandates_: `T` is a complete type.
 
-19.6? _Effects_: ??? Value direct-non-list-initializes an owned object of
-  type `T` with arguments `ilist`, `std::forward<Us>(us)` using the
-  specified allocator `a`. ???
-  `alloc` is direct-non-list-initialized with `a`.
-
-
-19.7? _Postconditions_: `*this` is not valueless.
-
-
-#### X.Z.3 Assignment [polymorphic.assign]
-
-//TODO:REVISE
-
-```c++
-template <class U>
-constexpr polymorphic& operator=(U&& u);
-```
-
-0.0? _Mandates_: `T` is a complete type.
-
-0.1? _Effects_: Move assigns from
-  `polymorphic<T>(std::in_place_type_t<std::remove_cvref_t<U>>{}, u)`.
-
-  No effects if an exception is thrown.
-
-0.2? _Returns_: A reference to `*this`.
-
+F. _Effects_: Equivalent to `polymorphic(std::allocator_arg_t{}, a,
+  std::in_place_type_t<U>{}, initializer_list<I>(ilist),
+  std::forward<Us>(us))`.
 
 ## Reference implementation
 
-A C++20 reference implementation of the work discussed in this proposal is
-available on GitHub at [https://www.github.com/jbcoe/valuei_types].
+A C++20 (and C++14 compatible) reference implementation of the work discussed in
+this proposal is available on GitHub at
+[https://www.github.com/jbcoe/value_types].
 
 ## Acknowledgements
 
+Many thanks to Neelofer Banglawala for collating information and preparing this
+draft at extremely short notice.
+
 ## References
 
-_`indirect` and `polymorphic`: Vocabulary Types for Composite Class Design_, J. B. Coe,
+[1] _`indirect` and `polymorphic`: Vocabulary Types for Composite Class Design_, J. B. Coe,
 A. Peacock, and S. Parent, 2024
 [https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p3019r6.html]
 
-_An allocator-aware optional type_, P. Halpern, N. D. Ranns, V. Voutilainen, 2024
+[2] _An allocator-aware optional type_, P. Halpern, N. D. Ranns, V. Voutilainen, 2024
 [https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p2047r7.html]
-
-## Appendix A: complete class template specifications
-
-### X.Y.1 Class template indirect synopsis [indirect.syn]
-
-```c++
-template <class T, class Allocator = allocator<T>>
-class indirect {
- public:
-  using value_type = T;
-  using allocator_type = Allocator;
-  using pointer = typename allocator_traits<Allocator>::pointer;
-  using const_pointer = typename allocator_traits<Allocator>::const_pointer;
-
-  constexpr indirect();
-
-  explicit constexpr indirect(allocator_arg_t, const Allocator& a);
-
-  //TODO:CHECK here
-  template <class U>
-  explicit constexpr indirect(U&& u);
-
-  //TODO:CHECK here
-  template <class U>
-  explicit constexpr indirect(allocator_arg_t, const Allocator& a,
-                              in_place_t, U&& u);
-
-  template <class... Us>
-  explicit constexpr indirect(in_place_t, Us&&... us);
-
-  template <class... Us>
-  explicit constexpr indirect(allocator_arg_t, const Allocator& a,
-                              in_place_t, Us&&... us);
-
-  //TODO:CHECK here
-  template<class U, class... Us>
-  explicit constexpr indirect(in_place_t, std::initializer_list<U> ilist,
-                              Us&&... us);
-
-  //TODO:CHECK here
-  template<class U, class... Us>
-  explicit constexpr indirect(allocator_arg_t, const Allocator& a,
-                              in_place_t, std::initializer_list<U> ilist,
-                              Us&&... us);
-
-  constexpr indirect(const indirect& other);
-
-  constexpr indirect(allocator_arg_t, const Allocator& a,
-                     const indirect& other);
-
-  constexpr indirect(indirect&& other) noexcept(see below);
-
-  constexpr indirect(allocator_arg_t, const Allocator& a,
-                     indirect&& other) noexcept(see below);
-
-  constexpr ~indirect();
-
-  //TODO:CHECK here
-  template <class U>
-  constexpr indirect& operator=(U&& u);
-
-  constexpr indirect& operator=(const indirect& other);
-
-  constexpr indirect& operator=(indirect&& other) noexcept(see below);
-
-  constexpr const T& operator*() const & noexcept;
-
-  constexpr T& operator*() & noexcept;
-
-  constexpr const T&& operator*() const && noexcept;
-
-  constexpr T&& operator*() && noexcept;
-
-  constexpr const_pointer operator->() const noexcept;
-
-  constexpr pointer operator->() noexcept;
-
-  constexpr bool valueless_after_move() const noexcept;
-
-  constexpr allocator_type get_allocator() const noexcept;
-
-  constexpr void swap(indirect& other) noexcept(see below);
-
-  friend constexpr void swap(indirect& lhs, indirect& rhs) noexcept(see below);
-
-  template <class U, class AA>
-  friend constexpr bool operator==(
-    const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below);
-
-  template <class U>
-  friend constexpr bool operator==(
-    const indirect& lhs, const U& rhs) noexcept(see below);
-
-  template <class U, class AA>
-  friend constexpr auto operator<=>(
-    const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below)
-    -> compare_three_way_result_t<T, U>;
-
-  template <class U>
-  friend constexpr auto operator<=>(
-    const indirect& lhs, const U& rhs) noexcept(see below)
-    -> compare_three_way_result_t<T, U>;
-
-private:
-  pointer p; // exposition only
-  Allocator alloc; // exposition only
-};
-
-template <typename Value>
-indirect(Value) -> indirect<Value>;
-
-//TODO:CHECK here
-template <typename Value>
-indirect(std::in_place_t, Value) -> indirect<Value>;
-
-template <typename Alloc, typename Value>
-indirect(std::allocator_arg_t, Alloc, Value) -> indirect<
-    Value, typename std::allocator_traits<Alloc>::template rebind_alloc<Value>>;
-```
-
-### X.Y.1 Class template polymorphic synopsis [polymorphic.syn]
-
-```c++
-template <class T, class Allocator = allocator<T>>
-class polymorphic {
-  Allocator alloc; // exposition only
- public:
-  using value_type = T;
-  using allocator_type = Allocator;
-  using pointer = typename allocator_traits<Allocator>::pointer;
-  using const_pointer  = typename allocator_traits<Allocator>::const_pointer;
-
-  explicit constexpr polymorphic();
-
-  explicit constexpr polymorphic(allocator_arg_t, const Allocator& a);
-
-  template <class U, class... Us>
-  explicit constexpr polymorphic(in_place_type_t<U>, Us&&... us);
-
-  template <class U, class... Us>
-  explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
-                                 in_place_type_t<U>, Us&&... us);
-
-  //TODO:CHECK here
-  template <class U>
-  explicit constexpr polymorphic(U&& u);
-
-  //TODO:CHECK here
-  template <class U>
-  explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
-                                 in_place_type_t<U>, U&& u);
-
-  constexpr polymorphic(const polymorphic& other);
-
-  constexpr polymorphic(allocator_arg_t, const Allocator& a,
-                        const polymorphic& other);
-
-  //TODO:CHECK here
-  template <class U, class I, class... Us>
-  explicitconstexpr polymorphic(in_place_type_t<U>,
-                                initializer_list<I> ilist, Us&&... us)
-
-  //TODO:CHECK here
-  template <class U, class I, class... Us>
-  explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
-                                 in_place_type_t<U>,
-                                 initializer_list<I> ilist, Us&&... us)
-
-  constexpr polymorphic(polymorphic&& other) noexcept(see below);
-
-  constexpr polymorphic(allocator_arg_t, const Allocator& a,
-                        polymorphic&& other) noexcept(see below);
-
-  constexpr ~polymorphic();
-
-  //TODO:CHECK here
-  template <class U>
-  constexpr polymorphic& operator=(U&& u);
-
-  constexpr polymorphic& operator=(const polymorphic& other);
-
-  constexpr polymorphic& operator=(polymorphic&& other) noexcept(see below);
-
-  constexpr const T& operator*() const noexcept;
-
-  constexpr T& operator*() noexcept;
-
-  constexpr const_pointer operator->() const noexcept;
-
-  constexpr pointer operator->() noexcept;
-
-  constexpr bool valueless_after_move() const noexcept;
-
-  constexpr allocator_type get_allocator() const noexcept;
-
-  constexpr void swap(polymorphic& other) noexcept(see below);
-
-  friend constexpr void swap(polymorphic& lhs,
-                             polymorphic& rhs) noexcept(see below);
-};
-```
-
-## Appendix B: design choices, alternatives and breaking changes
-
-//TODO:UPDATE
-
-The design components, design decisions, and the cost and impact of alternative
-design choices for `indirect` and `polymorphc` are detailed in [Appendix C:P3019R6].
-Whilst breaking changes to the design of `indirect` and `polymorphic` would be
-possible after C++26 standardization, such changes are likely to negatively impact
-users.
-
-The relevant design components affected by the additions discussed in this proposal
-are shown below.
-
-| Component | Decision | Alternative | Change impact | Breaking change? |
-|--|--|--|--|--|
-|*Original*|--|--|--|--|
-|Explicit constructors|Constructors are marked `explicit`|Non-explicit constructors|Conversion for single arguments or braced initializers becomes valid| No |
-|*Updated*|--|--|--|--|
-|Explicit constructors|Constructors are marked `explicit`|Non-explicit constructors|Conversion for single arguments or braced initializers becomes valid| No |
