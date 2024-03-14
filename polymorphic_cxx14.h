@@ -174,20 +174,8 @@ class polymorphic : private detail::empty_base_optimization<A> {
   template <typename TT = T,
             typename std::enable_if<std::is_default_constructible<TT>::value,
                                     int>::type = 0>
-  polymorphic(std::allocator_arg_t, const A& alloc) : alloc_base(alloc) {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
-    using cb_traits = std::allocator_traits<cb_allocator>;
-    cb_allocator cb_alloc(alloc_base::get());
-    auto mem = cb_traits::allocate(cb_alloc, 1);
-    try {
-      cb_traits::construct(cb_alloc, mem);
-      cb_ = mem;
-    } catch (...) {
-      cb_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
-  }
+  polymorphic(std::allocator_arg_t, const A& alloc)
+      : polymorphic(std::allocator_arg, alloc, xyz::in_place_type_t<T>{}) {}
 
   template <typename TT = T,
             typename std::enable_if<std::is_default_constructible<TT>::value,
