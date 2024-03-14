@@ -870,24 +870,29 @@ constexpr indirect& operator=(const indirect& other);
   if any, is destroyed using `allocator_traits<allocator_type>::destroy` and then
   deallocated using `allocator_traits<allocator_type>::deallocate`.
 
-  Otherwise, if `alloc == other.alloc` and `this` is not valueless, equivalent
-  to `T tmp(*other); std::swap(tmp, **this)`.
+  Otherwise, if `alloc == other.alloc` and `this` is not valueless, the owned
+  object is assigned to `*other`.
 
-  Otherwise , if `alloc != other.alloc` or `this` is valueless, a new owned
+  Otherwise, if `alloc != other.alloc` or `this` is valueless, a new owned
   object is constructed in `this` using
   `allocator_traits<allocator_type>::construct` with the owned object from
   `other` as the argument, with memory allocated using either the allocator in
   `this` or the allocator in `other` if the allocator needs updating. The
-  previous owned object in this, if any, is destroyed using
+  previously owned object in this, if any, is destroyed using
   `allocator_traits<allocator_type>::destroy` and then deallocated using
   `allocator_traits<allocator_type>::deallocate`.
 
   If the allocator needs updating, the allocator in `this` is replaced with a
   copy of the allocator in `other`.
 
-  No effects if an exception is thrown.
-
 3. _Returns_: A reference to `*this`.
+
+4. _Remarks_: If any exception is thrown, the result of the expression
+   `this->valueless_after_move()` remains unchanged. If an exception is thrown
+   during the call to `T`'s selected copy constructor, no effect. If an
+   exception is thrown during the call to `T`'s copy assignment, the state of
+   its contained value is as defined by the exception safety guarantee of `T`'s
+   copy assignment.
 
 ```c++
 constexpr indirect& operator=(indirect&& other) noexcept(
@@ -895,7 +900,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
     allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-4. _Effects_: If
+5. _Effects_: If
   `std::allocator_traits<Alloc>::propagate_on_container_move_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
@@ -920,13 +925,16 @@ constexpr indirect& operator=(indirect&& other) noexcept(
   If the allocator needs updating, the allocator in `this` is replaced with a
   copy of the allocator in `other`.
 
-  No effects if an exception is thrown.
+6. _Postconditions_: `other` is valueless.
 
-5. _Postconditions_: `other` is valueless.
+7. _Returns_: A reference to `*this`.
 
-6. _Returns_: A reference to `*this`.
+8. _Remarks_: If any exception is thrown, the results of the expressions
+   `this->valueless_after_move()` and `other.valueless_after_move()` remain
+   unchanged. If an exception is thrown during the call to `T`'s selected move
+   constructor, no effect.
 
-7. _[Note: The use of this function may require that `T` be a complete type
+9. _[Note: The use of this function may require that `T` be a complete type
    dependent on behavour of the allocator. — end note]_
 
 #### X.Y.6 Observers [indirect.observers]
@@ -1376,9 +1384,11 @@ constexpr polymorphic& operator=(const polymorphic& other);
   If the allocator needs updating, the allocator in `this` is replaced with a
   copy of the allocator in `other`.
 
-  No effects if an exception is thrown.
-
 3. _Returns_: A reference to `*this`.
+
+4. _Remarks_: If any exception is thrown, the results of the expression
+   `this->valueless_after_move()` remains unchanged. If an exception is thrown
+   during the call to the owned object's selected copy constructor, no effect.
 
 ```c++
 constexpr polymorphic& operator=(polymorphic&& other) noexcept(
@@ -1386,7 +1396,7 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
     allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-4. _Effects_: If `other == *this` then no effect.
+5. _Effects_: If `other == *this` then no effect.
 
   If `std::allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
@@ -1408,11 +1418,14 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
   If the allocator needs updating, the allocator in `this` is replaced with a
   copy of the allocator in `other`.
 
-  No effects if an exception is thrown.
+6. _Returns_: A reference to `*this`.
 
-5. _Returns_: A reference to `*this`.
+7. _Remarks_: If any exception is thrown, the results of the expressions
+   `this->valueless_after_move()` and `other.valueless_after_move()` remain
+   unchanged. If an exception is thrown during the call to the owned object's
+   selected move constructor, no effect.
 
-6. _[Note: The use of this function may require that `T` be a complete type
+8. _[Note: The use of this function may require that `T` be a complete type
     dependent on behavour of the allocator. — end note]_
 
 #### X.Z.6 Observers [polymorphic.observers]
