@@ -66,13 +66,13 @@ constructors are marked as explicit, the same as other constructors in
 We add a converting assignment for `indirect` in line with the converting
 assignment operators from optional and variant.
 
-```
+```c++
 template <class U = T>
 constexpr optional& operator=(U&& u);
 ```
 
 When assigning to an `indirect` there is potential for optimisation if there is
-an existing owned object to be assigned to.
+an existing owned object to be assigned to:
 
 ```c++
 indirect<int> i;
@@ -84,8 +84,9 @@ if (!i.valueless_after_move()) {
 }
 ```
 
-Handling the valueless state and potentially creating a new indirect object is
-done within the converting assignment
+With converting assignment, handling the valueless state and potentially
+creating a new indirect object is done within the converting assignment.
+The code below is equivalent to the code above:
 
 ```c++
 indirect<int> i;
@@ -93,7 +94,7 @@ foo(i); // could move from `i`.
 i = 5;
 ```
 
-We have no converting assignment for `polymorphic` as type information is
+There is no converting assignment for `polymorphic` as type information is
 erased. There is no optimisation opportunity to be made as a new object will
 need creating regardless of whether the target of assignment is valueless or
 not.
