@@ -21,13 +21,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef XYZ_POLYMORPHIC_H_
 #define XYZ_POLYMORPHIC_H_
 
-#ifndef XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS
-#define XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS 1
-#endif  // XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS
-
 #include <cassert>
 #include <concepts>
-#include <initializer_list>
 #include <memory>
 #include <utility>
 
@@ -162,29 +157,12 @@ class polymorphic {
              std::is_copy_constructible_v<TT>)
       : polymorphic(std::allocator_arg_t{}, A{}) {}
 
-  template <class U>
-  constexpr explicit polymorphic(std::allocator_arg_t, const A& alloc, U&& u)
-    requires(not std::same_as<polymorphic, std::remove_cvref_t<U>>) &&
-            std::copy_constructible<std::remove_cvref_t<U>> &&
-            std::derived_from<std::remove_cvref_t<U>, T>
-      : polymorphic(std::allocator_arg_t{}, alloc,
-                    std::in_place_type_t<std::remove_cvref_t<U>>{},
-                    std::forward<U>(u)) {}
-
-  template <class U>
-  constexpr explicit polymorphic(U&& u)
-    requires(not std::same_as<polymorphic, std::remove_cvref_t<U>>) &&
-            std::copy_constructible<std::remove_cvref_t<U>> &&
-            std::derived_from<std::remove_cvref_t<U>, T>
-      : polymorphic(std::allocator_arg_t{}, A{},
-                    std::in_place_type_t<std::remove_cvref_t<U>>{},
-                    std::forward<U>(u)) {}
-
   template <class U, class... Ts>
   explicit constexpr polymorphic(std::allocator_arg_t, const A& alloc,
                                  std::in_place_type_t<U>, Ts&&... ts)
     requires std::constructible_from<U, Ts&&...> &&
-             std::copy_constructible<U> && std::derived_from<U, T>
+             std::copy_constructible<U> &&
+             (std::derived_from<U, T> || std::same_as<U, T>)
       : alloc_(alloc) {
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
@@ -205,35 +183,6 @@ class polymorphic {
     requires std::constructible_from<U, Ts&&...> &&
              std::copy_constructible<U> && std::derived_from<U, T>
       : polymorphic(std::allocator_arg_t{}, A{}, std::in_place_type<U>,
-                    std::forward<Ts>(ts)...) {}
-
-  template <class U, class I, class... Ts>
-  explicit constexpr polymorphic(std::allocator_arg_t, const A& alloc,
-                                 std::in_place_type_t<U>,
-                                 std::initializer_list<I> ilist, Ts&&... ts)
-    requires std::constructible_from<U, Ts&&...> &&
-             std::copy_constructible<U> && std::derived_from<U, T>
-      : alloc_(alloc) {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
-    using cb_traits = std::allocator_traits<cb_allocator>;
-    cb_allocator cb_alloc(alloc_);
-    auto mem = cb_traits::allocate(cb_alloc, 1);
-    try {
-      cb_traits::construct(cb_alloc, mem, ilist, std::forward<Ts>(ts)...);
-      cb_ = mem;
-    } catch (...) {
-      cb_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
-  }
-
-  template <class U, class I, class... Ts>
-  explicit constexpr polymorphic(std::in_place_type_t<U>,
-                                 std::initializer_list<I> ilist, Ts&&... ts)
-    requires std::constructible_from<U, std::initializer_list<I>, Ts&&...> &&
-             std::copy_constructible<U> && std::derived_from<U, T>
-      : polymorphic(std::allocator_arg_t{}, A{}, std::in_place_type<U>, ilist,
                     std::forward<Ts>(ts)...) {}
 
   constexpr polymorphic(std::allocator_arg_t, const A& alloc,
