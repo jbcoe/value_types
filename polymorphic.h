@@ -162,6 +162,24 @@ class polymorphic {
              std::is_copy_constructible_v<TT>)
       : polymorphic(std::allocator_arg_t{}, A{}) {}
 
+  template <class U>
+  constexpr explicit polymorphic(std::allocator_arg_t, const A& alloc, U&& u)
+    requires(not std::same_as<polymorphic, std::remove_cvref_t<U>>) &&
+            std::copy_constructible<std::remove_cvref_t<U>> &&
+            std::derived_from<std::remove_cvref_t<U>, T>
+      : polymorphic(std::allocator_arg_t{}, alloc,
+                    std::in_place_type_t<std::remove_cvref_t<U>>{},
+                    std::forward<U>(u)) {}
+
+  template <class U>
+  constexpr explicit polymorphic(U&& u)
+    requires(not std::same_as<polymorphic, std::remove_cvref_t<U>>) &&
+            std::copy_constructible<std::remove_cvref_t<U>> &&
+            std::derived_from<std::remove_cvref_t<U>, T>
+      : polymorphic(std::allocator_arg_t{}, A{},
+                    std::in_place_type_t<std::remove_cvref_t<U>>{},
+                    std::forward<U>(u)) {}
+
   template <class U, class... Ts>
   explicit constexpr polymorphic(std::allocator_arg_t, const A& alloc,
                                  std::in_place_type_t<U>, Ts&&... ts)
@@ -183,32 +201,6 @@ class polymorphic {
     }
   }
 
-  template <class U, class I, class... Ts>
-  explicit constexpr polymorphic(std::in_place_type_t<U>,
-                                 std::initializer_list<I> ilist, Ts&&... ts)
-    requires std::constructible_from<U, std::initializer_list<I>, Ts&&...> &&
-             std::copy_constructible<U> && std::derived_from<U, T>
-      : polymorphic(std::allocator_arg_t{}, A{}, std::in_place_type<U>, ilist,
-                    std::forward<Ts>(ts)...) {}
-
-  constexpr polymorphic(std::allocator_arg_t, const A& alloc,
-                        const polymorphic& other)
-      : alloc_(alloc) {
-    if (!other.valueless_after_move()) {
-      cb_ = other.cb_->clone(alloc_);
-    } else {
-      cb_ = nullptr;
-    }
-  }
-
-  template <class U>
-  constexpr explicit polymorphic(U&& u)
-    requires(not std::same_as<polymorphic, std::remove_cvref_t<U>>) &&
-            std::copy_constructible<std::remove_cvref_t<U>> &&
-            std::derived_from<std::remove_cvref_t<U>, T>
-      : polymorphic(std::allocator_arg_t{}, A{},
-                    std::in_place_type_t<std::remove_cvref_t<U>>{},
-                    std::forward<U>(u)) {}
   template <class U, class... Ts>
   explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts)
     requires std::constructible_from<U, Ts&&...> &&
@@ -235,6 +227,24 @@ class polymorphic {
     } catch (...) {
       cb_traits::deallocate(cb_alloc, mem, 1);
       throw;
+    }
+  }
+
+  template <class U, class I, class... Ts>
+  explicit constexpr polymorphic(std::in_place_type_t<U>,
+                                 std::initializer_list<I> ilist, Ts&&... ts)
+    requires std::constructible_from<U, std::initializer_list<I>, Ts&&...> &&
+             std::copy_constructible<U> && std::derived_from<U, T>
+      : polymorphic(std::allocator_arg_t{}, A{}, std::in_place_type<U>, ilist,
+                    std::forward<Ts>(ts)...) {}
+
+  constexpr polymorphic(std::allocator_arg_t, const A& alloc,
+                        const polymorphic& other)
+      : alloc_(alloc) {
+    if (!other.valueless_after_move()) {
+      cb_ = other.cb_->clone(alloc_);
+    } else {
+      cb_ = nullptr;
     }
   }
 
