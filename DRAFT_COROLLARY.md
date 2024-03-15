@@ -38,11 +38,11 @@ appropriate.
 
 ### Converting constructors
 
-In line with `optional` and `variant`, we add converting constructors to both 
-`indirect` and `polymorphic` so they can be constructed from single values 
+In line with `optional` and `variant`, we add converting constructors to both
+`indirect` and `polymorphic` so they can be constructed from single values
 without the need to use `in_place` or `in_place_type`. As `indirect` and
-`polymorphic` are allocator-aware types, we also provide allocator-extended 
-versions of these constructors, in line with those from `basic_optional` [2] 
+`polymorphic` are allocator-aware types, we also provide allocator-extended
+versions of these constructors, in line with those from `basic_optional` [2]
 and existing constructors from `indirect` and `polymorphic`.
 
 As `indirect` and `polymorphic` will use dynamic memory, the converting
@@ -52,7 +52,7 @@ constructors are marked as explicit, the same as other constructors in
 ### Initializer-list constructors
 
 We add initializer-list constructors to both `indirect` and `polymorphic` in
-line with those in `optional` and `variant`. As `indirect` and `polymorphic` 
+line with those in `optional` and `variant`. As `indirect` and `polymorphic`
 are allocator-aware types, we provide allocator-extended versions of these
 constructors, in line with those from `basic_optional` [2] and existing
 constructors from `indirect` and `polymorphic`.
@@ -73,7 +73,7 @@ template <class U = T>
 constexpr optional& operator=(U&& u);
 ```
 
-When assigning to an `indirect`, there is potential for optimisation if there 
+When assigning to an `indirect`, there is potential for optimisation if there
 is an existing owned object to be assigned to:
 
 ```c++
