@@ -18,6 +18,9 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==============================================================================*/
 
+// Based on boilerplate from:
+// https://howardhinnant.github.io/allocator_boilerplate.html
+
 #ifndef XYZ_TAGGED_ALLOCATOR_H
 #define XYZ_TAGGED_ALLOCATOR_H
 
@@ -25,6 +28,8 @@ namespace xyz {
 
 template <typename T>
 struct TaggedAllocator {
+  using value_type = T;
+
   size_t tag;
 
   TaggedAllocator(size_t tag) : tag(tag) {}
@@ -32,12 +37,20 @@ struct TaggedAllocator {
   template <typename U>
   TaggedAllocator(const TaggedAllocator<U>& other) : tag(other.tag) {}
 
-  using value_type = T;
-
   template <typename Other>
   struct rebind {
     using other = TaggedAllocator<Other>;
   };
+
+  template <class U, class... Args>
+  void construct(U* p, Args&&... args) {
+    ::new (p) U(std::forward<Args>(args)...);
+  }
+
+  template <class U>
+  void destroy(U* p) noexcept {
+    p->~U();
+  }
 
   T* allocate(std::size_t n) {
     std::allocator<T> default_allocator{};
