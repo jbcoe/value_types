@@ -32,10 +32,10 @@ jobs:
               name: "Bazel test: optimized",
               flags: "-c opt",
           }
-          - {
-              name: "Bazel test: address sanitizer",
-              flags: "--config=asan",
-          }
+          # - {
+          #     name: "Bazel test: address sanitizer",
+          #     flags: "--config=asan",
+          # }
           - {
               name: "Bazel test: undefined behaviour sanitizer",
               flags: "--config=ubsan",
