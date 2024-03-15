@@ -66,12 +66,26 @@ TEST(IndirectTest, AllocatorExtendedDefaultConstructor) {
   EXPECT_EQ(i.get_allocator(), a);
 }
 
-TEST(IndirectTest, SingleValueConstructor) {
+TEST(IndirectTest, SingleLValueConstructor) {
+  int x = 42;
+  xyz::indirect<int> i(x);
+  EXPECT_EQ(*i, 42);
+}
+
+TEST(IndirectTest, AllocatorExtendedSingleLValueConstructor) {
+  int x = 42;
+  xyz::TaggedAllocator<int> a(42);
+  xyz::indirect<int, xyz::TaggedAllocator<int>> i(std::allocator_arg, a, x);
+  EXPECT_EQ(*i, 42);
+  EXPECT_EQ(i.get_allocator(), a);
+}
+
+TEST(IndirectTest, SingleRValueConstructor) {
   xyz::indirect<int> i(42);
   EXPECT_EQ(*i, 42);
 }
 
-TEST(IndirectTest, AllocatorExtendedSingleValueConstructor) {
+TEST(IndirectTest, AllocatorExtendedSingleRValueConstructor) {
   xyz::TaggedAllocator<int> a(42);
   xyz::indirect<int, xyz::TaggedAllocator<int>> i(std::allocator_arg, a, 42);
   EXPECT_EQ(*i, 42);
