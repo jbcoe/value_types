@@ -29,7 +29,7 @@ _Sean Parent \<<sparent@adobe.com>\>_
 ## Introduction
 
 New vocabulary types `indirect` and `polymorphic` for composite class design are
-proposed in P3019 [[1]](#1-indirect-and-polymorphic-vocabulary-types-for-composite-class-design-j-b-coe-a-peacock-and-s-parent-2024). Based on recommendations from LEWG, we follow up this
+proposed in P3019 [1]. Based on recommendations from LEWG, we follow up this
 work by adding support for converting construction, initializer-list
 construction and converting assignment to `indirect` and `polymorphic` where
 appropriate.
@@ -42,7 +42,7 @@ We add converting constructors to both indirect and polymorphic so that they can
 be constructed from single values without the need to use `in_place` or
 `in_place_type` in line with `optional` and `variant`. As `indirect` and
 `polymorphic` are allocator-aware types, we provide allocator-extended versions
-of these constructors in line with those from `basic_optional` [[2]](#2) and
+of these constructors in line with those from `basic_optional` [2] and
 existing constructors from `indirect` and `polymorphic`.
 
 As `indirect` and `polymorphic` will use dynamic memory, the converting
@@ -335,9 +335,10 @@ draft at extremely short notice.
 
 ## References
 
-###### [1] _`indirect` and `polymorphic`: Vocabulary Types for Composite Class Design_, J. B. Coe, A. Peacock, and S. Parent, 2024
-[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p3019r6.html]
+[1] _`indirect` and `polymorphic`: Vocabulary Types for Composite Class Design_, \
+J. B. Coe, A. Peacock, and S. Parent, 2024 \
+https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p3019r6.html
 
-###### [2]
-_An allocator-aware optional type_, P. Halpern, N. D. Ranns, V. Voutilainen, 2024
-[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p2047r7.html]
+[2] _An allocator-aware optional type_, \
+P. Halpern, N. D. Ranns, V. Voutilainen, 2024\
+https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p2047r7.html
