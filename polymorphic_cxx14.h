@@ -226,18 +226,7 @@ class polymorphic : private detail::empty_base_optimization<A> {
   polymorphic(std::allocator_arg_t, const A& alloc, in_place_type_t<U>,
               std::initializer_list<I> ilist, Ts&&... ts)
       : alloc_base(alloc) {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
-    using cb_traits = std::allocator_traits<cb_allocator>;
-    cb_allocator cb_alloc(alloc_base::get());
-    auto mem = cb_traits::allocate(cb_alloc, 1);
-    try {
-      cb_traits::construct(cb_alloc, mem, ilist, std::forward<Ts>(ts)...);
-      cb_ = mem;
-    } catch (...) {
-      cb_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
+    cb_ = create_control_block<T>(ilist, std::forward<Ts>(ts)...);
   }
 
   template <

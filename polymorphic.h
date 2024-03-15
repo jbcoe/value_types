@@ -177,19 +177,7 @@ class polymorphic {
             std::copy_constructible<std::remove_cvref_t<U>> &&
             std::derived_from<std::remove_cvref_t<U>, T>
       : alloc_(alloc) {
-    using cb_allocator =
-        typename std::allocator_traits<A>::template rebind_alloc<
-            detail::direct_control_block<T, std::remove_cvref_t<U>, A>>;
-    using cb_traits = std::allocator_traits<cb_allocator>;
-    cb_allocator cb_alloc(alloc_);
-    auto mem = cb_traits::allocate(cb_alloc, 1);
-    try {
-      cb_traits::construct(cb_alloc, mem, std::forward<U>(u));
-      cb_ = mem;
-    } catch (...) {
-      cb_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
+    cb_ = create_control_block<std::remove_cvref_t<U>>(std::forward<U>(u));
   }
 
   template <class U>
@@ -222,18 +210,7 @@ class polymorphic {
     requires std::constructible_from<U, std::initializer_list<I>, Ts&&...> &&
              std::copy_constructible<U> && std::derived_from<U, T>
       : alloc_(alloc) {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
-    using cb_traits = std::allocator_traits<cb_allocator>;
-    cb_allocator cb_alloc(alloc_);
-    auto mem = cb_traits::allocate(cb_alloc, 1);
-    try {
-      cb_traits::construct(cb_alloc, mem, ilist, std::forward<Ts>(ts)...);
-      cb_ = mem;
-    } catch (...) {
-      cb_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
+    cb_ = create_control_block<U>(ilist, std::forward<Ts>(ts)...);
   }
 
   template <class U, class I, class... Ts>
