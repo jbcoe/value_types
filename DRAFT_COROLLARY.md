@@ -208,7 +208,6 @@ L. _Effects_: `alloc` is direct-non-list-initialized with `a`.
     Direct-non-list-initializes an owned object of type `T` using the specified
     allocator with `ilist, std​::​forward<U>(u)`.
 
-
 ### X.Y.5 Assignment [indirect.assign]
 
 ```c++
@@ -226,7 +225,6 @@ C. _Effects_: If `this` is valueless then equivalent to
    Otherwise, equivalent to `**this = std::forward<U>(u)`.
 
 D. _Returns_: A reference to `*this`.
-
 
 ### X.Y Class template polymorphic [polymorphic]
 
@@ -274,7 +272,6 @@ B. _Mandates_: `T` is a complete type.
 C. _Effects_: Equivalent to `polymorphic(std::allocator_arg_t{}, A{},
    std::in_place_type_t<std::remove_cvref_t<U>>{}, std::forward<U>(u))`.
 
-
 ```c++
 template <class U>
 explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
@@ -289,12 +286,12 @@ E. _Mandates_: `T` is a complete type.
 F. _Effects_: Equivalent to `polymorphic(std::allocator_arg_t{}, a,
    std::in_place_type_t<U>{}, std::forward<U>(u))`.
 
-
 ```c++
   template <class U = T, class I, class... Us>
   explicit constexpr polymorphic(in_place_type_t<U>,
                                  initializer_list<I> ilist, Us&&... us)
 ```
+
 A. _Constraints_: `is_base_of_v<T, U>` is `true`.
   `is_copy_constructible_v<U>` is `true`.
   `is_constructible_v<U, initializer_list<I>, Us...>` is `true`.
@@ -312,7 +309,7 @@ C. _Effects_: Equivalent to `polymorphic(std::allocator_arg_t{}, A{},
                                  initializer_list<I> ilist, Us&&... us)
 ```
 
-D. _Constraints_: ?? `is_base_of_v<T, U>` is `true`.
+D. _Constraints_: `is_base_of_v<T, U>` is `true`.
   `is_copy_constructible_v<U>` is `true`.
   `is_constructible_v<U, initializer_list<I>, Us...>` is `true`.
 
