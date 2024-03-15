@@ -110,14 +110,16 @@ TEST(PolymorphicTest, AllocatorExtendedDefaultConstructor) {
 
 #ifdef XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS
 TEST(PolymorphicTest, SingleValueConstructor) {
-  xyz::polymorphic<Base> p(Derived(42));
+  Derived d(42);
+  xyz::polymorphic<Base> p(d);
   EXPECT_EQ(p->value(), 42);
 }
 
 TEST(PolymorphicTest, AllocatorExtendedSingleValueConstructor) {
   xyz::TaggedAllocator<Base> a(42);
+  Derived d(42);
   xyz::polymorphic<Base, xyz::TaggedAllocator<Base>> p(std::allocator_arg, a,
-                                                       Derived(42));
+                                                       d);
   EXPECT_EQ(p->value(), 42);
   EXPECT_EQ(p.get_allocator(), a);
 }
