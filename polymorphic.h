@@ -122,6 +122,22 @@ class polymorphic {
 
   using allocator_traits = std::allocator_traits<A>;
 
+  template <class U, class... Ts>
+  constexpr cblock_t* create_control_block(Ts&&... ts) const {
+    using cb_allocator = typename std::allocator_traits<
+        A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
+    cb_allocator cb_alloc(alloc_);
+    using cb_alloc_traits = std::allocator_traits<cb_allocator>;
+    auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
+    try {
+      cb_alloc_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
+      return mem;
+    } catch (...) {
+      cb_alloc_traits::deallocate(cb_alloc, mem, 1);
+      throw;
+    }
+  }
+
  public:
   using value_type = T;
   using allocator_type = A;
@@ -135,18 +151,7 @@ class polymorphic {
     requires(std::is_default_constructible_v<TT> &&
              std::is_copy_constructible_v<TT>)
       : alloc_(alloc) {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
-    using cb_traits = std::allocator_traits<cb_allocator>;
-    cb_allocator cb_alloc(alloc_);
-    auto mem = cb_traits::allocate(cb_alloc, 1);
-    try {
-      cb_traits::construct(cb_alloc, mem);
-      cb_ = mem;
-    } catch (...) {
-      cb_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
+    cb_ = create_control_block<T>();
   }
 
   // The template type TT defers the constraint evaluation until the constructor
@@ -164,18 +169,7 @@ class polymorphic {
              std::copy_constructible<U> &&
              (std::derived_from<U, T> || std::same_as<U, T>)
       : alloc_(alloc) {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
-    using cb_traits = std::allocator_traits<cb_allocator>;
-    cb_allocator cb_alloc(alloc_);
-    auto mem = cb_traits::allocate(cb_alloc, 1);
-    try {
-      cb_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
-      cb_ = mem;
-    } catch (...) {
-      cb_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
+    cb_ = create_control_block<U>(std::forward<Ts>(ts)...);
   }
 
   template <class U, class... Ts>
