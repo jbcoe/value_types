@@ -52,14 +52,15 @@ jobs:
               name: "Ubuntu Clang-17 + libc++",
               os: ubuntu-22.04,
               compiler:
-                {
-                  type: CLANG,
-                  version: 17,
-                  cc: "clang-17",
-                  cxx: "clang++-17",
-                  std: 20,
-                },
+                { type: CLANG, version: 17, cc: "clang-17", cxx: "clang++-17", std: 20},
               lib: "libc++17",
+            }
+          - {
+              name: "Ubuntu Clang-18 + libc++",
+              os: ubuntu-22.04,
+              compiler:
+                { type: CLANG, version: 18, cc: "clang-18", cxx: "clang++-18", std: 20},
+              lib: "libc++18",
             }
           - {
               name: "Visual Studio 2019",
