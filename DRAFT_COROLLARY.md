@@ -335,9 +335,9 @@ draft at extremely short notice.
 
 ## References
 
-###### [1] _`indirect` and `polymorphic`: Vocabulary Types for Composite Class Design_, J. B. Coe, A. Peacock, and S. Parent, 2024  
+###### [1] _`indirect` and `polymorphic`: Vocabulary Types for Composite Class Design_, J. B. Coe, A. Peacock, and S. Parent, 2024
 [https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p3019r6.html]
 
-###### [2] 
-_An allocator-aware optional type_, P. Halpern, N. D. Ranns, V. Voutilainen, 2024  
+###### [2]
+_An allocator-aware optional type_, P. Halpern, N. D. Ranns, V. Voutilainen, 2024
 [https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p2047r7.html]
