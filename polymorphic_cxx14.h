@@ -22,9 +22,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define XYZ_POLYMORPHIC_H_
 
 #include <cassert>
+#include <initializer_list>
 #include <memory>
 #include <type_traits>
 #include <utility>
+
+#ifndef XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS
+#define XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS 1
+#endif  // XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS
 
 #ifndef XYZ_IN_PLACE_TYPE_DEFINED
 #define XYZ_IN_PLACE_TYPE_DEFINED
@@ -211,6 +216,36 @@ class polymorphic : private detail::empty_base_optimization<A> {
   }
 
   template <
+      class U, class I, class... Ts,
+      typename std::enable_if<
+          std::is_constructible<U, std::initializer_list<I>, Ts&&...>::value,
+          int>::type = 0,
+      typename std::enable_if<std::is_copy_constructible<U>::value, int>::type =
+          0,
+      typename std::enable_if<std::is_base_of<T, U>::value, int>::type = 0>
+  polymorphic(std::allocator_arg_t, const A& alloc, in_place_type_t<U>,
+              std::initializer_list<I> ilist, Ts&&... ts)
+      : alloc_base(alloc) {
+    cb_ = create_control_block<T>(ilist, std::forward<Ts>(ts)...);
+  }
+
+  template <
+      class U, class I, class... Ts,
+      typename std::enable_if<
+          std::is_constructible<U, std::initializer_list<I>, Ts&&...>::value,
+          int>::type = 0,
+      typename std::enable_if<std::is_copy_constructible<U>::value, int>::type =
+          0,
+      typename std::enable_if<std::is_base_of<T, U>::value, int>::type = 0,
+      typename AA = A,
+      typename std::enable_if<std::is_default_constructible<AA>::value,
+                              int>::type = 0>
+  explicit polymorphic(in_place_type_t<U>, std::initializer_list<I> ilist,
+                       Ts&&... ts)
+      : polymorphic(std::allocator_arg, A(), in_place_type_t<U>{}, ilist,
+                    std::forward<Ts>(ts)...) {}
+
+  template <
       class U, class... Ts,
       typename std::enable_if<std::is_constructible<U, Ts&&...>::value,
                               int>::type = 0,
@@ -223,6 +258,50 @@ class polymorphic : private detail::empty_base_optimization<A> {
   explicit polymorphic(in_place_type_t<U>, Ts&&... ts)
       : polymorphic(std::allocator_arg, A(), in_place_type_t<U>{},
                     std::forward<Ts>(ts)...) {}
+
+  template <
+      class U,
+      typename std::enable_if<
+          !std::is_same<polymorphic,
+                        typename std::remove_cv<typename std::remove_reference<
+                            U>::type>::type>::value,
+          int>::type = 0,
+      typename std::enable_if<
+          std::is_copy_constructible<typename std::remove_cv<
+              typename std::remove_reference<U>::type>::type>::value,
+          int>::type = 0,
+      typename std::enable_if<
+          std::is_base_of<
+              T, typename std::remove_cv<
+                     typename std::remove_reference<U>::type>::type>::value,
+          int>::type = 0>
+  explicit polymorphic(std::allocator_arg_t, const A& alloc, U&& u)
+      : polymorphic(std::allocator_arg_t{}, alloc,
+                    in_place_type_t<typename std::remove_cv<
+                        typename std::remove_reference<U>::type>::type>{},
+                    std::forward<U>(u)) {}
+
+  template <
+      class U,
+      typename std::enable_if<
+          !std::is_same<polymorphic,
+                        typename std::remove_cv<typename std::remove_reference<
+                            U>::type>::type>::value,
+          int>::type = 0,
+      typename std::enable_if<
+          std::is_copy_constructible<typename std::remove_cv<
+              typename std::remove_reference<U>::type>::type>::value,
+          int>::type = 0,
+      typename std::enable_if<
+          std::is_base_of<
+              T, typename std::remove_cv<
+                     typename std::remove_reference<U>::type>::type>::value,
+          int>::type = 0>
+  explicit polymorphic(U&& u)
+      : polymorphic(std::allocator_arg_t{}, A{},
+                    in_place_type_t<typename std::remove_cv<
+                        typename std::remove_reference<U>::type>::type>{},
+                    std::forward<U>(u)) {}
 
   polymorphic(std::allocator_arg_t, const A& alloc, const polymorphic& other)
       : alloc_base(alloc) {
