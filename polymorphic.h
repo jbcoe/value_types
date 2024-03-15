@@ -171,18 +171,28 @@ class polymorphic {
     requires(not std::same_as<polymorphic, std::remove_cvref_t<U>>) &&
             std::copy_constructible<std::remove_cvref_t<U>> &&
             std::derived_from<std::remove_cvref_t<U>, T>
-      : polymorphic(std::allocator_arg_t{}, alloc,
-                    std::in_place_type_t<std::remove_cvref_t<U>>{},
-                    std::forward<U>(u)) {}
+      : alloc_(alloc) {
+    using cb_allocator =
+        typename std::allocator_traits<A>::template rebind_alloc<
+            detail::direct_control_block<T, std::remove_cvref_t<U>, A>>;
+    using cb_traits = std::allocator_traits<cb_allocator>;
+    cb_allocator cb_alloc(alloc_);
+    auto mem = cb_traits::allocate(cb_alloc, 1);
+    try {
+      cb_traits::construct(cb_alloc, mem, std::forward<U>(u));
+      cb_ = mem;
+    } catch (...) {
+      cb_traits::deallocate(cb_alloc, mem, 1);
+      throw;
+    }
+  }
 
   template <class U>
   constexpr explicit polymorphic(U&& u)
     requires(not std::same_as<polymorphic, std::remove_cvref_t<U>>) &&
             std::copy_constructible<std::remove_cvref_t<U>> &&
             std::derived_from<std::remove_cvref_t<U>, T>
-      : polymorphic(std::allocator_arg_t{}, A{},
-                    std::in_place_type_t<std::remove_cvref_t<U>>{},
-                    std::forward<U>(u)) {}
+      : polymorphic(std::allocator_arg_t{}, A{}, std::forward<U>(u)) {}
 
   template <class U, class... Ts>
   explicit constexpr polymorphic(std::allocator_arg_t, const A& alloc,
