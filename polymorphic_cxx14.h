@@ -160,6 +160,22 @@ class polymorphic : private detail::empty_base_optimization<A> {
   using allocator_traits = std::allocator_traits<A>;
   using alloc_base = detail::empty_base_optimization<A>;
 
+  template <class U, class... Ts>
+  cblock_t* create_control_block(Ts&&... ts) const {
+    using cb_allocator = typename std::allocator_traits<
+        A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
+    cb_allocator cb_alloc(alloc_base::get());
+    using cb_alloc_traits = std::allocator_traits<cb_allocator>;
+    auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
+    try {
+      cb_alloc_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
+      return mem;
+    } catch (...) {
+      cb_alloc_traits::deallocate(cb_alloc, mem, 1);
+      throw;
+    }
+  }
+
  public:
   using value_type = T;
   using allocator_type = A;
@@ -170,18 +186,7 @@ class polymorphic : private detail::empty_base_optimization<A> {
             typename std::enable_if<std::is_default_constructible<TT>::value,
                                     int>::type = 0>
   polymorphic(std::allocator_arg_t, const A& alloc) : alloc_base(alloc) {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
-    using cb_traits = std::allocator_traits<cb_allocator>;
-    cb_allocator cb_alloc(alloc_base::get());
-    auto mem = cb_traits::allocate(cb_alloc, 1);
-    try {
-      cb_traits::construct(cb_alloc, mem);
-      cb_ = mem;
-    } catch (...) {
-      cb_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
+    cb_ = create_control_block<T>();
   }
 
   template <typename TT = T,
@@ -202,18 +207,7 @@ class polymorphic : private detail::empty_base_optimization<A> {
   polymorphic(std::allocator_arg_t, const A& alloc, in_place_type_t<U>,
               Ts&&... ts)
       : alloc_base(alloc) {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
-    using cb_traits = std::allocator_traits<cb_allocator>;
-    cb_allocator cb_alloc(alloc_base::get());
-    auto mem = cb_traits::allocate(cb_alloc, 1);
-    try {
-      cb_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
-      cb_ = mem;
-    } catch (...) {
-      cb_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
+    cb_ = create_control_block<U>(std::forward<Ts>(ts)...);
   }
 
   template <
