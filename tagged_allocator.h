@@ -42,14 +42,12 @@ struct TaggedAllocator {
     using other = TaggedAllocator<Other>;
   };
 
+  // clang 17 and 18 seem to need the `construct` function to be explicitly
+  // defined rather than having a default picked up from allocator traits. It
+  // does nothing special.
   template <class U, class... Args>
   void construct(U* p, Args&&... args) {
     ::new (p) U(std::forward<Args>(args)...);
-  }
-
-  template <class U>
-  void destroy(U* p) noexcept {
-    p->~U();
   }
 
   T* allocate(std::size_t n) {
