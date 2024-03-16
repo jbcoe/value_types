@@ -41,6 +41,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifdef XYZ_HAS_STD_OPTIONAL
 #include <optional>
 #endif  // XYZ_HAS_STD_OPTIONAL
+#include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -53,18 +54,77 @@ using std::in_place_t;
 
 namespace {
 
-TEST(IndirectTest, ValueAccessFromInPlaceConstructedObject) {
-  xyz::indirect<int> a(xyz::in_place_t{}, 42);
-  EXPECT_EQ(*a, 42);
+TEST(IndirectTest, DefaultConstructor) {
+  xyz::indirect<int> i;
+  EXPECT_EQ(*i, 0);
 }
 
-TEST(IndirectTest, ValueAccessFromDefaultConstructedObject) {
-  xyz::indirect<int> a;
-  EXPECT_EQ(*a, 0);
+TEST(IndirectTest, AllocatorExtendedDefaultConstructor) {
+  xyz::TaggedAllocator<int> a(42);
+  xyz::indirect<int, xyz::TaggedAllocator<int>> i(std::allocator_arg, a);
+  EXPECT_EQ(*i, 0);
+  EXPECT_EQ(i.get_allocator(), a);
+}
+
+TEST(IndirectTest, SingleLValueConstructor) {
+  int x = 42;
+  xyz::indirect<int> i(x);
+  EXPECT_EQ(*i, 42);
+}
+
+TEST(IndirectTest, AllocatorExtendedSingleLValueConstructor) {
+  int x = 42;
+  xyz::TaggedAllocator<int> a(42);
+  xyz::indirect<int, xyz::TaggedAllocator<int>> i(std::allocator_arg, a, x);
+  EXPECT_EQ(*i, 42);
+  EXPECT_EQ(i.get_allocator(), a);
+}
+
+TEST(IndirectTest, SingleRValueConstructor) {
+  xyz::indirect<int> i(42);
+  EXPECT_EQ(*i, 42);
+}
+
+TEST(IndirectTest, AllocatorExtendedSingleRValueConstructor) {
+  xyz::TaggedAllocator<int> a(42);
+  xyz::indirect<int, xyz::TaggedAllocator<int>> i(std::allocator_arg, a, 42);
+  EXPECT_EQ(*i, 42);
+  EXPECT_EQ(i.get_allocator(), a);
+}
+
+TEST(IndirectTest, InPlaceConstructor) {
+  xyz::indirect<int> i(xyz::in_place_t{}, 42);
+  EXPECT_EQ(*i, 42);
+}
+
+TEST(IndirectTest, AllocatorExtendedInPlaceConstructor) {
+  xyz::TaggedAllocator<int> a(42);
+  xyz::indirect<int, xyz::TaggedAllocator<int>> i(std::allocator_arg, a,
+                                                  xyz::in_place_t{}, 42);
+  EXPECT_EQ(*i, 42);
+  EXPECT_EQ(i.get_allocator(), a);
+}
+
+TEST(IndirectTest, InitializerListConstructor) {
+  xyz::indirect<std::vector<int>> i(xyz::in_place_t{}, {10, 11});
+  EXPECT_EQ(i->size(), 2);
+}
+
+TEST(IndirectTest, AllocatorExtendedInitializerListConstructor) {
+  xyz::TaggedAllocator<std::vector<int>> a(42);
+  xyz::indirect<std::vector<int>, xyz::TaggedAllocator<std::vector<int>>> i(
+      std::allocator_arg, a, xyz::in_place_t{}, {10, 11});
+  EXPECT_EQ(i->size(), 2);
+  EXPECT_EQ(i.get_allocator(), a);
 }
 
 #ifdef XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
 TEST(IndirectTest, TemplateArgumentDeduction) {
+  xyz::indirect a(42);
+  EXPECT_EQ(*a, 42);
+}
+
+TEST(IndirectTest, TemplateArgumentDeductionInPlace) {
   xyz::indirect a(xyz::in_place_t{}, 42);
   EXPECT_EQ(*a, 42);
 }
