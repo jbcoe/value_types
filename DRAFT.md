@@ -494,7 +494,7 @@ rendering code ill-formed.
 ### The `valueless_after_move` member function
 
 Both `indirect` and `polymorphic` have a `valueless_after_move` member function
-that is used to query the object state. This member function should not be often
+that is used to query the object state. This member function should normally be
 called: it should be clear through static analysis whether or not an object has
 been moved from. The `valueless_after_move` member function allows explicit
 checks for the valueless state in cases where it cannot be verified statically
