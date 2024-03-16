@@ -431,9 +431,9 @@ unspecified state. However, there is no precedent for standard library types to
 have preconditions on move, copy, assign or move assignment. We opt for
 consistency with existing standard library types (namely varaint which has a
 valueless state) and allow copy, move, assignment and move assignment of a
-valuless `indirect` and `polymorphic`. Handling of the valueless state for
+valueless `indirect` and `polymorphic`. Handling of the valueless state for
 indirect and polymorphic in move operations will not incur cost; for copy
-operations, the cost of handling the valuless state will be insignificant
+operations, the cost of handling the valueless state will be insignificant
 compared to the cost of allocating memory. Introducing preconditions for copy,
 move, assign and move assign in a later revision of the C++ standard would be a
 silent breaking change.
@@ -493,12 +493,13 @@ rendering code ill-formed.
 
 ### The `valueless_after_move` member function
 
-Both `indirect` and `polymorphic` have a valueless state that is used to query
-the object state. This member function should not be often called: it should be
-clear through static analysis whether or not an object has been moved from. The
-member function allows explicit checks for the valueless state in cases where it
-cannot be verified statically or where explicit checks might be required by a
-coding standard such as MISRA or High Integrity C++.
+Both `indirect` and `polymorphic` have a `valueless_after_move` member function
+that is used to query the object state. This member function should not be often
+called: it should be clear through static analysis whether or not an object has
+been moved from. The `valueless_after_move` member function allows explicit
+checks for the valueless state in cases where it cannot be verified statically
+or where explicit checks might be required by a coding standard such as MISRA or
+High Integrity C++.
 
 ### Design for polymorphic types
 
@@ -1481,19 +1482,19 @@ suggestions and useful discussion.
 
 ## References
 
-_A Preliminary Proposal for a Deep-Copying Smart Pointer_, W. E. Brown, 2012
+_A Preliminary Proposal for a Deep-Copying Smart Pointer_, W. E. Brown, 2012\
 [http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3339.pdf]
 
-_A polymorphic value-type for C++_, J. B. Coe, S. Parent 2019
+_A polymorphic value-type for C++_, J. B. Coe, S. Parent 2019 \
 [https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0201r6.html]
 
-_A Free-Store-Allocated Value Type for C++_, J. B. Coe, A. Peacock 2022
+_A Free-Store-Allocated Value Type for C++_, J. B. Coe, A. Peacock 2022\
 [https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1950r2.html]
 
-_MISRA Language Guidelines_
+_MISRA Language Guidelines_\
 [https://ldra.com/misra/]
 
-_High Integrity C++_
+_High Integrity C++_\
 [https://www.perforce.com/resources/qac/high-integrity-cpp-coding-standard]
 
 ## Appendix A: Detailed design decisions
