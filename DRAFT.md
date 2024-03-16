@@ -494,11 +494,11 @@ rendering code ill-formed.
 ### The `valueless_after_move` member function
 
 Both `indirect` and `polymorphic` have a valueless state that is used to query
-the object state. By intention, this member function should not be often called:
-it should be clear through static analysis whether or not an object has been
-moved from. The member function to allows explicit checks for the valueless
-state in cases where it cannot be verified statically or where explicit checks
-might be required by a coding standard such as MISRA or High Integrity C++.
+the object state. This member function should not be often called: it should be
+clear through static analysis whether or not an object has been moved from. The
+member function allows explicit checks for the valueless state in cases where it
+cannot be verified statically or where explicit checks might be required by a
+coding standard such as MISRA or High Integrity C++.
 
 ### Design for polymorphic types
 
@@ -1490,8 +1490,8 @@ _A polymorphic value-type for C++_, J. B. Coe, S. Parent 2019
 _A Free-Store-Allocated Value Type for C++_, J. B. Coe, A. Peacock 2022
 [https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1950r2.html]
 
-_MISRA Language Guidelines
-[https://ldra.com/misra/]_
+_MISRA Language Guidelines_
+[https://ldra.com/misra/]
 
 _High Integrity C++_
 [https://www.perforce.com/resources/qac/high-integrity-cpp-coding-standard]
