@@ -46,6 +46,8 @@ should not be considered in isolation.
 
 * Improve wording for assignment operators to remove ambiguity.
 
+* Add motivation for `valueless_after_move` member function.
+
 ### Changes in R6
 
 * Add `std::in_place_t` argument to indirect constructors.
@@ -488,6 +490,15 @@ inplace constructors of `optional` and `any`.
 With some suitably compelling motivation, the `explicit` keyword could be
 removed from some constructors in a later revision of the C++ standard without
 rendering code ill-formed.
+
+### The `valueless_after_move` member function
+
+Both `indirect` and `polymorphic` have a valueless state that is used to query
+the object state. By intention, this member function should not be often called:
+it should be clear through static analysis whether or not an object has been
+moved from. The member function to allows explicit checks for the valueless
+state in cases where it cannot be verified statically or where explicit checks
+might be required by a coding standard such as MISRA or High Integrity C++.
 
 ### Design for polymorphic types
 
@@ -1470,7 +1481,7 @@ suggestions and useful discussion.
 
 ## References
 
-"_A Preliminary Proposal for a Deep-Copying Smart Pointer_", W. E. Brown, 2012
+_A Preliminary Proposal for a Deep-Copying Smart Pointer_, W. E. Brown, 2012
 [http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3339.pdf]
 
 _A polymorphic value-type for C++_, J. B. Coe, S. Parent 2019
@@ -1478,6 +1489,12 @@ _A polymorphic value-type for C++_, J. B. Coe, S. Parent 2019
 
 _A Free-Store-Allocated Value Type for C++_, J. B. Coe, A. Peacock 2022
 [https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1950r2.html]
+
+_MISRA Language Guidelines
+[https://ldra.com/misra/]_
+
+_High Integrity C++_
+[https://www.perforce.com/resources/qac/high-integrity-cpp-coding-standard]
 
 ## Appendix A: Detailed design decisions
 
