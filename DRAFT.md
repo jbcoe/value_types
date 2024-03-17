@@ -71,7 +71,7 @@ should not be considered in isolation.
 ### Changes in R4
 
 * Use constraints to require that the object owned by `indirect` is
-  copy-constructible. This ensures that `std::is_copy_constructible_v` does not
+  copy constructible. This ensures that `std::is_copy_constructible_v` does not
   give misleading results.
 
 * Modify comparison of `indirect` allow comparsion of valueless objects.
@@ -1561,7 +1561,7 @@ incomplete type requires deferring the instantiation of functions with
 requirements until they are used.
 
 The default constructor of `indirect` requires that `T` is default
-constructible. We can't write this constraint as a requirement on `T` because
+constructible. We cannot write this constraint as a requirement on `T` because
 that would require `T` to be a complete type at class instantiation time.
 Instead we write the constraint as a requirement on a deduced type `TT` to defer
 evaluation of the constraint until the default constructor is instantiated.
@@ -1583,8 +1583,8 @@ such types are copy constructible. We make `polymorphic` unconditionally copy
 and move constructible. The authors do not envisage that this could be relaxed
 in a future version of the C++ standard.
 
-While a copy constructor cannot be a template, we can conditionally constrain
-copy construction of `indirect`, in C++20 and later, by defining:
+While a copy constructor cannot be a template, in C++20 and later we can
+conditionally constrain copy construction of `indirect` by defining:
 
 ```c++
 indirect(const indirect& other) requires false = delete;
@@ -1593,17 +1593,16 @@ template <typename TT=T>
 indirect(const indirect& other) requires is_copy_constructible_v<TT>;
 ```
 
-An instantiation of the function template, with `TT=T`, is added to the overload
-set when `indirect` is copy-constructed and will be selected if the owned
-object type `T` is copy-constructible.
-
-This would make copy construction conditional for `indirect` but not for
-`polymorphic`. We opt for consistency and make copy construction unconditional
-for both `indirect` and `polymorphic`. Making `indirect` conditionally copy
-constructible in a future version of the C++ standard would require adding a
-template function as above and would be an ABI break. It might be simpler to add
-new types for non-copyable `indirect` and `polymorphic` objects although we do
-not propose the addition of such types in this draft.
+An instantiation of the function template with `TT=T` is added to the overload
+set when `indirect` is copy-constructed and will be selected if the owned object
+type `T` is copy constructible. This would make copy construction conditional
+for `indirect` but not for `polymorphic`. We opt for consistency and make copy
+construction unconditional for both `indirect` and `polymorphic`. Making
+`indirect` conditionally copy constructible in a future version of the C++
+standard would require adding a template function as above and would be an ABI
+break. It might be simpler to add new types for non-copyable `indirect` and
+`polymorphic` objects, although we do not propose the addition of such types in
+this draft.
 
 ### Implicit conversions
 
