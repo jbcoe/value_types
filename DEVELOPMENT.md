@@ -45,7 +45,7 @@ To install Bazel see https://bazel.build/install.
 To use the value types code in your own CMake project then you can pull
 the project in as a dependency via CMake's FetchContent module as follows:
 
-```.txt
+```txt
 FetchContent_Declare(
     value_types
     GIT_REPOSITORY https://github.com/jbcoe/value_types
