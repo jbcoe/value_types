@@ -15,15 +15,28 @@ pip install -r requirements.txt # Install latest requirements including pre-comm
 pre-commit install              # Use pre-commit to install git hooks into the working repository.
 ```
 
-## Building with CMake
+## Building and testing
+
+### Building with CMake
 
 To build the repository with CMake use the following steps
+
 ```bash
 cd <project root>
-mkdir build          # Make a build directory
-cd build             # Switch into the build directory
-cmake ../            # Generate build system specified in root with cmake
-cmake --build ./     # Build the underlying build system via CMake
+mkdir build             # Make a build directory
+cmake -Bbuild           # Generate build system specified in build directory with cmake
+cmake --build build     # Build the underlying build system via CMake
+ctest --test-dir build  # Run the tests
+```
+
+### Building with Bazel
+
+To build the repository with Bazel use the following steps
+
+```bash
+cd <project root>
+bazel build //...        # Build the project
+bazel test //...        # Run the tests
 ```
 
 ## Including value_types to your own project
