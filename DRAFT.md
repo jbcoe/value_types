@@ -1589,7 +1589,7 @@ conditionally constrain copy construction of `indirect` by defining:
 ```c++
 indirect(const indirect& other) requires false = delete;
 
-template <typename TT=T>
+template <typename TT = T>
 indirect(const indirect& other) requires is_copy_constructible_v<TT>;
 ```
 
