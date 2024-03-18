@@ -29,22 +29,26 @@ cmake --build build     # Build the underlying build system via CMake
 ctest --test-dir build  # Run the tests
 ```
 
+To install CMake see: https://cmake.org/download/.
+
 ### Building with Bazel
 
 To build the repository with Bazel use the following steps
 
 ```bash
 cd <project root>
-bazel build //...        # Build the project
+bazel build //...       # Build the project
 bazel test //...        # Run the tests
 ```
+
+To install Bazel see https://bazel.build/install.
 
 ## Including value_types to your own project
 
 To use the value types code in your own CMake project then you can pull
 the project in as a dependency via CMake's FetchContent module as follows:
 
-```
+```.txt
 FetchContent_Declare(
     value_types
     GIT_REPOSITORY https://github.com/jbcoe/value_types
