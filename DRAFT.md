@@ -715,12 +715,12 @@ private:
   Allocator alloc; // exposition only
 };
 
-template <typename Value>
+template <class Value>
 indirect(Value) -> indirect<Value>;
 
-template <typename Alloc, typename Value>
-indirect(std::allocator_arg_t, Alloc, Value) -> indirect<
-    Value, typename std::allocator_traits<Alloc>::template rebind_alloc<Value>>;
+template <class Alloc, class Value>
+indirect(allocator_arg_t, Alloc, Value) -> indirect<
+    Value, typename allocator_traits<Alloc>::template rebind_alloc<Value>>;
 ```
 
 #### X.Y.3 Constructors [indirect.ctor]
@@ -851,7 +851,7 @@ constexpr indirect& operator=(const indirect& other);
 
 2. _Effects_: If `other == *this` then no effect.
 
-  If `std::allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
+  If `allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
   If `other` is valueless, `*this` becomes valueless and the owned value in this,
@@ -889,7 +889,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 ```
 
 5. _Effects_: If
-  `std::allocator_traits<Alloc>::propagate_on_container_move_assignment` is
+  `allocator_traits<Alloc>::propagate_on_container_move_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
   If `other` is valueless, `*this` becomes valueless and the owned value in this,
@@ -1341,7 +1341,7 @@ constexpr polymorphic& operator=(const polymorphic& other);
 
 2. _Effects_: If `other == *this` then no effect.
 
-  If `std::allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
+  If `allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
   If `other` is not valueless, a new owned object is constructed in `this` using
@@ -1370,7 +1370,7 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
 
 5. _Effects_: If `other == *this` then no effect.
 
-  If `std::allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
+  If `allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
   If `alloc == other.alloc`, swaps the owned objects in `this` and `other`; the
