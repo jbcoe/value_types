@@ -44,6 +44,12 @@ should not be considered in isolation.
 
 ### Changes in R7
 
+* Add more explicit wording for use of `allocator_traits::construct` in
+  `indirect` and `polymorphic` constructors.
+
+* Discuss `indirects` non-conditional copy constructior in the light of
+  implementation tricks that would enable it.
+
 * Improve wording for assignment operators to remove ambiguity.
 
 * Add motivation for `valueless_after_move` member function.
