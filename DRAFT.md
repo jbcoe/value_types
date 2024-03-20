@@ -1303,10 +1303,9 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
     valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc` either
     constructs an object of type `polymorphic` that owns the owned value of
     other, making `other` valueless; or, owns an object of the same type
-    constructed from the owned value of `other` using the specified allocator,
-    considering that owned value as an rvalue. Otherwise if `alloc !=
-    other.alloc`, constructs an object of type `polymorphic`, considering that
-    owned value as an rvalue.
+    constructed from the owned value of `other` considering that owned value as
+    an rvalue. Otherwise if `alloc != other.alloc`, constructs an object of type
+    `polymorphic`, considering that owned value as an rvalue.
 
   _[Drafting note: The above is intended to permit a small-buffer-optimization
   and handle the case where allocators compare equal but we do not want to swap
