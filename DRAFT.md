@@ -47,6 +47,9 @@ should not be considered in isolation.
 * Add more explicit wording for use of `allocator_traits::construct` in
   `indirect` and `polymorphic` constructors.
 
+* Prevent `indirect` and `polymorphic` classes from being instantiated with
+  `in_place_t` and specializations of `in_place_type_t`.
+
 ### Changes in R7
 
 * Discuss `indirect`'s non-conditional copy constructor in the light of
