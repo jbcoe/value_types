@@ -157,18 +157,17 @@ A. _Constraints_: `is_constructible_v<T, U>` is true.
 
 B. _Mandates_: `T` is a complete type.
 
-C. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(),
+C. _Effects_: Equivalent to `indirect(allocator_arg, Allocator(),
 std::forward<U>(u))`.
 
 ```c++
 template <class U = T>
-explicit constexpr indirect(allocator_arg_t, const Allocator& a,
-                            in_place_t, U&& u);
+explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u);
 ```
 
 D. _Constraints_: `is_constructible_v<T, U>` is true.
-   `is_copy_constructible_v<U>` is `true`. `is_same_v<remove_cvref_t<U>,
-   in_place_t>` is `false`. `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
+   `is_copy_constructible_v<T>` is `true`.
+   `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
 
 E. _Mandates_: `T` is a complete type.
 
@@ -188,9 +187,8 @@ G. _Constraints_: `is_copy_constructible_v<T>` is `true`. `is_constructible_v<T,
 
 H. _Mandates_: `T` is a complete type.
 
-I. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(),
-   in_place_t{}, std::forward<initializer_list<U>>(ilist),
-   std::forward<Us>(us))`.
+I. _Effects_: Equivalent to `indirect(allocator_arg, Allocator(),
+   in_place, ilist, std::forward<Us>(us))`.
 
 ```c++
 template<class I, class... Us>
@@ -220,9 +218,10 @@ A. _Constraints_: `is_constructible<T, U>` is true. `is_assignable<T,U>` is
 
 B. _Mandates_: `T` is a complete type.
 
-C. _Effects_: If `this` is valueless then equivalent to `*this =
-   std::move(indirect<T>(std::forward<U>(u)))`. Otherwise, equivalent to `**this
-   = std::forward<U>(u)`.
+
+C. _Effects_: If `this` is valueless then equivalent to
+   `*this = indirect<T>(std::forward<U>(u))`.
+   Otherwise, equivalent to `**this = std::forward<U>(u)`.
 
 D. _Returns_: A reference to `*this`.
 
@@ -269,8 +268,8 @@ A. _Constraints_: `is_base_of_v<T, std::remove_cvref_t<U>>` is `true`.
 
 B. _Mandates_: `T` is a complete type.
 
-C. _Effects_: Equivalent to `polymorphic(std::allocator_arg_t{}, A{},
-   std::in_place_type_t<std::remove_cvref_t<U>>{}, std::forward<U>(u))`.
+C. _Effects_: Equivalent to `polymorphic(allocator_arg, A{},
+   in_place_type<std::remove_cvref_t<U>>, std::forward<U>(u))`.
 
 ```c++
 template <class U>
@@ -283,8 +282,8 @@ D. _Constraints_: `is_base_of_v<T, std::remove_cvref_t<U>>` is `true`.
 
 E. _Mandates_: `T` is a complete type.
 
-F. _Effects_: Equivalent to `polymorphic(std::allocator_arg_t{}, a,
-   std::in_place_type_t<U>{}, std::forward<U>(u))`.
+F. _Effects_: Equivalent to `polymorphic(allocator_arg, a,
+   in_place_type<U>, std::forward<U>(u))`.
 
 ```c++
   template <class U = T, class I, class... Us>
@@ -298,8 +297,8 @@ A. _Constraints_: `is_base_of_v<T, U>` is `true`. `is_copy_constructible_v<U>`
 
 B. _Mandates_: `T` is a complete type.
 
-C. _Effects_: Equivalent to `polymorphic(std::allocator_arg_t{}, A{},
-  std::in_place_type_t<U>{}, initializer_list<I>(ilist), std::forward<Us>(us))`.
+C. _Effects_: Equivalent to `polymorphic(allocator_arg, A{},
+  in_place_type<U>, ilist, std::forward<Us>(us))`.
 
 ```c++
   template <class U = T, class I, class... Us>
@@ -313,8 +312,8 @@ D. _Constraints_: `is_base_of_v<T, U>` is `true`. `is_copy_constructible_v<U>`
 
 E. _Mandates_: `T` is a complete type.
 
-F. _Effects_: Equivalent to `polymorphic(std::allocator_arg_t{}, a,
-  std::in_place_type_t<U>{}, initializer_list<I>(ilist), std::forward<Us>(us))`.
+F. _Effects_: Equivalent to `polymorphic(allocator_arg, a,
+  in_place_type<U>, ilist, std::forward<Us>(us)...)`.
 
 ## Reference implementation
 
