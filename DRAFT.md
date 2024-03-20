@@ -750,8 +750,8 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a);
 
 7. _Mandates_: `T` is a complete type.
 
-8. _Effects_: `alloc` is direct-non-list-initialized with `a`. Value
-   initializes an owned object of type `T`.
+8. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs owned
+   object of type `T` with no arguments.
 
 9. _Postconditions_: `*this` is not valueless.
 
@@ -783,7 +783,7 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a, in_place_t, Us&
 15. _Mandates_: `T` is a complete type.
 
 16. _Effects_: `alloc` is direct-non-list-initialized with `a`.
-    Direct-non-list-initializes an owned object of type `T` with `std​::​forward<Us>(us...)`.
+    Constructs an owned object of type `T` with `std​::​forward<Us>(us...)`.
 
 17. _Postconditions_: `*this` is not valueless.
 
@@ -802,9 +802,9 @@ constexpr indirect(allocator_arg_t, const Allocator& a,
 
 19. _Mandates_: `T` is a complete type.
 
-20. _Effects_: `alloc` is direct-non-list-initialized with `a`. If
-    `other` is valueless, `*this` is valueless. Otherwise, copy constructs an
-    owned object of type `T` with `*other`.
+20. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
+    valueless, `*this` is valueless. Otherwise, constructs an owned object of
+    type `T` with `*other`.
 
 ```c++
 constexpr indirect(indirect&& other) noexcept;
@@ -1226,8 +1226,8 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a);
 
 7. _Mandates_: `T` is a complete type.
 
-8. _Effects_: `alloc` is direct-non-list-initialized with `a`. Value
-initializes an owned object of type `T`.
+8. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
+   owned object of type `T` with no arguments.
 
 9. _Postconditions_: `*this` is not valueless.
 
@@ -1260,7 +1260,7 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
 14. _Mandates_: `T` is a complete type.
 
 15. _Effects_: `alloc` is direct-non-list-initialized with `a`.
-    Direct-non-list-initializes an owned object of type `U` with `std​::​forward<Ts>(ts...)`.
+    Constructs an owned object of type `U` with `std​::​forward<Ts>(ts...)`.
 
 16. _Postconditions_: `*this` is not valueless.  The owned instance targets an
   object of type `U` constructed  with `std::forward<Ts>(ts)...`.
@@ -1280,10 +1280,10 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
 
 18. _Mandates_: `T` is a complete type.
 
-19. _Effects_: `alloc` is direct-non-list-initialized with `alloc`. If
-    `other` is valueless, `*this` is valueless. Otherwise, copy constructs an
-    owned object of type `U`, where `U` is the type of the owned object in
-    `other`, with the owned object in `other`.
+19. _Effects_: `alloc` is direct-non-list-initialized with `alloc`. If `other`
+    is valueless, `*this` is valueless. Otherwise, constructs an owned object of
+    type `U`, where `U` is the type of the owned object in `other`, with the
+    owned object in `other`.
 
 ```c++
 constexpr polymorphic(polymorphic&& other) noexcept;
