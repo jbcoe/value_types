@@ -783,7 +783,7 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a, in_place_t, Us&
 15. _Mandates_: `T` is a complete type.
 
 16. _Effects_: `alloc` is direct-non-list-initialized with `a`.
-    Constructs an owned object of type `T` with `std​::​forward<Us>(us...)`.
+    Constructs an owned object of type `T` with `std​::​forward<Us>(us)...`.
 
 17. _Postconditions_: `*this` is not valueless.
 
@@ -1260,7 +1260,7 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
 14. _Mandates_: `T` is a complete type.
 
 15. _Effects_: `alloc` is direct-non-list-initialized with `a`.
-    Constructs an owned object of type `U` with `std​::​forward<Ts>(ts...)`.
+    Constructs an owned object of type `U` with `std​::​forward<Ts>(ts)...`.
 
 16. _Postconditions_: `*this` is not valueless.  The owned instance targets an
   object of type `U` constructed  with `std::forward<Ts>(ts)...`.
