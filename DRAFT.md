@@ -827,7 +827,7 @@ constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
     `indirect` using the specified allocator with `*other` used as an rvalue.
 
 23. _[Note: The use of this function may require that `T` be a complete type
-    dependent on behavour of the allocator. — end note]_
+    dependent on behavior of the allocator. — end note]_
 
 #### X.Y.4 Destructor [indirect.dtor]
 
@@ -923,7 +923,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
    constructor, no effect.
 
 9. _[Note: The use of this function may require that `T` be a complete type
-   dependent on behavour of the allocator. — end note]_
+   dependent on behavior of the allocator. — end note]_
 
 #### X.Y.6 Observers [indirect.observers]
 
@@ -994,7 +994,7 @@ constexpr void swap(indirect& other) noexcept(
   directly. --end note]_
 
 2. _[Note 2: The use of this function may require that `T` be a complete type
-dependent on behavour of the allocator. — end note]_
+dependent on behavior of the allocator. — end note]_
 
 3. _[Note 3: Exception guarantees for `swap` are intended to model the behavior
 of exception guarantees for `std::vector::swap`. — end note]_
@@ -1316,7 +1316,7 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
   pointers.]_
 
 22. _[Note: The use of this function may require that `T` be a complete type
-    dependent on behavour of the allocator. — end note]_
+    dependent on behavior of the allocator. — end note]_
 
 
 #### X.Z.4 Destructor [polymorphic.dtor]
@@ -1398,7 +1398,7 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
    selected move constructor, no effect.
 
 8. _[Note: The use of this function may require that `T` be a complete type
-    dependent on behavour of the allocator. — end note]_
+    dependent on behavior of the allocator. — end note]_
 
 #### X.Z.6 Observers [polymorphic.observers]
 
