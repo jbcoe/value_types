@@ -817,7 +817,7 @@ constexpr indirect(indirect&& other) noexcept;
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
-  noexcept(allocator_traits<Allocator>::is_always_equal);
+  noexcept(allocator_traits<Allocator>::is_always_equal::value);
 ```
 
 22. _Effects_: `alloc` is direct-non-list-initialized with `a`. If
