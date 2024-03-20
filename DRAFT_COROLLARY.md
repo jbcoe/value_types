@@ -267,7 +267,7 @@ A. _Constraints_: `is_base_of_v<T, std::remove_cvref_t<U>>` is `true`.
 B. _Mandates_: `T` is a complete type.
 
 C. _Effects_: Equivalent to `polymorphic(allocator_arg, A{},
-   in_place_type<std::remove_cvref_t<U>>, std::forward<U>(u))`.
+   in_place_type<remove_cvref_t<U>>, std::forward<U>(u))`.
 
 ```c++
 template <class U>
