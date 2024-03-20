@@ -3,11 +3,11 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-P3019R6
+P3019R7
 
 Working Group: Library Evolution, Library
 
-Date: 2024-02-07
+Date: 2024-03-19
 
 _Jonathan Coe \<<jonathanbcoe@gmail.com>\>_
 
@@ -624,7 +624,7 @@ move assignment, or swapping of the allocator only if
     operation.
 
 4. A program that instantiates the definition of indirect for a non-object type,
-   an array type, or a cv-qualified type is ill-formed.
+   an array type, in_place_t, or a cv-qualified type is ill-formed.
 
 5. The template parameter `T` of `indirect` may be an incomplete type.
 
@@ -1133,7 +1133,8 @@ is true within the implementation of the corresponding polymorphic value
 operation.
 
 4. A program that instantiates the definition of polymorphic for a non-object
-   type, an array type, or a cv-qualified type is ill-formed.
+   type, an array type, a specialization of in_place_type_t or a cv-qualified
+   type is ill-formed.
 
 5. The template parameter `T` of `polymorphic` may be an incomplete type.
 
