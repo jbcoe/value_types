@@ -241,7 +241,7 @@ class polymorphic {
   explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
 
   template <class U, class I, class... Us>
-  explicitconstexpr polymorphic(in_place_type_t<U>,
+  explicit constexpr polymorphic(in_place_type_t<U>,
                                 initializer_list<I> ilist, Us&&... us)
 
   template <class U, class I, class... Us>
