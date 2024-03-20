@@ -822,7 +822,7 @@ constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
     `other` is valueless, `*this` is valueless. Otherwise, if `alloc ==
     other.alloc` constructs an object of type `indirect` that owns the owned
     value of other; `other` is valueless. Otherwise constructs an owned object of type
-    `T` with `*other` used as an rvalue.
+    `T` with `*std::move(other)`.
 
 23. _[Note: The use of this function may require that `T` be a complete type
     dependent on behavour of the allocator. — end note]_
