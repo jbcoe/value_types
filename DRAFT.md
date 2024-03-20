@@ -597,8 +597,6 @@ needed.
 means calling `allocator_traits<allocator_type>::construct(a, p, args...)` where
 `p` is a pointer obtained by calling `allocator_traits<allocator_type>::allocate`.
 
-// DRAFTING NOTE: [indirect.general]#3 modeled on [container.reqmts]#64
-
 4. Copy constructors for an indirect value obtain an allocator by calling
 `allocator_traits<allocator_type>::select_on_container_copy_construction` on the
 allocator belonging to the indirect value being copied. Move constructors obtain
