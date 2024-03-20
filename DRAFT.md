@@ -591,13 +591,15 @@ become valueless after it has been moved from.
 `allocator_traits<Allocator>::value_type` is not the same type as `T`, the
 program is ill-formed. Every object of type `indirect<T, Allocator>` uses an
 object of type `Allocator` to allocate and free storage for the owned object as
-needed. The owned object is constructed using the function
-`allocator_traits<allocator_type>::construct` and destroyed using the function
-`allocator_traits<allocator_type>::destroy`.
+needed.
+
+3. Constructing an owned object using an allocator `a` and arguments `args...`
+means calling `allocator_traits<allocator_type>::construct(a, p, args...)` where
+`p` is a pointer to suitable storage.
 
 // DRAFTING NOTE: [indirect.general]#3 modeled on [container.reqmts]#64
 
-3. Copy constructors for an indirect value obtain an allocator by calling
+4. Copy constructors for an indirect value obtain an allocator by calling
 `allocator_traits<allocator_type>::select_on_container_copy_construction` on the
 allocator belonging to the indirect value being copied. Move constructors obtain
 an allocator by move construction from the allocator belonging to the object
@@ -622,15 +624,15 @@ move assignment, or swapping of the allocator only if
     is `true` within the implementation of the corresponding indirect value
     operation.
 
-4. A program that instantiates the definition of indirect for a non-object type,
+5. A program that instantiates the definition of indirect for a non-object type,
    an array type, or a cv-qualified type is ill-formed.
 
-5. The template parameter `T` of `indirect` may be an incomplete type.
+6. The template parameter `T` of `indirect` may be an incomplete type.
 
-6. The template parameter `Allocator` of `indirect` shall meet the
+7. The template parameter `Allocator` of `indirect` shall meet the
    _Cpp17Allocator_ requirements.
 
-7. If a program declares an explicit or partial specialization of `indirect`,
+8. If a program declares an explicit or partial specialization of `indirect`,
    the behavior is undefined.
 
 #### X.Y.2 Class template indirect synopsis [indirect.syn]
@@ -1102,14 +1104,15 @@ object may only become valueless after it has been moved from.
 `allocator_traits<Allocator>::value_type` is not the same type as`T`, the
 program is ill-formed. Every object of type `polymorphic<T, Allocator>` uses an
 object of type `Allocator` to allocate and free storage for the owned object as
-needed. The owned object is constructed using the function
-`allocator_traits<allocator_type>::rebind_traits<U>::construct` and destroyed
- using the function
-`allocator_traits<allocator_type>::rebind_traits<U>::destroy`, where `U` is
+needed.
+
+3. Constructing an owned object using an allocator `a` and arguments
+`args...` means calling `allocator_traits<allocator_type>::rebind_traits<U>::construct(a, p,
+args...)` where `p` is a pointer to suitable storage and `U` is
 either `allocator_type::value_type` or an internal type used by the polymorphic
 value.
 
-3. Copy constructors for a polymorphic value obtain an allocator by calling
+4. Copy constructors for a polymorphic value obtain an allocator by calling
 `allocator_traits<allocator_type>::select_on_container_copy_construction` on the
 allocator belonging to the polymorphic value being copied. Move constructors
 obtain an allocator by move construction from the allocator belonging to the
@@ -1129,15 +1132,15 @@ or (64.3) `allocator_traits<allocator_type>::propagate_on_container_swap::value`
 is true within the implementation of the corresponding polymorphic value
 operation.
 
-4. A program that instantiates the definition of polymorphic for a non-object
+5. A program that instantiates the definition of polymorphic for a non-object
    type, an array type, or a cv-qualified type is ill-formed.
 
-5. The template parameter `T` of `polymorphic` may be an incomplete type.
+6. The template parameter `T` of `polymorphic` may be an incomplete type.
 
-6. The template parameter `Allocator` of `polymorphic` shall meet the
+7. The template parameter `Allocator` of `polymorphic` shall meet the
    requirements of _Cpp17Allocator_.
 
-7. If a program declares an explicit or partial specialization of `polymorphic`,
+8. If a program declares an explicit or partial specialization of `polymorphic`,
    the behavior is undefined.
 
 #### X.Z.2 Class template polymorphic synopsis [polymorphic.syn]
