@@ -601,8 +601,7 @@ needed. The owned object is constructed using the function
 `allocator_traits<allocator_type>::select_on_container_copy_construction` on the
 allocator belonging to the indirect value being copied. Move constructors obtain
 an allocator by move construction from the allocator belonging to the object
-being moved. Such move construction of the allocator shall not exit via an
-exception. All other constructors for these types take a `const allocator_type&
+being moved. All other constructors for these types take a `const allocator_type&
 argument`. _[Note 3: If an invocation of a constructor uses the default value of
 an optional allocator argument, then the allocator type must support
 value-initialization. --end note]_ A copy of this allocator is used for any
@@ -1114,8 +1113,7 @@ value.
 `allocator_traits<allocator_type>::select_on_container_copy_construction` on the
 allocator belonging to the polymorphic value being copied. Move constructors
 obtain an allocator by move construction from the allocator belonging to the
-object being moved. Such move construction of the allocator shall not exit via
-an exception. All other constructors for these types take a `const
+object being moved. All other constructors for these types take a `const
 allocator_type& argument`. [Note 3: If an invocation of a constructor uses the
 default value of an optional allocator argument, then the allocator type must
 support value-initialization.  end note] A copy of this allocator is used for
