@@ -213,8 +213,8 @@ template <class U>
 constexpr indirect& operator=(U&& u);
 ```
 
-A. _Constraints_: `is_constructible<T, U>` is true.
-  `is_assignable<T,U>` is true.
+A. _Constraints_: `is_constructible_v<T, U>` is true.
+  `is_assignable_v<T,U>` is true.
 
 B. _Mandates_: `T` is a complete type.
 
