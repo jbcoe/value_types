@@ -751,7 +751,7 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a);
 7. _Mandates_: `T` is a complete type.
 
 8. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs owned
-   object of type `T` with no arguments.
+   object of type `T` with an empty argument list.
 
 9. _Postconditions_: `*this` is not valueless.
 
@@ -1227,7 +1227,7 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a);
 7. _Mandates_: `T` is a complete type.
 
 8. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
-   owned object of type `T` with no arguments.
+   owned object of type `T` with an empty argument list.
 
 9. _Postconditions_: `*this` is not valueless.
 
