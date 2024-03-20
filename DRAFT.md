@@ -42,10 +42,12 @@ should not be considered in isolation.
 
 ## History
 
-### Changes in R7
+### Changes in R8
 
 * Add more explicit wording for use of `allocator_traits::construct` in
   `indirect` and `polymorphic` constructors.
+
+### Changes in R7
 
 * Discuss `indirects` non-conditional copy constructior in the light of
   implementation tricks that would enable it.
