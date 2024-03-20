@@ -635,7 +635,7 @@ move assignment, or swapping of the allocator only if
     operation.
 
 4. A program that instantiates the definition of indirect for a non-object type,
-   an array type, in_place_t, or a cv-qualified type is ill-formed.
+   an array type, `in_place_t`, or a cv-qualified type is ill-formed.
 
 6. The template parameter `T` of `indirect` may be an incomplete type.
 
@@ -1140,7 +1140,7 @@ is true within the implementation of the corresponding polymorphic value
 operation.
 
 4. A program that instantiates the definition of polymorphic for a non-object
-   type, an array type, a specialization of in_place_type_t or a cv-qualified
+   type, an array type, a specialization of `in_place_type_t` or a cv-qualified
    type is ill-formed.
 
 6. The template parameter `T` of `polymorphic` may be an incomplete type.
