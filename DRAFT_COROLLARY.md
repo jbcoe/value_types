@@ -167,6 +167,7 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u);
 
 D. _Constraints_: `is_constructible_v<T, U>` is true.
    `is_copy_constructible_v<T>` is `true`.
+   `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`.
    `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
 
 E. _Mandates_: `T` is a complete type.
@@ -269,7 +270,7 @@ A. _Constraints_: `is_base_of_v<T, std::remove_cvref_t<U>>` is `true`.
 B. _Mandates_: `T` is a complete type.
 
 C. _Effects_: Equivalent to `polymorphic(allocator_arg, A{},
-   in_place_type<std::remove_cvref_t<U>>, std::forward<U>(u))`.
+   in_place_type<remove_cvref_t<U>>, std::forward<U>(u))`.
 
 ```c++
 template <class U>
@@ -278,6 +279,7 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
 
 D. _Constraints_: `is_base_of_v<T, std::remove_cvref_t<U>>` is `true`.
    `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
+   `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`.
    `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
 
 E. _Mandates_: `T` is a complete type.
