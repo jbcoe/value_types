@@ -834,7 +834,7 @@ constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
 22. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
     valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc`
     constructs an object of type `indirect` that owns the owned object of other;
-    `other` is valueless. Otherwise constructs an owned object of type `T` with
+    `other` is valueless. Otherwise, constructs an owned object of type `T` with
     `*std::move(other)`, using the allocator `alloc`.
 
 23. _[Note: The use of this function may require that `T` be a complete type
@@ -906,11 +906,11 @@ constexpr indirect& operator=(indirect&& other) noexcept(
   this, if any, is destroyed using `allocator_traits<allocator_type>::destroy`
   and then the storage is deallocated.
 
-  Otherwise if `alloc == other.alloc`, swaps the owned objects in `this` and
+  Otherwise, if `alloc == other.alloc`, swaps the owned objects in `this` and
   `other`; the owned object in `other`, if any, is then destroyed using
   `allocator_traits<allocator_type>::destroy` and then the storage is deallocated.
 
-  Otherwise , if `alloc != other.alloc` or `this` is valueless, a new owned
+  Otherwise, if `alloc != other.alloc` or `this` is valueless, a new owned
   object is constructed in `this` using
   `allocator_traits<allocator_type>::construct` with the owned object from
   `other` as the argument as an rvalue, using either the allocator in `this` or
@@ -1315,7 +1315,7 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
     constructs an object of type `polymorphic` that owns the owned object of
     other, making `other` valueless; or, owns an object of the same type
     constructed from the owned object of `other` considering that owned object as
-    an rvalue. Otherwise if `alloc != other.alloc`, constructs an object of type
+    an rvalue. Otherwise, if `alloc != other.alloc`, constructs an object of type
     `polymorphic`, considering that owned object as an rvalue, using the
     allocator `alloc`.
 
@@ -1386,7 +1386,7 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
   `allocator_traits<allocator_type>::rebind_traits::destroy` and then the
   storage is deallocated.
 
-  Otherwise if `alloc != other.alloc`; if `other` is not valueless, a new owned
+  Otherwise, if `alloc != other.alloc`; if `other` is not valueless, a new owned
   object is constructed in `this` using
   `allocator_traits<allocator_type>::rebind_traits::construct` with the owned
   object from `other` as the argument as an rvalue, using either the allocator
