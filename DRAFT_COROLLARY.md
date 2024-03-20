@@ -173,8 +173,8 @@ D. _Constraints_: `is_constructible_v<T, U>` is true.
 E. _Mandates_: `T` is a complete type.
 
 F. _Effects_: `alloc` is direct-non-list-initialized with `a`.
-    Direct-non-list-initializes an owned object of type `T` using the specified
-    allocator with `std​::​forward<U>(u)`.
+    Direct-non-list-initializes an owned object of type `T` with
+    `std​::​forward<U>(u)`.
 
 ```c++
 template<class I, class... Us>
@@ -205,8 +205,8 @@ J. _Constraints_: `is_copy_constructible_v<T>` is `true`.
 K. _Mandates_: `T` is a complete type.
 
 L. _Effects_: `alloc` is direct-non-list-initialized with `a`.
-    Direct-non-list-initializes an owned object of type `T` using the specified
-    allocator with `ilist, std​::​forward<U>(u)`.
+    Direct-non-list-initializes an owned object of type `T` with `ilist,
+    std​::​forward<U>(u)`.
 
 ### X.Y.5 Assignment [indirect.assign]
 

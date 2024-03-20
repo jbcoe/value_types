@@ -3,7 +3,7 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-P3019R6
+P3019R7
 
 Working Group: Library Evolution, Library
 
@@ -752,7 +752,7 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a);
 7. _Mandates_: `T` is a complete type.
 
 8. _Effects_: `alloc` is direct-non-list-initialized with `a`. Value
-   initializes an owned object of type `T` using the specified allocator.
+   initializes an owned object of type `T`.
 
 9. _Postconditions_: `*this` is not valueless.
 
@@ -784,8 +784,7 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a, in_place_t, Us&
 15. _Mandates_: `T` is a complete type.
 
 16. _Effects_: `alloc` is direct-non-list-initialized with `a`.
-    Direct-non-list-initializes an owned object of type `T` using the specified
-    allocator with `std​::​forward<Us>(us...)`.
+    Direct-non-list-initializes an owned object of type `T` with `std​::​forward<Us>(us...)`.
 
 17. _Postconditions_: `*this` is not valueless.
 
@@ -806,7 +805,7 @@ constexpr indirect(allocator_arg_t, const Allocator& a,
 
 20. _Effects_: `alloc` is direct-non-list-initialized with `a`. If
     `other` is valueless, `*this` is valueless. Otherwise, copy constructs an
-    owned object of type `T` using the specified allocator with `*other`.
+    owned object of type `T` with `*other`.
 
 ```c++
 constexpr indirect(indirect&& other) noexcept;
@@ -823,8 +822,8 @@ constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
 22. _Effects_: `alloc` is direct-non-list-initialized with `a`. If
     `other` is valueless, `*this` is valueless. Otherwise, if `alloc ==
     other.alloc` constructs an object of type `indirect` that owns the owned
-    value of other; `other` is valueless. Otherwise constructs an object of type
-    `indirect` using the specified allocator with `*other` used as an rvalue.
+    value of other; `other` is valueless. Otherwise constructs an owned object of type
+    `T` with `*other` used as an rvalue.
 
 23. _[Note: The use of this function may require that `T` be a complete type
     dependent on behavour of the allocator. — end note]_
@@ -1230,7 +1229,7 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a);
 7. _Mandates_: `T` is a complete type.
 
 8. _Effects_: `alloc` is direct-non-list-initialized with `a`. Value
-initializes an owned object of type `T` using the specified allocator.
+initializes an owned object of type `T`.
 
 9. _Postconditions_: `*this` is not valueless.
 
@@ -1263,8 +1262,7 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
 14. _Mandates_: `T` is a complete type.
 
 15. _Effects_: `alloc` is direct-non-list-initialized with `a`.
-    Direct-non-list-initializes an owned object of type `U` using the specified
-    allocator with `std​::​forward<Ts>(ts...)`.
+    Direct-non-list-initializes an owned object of type `U` with `std​::​forward<Ts>(ts...)`.
 
 16. _Postconditions_: `*this` is not valueless.  The owned instance targets an
   object of type `U` constructed  with `std::forward<Ts>(ts)...`.
@@ -1287,7 +1285,7 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
 19. _Effects_: `alloc` is direct-non-list-initialized with `alloc`. If
     `other` is valueless, `*this` is valueless. Otherwise, copy constructs an
     owned object of type `U`, where `U` is the type of the owned object in
-    `other`, using the specified allocator with the owned object in `other`.
+    `other`, with the owned object in `other`.
 
 ```c++
 constexpr polymorphic(polymorphic&& other) noexcept;
@@ -1301,14 +1299,14 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       polymorphic&& other) noexcept(allocator_traits::is_always_equal::value);
 ```
 
-21. _Effects_: `alloc` is direct-non-list-initialized with `a`. If
-    `other` is valueless, `*this` is valueless. Otherwise, if `alloc ==
-    other.alloc` either constructs an object of type `polymorphic` that owns the
-    owned value of other, making `other` valueless; or, owns an object of the
-    same type constructed from the owned value of `other` using the specified
-    allocator, considering that owned value as an rvalue. Otherwise if `alloc !=
-    other.alloc`, constructs an object of type `polymorphic` using the specified
-    allocator, considering that owned value as an rvalue.
+21. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
+    valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc` either
+    constructs an object of type `polymorphic` that owns the owned value of
+    other, making `other` valueless; or, owns an object of the same type
+    constructed from the owned value of `other` using the specified allocator,
+    considering that owned value as an rvalue. Otherwise if `alloc !=
+    other.alloc`, constructs an object of type `polymorphic`, considering that
+    owned value as an rvalue.
 
   _[Drafting note: The above is intended to permit a small-buffer-optimization
   and handle the case where allocators compare equal but we do not want to swap
