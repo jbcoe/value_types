@@ -1108,8 +1108,8 @@ needed.
 
 3. Constructing an owned object using an allocator `a` and arguments `args...`
 means calling `allocator_traits<allocator_type>::rebind_traits<U>::construct(a,
-p, args...)` where `p is a pointer obtained by calling
-allocator_traits<allocator_type>::rebind_traits<U>::allocate` and `U` is either
+p, args...)` where `p` is a pointer obtained by calling
+`allocator_traits<allocator_type>::rebind_traits<U>::allocate` and `U` is either
 `allocator_type::value_type` or an internal type used by the polymorphic value.
 
 4. Copy constructors for a polymorphic value obtain an allocator by calling
