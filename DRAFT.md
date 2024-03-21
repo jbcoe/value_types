@@ -866,7 +866,7 @@ constexpr indirect& operator=(const indirect& other);
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
   If `other` is valueless, `*this` becomes valueless and the owned object in
-  this, if any, is destroyed using `allocator_traits<allocator_type>::destroy`
+  `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy`
   and then the storage is deallocated.
 
   Otherwise, if `alloc == other.alloc` and `this` is not valueless, the owned
