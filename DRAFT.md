@@ -675,7 +675,7 @@ class indirect {
   constexpr indirect(allocator_arg_t, const Allocator& a,
                      const indirect& other);
 
-  constexpr indirect(indirect&& other) noexcept(see below);
+  constexpr indirect(indirect&& other) noexcept;
 
   constexpr indirect(allocator_arg_t, const Allocator& a,
                      indirect&& other) noexcept(see below);
@@ -834,14 +834,14 @@ constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
   noexcept(allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-22. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
+22. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
+    is `false`, `T` is a complete type.
+ 
+23. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
     valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc`
     constructs an object of type `indirect` that owns the owned object of other;
     `other` is valueless. Otherwise, constructs an owned object of type `T` with
     `*std::move(other)`, using the allocator `alloc`.
-
-23. _[Note: The use of this function may require that `T` be a complete type
-    dependent on behavior of the allocator. — end note]_
 
 #### X.Y.4 Destructor [indirect.dtor]
 
@@ -865,7 +865,7 @@ constexpr indirect& operator=(const indirect& other);
 
 2. _Effects_: If `other == *this` then no effect.
 
-  If `allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
+  If `allocator_traits<allocator_type>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
   If `other` is valueless, `*this` becomes valueless and the owned object in
@@ -901,8 +901,11 @@ constexpr indirect& operator=(indirect&& other) noexcept(
     allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-5. _Effects_: If
-  `allocator_traits<Alloc>::propagate_on_container_move_assignment` is
+5. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
+    is `false`, `T` is a complete type.
+   
+6. _Effects_: If
+  `allocator_traits<allocator_type>::propagate_on_container_move_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
   If `other` is valueless, `*this` becomes valueless and the owned object in
@@ -922,17 +925,15 @@ constexpr indirect& operator=(indirect&& other) noexcept(
   deallocated. If the allocator needs updating, the allocator in `*this` is
   replaced with a copy of the allocator in `other`.
 
-6. _Postconditions_: `other` is valueless.
+7. _Postconditions_: `other` is valueless.
 
-7. _Returns_: A reference to `*this`.
+8. _Returns_: A reference to `*this`.
 
-8. _Remarks_: If any exception is thrown, the results of the expressions
+9. _Remarks_: If any exception is thrown, the results of the expressions
    `this->valueless_after_move()` and `other.valueless_after_move()` remain
    unchanged. If an exception is thrown during the call to `T`'s selected move
    constructor, no effect.
 
-9. _[Note: The use of this function may require that `T` be a complete type
-   dependent on behavior of the allocator. — end note]_
 
 #### X.Y.6 Observers [indirect.observers]
 
@@ -1001,12 +1002,6 @@ constexpr void swap(indirect& other) noexcept(
   swapped, and the behavior is undefined unless `(*this).get_allocator() ==
   other.get_allocator()`. _[Note: Does not call `swap` on the owned objects
   directly. --end note]_
-
-2. _[Note 2: The use of this function may require that `T` be a complete type
-dependent on behavior of the allocator. — end note]_
-
-3. _[Note 3: Exception guarantees for `swap` are intended to model the behavior
-of exception guarantees for `std::vector::swap`. — end note]_
 
 ```c++
 constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
@@ -1302,6 +1297,8 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       polymorphic&& other) noexcept(allocator_traits<Allocator>::is_always_equal::value);
 ```
 
+1. _Mandates_: `T` is a complete type.
+    
 21. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
     valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc` either
     constructs an object of type `polymorphic` that owns the owned object of
@@ -1315,10 +1312,6 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
   and handle the case where allocators compare equal but we do not want to swap
   pointers.]_
 
-22. _[Note: The use of this function may require that `T` be a complete type
-    dependent on behavior of the allocator. — end note]_
-
-
 #### X.Z.4 Destructor [polymorphic.dtor]
 
 ```c++
@@ -1328,7 +1321,7 @@ constexpr ~polymorphic();
 1. _Mandates_: `T` is a complete type.
 
 2. _Effects_: If `*this` is not valueless, destroys the owned object using
-  `allocator_traits<allocator_type>::rebind_traits::destroy` and then the
+  `allocator_traits<allocator_type>::destroy` and then the
   storage is deallocated.
 
 #### X.Z.5 Assignment [polymorphic.assign]
@@ -1341,16 +1334,16 @@ constexpr polymorphic& operator=(const polymorphic& other);
 
 2. _Effects_: If `other == *this` then no effect.
 
-  If `allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
+  If `allocator_traits<alloctor_type>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
   If `other` is not valueless, a new owned object is constructed in `*this` using
-  `allocator_traits<allocator_type>::rebind_traits::construct` with the owned
+  `allocator_traits<allocator_type>::construct` with the owned
   object from `other` as the argument, using either the allocator in `*this` or
   the allocator in `other` if the allocator needs updating.
 
   The previous owned object in `*this`, if any, is destroyed using
-  `allocator_traits<allocator_type>::rebind_traits::destroy` and then the
+  `allocator_traits<allocator_type>::destroy` and then the
   storage is deallocated.
 
   If the allocator needs updating, the allocator in `this` is replaced with a
@@ -1368,37 +1361,38 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
     allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-5. _Effects_: If `other == *this` then no effect.
+5. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
+    is `false`, `T` is a complete type.
+    
+6. _Effects_: If `other == *this` then no effect.
 
-  If `allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
+  If `allocator_traits<allocator_type>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
   If `alloc == other.alloc`, swaps the owned objects in `*this` and `other`; the
   owned object in `other`, if any, is then destroyed using
-  `allocator_traits<allocator_type>::rebind_traits::destroy` and then the
+  `allocator_traits<allocator_type>::destroy` and then the
   storage is deallocated.
 
   Otherwise, if `alloc != other.alloc`; if `other` is not valueless, a new owned
   object is constructed in `*this` using
-  `allocator_traits<allocator_type>::rebind_traits::construct` with the owned
+  `allocator_traits<allocator_type>::construct` with the owned
   object from `other` as the argument as an rvalue, using either the allocator
   in `*this` or the allocator in `other` if the allocator needs updating. The
   previous owned object in `*this`, if any, is destroyed using
-  `allocator_traits<allocator_type>::rebind_traits::destroy` and then the
+  `allocator_traits<allocator_type>::destroy` and then the
   storage is deallocated.
 
   If the allocator needs updating, the allocator in `this` is replaced with a
   copy of the allocator in `other`.
 
-6. _Returns_: A reference to `*this`.
+7. _Returns_: A reference to `*this`.
 
-7. _Remarks_: If any exception is thrown, the results of the expressions
+8. _Remarks_: If any exception is thrown, the results of the expressions
    `this->valueless_after_move()` and `other.valueless_after_move()` remain
    unchanged. If an exception is thrown during the call to the owned object's
    selected move constructor, no effect.
 
-8. _[Note: The use of this function may require that `T` be a complete type
-    dependent on behavior of the allocator. — end note]_
 
 #### X.Z.6 Observers [polymorphic.observers]
 
