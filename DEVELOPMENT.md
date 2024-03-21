@@ -3,35 +3,49 @@
 ## Using pre-commit for git hooks
 
 This repository uses the Python `pre-commit` library to manage git hook run as
-part of the commit process.  Use the following steps to install a virtual
-environment with pre-commmit set up, and then use precommit to install git hooks
-it to your local repository.
+part of the commit process.  Use the following steps from the project root to
+install a virtual environment with pre-commmit set up, and then use precommit to
+install git hooks it to your local repository:
 
 ```bash
-cd <project root>
 python3 -m venv .venv           # Create a Python virtual env
 source ./.venv/bin/activate     # Activate the virtual env for bash by source.
 pip install -r requirements.txt # Install latest requirements including pre-commit
 pre-commit install              # Use pre-commit to install git hooks into the working repository.
 ```
 
-## Building with CMake
+## Building and testing
 
-To build the repository with CMake use the following steps
+### Building with CMake
+
+To build the repository with CMake use the following steps from the project root:
+
 ```bash
-cd <project root>
-mkdir build          # Make a build directory
-cd build             # Switch into the build directory
-cmake ../            # Generate build system specified in root with cmake
-cmake --build ./     # Build the underlying build system via CMake
+mkdir build             # Make a build directory
+cmake -Bbuild           # Generate build system specified in build directory with cmake
+cmake --build build     # Build the underlying build system via CMake
+ctest --test-dir build  # Run the tests
 ```
+
+To install CMake see: https://cmake.org/download/.
+
+### Building with Bazel
+
+To build the repository with Bazel use the following steps from the project root:
+
+```bash
+bazel build //...       # Build the project
+bazel test //...        # Run the tests
+```
+
+To install Bazel see https://bazel.build/install.
 
 ## Including value_types to your own project
 
 To use the value types code in your own CMake project then you can pull
 the project in as a dependency via CMake's FetchContent module as follows:
 
-```
+```txt
 FetchContent_Declare(
     value_types
     GIT_REPOSITORY https://github.com/jbcoe/value_types
