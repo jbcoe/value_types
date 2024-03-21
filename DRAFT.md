@@ -1139,7 +1139,7 @@ or (64.3) `allocator_traits<allocator_type>::propagate_on_container_swap::value`
 is true within the implementation of the corresponding polymorphic value
 operation.
 
-4. A program that instantiates the definition of polymorphic for a non-object
+5. A program that instantiates the definition of polymorphic for a non-object
    type, an array type, a specialization of `in_place_type_t` or a cv-qualified
    type is ill-formed.
 
