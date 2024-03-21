@@ -863,7 +863,7 @@ constexpr indirect& operator=(const indirect& other);
 
 1. _Mandates_: `T` is a complete type.
 
-2. _Effects_: If `other == *this` then no effect.
+2. _Effects_: If `addressof(other) == this`, there are no effects.
 
   If `allocator_traits<allocator_type>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
@@ -904,7 +904,9 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 5. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
     is `false`, `T` is a complete type.
 
-6. _Effects_: If
+6. _Effects_: If `addressof(other) == this`, there are no effects.
+
+  If
   `allocator_traits<allocator_type>::propagate_on_container_move_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
@@ -1166,7 +1168,7 @@ class polymorphic {
   constexpr polymorphic(allocator_arg_t, const Allocator& a,
                         const polymorphic& other);
 
-  constexpr polymorphic(polymorphic&& other) noexcept(see below);
+  constexpr polymorphic(polymorphic&& other) noexcept;
 
   constexpr polymorphic(allocator_arg_t, const Allocator& a,
                         polymorphic&& other) noexcept(see below);
@@ -1332,7 +1334,7 @@ constexpr polymorphic& operator=(const polymorphic& other);
 
 1. _Mandates_: `T` is a complete type.
 
-2. _Effects_: If `other == *this` then no effect.
+2. _Effects_: If `addressof(other) == this`, there are no effects.
 
   If `allocator_traits<alloctor_type>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
@@ -1364,9 +1366,9 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
 5. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
     is `false`, `T` is a complete type.
 
-6. _Effects_: If `other == *this` then no effect.
+6. _Effects_: If `addressof(other) == this`, there are no effects.
 
-  If `allocator_traits<allocator_type>::propagate_on_container_copy_assignment` is
+  If `allocator_traits<allocator_type>::propagate_on_container_move_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
   If `alloc == other.alloc`, swaps the owned objects in `*this` and `other`; the
@@ -1444,8 +1446,8 @@ constexpr void swap(polymorphic& other) noexcept(
   `allocator_traits<allocator_type>::propagate_on_container_swap::value` is
   `true`, then `allocator_type` shall meet the _Cpp17Swappable_ requirements and
   the allocators of `*this` and `other` are exchanged by calling `swap` as
-  described in [swappable.requirements]. Otherwise, the allocators are swapped,
-  and the behavior is undefined unless `(*this).get_allocator() ==
+  described in [swappable.requirements]. Otherwise, the allocators are not
+  swapped, and the behavior is undefined unless `(*this).get_allocator() ==
   other.get_allocator()`. _[Note: Does not call `swap` on the owned objects
   directly. --end note]_
 
