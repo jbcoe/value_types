@@ -1390,7 +1390,7 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
   object is constructed in `this` using
   `allocator_traits<allocator_type>::rebind_traits::construct` with the owned
   object from `other` as the argument as an rvalue, using either the allocator
-  in `this` or the allocator in `other` if the allocator needs updating. The
+  in `*this` or the allocator in `other` if the allocator needs updating. The
   previous owned object in `*this`, if any, is destroyed using
   `allocator_traits<allocator_type>::rebind_traits::destroy` and then the
   storage is deallocated.
