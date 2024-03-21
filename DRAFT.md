@@ -1352,7 +1352,7 @@ constexpr polymorphic& operator=(const polymorphic& other);
   If `allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
-  If `other` is not valueless, a new owned object is constructed in `this` using
+  If `other` is not valueless, a new owned object is constructed in `*this` using
   `allocator_traits<allocator_type>::rebind_traits::construct` with the owned
   object from `other` as the argument, using either the allocator in `this` or
   the allocator in `other` if the allocator needs updating.
