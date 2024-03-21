@@ -987,7 +987,7 @@ constexpr allocator_type get_allocator() const noexcept;
 ```c++
 constexpr void swap(indirect& other) noexcept(
   allocator_traits::propagate_on_container_swap::value
-  || allocator_traits::is_always_equal::value);
+  || allocator_traits<Allocator>::is_always_equal::value);
 ```
 
 1. _Effects_: Swaps the states of `*this` and `other`, exchanging owned objects
