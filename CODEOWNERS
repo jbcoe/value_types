@@ -7,6 +7,5 @@ CMakeLists.txt @twon
 # Bazel
 *.bazel @jbcoe
 
-# Formal wording
-DRAFT.md @nbx8 @jbcoe @twon
-DRAFT_COROLLARY.md @nbx8 @jbcoe @twon
+# Documents
+*.md @jbcoe @twon @nbx8
