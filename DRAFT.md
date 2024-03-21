@@ -877,7 +877,7 @@ constexpr indirect& operator=(const indirect& other);
   `allocator_traits<allocator_type>::construct` with the owned object from
   `other` as the argument, using either the allocator in `this` or the allocator
   in `other` if the allocator needs updating. The previously owned object in
-  this, if any, is destroyed using `allocator_traits<allocator_type>::destroy`
+  `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy`
   and then the storage is deallocated.
 
   If the allocator needs updating, the allocator in `this` is replaced with a
