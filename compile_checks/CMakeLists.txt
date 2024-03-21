@@ -46,20 +46,6 @@ if(NOT MSVC)
 endif()
 
 vt_add_library(
-    NAME indirect_pimpl
-    ALIAS value_types::polymorphic_inline_vtable_consteval
-)
-target_sources(polymorphic_inline_vtable_consteval
-    PRIVATE
-        polymorphic_consteval.cc
-)
-target_link_libraries(polymorphic_inline_vtable_consteval
-    PRIVATE
-        polymorphic_inline_vtable
-        common_compiler_settings
-)
-
-vt_add_library(
     NAME polymorphic_pimpl
     ALIAS value_types::polymorphic_pimpl
 )
