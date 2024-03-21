@@ -178,7 +178,7 @@ F. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
 
 ```c++
 template<class I, class... Us>
-explicit constexpr indirect(in_place_t, std::initializer_list<I> ilist,
+explicit constexpr indirect(in_place_t, initializer_list<I> ilist,
                             Us&&... us);
 ```
 
