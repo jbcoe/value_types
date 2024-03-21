@@ -102,8 +102,7 @@ C++14 implementations can be tried out in compiler explorer by using the include
 #include <https://raw.githubusercontent.com/jbcoe/value_types/main/polymorphic_cxx14.h>
 ```
 
-Or included in your project by including the headers `indirect_cxx14.h` and
-`polymorphic_cxx14.h` into your project.
+or by including headers `indirect_cxx14.h` and `polymorphic_cxx14.h` into your project.
 
 We duplicate some code between the C++20 and C++14 implementations so that
 single-file includes work.
