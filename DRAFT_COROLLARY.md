@@ -220,7 +220,7 @@ A. _Constraints_: `is_constructible_v<T, U>` is true.
 B. _Mandates_: `T` is a complete type.
 
 
-C. _Effects_: If `this` is valueless then equivalent to
+C. _Effects_: If `*this` is valueless then equivalent to
    `*this = indirect<T>(std::forward<U>(u))`.
    Otherwise, equivalent to `**this = std::forward<U>(u)`.
 
