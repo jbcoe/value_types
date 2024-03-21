@@ -1166,7 +1166,7 @@ class polymorphic {
   constexpr polymorphic(allocator_arg_t, const Allocator& a,
                         const polymorphic& other);
 
-  constexpr polymorphic(polymorphic&& other) noexcept(see below);
+  constexpr polymorphic(polymorphic&& other) noexcept;
 
   constexpr polymorphic(allocator_arg_t, const Allocator& a,
                         polymorphic&& other) noexcept(see below);
