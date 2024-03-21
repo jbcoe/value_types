@@ -903,7 +903,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
   If `other` is valueless, `*this` becomes valueless and the owned object in
-  this, if any, is destroyed using `allocator_traits<allocator_type>::destroy`
+  `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy`
   and then the storage is deallocated.
 
   Otherwise, if `alloc == other.alloc`, swaps the owned objects in `this` and
