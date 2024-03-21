@@ -911,7 +911,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
   `allocator_traits<allocator_type>::destroy` and then the storage is deallocated.
 
   Otherwise, if `alloc != other.alloc` or `this` is valueless, a new owned
-  object is constructed in `this` using
+  object is constructed in `*this` using
   `allocator_traits<allocator_type>::construct` with the owned object from
   `other` as the argument as an rvalue, using either the allocator in `this` or
   the allocator in `other` if the allocator needs updating. The previous owned
