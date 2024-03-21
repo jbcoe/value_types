@@ -1307,7 +1307,7 @@ constexpr polymorphic(polymorphic&& other) noexcept;
 
 ```c++
 constexpr polymorphic(allocator_arg_t, const Allocator& a,
-                      polymorphic&& other) noexcept(allocator_traits::is_always_equal::value);
+                      polymorphic&& other) noexcept(allocator_traits<Allocator>::is_always_equal::value);
 ```
 
 21. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
