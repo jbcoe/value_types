@@ -24,13 +24,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <cassert>
 #include <compare>
 #include <concepts>
+#include <initializer_list>
 #include <memory>
 #include <type_traits>
 #include <utility>
-
-#if __has_include(<format>)
-#include <format>
-#endif
 
 namespace xyz {
 
@@ -112,28 +109,52 @@ class XYZ_TRIVIALLY_RELOCATABLE_IF(
              std::is_copy_constructible_v<TT>)
       : indirect(std::allocator_arg, A{}) {}
 
-  // The template type TT defers the constraint evaluation until the constructor
-  // is instantiated.
-  template <class U, class... Us, class TT = T>
-  explicit constexpr indirect(std::allocator_arg_t, const A& alloc, U&& u,
-                              Us&&... us)
-    requires(std::constructible_from<T, U &&, Us && ...> &&
-             !std::is_same_v<std::remove_cvref_t<U>, indirect> &&
-             std::is_copy_constructible_v<TT>)
+  //  The template type TT defers the constraint evaluation until the
+  //  constructor is instantiated.
+  template <class U = T, class TT = T>
+  explicit constexpr indirect(std::allocator_arg_t, const A& alloc, U&& u)
+    requires(std::is_same_v<TT, std::remove_cvref_t<U>> &&
+             std::is_default_constructible_v<TT> &&
+             std::is_copy_constructible_v<TT> &&
+             not std::is_same_v<std::remove_cvref_t<U>, std::in_place_t> &&
+             not std::is_same_v<std::remove_cvref_t<U>, indirect>)
       : alloc_(alloc) {
-    p_ = construct_from(alloc_, std::forward<U>(u), std::forward<Us>(us)...);
+    p_ = construct_from(alloc_, std::forward<U>(u));
+  }
+
+  //  The template type TT defers the constraint evaluation until the
+  //  constructor is instantiated.
+  template <class U = T, class TT = T>
+  explicit constexpr indirect(U&& u)
+    requires(std::is_same_v<TT, std::remove_cvref_t<U>> &&
+             std::is_default_constructible_v<TT> &&
+             std::is_copy_constructible_v<TT> &&
+             not std::is_same_v<std::remove_cvref_t<U>, std::in_place_t> &&
+             not std::is_same_v<std::remove_cvref_t<U>, indirect>)
+      : indirect(std::allocator_arg, A{}, std::in_place_t{},
+                 std::forward<U>(u)) {}
+
+  //  The template type TT defers the constraint evaluation until the
+  //  constructor is instantiated.
+  template <class U = T, class TT = T>
+  explicit constexpr indirect(std::allocator_arg_t, const A& alloc,
+                              std::in_place_t, U&& u)
+    requires(std::is_same_v<TT, std::remove_cvref_t<U>> &&
+             std::is_default_constructible_v<TT> &&
+             std::is_copy_constructible_v<TT> &&
+             not std::is_same_v<std::remove_cvref_t<U>, indirect>)
+      : alloc_(alloc) {
+    p_ = construct_from(alloc_, std::forward<U>(u));
   }
 
   // The template type TT defers the constraint evaluation until the constructor
   // is instantiated.
-  template <class U, class... Us, class TT = T>
-  explicit constexpr indirect(U&& u, Us&&... us)
-    requires(std::constructible_from<T, U &&, Us && ...> &&
+  template <class... Us, class TT = T>
+  explicit constexpr indirect(std::in_place_t, Us&&... us)
+    requires(std::constructible_from<T, Us && ...> &&
              std::is_default_constructible_v<A> &&
-             !std::is_same_v<std::remove_cvref_t<U>, indirect> &&
-             !std::is_same_v<std::remove_cvref_t<U>, std::allocator_arg_t> &&
              std::is_copy_constructible_v<TT>)
-      : indirect(std::allocator_arg, A{}, std::forward<U>(u),
+      : indirect(std::allocator_arg, A{}, std::in_place,
                  std::forward<Us>(us)...) {}
 
   constexpr indirect(std::allocator_arg_t, const A& alloc,
@@ -144,6 +165,40 @@ class XYZ_TRIVIALLY_RELOCATABLE_IF(
       return;
     }
     p_ = construct_from(alloc_, *other);
+  }
+
+  // The template type TT defers the constraint evaluation until the constructor
+  // is instantiated.
+  template <class... Us, class TT = T>
+  explicit constexpr indirect(std::allocator_arg_t, const A& alloc,
+                              std::in_place_t, Us&&... us)
+    requires(std::constructible_from<T, Us && ...> &&
+             std::is_copy_constructible_v<TT>)
+      : alloc_(alloc) {
+    p_ = construct_from(alloc_, std::forward<Us>(us)...);
+  }
+
+  // The template type TT defers the constraint evaluation until the constructor
+  // is instantiated.
+  template <class U = T, class TT = T, class... Us>
+  explicit constexpr indirect(std::in_place_t, std::initializer_list<U> ilist,
+                              Us&&... us)
+    requires(std::is_default_constructible_v<A> &&
+             std::is_constructible_v<TT, std::initializer_list<U>, Us...> &&
+             std::is_copy_constructible_v<TT>)
+      : indirect(std::allocator_arg, A{}, std::in_place, ilist,
+                 std::forward<Us>(us)...) {}
+
+  // The template type TT defers the constraint evaluation until the constructor
+  // is instantiated.
+  template <class U = T, class TT = T, class... Us>
+  explicit constexpr indirect(std::allocator_arg_t, const A& alloc,
+                              std::in_place_t, std::initializer_list<U> ilist,
+                              Us&&... us)
+    requires(std::is_constructible_v<TT, std::initializer_list<U>, Us...> &&
+             std::is_copy_constructible_v<TT>)
+      : alloc_(alloc) {
+    p_ = construct_from(alloc_, ilist, std::forward<Us>(us)...);
   }
 
   constexpr indirect(const indirect& other)
@@ -192,9 +247,7 @@ class XYZ_TRIVIALLY_RELOCATABLE_IF(
     } else {
       if (std::is_copy_assignable_v<T> && !valueless_after_move() &&
           alloc_ == other.alloc_) {
-        T tmp(*other);
-        using std::swap;
-        swap(tmp, *p_);
+        *p_ = *other;
       } else {
         // Constructing a new object could throw so we need to defer resetting
         // or updating allocators until this is done.
@@ -335,17 +388,6 @@ class XYZ_TRIVIALLY_RELOCATABLE_IF(
   }
 
   template <class U>
-  friend constexpr bool operator==(
-      const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs == *rhs))
-    requires(!is_indirect_v<U>)
-  {
-    if (rhs.valueless_after_move()) {
-      return false;
-    }
-    return lhs == *rhs;
-  }
-
-  template <class U>
   friend constexpr auto operator<=>(const indirect<T, A>& lhs,
                                     const U& rhs) noexcept(noexcept(*lhs <=>
                                                                     rhs))
@@ -356,18 +398,6 @@ class XYZ_TRIVIALLY_RELOCATABLE_IF(
       return false <=> true;
     }
     return *lhs <=> rhs;
-  }
-
-  template <class U>
-  friend constexpr auto operator<=>(
-      const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs <=> *rhs))
-      -> std::compare_three_way_result_t<T, U>
-    requires(!is_indirect_v<U>)
-  {
-    if (rhs.valueless_after_move()) {
-      return true <=> false;
-    }
-    return lhs <=> *rhs;
   }
 
  private:
@@ -411,8 +441,11 @@ concept is_hashable = requires(T t) { std::hash<T>{}(t); };
 template <typename Value>
 indirect(Value) -> indirect<Value>;
 
+template <typename Value>
+indirect(std::in_place_t, Value) -> indirect<Value>;
+
 template <typename Alloc, typename Value>
-indirect(std::allocator_arg_t, Alloc, Value) -> indirect<
+indirect(std::allocator_arg_t, Alloc, std::in_place_t, Value) -> indirect<
     Value, typename std::allocator_traits<Alloc>::template rebind_alloc<Value>>;
 
 }  // namespace xyz

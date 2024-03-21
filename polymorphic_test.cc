@@ -96,15 +96,78 @@ TEST(PolymorphicTraitsTest, DefaultConstructible) {
       "");
 }
 
-TEST(PolymorphicTest, ValueAccessFromInPlaceConstructedObject) {
-  xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
-  EXPECT_EQ(a->value(), 42);
+TEST(PolymorphicTest, DefaultConstructor) {
+  xyz::polymorphic<Derived> p;
+  EXPECT_EQ(p->value(), 0);
 }
 
-TEST(PolymorphicTest, ValueAccessFromDefaultConstructedObject) {
-  xyz::polymorphic<Derived> a;
-  EXPECT_EQ(a->value(), 0);
+TEST(PolymorphicTest, AllocatorExtendedDefaultConstructor) {
+  xyz::TaggedAllocator<Derived> a(42);
+  xyz::polymorphic<Derived, xyz::TaggedAllocator<Derived>> p(std::allocator_arg,
+                                                             a);
+  EXPECT_EQ(p->value(), 0);
+  EXPECT_EQ(p.get_allocator(), a);
 }
+
+#ifdef XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS
+TEST(PolymorphicTest, SingleLValueConstructor) {
+  Derived d(42);
+  xyz::polymorphic<Base> p(d);
+  EXPECT_EQ(p->value(), 42);
+}
+
+TEST(PolymorphicTest, AllocatorExtendedSingleLValueConstructor) {
+  xyz::TaggedAllocator<Base> a(42);
+  Derived d(42);
+  xyz::polymorphic<Base, xyz::TaggedAllocator<Base>> p(std::allocator_arg, a,
+                                                       d);
+  EXPECT_EQ(p->value(), 42);
+  EXPECT_EQ(p.get_allocator(), a);
+}
+
+TEST(PolymorphicTest, SingleRValueConstructor) {
+  xyz::polymorphic<Base> p(Derived(42));
+  EXPECT_EQ(p->value(), 42);
+}
+
+TEST(PolymorphicTest, AllocatorExtendedSingleRValueConstructor) {
+  xyz::TaggedAllocator<Base> a(42);
+  xyz::polymorphic<Base, xyz::TaggedAllocator<Base>> p(std::allocator_arg, a,
+                                                       Derived(42));
+  EXPECT_EQ(p->value(), 42);
+  EXPECT_EQ(p.get_allocator(), a);
+}
+#endif  // XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS
+
+TEST(PolymorphicTest, InPlaceConstructor) {
+  xyz::polymorphic<Base> p(xyz::in_place_type_t<Derived>{}, 42);
+  EXPECT_EQ(p->value(), 42);
+}
+
+TEST(PolymorphicTest, AllocatorExtendedInPlaceConstructor) {
+  xyz::TaggedAllocator<Base> a(42);
+  xyz::polymorphic<Base, xyz::TaggedAllocator<Base>> p(
+      std::allocator_arg, a, xyz::in_place_type_t<Derived>{}, 42);
+  EXPECT_EQ(p->value(), 42);
+  EXPECT_EQ(p.get_allocator(), a);
+}
+
+#ifdef XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS
+TEST(PolymorphicTest, InitializerListConstructor) {
+  xyz::polymorphic<std::vector<int>> i(xyz::in_place_type_t<std::vector<int>>{},
+                                       {10, 11});
+  EXPECT_EQ(i->size(), 2);
+}
+
+TEST(PolymorphicTest, AllocatorExtendedInitializerListConstructor) {
+  xyz::TaggedAllocator<std::vector<int>> a(42);
+  xyz::polymorphic<std::vector<int>, xyz::TaggedAllocator<std::vector<int>>> p(
+      std::allocator_arg, a, xyz::in_place_type_t<std::vector<int>>{},
+      {10, 11});
+  EXPECT_EQ(p->size(), 2);
+  EXPECT_EQ(p.get_allocator(), a);
+}
+#endif  // XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS
 
 TEST(PolymorphicTest, CopiesAreDistinct) {
   xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);

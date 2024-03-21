@@ -22,9 +22,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define XYZ_POLYMORPHIC_H_
 
 #include <cassert>
+#include <initializer_list>
 #include <memory>
 #include <type_traits>
 #include <utility>
+
+#ifndef XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS
+#define XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS 1
+#endif  // XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS
 
 #ifndef XYZ_IN_PLACE_TYPE_DEFINED
 #define XYZ_IN_PLACE_TYPE_DEFINED
@@ -195,6 +200,22 @@ class XYZ_TRIVIALLY_RELOCATABLE_IF(
   using allocator_traits = std::allocator_traits<A>;
   using alloc_base = detail::empty_base_optimization<A>;
 
+  template <class U, class... Ts>
+  cblock_t* create_control_block(Ts&&... ts) const {
+    using cb_allocator = typename std::allocator_traits<
+        A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
+    cb_allocator cb_alloc(alloc_base::get());
+    using cb_alloc_traits = std::allocator_traits<cb_allocator>;
+    auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
+    try {
+      cb_alloc_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
+      return mem;
+    } catch (...) {
+      cb_alloc_traits::deallocate(cb_alloc, mem, 1);
+      throw;
+    }
+  }
+
  public:
   using value_type = T;
   using allocator_type = A;
@@ -205,18 +226,7 @@ class XYZ_TRIVIALLY_RELOCATABLE_IF(
             typename std::enable_if<std::is_default_constructible<TT>::value,
                                     int>::type = 0>
   polymorphic(std::allocator_arg_t, const A& alloc) : alloc_base(alloc) {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
-    using cb_traits = std::allocator_traits<cb_allocator>;
-    cb_allocator cb_alloc(alloc_base::get());
-    auto mem = cb_traits::allocate(cb_alloc, 1);
-    try {
-      cb_traits::construct(cb_alloc, mem);
-      cb_ = mem;
-    } catch (...) {
-      cb_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
+    cb_ = create_control_block<T>();
   }
 
   template <typename TT = T,
@@ -237,19 +247,38 @@ class XYZ_TRIVIALLY_RELOCATABLE_IF(
   polymorphic(std::allocator_arg_t, const A& alloc, in_place_type_t<U>,
               Ts&&... ts)
       : alloc_base(alloc) {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
-    using cb_traits = std::allocator_traits<cb_allocator>;
-    cb_allocator cb_alloc(alloc_base::get());
-    auto mem = cb_traits::allocate(cb_alloc, 1);
-    try {
-      cb_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
-      cb_ = mem;
-    } catch (...) {
-      cb_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
+    cb_ = create_control_block<U>(std::forward<Ts>(ts)...);
   }
+
+  template <
+      class U, class I, class... Ts,
+      typename std::enable_if<
+          std::is_constructible<U, std::initializer_list<I>, Ts&&...>::value,
+          int>::type = 0,
+      typename std::enable_if<std::is_copy_constructible<U>::value, int>::type =
+          0,
+      typename std::enable_if<std::is_base_of<T, U>::value, int>::type = 0>
+  polymorphic(std::allocator_arg_t, const A& alloc, in_place_type_t<U>,
+              std::initializer_list<I> ilist, Ts&&... ts)
+      : alloc_base(alloc) {
+    cb_ = create_control_block<T>(ilist, std::forward<Ts>(ts)...);
+  }
+
+  template <
+      class U, class I, class... Ts,
+      typename std::enable_if<
+          std::is_constructible<U, std::initializer_list<I>, Ts&&...>::value,
+          int>::type = 0,
+      typename std::enable_if<std::is_copy_constructible<U>::value, int>::type =
+          0,
+      typename std::enable_if<std::is_base_of<T, U>::value, int>::type = 0,
+      typename AA = A,
+      typename std::enable_if<std::is_default_constructible<AA>::value,
+                              int>::type = 0>
+  explicit polymorphic(in_place_type_t<U>, std::initializer_list<I> ilist,
+                       Ts&&... ts)
+      : polymorphic(std::allocator_arg, A(), in_place_type_t<U>{}, ilist,
+                    std::forward<Ts>(ts)...) {}
 
   template <
       class U, class... Ts,
@@ -264,6 +293,50 @@ class XYZ_TRIVIALLY_RELOCATABLE_IF(
   explicit polymorphic(in_place_type_t<U>, Ts&&... ts)
       : polymorphic(std::allocator_arg, A(), in_place_type_t<U>{},
                     std::forward<Ts>(ts)...) {}
+
+  template <
+      class U,
+      typename std::enable_if<
+          !std::is_same<polymorphic,
+                        typename std::remove_cv<typename std::remove_reference<
+                            U>::type>::type>::value,
+          int>::type = 0,
+      typename std::enable_if<
+          std::is_copy_constructible<typename std::remove_cv<
+              typename std::remove_reference<U>::type>::type>::value,
+          int>::type = 0,
+      typename std::enable_if<
+          std::is_base_of<
+              T, typename std::remove_cv<
+                     typename std::remove_reference<U>::type>::type>::value,
+          int>::type = 0>
+  explicit polymorphic(std::allocator_arg_t, const A& alloc, U&& u)
+      : polymorphic(std::allocator_arg_t{}, alloc,
+                    in_place_type_t<typename std::remove_cv<
+                        typename std::remove_reference<U>::type>::type>{},
+                    std::forward<U>(u)) {}
+
+  template <
+      class U,
+      typename std::enable_if<
+          !std::is_same<polymorphic,
+                        typename std::remove_cv<typename std::remove_reference<
+                            U>::type>::type>::value,
+          int>::type = 0,
+      typename std::enable_if<
+          std::is_copy_constructible<typename std::remove_cv<
+              typename std::remove_reference<U>::type>::type>::value,
+          int>::type = 0,
+      typename std::enable_if<
+          std::is_base_of<
+              T, typename std::remove_cv<
+                     typename std::remove_reference<U>::type>::type>::value,
+          int>::type = 0>
+  explicit polymorphic(U&& u)
+      : polymorphic(std::allocator_arg_t{}, A{},
+                    in_place_type_t<typename std::remove_cv<
+                        typename std::remove_reference<U>::type>::type>{},
+                    std::forward<U>(u)) {}
 
   polymorphic(std::allocator_arg_t, const A& alloc, const polymorphic& other)
       : alloc_base(alloc) {

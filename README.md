@@ -4,7 +4,7 @@
 [![license][badge.license]][license] [![issues][badge.issues]][issues]
 [![pre-commit][badge.pre-commit]][pre-commit]
 
-[badge.language]: https://img.shields.io/badge/language-C%2B%2B20-yellow.svg
+[badge.language]: https://img.shields.io/badge/language-C%2B%2B14-yellow.svg
 [badge.codecov]:
     https://img.shields.io/codecov/c/github/jbcoe/value_types/master.svg?logo=codecov
 [badge.license]: https://img.shields.io/badge/license-MIT-blue.svg
@@ -12,7 +12,7 @@
 [badge.pre-commit]: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit
 
 [codecov]: https://codecov.io/gh/jbcoe/value_types
-[language]: https://en.wikipedia.org/wiki/C%2B%2B20
+[language]: https://en.wikipedia.org/wiki/C%2B%2B14
 [license]: https://en.wikipedia.org/wiki/MIT_License
 [issues]: http://github.com/jbcoe/value_types/issues
 [pre-commit]: https://github.com/pre-commit/pre-commit
@@ -102,6 +102,11 @@ C++14 implementations can be tried out in compiler explorer by using the include
 #include <https://raw.githubusercontent.com/jbcoe/value_types/main/polymorphic_cxx14.h>
 ```
 
+or by including headers `indirect_cxx14.h` and `polymorphic_cxx14.h` into your project.
+
+We duplicate some code between the C++20 and C++14 implementations so that
+single-file includes work.
+
 ## License
 
 This code is licensed under the MIT License. See [LICENSE](LICENSE) for details.
@@ -117,7 +122,7 @@ and made the null state unobservable.
 
 ## Developer Guide
 
-For building and working with the project, please see the [developer guide](docs/developer-guide.md).
+For building and working with the project, please see the [developer guide](DEVELOPMENT.md).
 
 ## GitHub codespaces
 
@@ -139,3 +144,6 @@ the dependencies required to build and test the project.
 
 * [GitHub codepsaces]
   (https://docs.github.com/en/codespaces/getting-started/deep-dive)
+
+* [ISO C++ Standard - Draft]
+  (https://eel.is/c++draft/)

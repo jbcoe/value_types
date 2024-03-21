@@ -23,8 +23,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <cassert>
 #include <concepts>
+#include <initializer_list>
 #include <memory>
 #include <utility>
+
+#ifndef XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS
+#define XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS 1
+#endif  // XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS
 
 namespace xyz {
 
@@ -73,6 +78,10 @@ class direct_control_block final : public control_block<T, A> {
 
   template <class... Ts>
   constexpr direct_control_block(Ts&&... ts) : u_(std::forward<Ts>(ts)...) {
+    control_block<T, A>::p_ = &u_;
+  }
+
+  constexpr direct_control_block(U&& u) : u_(std::move(u)) {
     control_block<T, A>::p_ = &u_;
   }
 
@@ -148,6 +157,22 @@ class XYZ_TRIVIALLY_RELOCATABLE_IF(
 
   using allocator_traits = std::allocator_traits<A>;
 
+  template <class U, class... Ts>
+  constexpr cblock_t* create_control_block(Ts&&... ts) const {
+    using cb_allocator = typename std::allocator_traits<
+        A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
+    cb_allocator cb_alloc(alloc_);
+    using cb_alloc_traits = std::allocator_traits<cb_allocator>;
+    auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
+    try {
+      cb_alloc_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
+      return mem;
+    } catch (...) {
+      cb_alloc_traits::deallocate(cb_alloc, mem, 1);
+      throw;
+    }
+  }
+
  public:
   using value_type = T;
   using allocator_type = A;
@@ -161,18 +186,7 @@ class XYZ_TRIVIALLY_RELOCATABLE_IF(
     requires(std::is_default_constructible_v<TT> &&
              std::is_copy_constructible_v<TT>)
       : alloc_(alloc) {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<detail::direct_control_block<T, T, A>>;
-    using cb_traits = std::allocator_traits<cb_allocator>;
-    cb_allocator cb_alloc(alloc_);
-    auto mem = cb_traits::allocate(cb_alloc, 1);
-    try {
-      cb_traits::construct(cb_alloc, mem);
-      cb_ = mem;
-    } catch (...) {
-      cb_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
+    cb_ = create_control_block<T>();
   }
 
   // The template type TT defers the constraint evaluation until the constructor
@@ -183,25 +197,29 @@ class XYZ_TRIVIALLY_RELOCATABLE_IF(
              std::is_copy_constructible_v<TT>)
       : polymorphic(std::allocator_arg_t{}, A{}) {}
 
+  template <class U>
+  constexpr explicit polymorphic(std::allocator_arg_t, const A& alloc, U&& u)
+    requires(not std::same_as<polymorphic, std::remove_cvref_t<U>>) &&
+            std::copy_constructible<std::remove_cvref_t<U>> &&
+            std::derived_from<std::remove_cvref_t<U>, T>
+      : alloc_(alloc) {
+    cb_ = create_control_block<std::remove_cvref_t<U>>(std::forward<U>(u));
+  }
+
+  template <class U>
+  constexpr explicit polymorphic(U&& u)
+    requires(not std::same_as<polymorphic, std::remove_cvref_t<U>>) &&
+            std::copy_constructible<std::remove_cvref_t<U>> &&
+            std::derived_from<std::remove_cvref_t<U>, T>
+      : polymorphic(std::allocator_arg_t{}, A{}, std::forward<U>(u)) {}
+
   template <class U, class... Ts>
   explicit constexpr polymorphic(std::allocator_arg_t, const A& alloc,
                                  std::in_place_type_t<U>, Ts&&... ts)
     requires std::constructible_from<U, Ts&&...> &&
-             std::copy_constructible<U> &&
-             (std::derived_from<U, T> || std::same_as<U, T>)
+             std::copy_constructible<U> && std::derived_from<U, T>
       : alloc_(alloc) {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
-    using cb_traits = std::allocator_traits<cb_allocator>;
-    cb_allocator cb_alloc(alloc_);
-    auto mem = cb_traits::allocate(cb_alloc, 1);
-    try {
-      cb_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
-      cb_ = mem;
-    } catch (...) {
-      cb_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
+    cb_ = create_control_block<U>(std::forward<Ts>(ts)...);
   }
 
   template <class U, class... Ts>
@@ -209,6 +227,24 @@ class XYZ_TRIVIALLY_RELOCATABLE_IF(
     requires std::constructible_from<U, Ts&&...> &&
              std::copy_constructible<U> && std::derived_from<U, T>
       : polymorphic(std::allocator_arg_t{}, A{}, std::in_place_type<U>,
+                    std::forward<Ts>(ts)...) {}
+
+  template <class U, class I, class... Ts>
+  explicit constexpr polymorphic(std::allocator_arg_t, const A& alloc,
+                                 std::in_place_type_t<U>,
+                                 std::initializer_list<I> ilist, Ts&&... ts)
+    requires std::constructible_from<U, std::initializer_list<I>, Ts&&...> &&
+             std::copy_constructible<U> && std::derived_from<U, T>
+      : alloc_(alloc) {
+    cb_ = create_control_block<U>(ilist, std::forward<Ts>(ts)...);
+  }
+
+  template <class U, class I, class... Ts>
+  explicit constexpr polymorphic(std::in_place_type_t<U>,
+                                 std::initializer_list<I> ilist, Ts&&... ts)
+    requires std::constructible_from<U, std::initializer_list<I>, Ts&&...> &&
+             std::copy_constructible<U> && std::derived_from<U, T>
+      : polymorphic(std::allocator_arg_t{}, A{}, std::in_place_type<U>, ilist,
                     std::forward<Ts>(ts)...) {}
 
   constexpr polymorphic(std::allocator_arg_t, const A& alloc,

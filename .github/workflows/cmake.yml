@@ -1,9 +1,12 @@
 name: CMake
 
 on:
+  schedule:
+    - cron: "0 1 * * *"
   push:
     branches: [main]
     paths-ignore:
+      - CODEOWNERS
       - requirements.txt
       - LICENSE.txt
       - .pre-commit-config.yaml
@@ -12,6 +15,7 @@ on:
   pull_request:
     branches: [main]
     paths-ignore:
+      - CODEOWNERS
       - requirements.txt
       - LICENSE.txt
       - .pre-commit-config.yaml
@@ -52,14 +56,15 @@ jobs:
               name: "Ubuntu Clang-17 + libc++",
               os: ubuntu-22.04,
               compiler:
-                {
-                  type: CLANG,
-                  version: 17,
-                  cc: "clang-17",
-                  cxx: "clang++-17",
-                  std: 20,
-                },
+                { type: CLANG, version: 17, cc: "clang-17", cxx: "clang++-17", std: 20},
               lib: "libc++17",
+            }
+          - {
+              name: "Ubuntu Clang-18 + libc++",
+              os: ubuntu-22.04,
+              compiler:
+                { type: CLANG, version: 18, cc: "clang-18", cxx: "clang++-18", std: 20},
+              lib: "libc++18",
             }
           - {
               name: "Visual Studio 2019",
@@ -72,12 +77,12 @@ jobs:
               compiler: { type: VISUAL, version: 17, cc: "cl", cxx: "cl" },
             }
           - {
-              name: "MacOS Apple Clang 14",
-              os: macos-13,
+              name: "MacOS Apple Clang 15",
+              os: macos-14,
               compiler:
                 {
                   type: APPLE_CLANG,
-                  version: "14.0",
+                  version: "15.0",
                   cc: "clang",
                   cxx: "clang++",
                   std: 20,

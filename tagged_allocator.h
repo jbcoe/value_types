@@ -18,6 +18,9 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==============================================================================*/
 
+// Based on boilerplate from:
+// https://howardhinnant.github.io/allocator_boilerplate.html
+
 #ifndef XYZ_TAGGED_ALLOCATOR_H
 #define XYZ_TAGGED_ALLOCATOR_H
 
@@ -25,6 +28,8 @@ namespace xyz {
 
 template <typename T>
 struct TaggedAllocator {
+  using value_type = T;
+
   size_t tag;
 
   TaggedAllocator(size_t tag) : tag(tag) {}
@@ -32,12 +37,18 @@ struct TaggedAllocator {
   template <typename U>
   TaggedAllocator(const TaggedAllocator<U>& other) : tag(other.tag) {}
 
-  using value_type = T;
-
   template <typename Other>
   struct rebind {
     using other = TaggedAllocator<Other>;
   };
+
+  // clang 17 and 18 seem to need the `construct` function to be explicitly
+  // defined rather than having a default picked up from allocator traits. It
+  // does nothing special.
+  template <class U, class... Args>
+  void construct(U* p, Args&&... args) {
+    ::new (p) U(std::forward<Args>(args)...);
+  }
 
   T* allocate(std::size_t n) {
     std::allocator<T> default_allocator{};
@@ -62,4 +73,4 @@ struct TaggedAllocator {
 
 }  // namespace xyz
 
-#endif  // XYZ_TAGGED_ALLOCATOR_H
+#endif  // XYZ_TAGGED_ALLOCATOR_H_
