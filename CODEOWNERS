@@ -1,3 +1,6 @@
+# Global owners
+* @jbcoe @twon
+
 # CMake
 CMakeLists.txt @twon
 
@@ -5,8 +8,5 @@ CMakeLists.txt @twon
 *.bazel @jbcoe
 
 # Formal wording
-DRAFT.md @nbx8
-DRAFT_COROLLARY.md @nbx8
-
-# Global owners
-* @jbcoe @twon
+DRAFT.md @nbx8 @jbcoe @twon
+DRAFT_COROLLARY.md @nbx8 @jbcoe @twon
