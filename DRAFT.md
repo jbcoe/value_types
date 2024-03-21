@@ -906,7 +906,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
   `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy`
   and then the storage is deallocated.
 
-  Otherwise, if `alloc == other.alloc`, swaps the owned objects in `this` and
+  Otherwise, if `alloc == other.alloc`, swaps the owned objects in `*this` and
   `other`; the owned object in `other`, if any, is then destroyed using
   `allocator_traits<allocator_type>::destroy` and then the storage is deallocated.
 
