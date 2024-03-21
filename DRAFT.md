@@ -1446,8 +1446,8 @@ constexpr void swap(polymorphic& other) noexcept(
   `allocator_traits<allocator_type>::propagate_on_container_swap::value` is
   `true`, then `allocator_type` shall meet the _Cpp17Swappable_ requirements and
   the allocators of `*this` and `other` are exchanged by calling `swap` as
-  described in [swappable.requirements]. Otherwise, the allocators are swapped,
-  and the behavior is undefined unless `(*this).get_allocator() ==
+  described in [swappable.requirements]. Otherwise, the allocators are not
+  swapped, and the behavior is undefined unless `(*this).get_allocator() ==
   other.get_allocator()`. _[Note: Does not call `swap` on the owned objects
   directly. --end note]_
 
