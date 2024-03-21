@@ -1381,7 +1381,7 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
   If `allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
-  If `alloc == other.alloc`, swaps the owned objects in `this` and `other`; the
+  If `alloc == other.alloc`, swaps the owned objects in `*this` and `other`; the
   owned object in `other`, if any, is then destroyed using
   `allocator_traits<allocator_type>::rebind_traits::destroy` and then the
   storage is deallocated.
