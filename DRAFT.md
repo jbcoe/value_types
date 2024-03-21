@@ -42,6 +42,11 @@ should not be considered in isolation.
 
 ## History
 
+### Changes in R8
+
+* Strike mandates `T` is a complete type from indirect comparison operators and
+  hash for consistency with reference wrapper.
+
 ### Changes in R7
 
 * Improve wording for assignment operators to remove ambiguity.
@@ -1016,13 +1021,11 @@ constexpr bool operator==(const indirect& lhs, const indirect<U, AA>& rhs)
 
 1. _Constraints_: `*lhs == *rhs` is well-formed.
 
-2. _Mandates_: `T` is a complete type.
-
-3. _Returns_: If `lhs` is valueless or `rhs` is valueless,
+2. _Returns_: If `lhs` is valueless or `rhs` is valueless,
   `lhs.valueless_after_move()==rhs.valueless_after_move()`; otherwise `*lhs ==
   *rhs`.
 
-4. _Remarks_: Specializations of this function template for which `*lhs == *rhs`
+3. _Remarks_: Specializations of this function template for which `*lhs == *rhs`
   is a core constant expression are constexpr functions.
 
 ```c++
@@ -1031,15 +1034,13 @@ constexpr auto operator<=>(const indirect& lhs, const indirect<U, AA>& rhs)
   noexcept(noexcept(*lhs <=> *rhs)) -> compare_three_way_result_t<T, U>;
 ```
 
-5. _Constraints_: `*lhs <=> *rhs` is well-formed.
+4. _Constraints_: `*lhs <=> *rhs` is well-formed.
 
-6. _Mandates_: `T` is a complete type.
-
-7. _Returns_: If `lhs` is valueless or `rhs` is valueless,
+5. _Returns_: If `lhs` is valueless or `rhs` is valueless,
   `!lhs.valueless_after_move() <=> !rhs.valueless_after_move()`; otherwise `*lhs
   <=> *rhs`.
 
-8. _Remarks_: Specializations of this function template for which `*lhs <=>
+6. _Remarks_: Specializations of this function template for which `*lhs <=>
   *rhs` is a core constant expression are constexpr functions.
 
 #### X.Y.9 Comparison with T [indirect.comp.with.t]
@@ -1052,11 +1053,9 @@ constexpr bool operator==(const indirect& lhs, const U& rhs)
 
 1. _Constraints_: `*lhs == rhs` is well-formed.
 
-2. _Mandates_: `T` is a complete type.
+2. _Returns_: If `lhs` is valueless, false; otherwise `*lhs == rhs`.
 
-3. _Returns_: If `lhs` is valueless, false; otherwise `*lhs == rhs`.
-
-4. _Remarks_: Specializations of this function template for which `*lhs == rhs`
+3. _Remarks_: Specializations of this function template for which `*lhs == rhs`
    is a core constant expression, are constexpr functions.
 
 ```c++
@@ -1065,13 +1064,11 @@ constexpr auto operator<=>(const indirect& lhs, const U& rhs)
   noexcept(noexcept(*lhs <=> rhs)) -> compare_three_way_result_t<T, U>;
 ```
 
-5. _Constraints_: `*lhs <=> rhs` is well-formed.
+4. _Constraints_: `*lhs <=> rhs` is well-formed.
 
-6. _Mandates_: `T` is a complete type.
+5. _Returns_: If `rhs` is valueless, `false <=> true`; otherwise `*lhs <=> rhs`.
 
-7. _Returns_: If `rhs` is valueless, `false <=> true`; otherwise `*lhs <=> rhs`.
-
-8. _Remarks_: Specializations of this function template for which `*lhs <=> rhs`
+6. _Remarks_: Specializations of this function template for which `*lhs <=> rhs`
    is a core constant expression, are constexpr functions.
 
 
@@ -1088,8 +1085,6 @@ of type `indirect<T, Alloc>`, then `hash<indirect<T, Alloc>>()(i)` evaluates to
 either the same value as `hash<remove_const_t<T>>()(*i)`, if `i` is not
 valueless; otherwise to an implementation-defined value. The member functions
 are not guaranteed to be noexcept.
-
-2. _Mandates_: `T` is a complete type.
 
 ### X.Z Class template polymorphic [polymorphic]
 
