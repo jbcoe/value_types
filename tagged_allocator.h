@@ -73,4 +73,4 @@ struct TaggedAllocator {
 
 }  // namespace xyz
 
-#endif  // XYZ_TAGGED_ALLOCATOR_H
+#endif  // XYZ_TAGGED_ALLOCATOR_H_
