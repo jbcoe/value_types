@@ -836,7 +836,7 @@ constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
 
 22. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
     is `false`, `T` is a complete type.
- 
+
 23. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
     valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc`
     constructs an object of type `indirect` that owns the owned object of other;
@@ -903,7 +903,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 
 5. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
     is `false`, `T` is a complete type.
-   
+
 6. _Effects_: If
   `allocator_traits<allocator_type>::propagate_on_container_move_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
@@ -1298,7 +1298,7 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
 ```
 
 1. _Mandates_: `T` is a complete type.
-    
+
 21. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
     valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc` either
     constructs an object of type `polymorphic` that owns the owned object of
@@ -1363,7 +1363,7 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
 
 5. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
     is `false`, `T` is a complete type.
-    
+
 6. _Effects_: If `other == *this` then no effect.
 
   If `allocator_traits<allocator_type>::propagate_on_container_copy_assignment` is
