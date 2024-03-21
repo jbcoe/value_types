@@ -872,13 +872,13 @@ constexpr indirect& operator=(const indirect& other);
   Otherwise, if `alloc == other.alloc` and `this` is not valueless, the owned
   object is assigned to `*other`.
 
-  Otherwise, if `alloc != other.alloc` or `this` is valueless, a new owned
-  object is constructed in `*this` using
+  Otherwise a new owned object is constructed in `*this` using
   `allocator_traits<allocator_type>::construct` with the owned object from
-  `other` as the argument, using either the allocator in `*this` or the allocator
-  in `other` if the allocator needs updating. The previously owned object in
-  `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy`
-  and then the storage is deallocated.
+  `other` as the argument, using either the allocator in `*this` or the
+  allocator in `other` if the allocator needs updating. The previously owned
+  object in `*this`, if any, is destroyed using
+  `allocator_traits<allocator_type>::destroy` and then the storage is
+  deallocated.
 
   If the allocator needs updating, the allocator in `this` is replaced with a
   copy of the allocator in `other`.
@@ -910,8 +910,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
   `other`; the owned object in `other`, if any, is then destroyed using
   `allocator_traits<allocator_type>::destroy` and then the storage is deallocated.
 
-  Otherwise, if `alloc != other.alloc` or `this` is valueless, a new owned
-  object is constructed in `*this` using
+  Otherwise a new owned object is constructed in `*this` using
   `allocator_traits<allocator_type>::construct` with the owned object from
   `other` as the argument as an rvalue, using either the allocator in `*this` or
   the allocator in `other` if the allocator needs updating. The previous owned
