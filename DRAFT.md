@@ -1387,7 +1387,7 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
   storage is deallocated.
 
   Otherwise, if `alloc != other.alloc`; if `other` is not valueless, a new owned
-  object is constructed in `this` using
+  object is constructed in `*this` using
   `allocator_traits<allocator_type>::rebind_traits::construct` with the owned
   object from `other` as the argument as an rvalue, using either the allocator
   in `*this` or the allocator in `other` if the allocator needs updating. The
