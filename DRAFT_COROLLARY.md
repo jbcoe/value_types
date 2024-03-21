@@ -126,12 +126,12 @@ class indirect {
   explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u);
 
   template<class U, class... Us>
-  explicit constexpr indirect(in_place_t, std::initializer_list<U> ilist,
+  explicit constexpr indirect(in_place_t, initializer_list<U> ilist,
                               Us&&... us);
 
   template<class U, class... Us>
   explicit constexpr indirect(allocator_arg_t, const Allocator& a,
-                              in_place_t, std::initializer_list<U> ilist,
+                              in_place_t, initializer_list<U> ilist,
                               Us&&... us);
 
   // Remaining constructors and assignment ...
@@ -194,7 +194,7 @@ I. _Effects_: Equivalent to `indirect(allocator_arg, Allocator(),
 ```c++
 template<class I, class... Us>
 explicit constexpr indirect(allocator_arg_t, const Allocator& a,
-                            in_place_t, std::initializer_list<I> ilist,
+                            in_place_t, initializer_list<I> ilist,
                             Us&&... us);
 ```
 
@@ -261,7 +261,7 @@ template <class U>
 explicit constexpr polymorphic(U&& u);
 ```
 
-A. _Constraints_: `is_base_of_v<T, std::remove_cvref_t<U>>` is `true`.
+A. _Constraints_: `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
    `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
    `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
    `is_default_constructible_v<allocator_type>` is `true`.
@@ -277,7 +277,7 @@ template <class U>
 explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
 ```
 
-D. _Constraints_: `is_base_of_v<T, std::remove_cvref_t<U>>` is `true`.
+D. _Constraints_: `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
    `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
    `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
    `remove_cvref_t<U>` is not a specialization of `in_place_type_t`.
