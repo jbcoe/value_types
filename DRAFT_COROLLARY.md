@@ -24,7 +24,8 @@ _Sean Parent \<<sparent@adobe.com>\>_
  - [Acknowledgements](#acknowledgements)
  - [References](#references)
 
-[//]: <> (<=============================================================================>)
+[//]: <>
+    (<=============================================================================>)
 
 ## Introduction
 
@@ -42,8 +43,8 @@ In line with `optional` and `variant`, we add converting constructors to both
 `indirect` and `polymorphic` so they can be constructed from single values
 without the need to use `in_place` or `in_place_type`. As `indirect` and
 `polymorphic` are allocator-aware types, we also provide allocator-extended
-versions of these constructors, in line with those from `basic_optional` [2]
-and existing constructors from `indirect` and `polymorphic`.
+versions of these constructors, in line with those from `basic_optional` [2] and
+existing constructors from `indirect` and `polymorphic`.
 
 As `indirect` and `polymorphic` will use dynamic memory, the converting
 constructors are marked as explicit, the same as other constructors in
@@ -52,8 +53,8 @@ constructors are marked as explicit, the same as other constructors in
 ### Initializer-list constructors
 
 We add initializer-list constructors to both `indirect` and `polymorphic` in
-line with those in `optional` and `variant`. As `indirect` and `polymorphic`
-are allocator-aware types, we provide allocator-extended versions of these
+line with those in `optional` and `variant`. As `indirect` and `polymorphic` are
+allocator-aware types, we provide allocator-extended versions of these
 constructors, in line with those from `basic_optional` [2] and existing
 constructors from `indirect` and `polymorphic`.
 
@@ -73,8 +74,8 @@ template <class U = T>
 constexpr optional& operator=(U&& u);
 ```
 
-When assigning to an `indirect`, there is potential for optimisation if there
-is an existing owned object to be assigned to:
+When assigning to an `indirect`, there is potential for optimisation if there is
+an existing owned object to be assigned to:
 
 ```c++
 indirect<int> i;
@@ -87,8 +88,8 @@ if (!i.valueless_after_move()) {
 ```
 
 With converting assignment, handling the valueless state and potentially
-creating a new indirect object is done within the converting assignment.
-The code below is equivalent to the code above:
+creating a new indirect object is done within the converting assignment. The
+code below is equivalent to the code above:
 
 ```c++
 indirect<int> i;
@@ -105,8 +106,8 @@ not.
 
 ## Technical specifications
 
-Here we update the technical specifications detailed in P3019 [1] to include
-the constructors and assignment operators discussed above.
+Here we update the technical specifications detailed in P3019 [1] to include the
+constructors and assignment operators discussed above.
 
 ### X.Y Class template indirect [indirect]
 
@@ -150,14 +151,14 @@ explicit constexpr indirect(U&& u);
 ```
 
 A. _Constraints_: `is_constructible_v<T, U>` is true.
-   `is_copy_constructible_v<U>` is `true`.
-   `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`.
-   `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
+   `is_copy_constructible_v<T>` is `true`. `is_same_v<remove_cvref_t<U>,
+   in_place_t>` is `false`. `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
    `is_default_constructible_v<allocator_type>` is `true`.
 
 B. _Mandates_: `T` is a complete type.
 
-C. _Effects_: Equivalent to `indirect(allocator_arg, Allocator(), std::forward<U>(u))`.
+C. _Effects_: Equivalent to `indirect(allocator_arg, Allocator(),
+std::forward<U>(u))`.
 
 ```c++
 template <class U = T>
@@ -171,18 +172,18 @@ D. _Constraints_: `is_constructible_v<T, U>` is true.
 
 E. _Mandates_: `T` is a complete type.
 
-F. _Effects_: `alloc` is direct-non-list-initialized with `a`.
-    Direct-non-list-initializes an owned object of type `T` using the specified
-    allocator with `std​::​forward<U>(u)`.
+F. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
+    owned object of type `T` with `std​::​forward<U>(u)`, using the allocator
+    `alloc`.
 
 ```c++
 template<class I, class... Us>
-explicit constexpr indirect(in_place_t, std::initializer_list<I> ilist,
+explicit constexpr indirect(in_place_t, initializer_list<I> ilist,
                             Us&&... us);
 ```
 
-G. _Constraints_: `is_copy_constructible_v<T>` is `true`.
-   `is_constructible_v<T, initializer_list<I>, Us...>` is `true`.
+G. _Constraints_: `is_copy_constructible_v<T>` is `true`. `is_constructible_v<T,
+   initializer_list<I>, Us...>` is `true`.
    `is_default_constructible_v<allocator_type>` is `true`.
 
 H. _Mandates_: `T` is a complete type.
@@ -197,14 +198,14 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a,
                             Us&&... us);
 ```
 
-J. _Constraints_: `is_copy_constructible_v<T>` is `true`.
-   `is_constructible_v<T, initializer_list<I>, Us...>` is `true`.
+J. _Constraints_: `is_copy_constructible_v<T>` is `true`. `is_constructible_v<T,
+   initializer_list<I>, Us...>` is `true`.
 
 K. _Mandates_: `T` is a complete type.
 
-L. _Effects_: `alloc` is direct-non-list-initialized with `a`.
-    Direct-non-list-initializes an owned object of type `T` using the specified
-    allocator with `ilist, std​::​forward<U>(u)`.
+L. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
+    owned object of type `T` with `ilist, std​::​forward<U>(u)`, using the
+    allocator `alloc`.
 
 ### X.Y.5 Assignment [indirect.assign]
 
@@ -214,12 +215,12 @@ constexpr indirect& operator=(U&& u);
 ```
 
 A. _Constraints_: `is_constructible_v<T, U>` is true.
-  `is_assignable_v<T,U>` is true.
+  `is_assignable_v<T&,U>` is true.
 
 B. _Mandates_: `T` is a complete type.
 
-C. _Effects_: If `this` is valueless then equivalent to
-   `*this = indirect<T>(std::forward<U>(u))`.
+C. _Effects_: If `*this` is valueless then equivalent to
+   `*this = indirect(allocator_arg, alloc, std::forward<U>(u));`.
    Otherwise, equivalent to `**this = std::forward<U>(u)`.
 
 D. _Returns_: A reference to `*this`.
@@ -264,6 +265,7 @@ A. _Constraints_: `is_base_of_v<T, std::remove_cvref_t<U>>` is `true`.
    `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
    `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
    `is_default_constructible_v<allocator_type>` is `true`.
+   `remove_cvref_t<U>` is not a specialization of `in_place_type_t`.
 
 B. _Mandates_: `T` is a complete type.
 
@@ -277,8 +279,8 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
 
 D. _Constraints_: `is_base_of_v<T, std::remove_cvref_t<U>>` is `true`.
    `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
-   `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`.
    `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
+   `remove_cvref_t<U>` is not a specialization of `in_place_type_t`.
 
 E. _Mandates_: `T` is a complete type.
 
@@ -291,9 +293,8 @@ F. _Effects_: Equivalent to `polymorphic(allocator_arg, a,
                                  initializer_list<I> ilist, Us&&... us)
 ```
 
-A. _Constraints_: `is_base_of_v<T, U>` is `true`.
-  `is_copy_constructible_v<U>` is `true`.
-  `is_constructible_v<U, initializer_list<I>, Us...>` is `true`.
+A. _Constraints_: `is_base_of_v<T, U>` is `true`. `is_copy_constructible_v<U>`
+  is `true`. `is_constructible_v<U, initializer_list<I>, Us...>` is `true`.
   `is_default_constructible_v<allocator_type>` is `true`.
 
 B. _Mandates_: `T` is a complete type.
@@ -308,14 +309,13 @@ C. _Effects_: Equivalent to `polymorphic(allocator_arg, A{},
                                  initializer_list<I> ilist, Us&&... us)
 ```
 
-D. _Constraints_: `is_base_of_v<T, U>` is `true`.
-  `is_copy_constructible_v<U>` is `true`.
-  `is_constructible_v<U, initializer_list<I>, Us...>` is `true`.
+D. _Constraints_: `is_base_of_v<T, U>` is `true`. `is_copy_constructible_v<U>`
+  is `true`. `is_constructible_v<U, initializer_list<I>, Us...>` is `true`.
 
 E. _Mandates_: `T` is a complete type.
 
 F. _Effects_: Equivalent to `polymorphic(allocator_arg, a,
-  in_place_type<U>, ilist, std::forward<Us>(us))`.
+  in_place_type<U>, ilist, std::forward<Us>(us)...)`.
 
 ## Reference implementation
 
@@ -330,7 +330,8 @@ draft at extremely short notice.
 
 ## References
 
-[1] _`indirect` and `polymorphic`: Vocabulary Types for Composite Class Design_, \
+[1] _`indirect` and `polymorphic`: Vocabulary Types for Composite Class Design_,
+\
 J. B. Coe, A. Peacock, and S. Parent, 2024 \
 https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p3019r6.html
 

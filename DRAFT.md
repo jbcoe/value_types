@@ -3,7 +3,7 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-P3019R7
+D3019R8
 
 Working Group: Library Evolution, Library
 
@@ -44,10 +44,19 @@ should not be considered in isolation.
 
 ### Changes in R8
 
+* Add more explicit wording for use of `allocator_traits::construct` in
+  `indirect` and `polymorphic` constructors.
+
+* Prevent `indirect` and `polymorphic` classes from being instantiated with
+  `in_place_t` and specializations of `in_place_type_t`.
+
 * Strike mandates `T` is a complete type from indirect comparison operators and
   hash for consistency with reference wrapper.
 
 ### Changes in R7
+
+* Discuss `indirect`'s non-conditional copy constructor in the light of
+  implementation tricks that would enable it.
 
 * Improve wording for assignment operators to remove ambiguity.
 
@@ -61,7 +70,8 @@ should not be considered in isolation.
 
 * Amend wording for swap to consider the valueless state.
 
-* Remove comparison operators for `indirect` where they can be compiler-synthesized.
+* Remove comparison operators for `indirect` where they can be
+  compiler-synthesized.
 
 * Rename erroneous exposition only variable `allocator` to `alloc`.
 
@@ -75,9 +85,9 @@ should not be considered in isolation.
 
 ### Changes in R4
 
-* Use constraints to require that the object owned by `indirect` is
-  copy constructible. This ensures that `std::is_copy_constructible_v` does not
-  give misleading results.
+* Use constraints to require that the object owned by `indirect` is copy
+  constructible. This ensures that `std::is_copy_constructible_v` does not give
+  misleading results.
 
 * Modify comparison of `indirect` allow comparsion of valueless objects.
   Comparisons are implemented in terms of `operator==` and `operator<=>`
@@ -111,8 +121,7 @@ should not be considered in isolation.
 * Add constructor `indirect(U&& u, Us&&... us)` overload and requisite
   constraints.
 
-* Add constructor `polymorphic(allocator_arg_t, const Allocator& a)`
-  overload.
+* Add constructor `polymorphic(allocator_arg_t, const Allocator& a)` overload.
 
 * Add discussion on similarities and differences with variant.
 
@@ -596,24 +605,24 @@ become valueless after it has been moved from.
 `allocator_traits<Allocator>::value_type` is not the same type as `T`, the
 program is ill-formed. Every object of type `indirect<T, Allocator>` uses an
 object of type `Allocator` to allocate and free storage for the owned object as
-needed. The owned object is constructed using the function
-`allocator_traits<allocator_type>::construct` and destroyed using the function
-`allocator_traits<allocator_type>::destroy`.
+needed.
 
-// DRAFTING NOTE: [indirect.general]#3 modeled on [container.reqmts]#64
+3. Constructing an owned object with arguments `args...` using an allocator `a`
+means calling `allocator_traits<allocator_type>::construct(a, p, args...)` where
+`p` is a pointer obtained by calling
+`allocator_traits<allocator_type>::allocate`.
 
-3. Copy constructors for an indirect value obtain an allocator by calling
+4. Copy constructors for an indirect value obtain an allocator by calling
 `allocator_traits<allocator_type>::select_on_container_copy_construction` on the
 allocator belonging to the indirect value being copied. Move constructors obtain
 an allocator by move construction from the allocator belonging to the object
-being moved. Such move construction of the allocator shall not exit via an
-exception. All other constructors for these types take a `const allocator_type&
-argument`. _[Note 3: If an invocation of a constructor uses the default value of
-an optional allocator argument, then the allocator type must support
-value-initialization. --end note]_ A copy of this allocator is used for any
-memory allocation and element construction performed by these constructors and
-by all member functions during the lifetime of each indirect value object, or
-until the allocator is replaced. The allocator may be replaced only via
+being moved. All other constructors for these types take a `const
+allocator_type& argument`. _[Note 3: If an invocation of a constructor uses the
+default value of an optional allocator argument, then the allocator type must
+support value-initialization. --end note]_ A copy of this allocator is used for
+any memory allocation and element construction performed by these constructors
+and by all member functions during the lifetime of each indirect value object,
+or until the allocator is replaced. The allocator may be replaced only via
 assignment or `swap()`. Allocator replacement is performed by copy assignment,
 move assignment, or swapping of the allocator only if
 
@@ -631,12 +640,12 @@ move assignment, or swapping of the allocator only if
 4. A program that instantiates the definition of indirect for a non-object type,
    an array type, `in_place_t`, or a cv-qualified type is ill-formed.
 
-5. The template parameter `T` of `indirect` may be an incomplete type.
+6. The template parameter `T` of `indirect` may be an incomplete type.
 
-6. The template parameter `Allocator` of `indirect` shall meet the
+7. The template parameter `Allocator` of `indirect` shall meet the
    _Cpp17Allocator_ requirements.
 
-7. If a program declares an explicit or partial specialization of `indirect`,
+8. If a program declares an explicit or partial specialization of `indirect`,
    the behavior is undefined.
 
 #### X.Y.2 Class template indirect synopsis [indirect.syn]
@@ -756,8 +765,8 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a);
 
 7. _Mandates_: `T` is a complete type.
 
-8. _Effects_: `alloc` is direct-non-list-initialized with `a`. Value
-   initializes an owned object of type `T` using the specified allocator.
+8. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an owned
+   object of type `T` with an empty argument list, using the allocator `alloc`.
 
 9. _Postconditions_: `*this` is not valueless.
 
@@ -788,9 +797,9 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a, in_place_t, Us&
 
 15. _Mandates_: `T` is a complete type.
 
-16. _Effects_: `alloc` is direct-non-list-initialized with `a`.
-    Direct-non-list-initializes an owned object of type `T` using the specified
-    allocator with `std​::​forward<Us>(us...)`.
+16. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
+    owned object of type `T` with `std​::​forward<Us>(us)...`, using the
+    allocator `alloc`.
 
 17. _Postconditions_: `*this` is not valueless.
 
@@ -809,9 +818,9 @@ constexpr indirect(allocator_arg_t, const Allocator& a,
 
 19. _Mandates_: `T` is a complete type.
 
-20. _Effects_: `alloc` is direct-non-list-initialized with `a`. If
-    `other` is valueless, `*this` is valueless. Otherwise, copy constructs an
-    owned object of type `T` using the specified allocator with `*other`.
+20. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
+    valueless, `*this` is valueless. Otherwise, constructs an owned object of
+    type `T` with `*other`, using the allocator `alloc`.
 
 ```c++
 constexpr indirect(indirect&& other) noexcept;
@@ -825,11 +834,11 @@ constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
   noexcept(allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-22. _Effects_: `alloc` is direct-non-list-initialized with `a`. If
-    `other` is valueless, `*this` is valueless. Otherwise, if `alloc ==
-    other.alloc` constructs an object of type `indirect` that owns the owned
-    value of other; `other` is valueless. Otherwise constructs an object of type
-    `indirect` using the specified allocator with `*other` used as an rvalue.
+22. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
+    valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc`
+    constructs an object of type `indirect` that owns the owned object of other;
+    `other` is valueless. Otherwise, constructs an owned object of type `T` with
+    `*std::move(other)`, using the allocator `alloc`.
 
 23. _[Note: The use of this function may require that `T` be a complete type
     dependent on behavior of the allocator. — end note]_
@@ -843,8 +852,8 @@ constexpr ~indirect();
 1. _Mandates_: `T` is a complete type.
 
 2. _Effects_: If `*this` is not valueless, destroys the owned object using
-  `allocator_traits<allocator_type>::destroy` and then deallocates the storage
-  using `allocator_traits<allocator_type>::deallocate`.
+  `allocator_traits<allocator_type>::destroy` and then the storage is
+  deallocated.
 
 #### X.Y.5 Assignment [indirect.assign]
 
@@ -859,21 +868,20 @@ constexpr indirect& operator=(const indirect& other);
   If `allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
-  If `other` is valueless, `*this` becomes valueless and the owned value in this,
-  if any, is destroyed using `allocator_traits<allocator_type>::destroy` and then
-  deallocated using `allocator_traits<allocator_type>::deallocate`.
+  If `other` is valueless, `*this` becomes valueless and the owned object in
+  `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy`
+  and then the storage is deallocated.
 
   Otherwise, if `alloc == other.alloc` and `this` is not valueless, the owned
   object is assigned to `*other`.
 
-  Otherwise, if `alloc != other.alloc` or `this` is valueless, a new owned
-  object is constructed in `this` using
+  Otherwise a new owned object is constructed in `*this` using
   `allocator_traits<allocator_type>::construct` with the owned object from
-  `other` as the argument, with memory allocated using either the allocator in
-  `this` or the allocator in `other` if the allocator needs updating. The
-  previously owned object in this, if any, is destroyed using
-  `allocator_traits<allocator_type>::destroy` and then deallocated using
-  `allocator_traits<allocator_type>::deallocate`.
+  `other` as the argument, using either the allocator in `*this` or the
+  allocator in `other` if the allocator needs updating. The previously owned
+  object in `*this`, if any, is destroyed using
+  `allocator_traits<allocator_type>::destroy` and then the storage is
+  deallocated.
 
   If the allocator needs updating, the allocator in `this` is replaced with a
   copy of the allocator in `other`.
@@ -897,26 +905,22 @@ constexpr indirect& operator=(indirect&& other) noexcept(
   `allocator_traits<Alloc>::propagate_on_container_move_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
-  If `other` is valueless, `*this` becomes valueless and the owned value in this,
-  if any, is destroyed using `allocator_traits<allocator_type>::destroy` and then
-  deallocated using `allocator_traits<allocator_type>::deallocate`.
+  If `other` is valueless, `*this` becomes valueless and the owned object in
+  `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy`
+  and then the storage is deallocated.
 
-  Otherwise if `alloc == other.alloc`, swaps the owned objects in `this` and
+  Otherwise, if `alloc == other.alloc`, swaps the owned objects in `*this` and
   `other`; the owned object in `other`, if any, is then destroyed using
-  `allocator_traits<allocator_type>::destroy` and then deallocated using
-  `allocator_traits<allocator_type>::deallocate`.
+  `allocator_traits<allocator_type>::destroy` and then the storage is deallocated.
 
-  Otherwise , if `alloc != other.alloc` or `this` is valueless, a new owned
-  object is constructed in `this` using
+  Otherwise a new owned object is constructed in `*this` using
   `allocator_traits<allocator_type>::construct` with the owned object from
-  `other` as the argument as an rvalue, with memory allocated using either the
-  allocator in `this` or the allocator in `other` if the allocator needs
-  updating. The previous owned object in this, if any, is destroyed using
-  `allocator_traits<allocator_type>::destroy` and then deallocated using
-  `allocator_traits<allocator_type>::deallocate`.
-
-  If the allocator needs updating, the allocator in `this` is replaced with a
-  copy of the allocator in `other`.
+  `other` as the argument as an rvalue, using either the allocator in `*this` or
+  the allocator in `other` if the allocator needs updating. The previous owned
+  object in `*this`, if any, is destroyed using
+  `allocator_traits<allocator_type>::destroy` and then the storage is
+  deallocated. If the allocator needs updating, the allocator in `*this` is
+  replaced with a copy of the allocator in `other`.
 
 6. _Postconditions_: `other` is valueless.
 
@@ -985,11 +989,11 @@ constexpr allocator_type get_allocator() const noexcept;
 ```c++
 constexpr void swap(indirect& other) noexcept(
   allocator_traits::propagate_on_container_swap::value
-  || allocator_traits::is_always_equal::value);
+  || allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-1. _Effects_: Swaps the states of `*this` and `other`, exchanging owned objects or
-  valueless states. If
+1. _Effects_: Swaps the states of `*this` and `other`, exchanging owned objects
+  or valueless states. If
   `allocator_traits<allocator_type>::propagate_on_container_swap::value` is
   `true`, then `allocator_type` shall meet the _Cpp17Swappable_ requirements and
   the allocators of `*this` and `other` are exchanged by calling `swap` as
@@ -1099,19 +1103,19 @@ object may only become valueless after it has been moved from.
 `allocator_traits<Allocator>::value_type` is not the same type as`T`, the
 program is ill-formed. Every object of type `polymorphic<T, Allocator>` uses an
 object of type `Allocator` to allocate and free storage for the owned object as
-needed. The owned object is constructed using the function
-`allocator_traits<allocator_type>::rebind_traits<U>::construct` and destroyed
- using the function
-`allocator_traits<allocator_type>::rebind_traits<U>::destroy`, where `U` is
-either `allocator_type::value_type` or an internal type used by the polymorphic
-value.
+needed.
 
-3. Copy constructors for a polymorphic value obtain an allocator by calling
+3. Constructing an owned object with arguments `args...` using an allocator `a`
+means calling `allocator_traits<allocator_type>::rebind_traits<U>::construct(a,
+p, args...)` where `p` is a pointer obtained by calling
+`allocator_traits<allocator_type>::rebind_traits<U>::allocate` and `U` is either
+`allocator_type::value_type` or an internal type used by the polymorphic value.
+
+4. Copy constructors for a polymorphic value obtain an allocator by calling
 `allocator_traits<allocator_type>::select_on_container_copy_construction` on the
 allocator belonging to the polymorphic value being copied. Move constructors
 obtain an allocator by move construction from the allocator belonging to the
-object being moved. Such move construction of the allocator shall not exit via
-an exception. All other constructors for these types take a `const
+object being moved. All other constructors for these types take a `const
 allocator_type& argument`. [Note 3: If an invocation of a constructor uses the
 default value of an optional allocator argument, then the allocator type must
 support value-initialization.  end note] A copy of this allocator is used for
@@ -1127,16 +1131,16 @@ or (64.3) `allocator_traits<allocator_type>::propagate_on_container_swap::value`
 is true within the implementation of the corresponding polymorphic value
 operation.
 
-4. A program that instantiates the definition of polymorphic for a non-object
+5. A program that instantiates the definition of polymorphic for a non-object
    type, an array type, a specialization of `in_place_type_t` or a cv-qualified
    type is ill-formed.
 
-5. The template parameter `T` of `polymorphic` may be an incomplete type.
+6. The template parameter `T` of `polymorphic` may be an incomplete type.
 
-6. The template parameter `Allocator` of `polymorphic` shall meet the
+7. The template parameter `Allocator` of `polymorphic` shall meet the
    requirements of _Cpp17Allocator_.
 
-7. If a program declares an explicit or partial specialization of `polymorphic`,
+8. If a program declares an explicit or partial specialization of `polymorphic`,
    the behavior is undefined.
 
 #### X.Z.2 Class template polymorphic synopsis [polymorphic.syn]
@@ -1225,8 +1229,9 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a);
 
 7. _Mandates_: `T` is a complete type.
 
-8. _Effects_: `alloc` is direct-non-list-initialized with `a`. Value
-initializes an owned object of type `T` using the specified allocator.
+8. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
+   owned object of type `T` with an empty argument list using the allocator
+   `alloc`.
 
 9. _Postconditions_: `*this` is not valueless.
 
@@ -1258,9 +1263,9 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
 
 14. _Mandates_: `T` is a complete type.
 
-15. _Effects_: `alloc` is direct-non-list-initialized with `a`.
-    Direct-non-list-initializes an owned object of type `U` using the specified
-    allocator with `std​::​forward<Ts>(ts...)`.
+15. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
+    owned object of type `U` with `std​::​forward<Ts>(ts)...` using the
+    allocator `alloc`.
 
 16. _Postconditions_: `*this` is not valueless.  The owned instance targets an
   object of type `U` constructed  with `std::forward<Ts>(ts)...`.
@@ -1280,10 +1285,10 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
 
 18. _Mandates_: `T` is a complete type.
 
-19. _Effects_: `alloc` is direct-non-list-initialized with `alloc`. If
-    `other` is valueless, `*this` is valueless. Otherwise, copy constructs an
-    owned object of type `U`, where `U` is the type of the owned object in
-    `other`, using the specified allocator with the owned object in `other`.
+19. _Effects_: `alloc` is direct-non-list-initialized with `alloc`. If `other`
+    is valueless, `*this` is valueless. Otherwise, constructs an owned object of
+    type `U`, where `U` is the type of the owned object in `other`, with the
+    owned object in `other` using the allocator `alloc`.
 
 ```c++
 constexpr polymorphic(polymorphic&& other) noexcept;
@@ -1294,17 +1299,17 @@ constexpr polymorphic(polymorphic&& other) noexcept;
 
 ```c++
 constexpr polymorphic(allocator_arg_t, const Allocator& a,
-                      polymorphic&& other) noexcept(allocator_traits::is_always_equal::value);
+                      polymorphic&& other) noexcept(allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-21. _Effects_: `alloc` is direct-non-list-initialized with `a`. If
-    `other` is valueless, `*this` is valueless. Otherwise, if `alloc ==
-    other.alloc` either constructs an object of type `polymorphic` that owns the
-    owned value of other, making `other` valueless; or, owns an object of the
-    same type constructed from the owned value of `other` using the specified
-    allocator, considering that owned value as an rvalue. Otherwise if `alloc !=
-    other.alloc`, constructs an object of type `polymorphic` using the specified
-    allocator, considering that owned value as an rvalue.
+21. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
+    valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc` either
+    constructs an object of type `polymorphic` that owns the owned object of
+    other, making `other` valueless; or, owns an object of the same type
+    constructed from the owned object of `other` considering that owned object as
+    an rvalue. Otherwise, if `alloc != other.alloc`, constructs an object of type
+    `polymorphic`, considering that owned object as an rvalue, using the
+    allocator `alloc`.
 
   _[Drafting note: The above is intended to permit a small-buffer-optimization
   and handle the case where allocators compare equal but we do not want to swap
@@ -1323,8 +1328,8 @@ constexpr ~polymorphic();
 1. _Mandates_: `T` is a complete type.
 
 2. _Effects_: If `*this` is not valueless, destroys the owned object using
-  `allocator_traits<allocator_type>::destroy` and then deallocates the storage
-  using `allocator_traits<allocator_type>::deallocate`.
+  `allocator_traits<allocator_type>::rebind_traits::destroy` and then the
+  storage is deallocated.
 
 #### X.Z.5 Assignment [polymorphic.assign]
 
@@ -1339,14 +1344,14 @@ constexpr polymorphic& operator=(const polymorphic& other);
   If `allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
-  If `other` is not valueless, a new owned object is constructed in `this` using
-  `allocator_traits<allocator_type>::construct` with the owned object from
-  `other` as the argument, with memory allocated using either the allocator in
-  `this` or the allocator in `other` if the allocator needs updating.
+  If `other` is not valueless, a new owned object is constructed in `*this` using
+  `allocator_traits<allocator_type>::rebind_traits::construct` with the owned
+  object from `other` as the argument, using either the allocator in `*this` or
+  the allocator in `other` if the allocator needs updating.
 
-  The previous owned object in this, if any, is destroyed using
-  `allocator_traits<allocator_type>::destroy` and then deallocated using
-  `allocator_traits<allocator_type>::deallocate`.
+  The previous owned object in `*this`, if any, is destroyed using
+  `allocator_traits<allocator_type>::rebind_traits::destroy` and then the
+  storage is deallocated.
 
   If the allocator needs updating, the allocator in `this` is replaced with a
   copy of the allocator in `other`.
@@ -1368,19 +1373,19 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
   If `allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
-  If `alloc == other.alloc`, swaps the owned objects in `this` and `other`; the
+  If `alloc == other.alloc`, swaps the owned objects in `*this` and `other`; the
   owned object in `other`, if any, is then destroyed using
-  `allocator_traits<allocator_type>::destroy` and then deallocated using
-  `allocator_traits<allocator_type>::deallocate`.
+  `allocator_traits<allocator_type>::rebind_traits::destroy` and then the
+  storage is deallocated.
 
-  Otherwise if `alloc != other.alloc`; if `other` is not valueless, a new owned
-  object is constructed in `this` using
-  `allocator_traits<allocator_type>::construct` with the owned object from
-  `other` as the argument as an rvalue, with memory allocated using either the
-  allocator in `this` or the allocator in `other` if the allocator needs
-  updating. The previous owned object in this, if any, is destroyed using
-  `allocator_traits<allocator_type>::destroy` and then deallocated using
-  `allocator_traits<allocator_type>::deallocate`.
+  Otherwise, if `alloc != other.alloc`; if `other` is not valueless, a new owned
+  object is constructed in `*this` using
+  `allocator_traits<allocator_type>::rebind_traits::construct` with the owned
+  object from `other` as the argument as an rvalue, using either the allocator
+  in `*this` or the allocator in `other` if the allocator needs updating. The
+  previous owned object in `*this`, if any, is destroyed using
+  `allocator_traits<allocator_type>::rebind_traits::destroy` and then the
+  storage is deallocated.
 
   If the allocator needs updating, the allocator in `this` is replaced with a
   copy of the allocator in `other`.
