@@ -151,7 +151,7 @@ explicit constexpr indirect(U&& u);
 ```
 
 A. _Constraints_: `is_constructible_v<T, U>` is true.
-   `is_copy_constructible_v<U>` is `true`. `is_same_v<remove_cvref_t<U>,
+   `is_copy_constructible_v<T>` is `true`. `is_same_v<remove_cvref_t<U>,
    in_place_t>` is `false`. `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
    `is_default_constructible_v<allocator_type>` is `true`.
 
