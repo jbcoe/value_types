@@ -863,7 +863,7 @@ constexpr indirect& operator=(const indirect& other);
 
 1. _Mandates_: `T` is a complete type.
 
-2. _Effects_: If `other == *this` then no effect.
+2. _Effects_: If `addressof(other) == this`, there are no effects.
 
   If `allocator_traits<allocator_type>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
@@ -904,7 +904,9 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 5. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
     is `false`, `T` is a complete type.
 
-6. _Effects_: If
+6. _Effects_: If `addressof(other) == this`, there are no effects.
+
+  If
   `allocator_traits<allocator_type>::propagate_on_container_move_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
@@ -1332,7 +1334,7 @@ constexpr polymorphic& operator=(const polymorphic& other);
 
 1. _Mandates_: `T` is a complete type.
 
-2. _Effects_: If `other == *this` then no effect.
+2. _Effects_: If `addressof(other) == this`, there are no effects.
 
   If `allocator_traits<alloctor_type>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
@@ -1364,7 +1366,7 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
 5. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
     is `false`, `T` is a complete type.
 
-6. _Effects_: If `other == *this` then no effect.
+6. _Effects_: If `addressof(other) == this`, there are no effects.
 
   If `allocator_traits<allocator_type>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
