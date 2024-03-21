@@ -265,6 +265,7 @@ A. _Constraints_: `is_base_of_v<T, std::remove_cvref_t<U>>` is `true`.
    `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
    `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
    `is_default_constructible_v<allocator_type>` is `true`.
+   `remove_cvref_t<U>` is not a specialization of `in_place_type_t`.
 
 B. _Mandates_: `T` is a complete type.
 
@@ -279,6 +280,7 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
 D. _Constraints_: `is_base_of_v<T, std::remove_cvref_t<U>>` is `true`.
    `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
    `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
+   `remove_cvref_t<U>` is not a specialization of `in_place_type_t`.
 
 E. _Mandates_: `T` is a complete type.
 
