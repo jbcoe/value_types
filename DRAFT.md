@@ -1368,7 +1368,7 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
 
 6. _Effects_: If `addressof(other) == this`, there are no effects.
 
-  If `allocator_traits<allocator_type>::propagate_on_container_copy_assignment` is
+  If `allocator_traits<allocator_type>::propagate_on_container_move_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
   If `alloc == other.alloc`, swaps the owned objects in `*this` and `other`; the
