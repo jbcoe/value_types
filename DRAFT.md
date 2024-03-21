@@ -624,7 +624,7 @@ move assignment, or swapping of the allocator only if
     operation.
 
 4. A program that instantiates the definition of indirect for a non-object type,
-   an array type, in_place_t, or a cv-qualified type is ill-formed.
+   an array type, `in_place_t`, or a cv-qualified type is ill-formed.
 
 5. The template parameter `T` of `indirect` may be an incomplete type.
 
@@ -715,12 +715,12 @@ private:
   Allocator alloc; // exposition only
 };
 
-template <typename Value>
+template <class Value>
 indirect(Value) -> indirect<Value>;
 
-template <typename Alloc, typename Value>
-indirect(std::allocator_arg_t, Alloc, Value) -> indirect<
-    Value, typename std::allocator_traits<Alloc>::template rebind_alloc<Value>>;
+template <class Alloc, class Value>
+indirect(allocator_arg_t, Alloc, Value) -> indirect<
+    Value, typename allocator_traits<Alloc>::template rebind_alloc<Value>>;
 ```
 
 #### X.Y.3 Constructors [indirect.ctor]
@@ -817,7 +817,7 @@ constexpr indirect(indirect&& other) noexcept;
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
-  noexcept(allocator_traits<Allocator>::is_always_equal);
+  noexcept(allocator_traits<Allocator>::is_always_equal::value);
 ```
 
 22. _Effects_: `alloc` is direct-non-list-initialized with `a`. If
@@ -827,7 +827,7 @@ constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
     `indirect` using the specified allocator with `*other` used as an rvalue.
 
 23. _[Note: The use of this function may require that `T` be a complete type
-    dependent on behavour of the allocator. — end note]_
+    dependent on behavior of the allocator. — end note]_
 
 #### X.Y.4 Destructor [indirect.dtor]
 
@@ -851,7 +851,7 @@ constexpr indirect& operator=(const indirect& other);
 
 2. _Effects_: If `other == *this` then no effect.
 
-  If `std::allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
+  If `allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
   If `other` is valueless, `*this` becomes valueless and the owned value in this,
@@ -889,7 +889,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 ```
 
 5. _Effects_: If
-  `std::allocator_traits<Alloc>::propagate_on_container_move_assignment` is
+  `allocator_traits<Alloc>::propagate_on_container_move_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
   If `other` is valueless, `*this` becomes valueless and the owned value in this,
@@ -923,7 +923,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
    constructor, no effect.
 
 9. _[Note: The use of this function may require that `T` be a complete type
-   dependent on behavour of the allocator. — end note]_
+   dependent on behavior of the allocator. — end note]_
 
 #### X.Y.6 Observers [indirect.observers]
 
@@ -994,7 +994,7 @@ constexpr void swap(indirect& other) noexcept(
   directly. --end note]_
 
 2. _[Note 2: The use of this function may require that `T` be a complete type
-dependent on behavour of the allocator. — end note]_
+dependent on behavior of the allocator. — end note]_
 
 3. _[Note 3: Exception guarantees for `swap` are intended to model the behavior
 of exception guarantees for `std::vector::swap`. — end note]_
@@ -1133,7 +1133,7 @@ is true within the implementation of the corresponding polymorphic value
 operation.
 
 4. A program that instantiates the definition of polymorphic for a non-object
-   type, an array type, a specialization of in_place_type_t or a cv-qualified
+   type, an array type, a specialization of `in_place_type_t` or a cv-qualified
    type is ill-formed.
 
 5. The template parameter `T` of `polymorphic` may be an incomplete type.
@@ -1316,7 +1316,7 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
   pointers.]_
 
 22. _[Note: The use of this function may require that `T` be a complete type
-    dependent on behavour of the allocator. — end note]_
+    dependent on behavior of the allocator. — end note]_
 
 
 #### X.Z.4 Destructor [polymorphic.dtor]
@@ -1341,7 +1341,7 @@ constexpr polymorphic& operator=(const polymorphic& other);
 
 2. _Effects_: If `other == *this` then no effect.
 
-  If `std::allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
+  If `allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
   If `other` is not valueless, a new owned object is constructed in `this` using
@@ -1370,7 +1370,7 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
 
 5. _Effects_: If `other == *this` then no effect.
 
-  If `std::allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
+  If `allocator_traits<Alloc>::propagate_on_container_copy_assignment` is
   `true` and `alloc != other.alloc` then the allocator needs updating.
 
   If `alloc == other.alloc`, swaps the owned objects in `this` and `other`; the
@@ -1398,7 +1398,7 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
    selected move constructor, no effect.
 
 8. _[Note: The use of this function may require that `T` be a complete type
-    dependent on behavour of the allocator. — end note]_
+    dependent on behavior of the allocator. — end note]_
 
 #### X.Z.6 Observers [polymorphic.observers]
 

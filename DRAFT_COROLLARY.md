@@ -213,8 +213,8 @@ template <class U>
 constexpr indirect& operator=(U&& u);
 ```
 
-A. _Constraints_: `is_constructible<T, U>` is true.
-  `is_assignable<T,U>` is true.
+A. _Constraints_: `is_constructible_v<T, U>` is true.
+  `is_assignable_v<T,U>` is true.
 
 B. _Mandates_: `T` is a complete type.
 
@@ -241,7 +241,7 @@ class polymorphic {
   explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
 
   template <class U, class I, class... Us>
-  explicitconstexpr polymorphic(in_place_type_t<U>,
+  explicit constexpr polymorphic(in_place_type_t<U>,
                                 initializer_list<I> ilist, Us&&... us)
 
   template <class U, class I, class... Us>
@@ -283,7 +283,7 @@ D. _Constraints_: `is_base_of_v<T, std::remove_cvref_t<U>>` is `true`.
 E. _Mandates_: `T` is a complete type.
 
 F. _Effects_: Equivalent to `polymorphic(allocator_arg, a,
-   in_place_type<U>, std::forward<U>(u))`.
+   in_place_type<remove_cvref_t<U>>, std::forward<U>(u))`.
 
 ```c++
   template <class U = T, class I, class... Us>
