@@ -873,7 +873,7 @@ constexpr indirect& operator=(const indirect& other);
   object is assigned to `*other`.
 
   Otherwise, if `alloc != other.alloc` or `this` is valueless, a new owned
-  object is constructed in `this` using
+  object is constructed in `*this` using
   `allocator_traits<allocator_type>::construct` with the owned object from
   `other` as the argument, using either the allocator in `this` or the allocator
   in `other` if the allocator needs updating. The previously owned object in
