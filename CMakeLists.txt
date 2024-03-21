@@ -99,26 +99,6 @@ target_sources(polymorphic_cxx17
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic_cxx14.h>
 )
 
-xyz_add_library(
-    NAME polymorphic_inline_vtable
-    ALIAS xyz_value_types::polymorphic_inline_vtable
-    DEFINITIONS XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
-)
-target_sources(polymorphic_inline_vtable
-    INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/polymorphic_inline_vtable.h>
-)
-
-xyz_add_library(
-    NAME polymorphic_sbo
-    ALIAS xyz_value_types::polymorphic_sbo
-    DEFINITIONS XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
-)
-target_sources(polymorphic_sbo
-    INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/polymorphic_sbo.h>
-)
-
 if (${XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT})
 
     add_subdirectory(benchmarks)
@@ -201,24 +181,6 @@ if (${XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT})
             LINK_LIBRARIES polymorphic_cxx17
             FILES polymorphic_test.cc
             VERSION 17
-        )
-
-        xyz_add_test(
-            NAME polymorphic_inline_vtable_test
-            LINK_LIBRARIES polymorphic_inline_vtable
-            FILES polymorphic_test.cc
-            MANUAL TRUE
-        )
-
-        xyz_add_test(
-            NAME polymorphic_sbo_test
-            LINK_LIBRARIES polymorphic_sbo
-            FILES polymorphic_test.cc
-            MANUAL TRUE
-        )
-        target_compile_options(polymorphic_sbo_test
-            PRIVATE
-                $<$<CXX_COMPILER_ID:Clang>:-ftemplate-backtrace-limit=0>
         )
 
         if (ENABLE_CODE_COVERAGE)
