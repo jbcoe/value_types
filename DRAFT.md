@@ -901,13 +901,14 @@ constexpr indirect& operator=(const indirect& other);
 2. _Effects_: If `addressof(other) == this` is `true`, there are no effects.
 
   If `allocator_traits<allocator_type>::propagate_on_container_copy_assignment` is
-  `true` and `alloc != other.alloc` is `true` then the allocator needs updating.
+  `true` then the allocator needs updating.
 
   If `other` is valueless, `*this` becomes valueless and the owned object in
   `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy`
   and then the storage is deallocated.
 
-  Otherwise, if `alloc == other.alloc` is `true` and `*this` is not valueless, `*other` is assigned to the owned object.
+  Otherwise, if `alloc == other.alloc` is `true` and `*this` is not valueless,
+  `*other` is assigned to the owned object.
 
   Otherwise a new owned object is constructed in `*this` using
   `allocator_traits<allocator_type>::construct` with the owned object from
@@ -942,7 +943,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 
   If
   `allocator_traits<allocator_type>::propagate_on_container_move_assignment` is
-  `true` and `alloc != other.alloc` then the allocator needs updating.
+  `true` then the allocator needs updating.
 
   If `other` is valueless, `*this` becomes valueless and the owned object in
   `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy`
