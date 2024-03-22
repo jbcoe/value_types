@@ -1955,7 +1955,7 @@ breaking changes will still be possible, the impact of these changes on users
 could be potentially significant and unwelcome.
 
 | Component | Decision | Alternative | Change impact | Breaking change? |
-|--|--|--|--|--|
+|--|--|--|--|:--:|
 |Member `emplace`| No member `emplace` | Add member `emplace` | Pure addition | No |
 |`operator bool`| No `operator bool` | Add `operator bool` | Changes semantics | No |
 |`indirect` comparsion preconditions | `indirect` must not be valueless | Allows comparison of valueless objects | Runtime cost | No |
