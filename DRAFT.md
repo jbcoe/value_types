@@ -3,11 +3,11 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-D3019R8
+R3019R8
 
 Working Group: Library Evolution, Library
 
-Date: 2024-03-19
+Date: 2024-03-23
 
 _Jonathan Coe \<<jonathanbcoe@gmail.com>\>_
 
@@ -43,6 +43,8 @@ should not be considered in isolation.
 ## History
 
 ### Changes in R8
+
+* Wording cleanup in parallel with independent implementation.
 
 * Add more explicit wording for use of `allocator_traits::construct` in
   `indirect` and `polymorphic` constructors.
