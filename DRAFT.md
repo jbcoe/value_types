@@ -740,7 +740,7 @@ class indirect {
 
 private:
   pointer p; // exposition only
-  Allocator alloc; // exposition only
+  Allocator alloc = Allocator(); // exposition only
 };
 
 template <class Value>
@@ -763,8 +763,8 @@ explicit constexpr indirect()
 
 2. _Mandates_: `T` is a complete type.
 
-3. _Effects_: `alloc` is value-initialized. Constructs an owned
-   object of type `T` with an empty argument list, using the allocator `alloc`.
+3. _Effects_: Constructs an owned object of type `T` with an empty argument list,
+   using the allocator `alloc`.
 
 4. _Postconditions_: `*this` is not valueless.
 
@@ -802,61 +802,85 @@ explicit constexpr indirect(in_place_t, Us&&... us);
 13. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(),
     std::forward<Us>(us)...)`.
 
+14. _Postconditions_: `*this` is not valueless.
+
+15. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
+  `allocator_traits<allocator_type>::construct` throws.
+
 ```c++
 template <class... Us>
 explicit constexpr indirect(allocator_arg_t, const Allocator& a, in_place_t, Us&& ...us);
 ```
 
-14. _Constraints_: `is_constructible_v<T, Us...>` is `true`.
+16. _Constraints_: `is_constructible_v<T, Us...>` is `true`.
   `is_copy_constructible_v<T>` is `true`.
 
-15. _Mandates_: `T` is a complete type.
+17. _Mandates_: `T` is a complete type.
 
-16. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
+18. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
     owned object of type `T` with `std​::​forward<Us>(us)...`, using the
     allocator `alloc`.
 
-17. _Postconditions_: `*this` is not valueless.
+19. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
+  `allocator_traits<allocator_type>::construct` throws.
 
 ```c++
 constexpr indirect(const indirect& other);
 ```
 
-18. _Effects_: Equivalent to `indirect(allocator_arg_t{},
+20. _Effects_: Equivalent to `indirect(allocator_arg_t{},
     allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc),
     other)`
+
+21. _Postconditions_: `*this` is not valueless.
+
+22. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
+  `allocator_traits<allocator_type>::construct` throws.
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& a,
                    const indirect& other);
 ```
 
-19. _Mandates_: `T` is a complete type.
+23. _Mandates_: `T` is a complete type.
 
-20. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
+24. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
     valueless, `*this` is valueless. Otherwise, constructs an owned object of
     type `T` with `*other`, using the allocator `alloc`.
+
+25. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
+  `allocator_traits<allocator_type>::construct` throws.
 
 ```c++
 constexpr indirect(indirect&& other) noexcept;
 ```
 
-21. _Effects_: Equivalent to `indirect(allocator_arg_t{}, other.alloc,
+26. _Effects_: Equivalent to `indirect(allocator_arg_t{}, other.alloc,
     std::move(other))`.
+
+27. _Postconditions_: `*this` is not valueless.
+
+28. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
+  `allocator_traits<allocator_type>::construct` throws.
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
   noexcept(allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-22. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
+29. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
     is `false`, `T` is a complete type.
 
-23. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
+30. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
     valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc`
     constructs an object of type `indirect` that owns the owned object of other;
     `other` is valueless. Otherwise, constructs an owned object of type `T` with
     `*std::move(other)`, using the allocator `alloc`.
+
+31. _Postconditions_: `*this` is not valueless.
+
+32. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
+  `allocator_traits<allocator_type>::construct` throws.
 
 #### X.Y.4 Destructor [indirect.dtor]
 
