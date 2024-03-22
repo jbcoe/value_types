@@ -651,7 +651,7 @@ move assignment, or swapping of the allocator only if
     is `true` within the implementation of the corresponding indirect operation.
 
 5. A program that instantiates the definition of the template `indirect<T, Allocator>`
-   with a type for the T parameter that is a non-object type, an array type,
+   with a type for the `T` parameter that is a non-object type, an array type,
    `in_place_t`, or a cv-qualified type is ill-formed.
 
 6. The template parameter `T` of `indirect` may be an incomplete type.
@@ -1979,7 +1979,7 @@ breaking changes will still be possible, the impact of these changes on users
 could be potentially significant and unwelcome.
 
 | Component | Decision | Alternative | Change impact | Breaking change? |
-|--|--|--|--|--|
+|--|--|--|--|:--:|
 |Member `emplace`| No member `emplace` | Add member `emplace` | Pure addition | No |
 |`operator bool`| No `operator bool` | Add `operator bool` | Changes semantics | No |
 |`indirect` comparsion preconditions | `indirect` must not be valueless | Allows comparison of valueless objects | Runtime cost | No |
