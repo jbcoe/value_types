@@ -937,9 +937,9 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 ```
 
 5. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
-    is `false`, `T` is a complete type.
+    is `false`, then `T` is a complete type.
 
-6. _Effects_: If `addressof(other) == this`, there are no effects.
+6. _Effects_: If `addressof(other) == this` is `true`, there are no effects.
 
   If
   `allocator_traits<allocator_type>::propagate_on_container_move_assignment` is
