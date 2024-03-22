@@ -858,9 +858,7 @@ constexpr indirect(indirect&& other) noexcept;
 26. _Effects_: Equivalent to `indirect(allocator_arg_t{}, other.alloc,
     std::move(other))`.
 
-27. _Postconditions_: `*this` is not valueless.
-
-28. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
+27. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
   `allocator_traits<allocator_type>::construct` throws.
 
 ```c++
@@ -868,18 +866,16 @@ constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
   noexcept(allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-29. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
+28. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
     is `false`, `T` is a complete type.
 
-30. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
+29. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
     valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc` is `true`
     constructs an object of type `indirect` that owns the owned object of `other`;
     `other` is valueless. Otherwise, constructs an owned object of type `T` with
     `*std::move(other)`, using the allocator `alloc`.
 
-31. _Postconditions_: `*this` is not valueless.
-
-32. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
+30. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
   `allocator_traits<allocator_type>::construct` throws.
 
 #### X.Y.4 Destructor [indirect.dtor]
@@ -902,16 +898,16 @@ constexpr indirect& operator=(const indirect& other);
 
 1. _Mandates_: `T` is a complete type.
 
-2. _Effects_: If `addressof(other) == this`, there are no effects.
+2. _Effects_: If `addressof(other) == this` is `true`, there are no effects.
 
   If `allocator_traits<allocator_type>::propagate_on_container_copy_assignment` is
-  `true` and `alloc != other.alloc` then the allocator needs updating.
+  `true` and `alloc != other.alloc` is `true` then the allocator needs updating.
 
   If `other` is valueless, `*this` becomes valueless and the owned object in
   `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy`
   and then the storage is deallocated.
 
-  Otherwise, if `alloc == other.alloc` and `this` is not valueless, the owned
+  Otherwise, if `alloc == other.alloc` is `true` and `this` is not valueless, the owned
   object is assigned to `*other`.
 
   Otherwise a new owned object is constructed in `*this` using
