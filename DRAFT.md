@@ -873,7 +873,7 @@ constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
 
 30. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
     valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc` is `true`
-    constructs an object of type `indirect` that owns the owned object of other;
+    constructs an object of type `indirect` that owns the owned object of `other`;
     `other` is valueless. Otherwise, constructs an owned object of type `T` with
     `*std::move(other)`, using the allocator `alloc`.
 
