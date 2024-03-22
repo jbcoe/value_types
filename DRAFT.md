@@ -953,8 +953,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
   `other`; the owned object in `other`, if any, is then destroyed using
   `allocator_traits<allocator_type>::destroy` and then the storage is deallocated.
 
-  Otherwise a new owned object is constructed in `*this` using
-  `allocator_traits<allocator_type>::construct` with the owned object from
+  Otherwise constructs a new owned object with the owned object
   `other` as the argument as an rvalue, using either the allocator in `*this` or
   the allocator in `other` if the allocator needs updating. The previous owned
   object in `*this`, if any, is destroyed using
@@ -968,10 +967,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 
 8. _Returns_: A reference to `*this`.
 
-9. _Remarks_: If any exception is thrown, the results of the expressions
-   `this->valueless_after_move()` and `other.valueless_after_move()` remain
-   unchanged. If an exception is thrown during the call to `T`'s selected move
-   constructor, no effect.
+9. _Remarks_: If any exception is thrown, there are no effects on `*this` or `other`.
 
 
 #### X.Y.6 Observers [indirect.observers]
@@ -985,19 +981,16 @@ constexpr T& operator*() & noexcept;
 
 2. _Returns_: `*p`.
 
-3. [Note: The use of these functions typically requires that `T` be a complete
-   type. —end note]
-
 ```c++
 constexpr const T&& operator*() const && noexcept;
 constexpr T&& operator*() && noexcept;
 ```
 
-4. _Preconditions_: `*this` is not valueless.
+3. _Preconditions_: `*this` is not valueless.
 
-5. _Returns_: `std::move(*p)`.
+4. _Returns_: `std::move(*p)`.
 
-6. [Note: The use of these functions typically requires that `T` be a complete
+5. [Note: The use of these functions typically requires that `T` be a complete
    type. —end note]
 
 ```c++
@@ -1005,24 +998,24 @@ constexpr const_pointer operator->() const noexcept;
 constexpr pointer operator->() noexcept;
 ```
 
-7. _Preconditions_: `*this` is not valueless.
+6. _Preconditions_: `*this` is not valueless.
 
-8. _Returns_: `p`.
+7. _Returns_: `p`.
 
-9. [Note: The use of these functions typically requires that `T` be a complete
+8. [Note: The use of these functions typically requires that `T` be a complete
    type. —end note]
 
 ```c++
 constexpr bool valueless_after_move() const noexcept;
 ```
 
-10. _Returns_: `true` if `*this` is valueless, otherwise `false`.
+9. _Returns_: `true` if `*this` is valueless, otherwise `false`.
 
 ```c++
 constexpr allocator_type get_allocator() const noexcept;
 ```
 
-11. _Returns_: `alloc`.
+10. _Returns_: `alloc`.
 
 #### X.Y.7 Swap [indirect.swap]
 
