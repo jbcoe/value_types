@@ -959,7 +959,9 @@ constexpr indirect& operator=(indirect&& other) noexcept(
   the allocator in `other` if the allocator needs updating. The previous owned
   object in `*this`, if any, is destroyed using
   `allocator_traits<allocator_type>::destroy` and then the storage is
-  deallocated. If the allocator needs updating, the allocator in `*this` is
+  deallocated.
+
+  If the allocator needs updating, the allocator in `*this` is
   replaced with a copy of the allocator in `other`.
 
 7. _Postconditions_: `other` is valueless.
