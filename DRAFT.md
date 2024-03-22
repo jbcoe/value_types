@@ -907,8 +907,7 @@ constexpr indirect& operator=(const indirect& other);
   `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy`
   and then the storage is deallocated.
 
-  Otherwise, if `alloc == other.alloc` is `true` and `this` is not valueless, the owned
-  object is assigned to `*other`.
+  Otherwise, if `alloc == other.alloc` is `true` and `*this` is not valueless, `*other` is assigned to the owned object.
 
   Otherwise a new owned object is constructed in `*this` using
   `allocator_traits<allocator_type>::construct` with the owned object from
@@ -918,7 +917,7 @@ constexpr indirect& operator=(const indirect& other);
   `allocator_traits<allocator_type>::destroy` and then the storage is
   deallocated.
 
-  If the allocator needs updating, the allocator in `this` is replaced with a
+  If the allocator needs updating, the allocator in `*this` is replaced with a
   copy of the allocator in `other`.
 
 3. _Returns_: A reference to `*this`.
