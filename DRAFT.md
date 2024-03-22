@@ -3,7 +3,7 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-R3019R8
+P3019R8
 
 Working Group: Library Evolution, Library
 
@@ -572,9 +572,11 @@ Note to editors: Add the following macros with editor provided values to
 #define __cpp_lib_polymorphic ??????L // also in <memory>
 ```
 
-### Header `<memory>` synopsis [memory.syn]
+### Header `<memory>` synopsis [memory]
 
 ```c++
+namespace std {
+
   // [inout.ptr], function template inout_ptr
   template<class Pointer = void, class Smart, class... Args>
     auto inout_ptr(Smart& s, Args&&... args);
@@ -590,6 +592,16 @@ Note to editors: Add the following macros with editor provided values to
   // [polymorphic], class template polymorphic
   template <class T, class Allocator = allocator<T>>
     class polymorphic;
+
+  namespace pmr {
+
+    template<class T> using indirect =
+      indirect<T, polymorphic_allocator<T>>;
+
+    template<class T> using polymorphic =
+      polymorphic<T, polymorphic_allocator<T>>;
+
+  }
 
 </ins>
 }
@@ -609,8 +621,8 @@ program is ill-formed. Every object of type `indirect<T, Allocator>` uses an
 object of type `Allocator` to allocate and free storage for the owned object as
 needed.
 
-3. Constructing an owned object with arguments `args...` using an allocator `a`
-means calling `allocator_traits<allocator_type>::construct(a, p, args...)` where
+3. Constructing an owned object with arguments `args...` using an allocator `al`
+means calling `allocator_traits<allocator_type>::construct(al, p, args...)` where
 `p` is a pointer obtained by calling
 `allocator_traits<allocator_type>::allocate`.
 
@@ -619,11 +631,11 @@ means calling `allocator_traits<allocator_type>::construct(a, p, args...)` where
 allocator belonging to the indirect value being copied. Move constructors obtain
 an allocator by move construction from the allocator belonging to the object
 being moved. All other constructors for these types take a `const
-allocator_type& argument`. _[Note 3: If an invocation of a constructor uses the
+allocator_type& argument`. _[Note: If an invocation of a constructor uses the
 default value of an optional allocator argument, then the allocator type must
 support value-initialization. --end note]_ A copy of this allocator is used for
 any memory allocation and element construction performed by these constructors
-and by all member functions during the lifetime of each indirect value object,
+and by all member functions during the lifetime of each indirect object,
 or until the allocator is replaced. The allocator may be replaced only via
 assignment or `swap()`. Allocator replacement is performed by copy assignment,
 move assignment, or swapping of the allocator only if
@@ -636,11 +648,11 @@ move assignment, or swapping of the allocator only if
 
     (3.3) `allocator_traits<allocator_type>::propagate_on_container_swap::value`
 
-    is `true` within the implementation of the corresponding indirect value
-    operation.
+    is `true` within the implementation of the corresponding indirect operation.
 
-4. A program that instantiates the definition of indirect for a non-object type,
-   an array type, `in_place_t`, or a cv-qualified type is ill-formed.
+5. A program that instantiates the definition of the template `indirect<T, Allocator>`
+   with a type for the `T` parameter that is a non-object type, an array type,
+   `in_place_t`, or a cv-qualified type is ill-formed.
 
 6. The template parameter `T` of `indirect` may be an incomplete type.
 
@@ -728,7 +740,7 @@ class indirect {
 
 private:
   pointer p; // exposition only
-  Allocator alloc; // exposition only
+  Allocator alloc = Allocator(); // exposition only
 };
 
 template <class Value>
@@ -751,7 +763,8 @@ explicit constexpr indirect()
 
 2. _Mandates_: `T` is a complete type.
 
-3. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator())`.
+3. _Effects_: Constructs an owned object of type `T` with an empty argument list,
+   using the allocator `alloc`.
 
 4. _Postconditions_: `*this` is not valueless.
 
@@ -789,61 +802,81 @@ explicit constexpr indirect(in_place_t, Us&&... us);
 13. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(),
     std::forward<Us>(us)...)`.
 
+14. _Postconditions_: `*this` is not valueless.
+
+15. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
+  `allocator_traits<allocator_type>::construct` throws.
+
 ```c++
 template <class... Us>
 explicit constexpr indirect(allocator_arg_t, const Allocator& a, in_place_t, Us&& ...us);
 ```
 
-14. _Constraints_: `is_constructible_v<T, Us...>` is `true`.
+16. _Constraints_: `is_constructible_v<T, Us...>` is `true`.
   `is_copy_constructible_v<T>` is `true`.
 
-15. _Mandates_: `T` is a complete type.
+17. _Mandates_: `T` is a complete type.
 
-16. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
+18. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
     owned object of type `T` with `std​::​forward<Us>(us)...`, using the
     allocator `alloc`.
 
-17. _Postconditions_: `*this` is not valueless.
+19. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
+  `allocator_traits<allocator_type>::construct` throws.
 
 ```c++
 constexpr indirect(const indirect& other);
 ```
 
-18. _Effects_: Equivalent to `indirect(allocator_arg_t{},
+20. _Effects_: Equivalent to `indirect(allocator_arg_t{},
     allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc),
     other)`
+
+21. _Postconditions_: `*this` is not valueless.
+
+22. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
+  `allocator_traits<allocator_type>::construct` throws.
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& a,
                    const indirect& other);
 ```
 
-19. _Mandates_: `T` is a complete type.
+23. _Mandates_: `T` is a complete type.
 
-20. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
+24. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
     valueless, `*this` is valueless. Otherwise, constructs an owned object of
     type `T` with `*other`, using the allocator `alloc`.
+
+25. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
+  `allocator_traits<allocator_type>::construct` throws.
 
 ```c++
 constexpr indirect(indirect&& other) noexcept;
 ```
 
-21. _Effects_: Equivalent to `indirect(allocator_arg_t{}, other.alloc,
+26. _Effects_: Equivalent to `indirect(allocator_arg_t{}, other.alloc,
     std::move(other))`.
+
+27. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
+  `allocator_traits<allocator_type>::construct` throws.
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
   noexcept(allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-22. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
+28. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
     is `false`, `T` is a complete type.
 
-23. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
-    valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc`
-    constructs an object of type `indirect` that owns the owned object of other;
+29. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
+    valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc` is `true`
+    constructs an object of type `indirect` that owns the owned object of `other`;
     `other` is valueless. Otherwise, constructs an owned object of type `T` with
     `*std::move(other)`, using the allocator `alloc`.
+
+30. _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
+  `allocator_traits<allocator_type>::construct` throws.
 
 #### X.Y.4 Destructor [indirect.dtor]
 
@@ -865,17 +898,17 @@ constexpr indirect& operator=(const indirect& other);
 
 1. _Mandates_: `T` is a complete type.
 
-2. _Effects_: If `addressof(other) == this`, there are no effects.
+2. _Effects_: If `addressof(other) == this` is `true`, there are no effects.
 
   If `allocator_traits<allocator_type>::propagate_on_container_copy_assignment` is
-  `true` and `alloc != other.alloc` then the allocator needs updating.
+  `true` then the allocator needs updating.
 
   If `other` is valueless, `*this` becomes valueless and the owned object in
   `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy`
   and then the storage is deallocated.
 
-  Otherwise, if `alloc == other.alloc` and `this` is not valueless, the owned
-  object is assigned to `*other`.
+  Otherwise, if `alloc == other.alloc` is `true` and `*this` is not valueless,
+  `*other` is assigned to the owned object.
 
   Otherwise a new owned object is constructed in `*this` using
   `allocator_traits<allocator_type>::construct` with the owned object from
@@ -885,7 +918,7 @@ constexpr indirect& operator=(const indirect& other);
   `allocator_traits<allocator_type>::destroy` and then the storage is
   deallocated.
 
-  If the allocator needs updating, the allocator in `this` is replaced with a
+  If the allocator needs updating, the allocator in `*this` is replaced with a
   copy of the allocator in `other`.
 
 3. _Returns_: A reference to `*this`.
@@ -904,13 +937,13 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 ```
 
 5. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
-    is `false`, `T` is a complete type.
+    is `false`, then `T` is a complete type.
 
-6. _Effects_: If `addressof(other) == this`, there are no effects.
+6. _Effects_: If `addressof(other) == this` is `true`, there are no effects.
 
   If
   `allocator_traits<allocator_type>::propagate_on_container_move_assignment` is
-  `true` and `alloc != other.alloc` then the allocator needs updating.
+  `true` then the allocator needs updating.
 
   If `other` is valueless, `*this` becomes valueless and the owned object in
   `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy`
@@ -920,23 +953,21 @@ constexpr indirect& operator=(indirect&& other) noexcept(
   `other`; the owned object in `other`, if any, is then destroyed using
   `allocator_traits<allocator_type>::destroy` and then the storage is deallocated.
 
-  Otherwise a new owned object is constructed in `*this` using
-  `allocator_traits<allocator_type>::construct` with the owned object from
+  Otherwise constructs a new owned object with the owned object
   `other` as the argument as an rvalue, using either the allocator in `*this` or
   the allocator in `other` if the allocator needs updating. The previous owned
   object in `*this`, if any, is destroyed using
   `allocator_traits<allocator_type>::destroy` and then the storage is
-  deallocated. If the allocator needs updating, the allocator in `*this` is
+  deallocated.
+
+  If the allocator needs updating, the allocator in `*this` is
   replaced with a copy of the allocator in `other`.
 
 7. _Postconditions_: `other` is valueless.
 
 8. _Returns_: A reference to `*this`.
 
-9. _Remarks_: If any exception is thrown, the results of the expressions
-   `this->valueless_after_move()` and `other.valueless_after_move()` remain
-   unchanged. If an exception is thrown during the call to `T`'s selected move
-   constructor, no effect.
+9. _Remarks_: If any exception is thrown, there are no effects on `*this` or `other`.
 
 
 #### X.Y.6 Observers [indirect.observers]
@@ -950,19 +981,16 @@ constexpr T& operator*() & noexcept;
 
 2. _Returns_: `*p`.
 
-3. [Note: The use of these functions typically requires that `T` be a complete
-   type. —end note]
-
 ```c++
 constexpr const T&& operator*() const && noexcept;
 constexpr T&& operator*() && noexcept;
 ```
 
-4. _Preconditions_: `*this` is not valueless.
+3. _Preconditions_: `*this` is not valueless.
 
-5. _Returns_: `std::move(*p)`.
+4. _Returns_: `std::move(*p)`.
 
-6. [Note: The use of these functions typically requires that `T` be a complete
+5. [Note: The use of these functions typically requires that `T` be a complete
    type. —end note]
 
 ```c++
@@ -970,24 +998,24 @@ constexpr const_pointer operator->() const noexcept;
 constexpr pointer operator->() noexcept;
 ```
 
-7. _Preconditions_: `*this` is not valueless.
+6. _Preconditions_: `*this` is not valueless.
 
-8. _Returns_: `p`.
+7. _Returns_: `p`.
 
-9. [Note: The use of these functions typically requires that `T` be a complete
+8. [Note: The use of these functions typically requires that `T` be a complete
    type. —end note]
 
 ```c++
 constexpr bool valueless_after_move() const noexcept;
 ```
 
-10. _Returns_: `true` if `*this` is valueless, otherwise `false`.
+9. _Returns_: `true` if `*this` is valueless, otherwise `false`.
 
 ```c++
 constexpr allocator_type get_allocator() const noexcept;
 ```
 
-11. _Returns_: `alloc`.
+10. _Returns_: `alloc`.
 
 #### X.Y.7 Swap [indirect.swap]
 
@@ -997,14 +1025,13 @@ constexpr void swap(indirect& other) noexcept(
   || allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-1. _Effects_: Swaps the states of `*this` and `other`, exchanging owned objects
-  or valueless states. If
+1. _Effects_: Swaps `p` and `other.p`. If
   `allocator_traits<allocator_type>::propagate_on_container_swap::value` is
   `true`, then `allocator_type` shall meet the _Cpp17Swappable_ requirements and
   the allocators of `*this` and `other` are exchanged by calling `swap` as
   described in [swappable.requirements]. Otherwise, the allocators are not
   swapped, and the behavior is undefined unless `(*this).get_allocator() ==
-  other.get_allocator()`. _[Note: Does not call `swap` on the owned objects
+  other.get_allocator()` is `true`. _[Note: Does not call `swap` on the owned objects
   directly. --end note]_
 
 ```c++
@@ -1022,29 +1049,22 @@ constexpr bool operator==(const indirect& lhs, const indirect<U, AA>& rhs)
   noexcept(noexcept(*lhs == *rhs));
 ```
 
-1. _Constraints_: `*lhs == *rhs` is well-formed.
+1. _Constraints_: `*lhs == *rhs` is well-formed and its result is convertible to bool.
 
 2. _Returns_: If `lhs` is valueless or `rhs` is valueless,
-  `lhs.valueless_after_move()==rhs.valueless_after_move()`; otherwise `*lhs ==
+  `lhs.valueless_after_move() == rhs.valueless_after_move()`; otherwise `*lhs ==
   *rhs`.
-
-3. _Remarks_: Specializations of this function template for which `*lhs == *rhs`
-  is a core constant expression are constexpr functions.
 
 ```c++
 template <class U, class AA>
-constexpr auto operator<=>(const indirect& lhs, const indirect<U, AA>& rhs)
-  noexcept(noexcept(*lhs <=> *rhs)) -> compare_three_way_result_t<T, U>;
+constexpr synth-three-way-result<T> operator<=>(const indirect& lhs, const indirect<U, AA>& rhs)
+  noexcept(noexcept(synth-three-way(*lhs, *rhs)));
 ```
 
-4. _Constraints_: `*lhs <=> *rhs` is well-formed.
+3. _Constraints_: `*lhs <=> *rhs` is well-formed.
 
-5. _Returns_: If `lhs` is valueless or `rhs` is valueless,
-  `!lhs.valueless_after_move() <=> !rhs.valueless_after_move()`; otherwise `*lhs
-  <=> *rhs`.
-
-6. _Remarks_: Specializations of this function template for which `*lhs <=>
-  *rhs` is a core constant expression are constexpr functions.
+4. _Returns_: If `lhs` is valueless or `rhs` is valueless,
+  `!lhs.valueless_after_move() <=> !rhs.valueless_after_move()`; otherwise `synth-three-way(*lhs, *rhs)`.
 
 #### X.Y.9 Comparison with T [indirect.comp.with.t]
 
@@ -1058,22 +1078,15 @@ constexpr bool operator==(const indirect& lhs, const U& rhs)
 
 2. _Returns_: If `lhs` is valueless, false; otherwise `*lhs == rhs`.
 
-3. _Remarks_: Specializations of this function template for which `*lhs == rhs`
-   is a core constant expression, are constexpr functions.
-
 ```c++
 template <class U>
-constexpr auto operator<=>(const indirect& lhs, const U& rhs)
-  noexcept(noexcept(*lhs <=> rhs)) -> compare_three_way_result_t<T, U>;
+constexpr synth-three-way-result<T> operator<=>(const indirect& lhs, const U& rhs)
+  noexcept(noexcept(synth-three-way(*lhs, rhs)));
 ```
 
-4. _Constraints_: `*lhs <=> rhs` is well-formed.
+3. _Constraints_: `*lhs <=> rhs` is well-formed.
 
-5. _Returns_: If `rhs` is valueless, `false <=> true`; otherwise `*lhs <=> rhs`.
-
-6. _Remarks_: Specializations of this function template for which `*lhs <=> rhs`
-   is a core constant expression, are constexpr functions.
-
+4. _Returns_: If `rhs` is valueless, `false < true`; otherwise `synth-three-way(*lhs, rhs)`.
 
 #### X.Y.10 Hash support [indirect.hash]
 
