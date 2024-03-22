@@ -1025,14 +1025,13 @@ constexpr void swap(indirect& other) noexcept(
   || allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-1. _Effects_: Swaps the states of `*this` and `other`, exchanging owned objects
-  or valueless states. If
+1. _Effects_: Swaps `p` and `other.p`. If
   `allocator_traits<allocator_type>::propagate_on_container_swap::value` is
   `true`, then `allocator_type` shall meet the _Cpp17Swappable_ requirements and
   the allocators of `*this` and `other` are exchanged by calling `swap` as
   described in [swappable.requirements]. Otherwise, the allocators are not
   swapped, and the behavior is undefined unless `(*this).get_allocator() ==
-  other.get_allocator()`. _[Note: Does not call `swap` on the owned objects
+  other.get_allocator()` is `true`. _[Note: Does not call `swap` on the owned objects
   directly. --end note]_
 
 ```c++
@@ -1053,26 +1052,19 @@ constexpr bool operator==(const indirect& lhs, const indirect<U, AA>& rhs)
 1. _Constraints_: `*lhs == *rhs` is well-formed and its result is convertible to bool.
 
 2. _Returns_: If `lhs` is valueless or `rhs` is valueless,
-  `lhs.valueless_after_move()==rhs.valueless_after_move()`; otherwise `*lhs ==
+  `lhs.valueless_after_move() == rhs.valueless_after_move()`; otherwise `*lhs ==
   *rhs`.
-
-3. _Remarks_: Specializations of this function template for which `*lhs == *rhs`
-  is a core constant expression are constexpr functions.
 
 ```c++
 template <class U, class AA>
-constexpr auto operator<=>(const indirect& lhs, const indirect<U, AA>& rhs)
-  noexcept(noexcept(*lhs <=> *rhs)) -> compare_three_way_result_t<T, U>;
+constexpr synth-three-way-result<T> operator<=>(const indirect& lhs, const indirect<U, AA>& rhs)
+  noexcept(noexcept(synth-three-way(*lhs, *rhs)));
 ```
 
-4. _Constraints_: `*lhs <=> *rhs` is well-formed.
+3. _Constraints_: `*lhs <=> *rhs` is well-formed.
 
-5. _Returns_: If `lhs` is valueless or `rhs` is valueless,
-  `!lhs.valueless_after_move() <=> !rhs.valueless_after_move()`; otherwise `*lhs
-  <=> *rhs`.
-
-6. _Remarks_: Specializations of this function template for which `*lhs <=>
-  *rhs` is a core constant expression are constexpr functions.
+4. _Returns_: If `lhs` is valueless or `rhs` is valueless,
+  `!lhs.valueless_after_move() <=> !rhs.valueless_after_move()`; otherwise `synth-three-way(*lhs, *rhs)`.
 
 #### X.Y.9 Comparison with T [indirect.comp.with.t]
 
@@ -1086,22 +1078,15 @@ constexpr bool operator==(const indirect& lhs, const U& rhs)
 
 2. _Returns_: If `lhs` is valueless, false; otherwise `*lhs == rhs`.
 
-3. _Remarks_: Specializations of this function template for which `*lhs == rhs`
-   is a core constant expression, are constexpr functions.
-
 ```c++
 template <class U>
-constexpr auto operator<=>(const indirect& lhs, const U& rhs)
-  noexcept(noexcept(*lhs <=> rhs)) -> compare_three_way_result_t<T, U>;
+constexpr synth-three-way-result<T> operator<=>(const indirect& lhs, const U& rhs)
+  noexcept(noexcept(synth-three-way(*lhs, rhs)));
 ```
 
-4. _Constraints_: `*lhs <=> rhs` is well-formed.
+3. _Constraints_: `*lhs <=> rhs` is well-formed.
 
-5. _Returns_: If `rhs` is valueless, `false <=> true`; otherwise `*lhs <=> rhs`.
-
-6. _Remarks_: Specializations of this function template for which `*lhs <=> rhs`
-   is a core constant expression, are constexpr functions.
-
+4. _Returns_: If `rhs` is valueless, `false < true`; otherwise `synth-three-way(*lhs, rhs)`.
 
 #### X.Y.10 Hash support [indirect.hash]
 
