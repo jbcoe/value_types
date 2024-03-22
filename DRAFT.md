@@ -3,7 +3,7 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-R3019R8
+P3019R8
 
 Working Group: Library Evolution, Library
 
@@ -572,9 +572,11 @@ Note to editors: Add the following macros with editor provided values to
 #define __cpp_lib_polymorphic ??????L // also in <memory>
 ```
 
-### Header `<memory>` synopsis [memory.syn]
+### Header `<memory>` synopsis [memory]
 
 ```c++
+namespace std {
+
   // [inout.ptr], function template inout_ptr
   template<class Pointer = void, class Smart, class... Args>
     auto inout_ptr(Smart& s, Args&&... args);
@@ -590,6 +592,16 @@ Note to editors: Add the following macros with editor provided values to
   // [polymorphic], class template polymorphic
   template <class T, class Allocator = allocator<T>>
     class polymorphic;
+
+  namespace pmr {
+
+    template<class T> using indirect =
+      indirect<T, polymorphic_allocator<T>>;
+
+    template<class T> using polymorphic =
+      polymorphic<T, polymorphic_allocator<T>>;
+
+  }
 
 </ins>
 }
@@ -609,8 +621,8 @@ program is ill-formed. Every object of type `indirect<T, Allocator>` uses an
 object of type `Allocator` to allocate and free storage for the owned object as
 needed.
 
-3. Constructing an owned object with arguments `args...` using an allocator `a`
-means calling `allocator_traits<allocator_type>::construct(a, p, args...)` where
+3. Constructing an owned object with arguments `args...` using an allocator `al`
+means calling `allocator_traits<allocator_type>::construct(al, p, args...)` where
 `p` is a pointer obtained by calling
 `allocator_traits<allocator_type>::allocate`.
 
@@ -619,11 +631,11 @@ means calling `allocator_traits<allocator_type>::construct(a, p, args...)` where
 allocator belonging to the indirect value being copied. Move constructors obtain
 an allocator by move construction from the allocator belonging to the object
 being moved. All other constructors for these types take a `const
-allocator_type& argument`. _[Note 3: If an invocation of a constructor uses the
+allocator_type& argument`. _[Note: If an invocation of a constructor uses the
 default value of an optional allocator argument, then the allocator type must
 support value-initialization. --end note]_ A copy of this allocator is used for
 any memory allocation and element construction performed by these constructors
-and by all member functions during the lifetime of each indirect value object,
+and by all member functions during the lifetime of each indirect object,
 or until the allocator is replaced. The allocator may be replaced only via
 assignment or `swap()`. Allocator replacement is performed by copy assignment,
 move assignment, or swapping of the allocator only if
@@ -636,11 +648,11 @@ move assignment, or swapping of the allocator only if
 
     (3.3) `allocator_traits<allocator_type>::propagate_on_container_swap::value`
 
-    is `true` within the implementation of the corresponding indirect value
-    operation.
+    is `true` within the implementation of the corresponding indirect operation.
 
-4. A program that instantiates the definition of indirect for a non-object type,
-   an array type, `in_place_t`, or a cv-qualified type is ill-formed.
+5. A program that instantiates the definition of the template `indirect<T, Allocator>`
+   with a type for the T parameter that is a non-object type, an array type,
+   `in_place_t`, or a cv-qualified type is ill-formed.
 
 6. The template parameter `T` of `indirect` may be an incomplete type.
 
@@ -751,7 +763,8 @@ explicit constexpr indirect()
 
 2. _Mandates_: `T` is a complete type.
 
-3. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator())`.
+3. _Effects_: `alloc` is value-initialized. Constructs an owned
+   object of type `T` with an empty argument list, using the allocator `alloc`.
 
 4. _Postconditions_: `*this` is not valueless.
 
@@ -1022,7 +1035,7 @@ constexpr bool operator==(const indirect& lhs, const indirect<U, AA>& rhs)
   noexcept(noexcept(*lhs == *rhs));
 ```
 
-1. _Constraints_: `*lhs == *rhs` is well-formed.
+1. _Constraints_: `*lhs == *rhs` is well-formed and its result is convertible to bool.
 
 2. _Returns_: If `lhs` is valueless or `rhs` is valueless,
   `lhs.valueless_after_move()==rhs.valueless_after_move()`; otherwise `*lhs ==
