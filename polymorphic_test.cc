@@ -22,14 +22,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "polymorphic_cxx14.h"
 #endif  // XYZ_POLYMORPHIC_CXX_14
 
-#ifdef XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
-#include "experimental/polymorphic_inline_vtable.h"
-#endif  // XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
-
-#ifdef XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
-#include "experimental/polymorphic_sbo.h"
-#endif  // XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
-
 #ifndef XYZ_POLYMORPHIC_H_
 #include "polymorphic.h"
 #endif  // XYZ_POLYMORPHIC_H_
@@ -108,7 +100,6 @@ TEST(PolymorphicTest, AllocatorExtendedDefaultConstructor) {
   EXPECT_EQ(p.get_allocator(), a);
 }
 
-#ifdef XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS
 TEST(PolymorphicTest, SingleLValueConstructor) {
   Derived d(42);
   xyz::polymorphic<Base> p(d);
@@ -136,7 +127,6 @@ TEST(PolymorphicTest, AllocatorExtendedSingleRValueConstructor) {
   EXPECT_EQ(p->value(), 42);
   EXPECT_EQ(p.get_allocator(), a);
 }
-#endif  // XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS
 
 TEST(PolymorphicTest, InPlaceConstructor) {
   xyz::polymorphic<Base> p(xyz::in_place_type_t<Derived>{}, 42);
