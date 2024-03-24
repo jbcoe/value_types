@@ -403,27 +403,29 @@ class polymorphic : private detail::empty_base_optimization<A> {
     return *this;
   }
 
-  pointer operator->() noexcept {
+  [[nodiscard]] pointer operator->() noexcept {
     assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return cb_->p_;
   }
 
-  const_pointer operator->() const noexcept {
+  [[nodiscard]] const_pointer operator->() const noexcept {
     assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return cb_->p_;
   }
 
-  T& operator*() noexcept {
+  [[nodiscard]] T& operator*() noexcept {
     assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return *cb_->p_;
   }
 
-  const T& operator*() const noexcept {
+  [[nodiscard]] const T& operator*() const noexcept {
     assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return *cb_->p_;
   }
 
-  bool valueless_after_move() const noexcept { return cb_ == nullptr; }
+  [[nodiscard]] bool valueless_after_move() const noexcept {
+    return cb_ == nullptr;
+  }
 
   allocator_type get_allocator() const noexcept { return alloc_base::get(); }
 
