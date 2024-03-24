@@ -131,7 +131,7 @@ class polymorphic {
   using allocator_traits = std::allocator_traits<A>;
 
   template <class U, class... Ts>
-  constexpr cblock_t* create_control_block(Ts&&... ts) const {
+  [[nodiscard]] constexpr cblock_t* create_control_block(Ts&&... ts) const {
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
     cb_allocator cb_alloc(alloc_);
@@ -322,27 +322,27 @@ class polymorphic {
     return *this;
   }
 
-  constexpr pointer operator->() noexcept {
+  [[nodiscard]] constexpr pointer operator->() noexcept {
     assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return cb_->p_;
   }
 
-  constexpr const_pointer operator->() const noexcept {
+  [[nodiscard]] constexpr const_pointer operator->() const noexcept {
     assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return cb_->p_;
   }
 
-  constexpr T& operator*() noexcept {
+  [[nodiscard]] constexpr T& operator*() noexcept {
     assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return *cb_->p_;
   }
 
-  constexpr const T& operator*() const noexcept {
+  [[nodiscard]] constexpr const T& operator*() const noexcept {
     assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return *cb_->p_;
   }
 
-  constexpr bool valueless_after_move() const noexcept {
+  [[nodiscard]] constexpr bool valueless_after_move() const noexcept {
     return cb_ == nullptr;
   }
 
