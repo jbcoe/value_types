@@ -132,7 +132,7 @@ class polymorphic {
   using allocator_traits = std::allocator_traits<A>;
 
   template <class U, class... Ts>
-  constexpr cblock_t* create_control_block(Ts&&... ts) const {
+  [[nodiscard]] constexpr cblock_t* create_control_block(Ts&&... ts) const {
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
     cb_allocator cb_alloc(alloc_);
@@ -269,8 +269,7 @@ class polymorphic {
     // We defer actually updating the allocator until later because it may be
     // needed to delete the current control block.
     bool update_alloc =
-        allocator_traits::propagate_on_container_copy_assignment::value &&
-        alloc_ != other.alloc_;
+        allocator_traits::propagate_on_container_copy_assignment::value;
 
     if (other.valueless_after_move()) {
       reset();
@@ -298,8 +297,7 @@ class polymorphic {
     // We defer actually updating the allocator until later because it may be
     // needed to delete the current control block.
     bool update_alloc =
-        allocator_traits::propagate_on_container_move_assignment::value &&
-        alloc_ != other.alloc_;
+        allocator_traits::propagate_on_container_move_assignment::value;
 
     if (other.valueless_after_move()) {
       reset();
@@ -324,27 +322,27 @@ class polymorphic {
     return *this;
   }
 
-  constexpr pointer operator->() noexcept {
+  [[nodiscard]] constexpr pointer operator->() noexcept {
     assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return cb_->p_;
   }
 
-  constexpr const_pointer operator->() const noexcept {
+  [[nodiscard]] constexpr const_pointer operator->() const noexcept {
     assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return cb_->p_;
   }
 
-  constexpr T& operator*() noexcept {
+  [[nodiscard]] constexpr T& operator*() noexcept {
     assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return *cb_->p_;
   }
 
-  constexpr const T& operator*() const noexcept {
+  [[nodiscard]] constexpr const T& operator*() const noexcept {
     assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return *cb_->p_;
   }
 
-  constexpr bool valueless_after_move() const noexcept {
+  [[nodiscard]] constexpr bool valueless_after_move() const noexcept {
     return cb_ == nullptr;
   }
 

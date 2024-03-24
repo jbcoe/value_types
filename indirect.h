@@ -212,8 +212,7 @@ class indirect {
     // We defer actually updating the allocator until later because it may be
     // needed to delete the current control block.
     bool update_alloc =
-        allocator_traits::propagate_on_container_copy_assignment::value &&
-        alloc_ != other.alloc_;
+        allocator_traits::propagate_on_container_copy_assignment::value;
 
     if (other.valueless_after_move()) {
       reset();
@@ -245,8 +244,7 @@ class indirect {
     // We defer actually updating the allocator until later because it may be
     // needed to delete the current control block.
     bool update_alloc =
-        allocator_traits::propagate_on_container_move_assignment::value &&
-        alloc_ != other.alloc_;
+        allocator_traits::propagate_on_container_move_assignment::value;
 
     if (other.valueless_after_move()) {
       reset();
@@ -269,37 +267,39 @@ class indirect {
     return *this;
   }
 
-  constexpr const T& operator*() const& noexcept {
+  [[nodiscard]] constexpr const T& operator*() const& noexcept {
     assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return *p_;
   }
 
-  constexpr T& operator*() & noexcept {
+  [[nodiscard]] constexpr T& operator*() & noexcept {
     assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return *p_;
   }
 
-  constexpr T&& operator*() && noexcept {
+  [[nodiscard]] constexpr T&& operator*() && noexcept {
     assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return std::move(*p_);
   }
 
-  constexpr const T&& operator*() const&& noexcept {
+  [[nodiscard]] constexpr const T&& operator*() const&& noexcept {
     assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return std::move(*p_);
   }
 
-  constexpr const_pointer operator->() const noexcept {
+  [[nodiscard]] constexpr const_pointer operator->() const noexcept {
     assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return p_;
   }
 
-  constexpr pointer operator->() noexcept {
+  [[nodiscard]] constexpr pointer operator->() noexcept {
     assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return p_;
   }
 
-  constexpr bool valueless_after_move() const noexcept { return p_ == nullptr; }
+  [[nodiscard]] constexpr bool valueless_after_move() const noexcept {
+    return p_ == nullptr;
+  }
 
   constexpr allocator_type get_allocator() const noexcept { return alloc_; }
 
@@ -326,7 +326,7 @@ class indirect {
   }
 
   template <class U, class AA>
-  friend constexpr bool operator==(
+  [[nodiscard]] friend constexpr bool operator==(
       const indirect<T, A>& lhs,
       const indirect<U, AA>& rhs) noexcept(noexcept(*lhs == *rhs)) {
     if (lhs.valueless_after_move()) {
@@ -339,7 +339,7 @@ class indirect {
   }
 
   template <class U, class AA>
-  friend constexpr auto operator<=>(
+  [[nodiscard]] friend constexpr auto operator<=>(
       const indirect<T, A>& lhs,
       const indirect<U, AA>& rhs) noexcept(noexcept(*lhs <=> *rhs))
       -> std::compare_three_way_result_t<T, U> {
@@ -350,8 +350,8 @@ class indirect {
   }
 
   template <class U>
-  friend constexpr bool operator==(const indirect<T, A>& lhs,
-                                   const U& rhs) noexcept(noexcept(*lhs == rhs))
+  [[nodiscard]] friend constexpr bool operator==(
+      const indirect<T, A>& lhs, const U& rhs) noexcept(noexcept(*lhs == rhs))
     requires(!is_indirect_v<U>)
   {
     if (lhs.valueless_after_move()) {
@@ -361,9 +361,8 @@ class indirect {
   }
 
   template <class U>
-  friend constexpr auto operator<=>(const indirect<T, A>& lhs,
-                                    const U& rhs) noexcept(noexcept(*lhs <=>
-                                                                    rhs))
+  [[nodiscard]] friend constexpr auto operator<=>(
+      const indirect<T, A>& lhs, const U& rhs) noexcept(noexcept(*lhs <=> rhs))
       -> std::compare_three_way_result_t<T, U>
     requires(!is_indirect_v<U>)
   {
@@ -390,7 +389,7 @@ class indirect {
   }
 
   template <typename... Ts>
-  constexpr static pointer construct_from(A alloc, Ts&&... ts) {
+  [[nodiscard]] constexpr static pointer construct_from(A alloc, Ts&&... ts) {
     pointer mem = allocator_traits::allocate(alloc, 1);
     try {
       allocator_traits::construct(alloc, std::to_address(mem),
