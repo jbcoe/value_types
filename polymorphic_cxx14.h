@@ -115,9 +115,6 @@ class direct_control_block final : public control_block<T, A> {
   using cb_alloc_traits = std::allocator_traits<cb_allocator>;
 
  public:
-  ~direct_control_block() override = default;
-  direct_control_block(const direct_control_block&) = delete;
-
   template <class... Ts>
   direct_control_block(const A& alloc, Ts&&... ts) {
     cb_allocator cb_alloc(alloc);
