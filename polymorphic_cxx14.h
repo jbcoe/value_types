@@ -61,7 +61,6 @@ namespace xyz {
 // These implementations must be kept in sync.
 // We duplicate implementations to allow this header to work as a single
 // include. https://godbolt.org needs single-file includes.
-// TODO: Add tests to keep implementations in sync.
 namespace xyz {
 namespace detail {
 template <class T, bool CanBeEmptyBaseClass =
@@ -105,24 +104,30 @@ struct control_block {
 
 template <class T, class U, class A>
 class direct_control_block final : public control_block<T, A> {
-  U u_;
+  union uninitialized_storage {
+    U u_;
+    uninitialized_storage() {}
+    ~uninitialized_storage() {}
+  } storage_;
+
+  using cb_allocator = typename std::allocator_traits<A>::template rebind_alloc<
+      direct_control_block<T, U, A>>;
+  using cb_alloc_traits = std::allocator_traits<cb_allocator>;
 
  public:
-  ~direct_control_block() override = default;
-
   template <class... Ts>
-  direct_control_block(Ts&&... ts) : u_(std::forward<Ts>(ts)...) {
-    control_block<T, A>::p_ = &u_;
+  direct_control_block(const A& alloc, Ts&&... ts) {
+    cb_allocator cb_alloc(alloc);
+    cb_alloc_traits::construct(cb_alloc, std::addressof(storage_.u_),
+                               std::forward<Ts>(ts)...);
+    control_block<T, A>::p_ = std::addressof(storage_.u_);
   }
 
   control_block<T, A>* clone(const A& alloc) override {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<direct_control_block<T, U, A>>;
     cb_allocator cb_alloc(alloc);
-    using cb_alloc_traits = std::allocator_traits<cb_allocator>;
     auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
     try {
-      cb_alloc_traits::construct(cb_alloc, mem, u_);
+      cb_alloc_traits::construct(cb_alloc, mem, alloc, storage_.u_);
       return mem;
     } catch (...) {
       cb_alloc_traits::deallocate(cb_alloc, mem, 1);
@@ -131,13 +136,10 @@ class direct_control_block final : public control_block<T, A> {
   }
 
   control_block<T, A>* move(const A& alloc) override {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<direct_control_block<T, U, A>>;
     cb_allocator cb_alloc(alloc);
-    using cb_alloc_traits = std::allocator_traits<cb_allocator>;
     auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
     try {
-      cb_alloc_traits::construct(cb_alloc, mem, std::move(u_));
+      cb_alloc_traits::construct(cb_alloc, mem, alloc, std::move(storage_.u_));
       return mem;
     } catch (...) {
       cb_alloc_traits::deallocate(cb_alloc, mem, 1);
@@ -146,11 +148,8 @@ class direct_control_block final : public control_block<T, A> {
   }
 
   void destroy(A& alloc) override {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<direct_control_block<T, U, A>>;
     cb_allocator cb_alloc(alloc);
-    using cb_alloc_traits = std::allocator_traits<cb_allocator>;
-    cb_alloc_traits::destroy(cb_alloc, this);
+    cb_alloc_traits::destroy(cb_alloc, std::addressof(storage_.u_));
     cb_alloc_traits::deallocate(cb_alloc, this, 1);
   }
 };
@@ -173,7 +172,8 @@ class polymorphic : private detail::empty_base_optimization<A> {
     using cb_alloc_traits = std::allocator_traits<cb_allocator>;
     auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
     try {
-      cb_alloc_traits::construct(cb_alloc, mem, std::forward<Ts>(ts)...);
+      cb_alloc_traits::construct(cb_alloc, mem, alloc_base::get(),
+                                 std::forward<Ts>(ts)...);
       return mem;
     } catch (...) {
       cb_alloc_traits::deallocate(cb_alloc, mem, 1);
@@ -200,7 +200,9 @@ class polymorphic : private detail::empty_base_optimization<A> {
             typename AA = A,
             typename std::enable_if<std::is_default_constructible<AA>::value,
                                     int>::type = 0>
-  polymorphic() : polymorphic(std::allocator_arg, A()) {}
+  polymorphic() : alloc_base() {
+    cb_ = create_control_block<T>();
+  }
 
   template <
       class U, class... Ts,
