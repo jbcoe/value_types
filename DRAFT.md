@@ -777,43 +777,43 @@ explicit constexpr indirect()
 explicit constexpr indirect(allocator_arg_t, const Allocator& a);
 ```
 
-6. _Constraints_: `is_default_constructible_v<T>` is `true`.
+5. _Constraints_: `is_default_constructible_v<T>` is `true`.
   `is_copy_constructible_v<T>` is `true`.
 
-7. _Mandates_: `T` is a complete type.
+6. _Mandates_: `T` is a complete type.
 
-8. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an owned
+7. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an owned
    object of type `T` with an empty argument list, using the allocator `alloc`.
 
-9. _Postconditions_: `*this` is not valueless.
+8. _Postconditions_: `*this` is not valueless.
 
 ```c++
 template <class... Us>
 explicit constexpr indirect(in_place_t, Us&&... us);
 ```
 
-11. _Constraints_: `is_constructible_v<T, Us...>` is `true`.
+9. _Constraints_: `is_constructible_v<T, Us...>` is `true`.
    `is_copy_constructible_v<T>` is `true`.
    `is_default_constructible_v<allocator_type>` is `true`.
 
-12. _Mandates_: `T` is a complete type.
+10. _Mandates_: `T` is a complete type.
 
-13. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(),
+11. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(),
     std::forward<Us>(us)...)`.
 
-14. _Postconditions_: `*this` is not valueless.
+12. _Postconditions_: `*this` is not valueless.
 
 ```c++
 template <class... Us>
 explicit constexpr indirect(allocator_arg_t, const Allocator& a, in_place_t, Us&& ...us);
 ```
 
-16. _Constraints_: `is_constructible_v<T, Us...>` is `true`.
+13. _Constraints_: `is_constructible_v<T, Us...>` is `true`.
   `is_copy_constructible_v<T>` is `true`.
 
-17. _Mandates_: `T` is a complete type.
+14. _Mandates_: `T` is a complete type.
 
-18. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
+15. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
     owned object of type `T` with `std​::​forward<Us>(us)...`, using the
     allocator `alloc`.
 
@@ -821,9 +821,9 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a, in_place_t, Us&
 constexpr indirect(const indirect& other);
 ```
 
-??. _Mandates_: `T` is a complete type.
+16. _Mandates_: `T` is a complete type.
 
-20. _Effects_: If `other` is valueless, `*this` is valueless. Otherwise,
+17. _Effects_: If `other` is valueless, `*this` is valueless. Otherwise,
     constructs an owned object of type `T` with `*other`, using the allocator
     `alloc`.
 
@@ -832,9 +832,9 @@ constexpr indirect(allocator_arg_t, const Allocator& a,
                    const indirect& other);
 ```
 
-23. _Mandates_: `T` is a complete type.
+18. _Mandates_: `T` is a complete type.
 
-24. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
+19. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
     valueless, `*this` is valueless. Otherwise, constructs an owned object of
     type `T` with `*other`, using the allocator `alloc`.
 
@@ -842,10 +842,10 @@ constexpr indirect(allocator_arg_t, const Allocator& a,
 constexpr indirect(indirect&& other) noexcept;
 ```
 
-??. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
+20. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
     is `false` then `T` is a complete type.
 
-26. _Effects_: If `other` is valueless, `*this` is valueless. Otherwise, if
+21. _Effects_: If `other` is valueless, `*this` is valueless. Otherwise, if
     `alloc == other.alloc` is `true` constructs an object of type `indirect`
     that owns the owned object of `other`; `other` is valueless. Otherwise,
     constructs an owned object of type `T` with `*std::move(other)`, using the
@@ -856,10 +856,10 @@ constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
   noexcept(allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-28. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
+22. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
     is `false` then `T` is a complete type.
 
-29. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
+23. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
     valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc` is `true`
     constructs an object of type `indirect` that owns the owned object of `other`;
     `other` is valueless. Otherwise, constructs an owned object of type `T` with
@@ -982,21 +982,21 @@ constexpr const_pointer operator->() const noexcept;
 constexpr pointer operator->() noexcept;
 ```
 
-6. _Preconditions_: `*this` is not valueless.
+5. _Preconditions_: `*this` is not valueless.
 
-7. _Returns_: `p`.
+6. _Returns_: `p`.
 
 ```c++
 constexpr bool valueless_after_move() const noexcept;
 ```
 
-9. _Returns_: `true` if `*this` is valueless, otherwise `false`.
+7. _Returns_: `true` if `*this` is valueless, otherwise `false`.
 
 ```c++
 constexpr allocator_type get_allocator() const noexcept;
 ```
 
-10. _Returns_: `alloc`.
+8. _Returns_: `alloc`.
 
 #### X.Y.7 Swap [indirect.swap]
 
@@ -1019,7 +1019,7 @@ constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
   noexcept(lhs.swap(rhs)));
 ```
 
-3. _Effects_: Equivalent to `lhs.swap(rhs)`.
+2. _Effects_: Equivalent to `lhs.swap(rhs)`.
 
 #### X.Y.8 Relational operators [indirect.relops]
 
