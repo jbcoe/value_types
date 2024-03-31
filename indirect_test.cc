@@ -42,6 +42,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <optional>
 #endif  // XYZ_HAS_STD_OPTIONAL
 #include <tuple>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -53,6 +54,17 @@ using std::in_place_t;
 #endif  // defined(XYZ_HAS_STD_IN_PLACE_T) && !defined(XYZ_INDIRECT_CXX_14)
 
 namespace {
+
+TEST(IndirectTest, TriviallyRelocatable) {
+#if defined(__cpp_impl_trivially_relocatable) && \
+    defined(__cpp_lib_trivially_relocatable)
+  static_assert(std::is_trivially_relocatable_v<xyz::indirect<int>>);
+#ifdef XYZ_HAS_STD_MEMORY_RESOURCE
+  static_assert(!std::is_trivially_relocatable_v<
+                xyz::indirect<int, std::pmr::polymorphic_allocator<int>>>);
+#endif
+#endif  // defined(__cpp_impl_trivially_relocatable) && ...
+}
 
 TEST(IndirectTest, DefaultConstructor) {
   xyz::indirect<int> i;
