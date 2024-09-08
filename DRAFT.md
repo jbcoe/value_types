@@ -798,8 +798,8 @@ explicit constexpr indirect(in_place_t, Us&&... us);
 
 10. _Mandates_: `T` is a complete type.
 
-11. _Effects_: Equivalent to `indirect(allocator_arg_t{}, Allocator(),
-    std::forward<Us>(us)...)`.
+11. _Effects_: Constructs an owned object of type `T` with
+    `std​::​forward<Us>(us)...`, using the allocator `alloc`.
 
 12. _Postconditions_: `*this` is not valueless.
 
