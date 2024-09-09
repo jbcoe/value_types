@@ -247,6 +247,21 @@ TEST(IndirectTest, MoveAssignmentSelf) {
   EXPECT_FALSE(a.valueless_after_move());
 }
 
+TEST(IndirectTest, ConvertingAssignment) {
+  xyz::indirect<int> a;
+  a = 42;
+  EXPECT_EQ(*a, 42);
+}
+
+TEST(IndirectTest, ConvertingAssignmentValueless) {
+  xyz::indirect<int> a;
+  xyz::indirect<int> aa(std::move(a));
+
+  EXPECT_TRUE(a.valueless_after_move());
+  a = 42;
+  EXPECT_EQ(*a, 42);
+}
+
 TEST(IndirectTest, NonMemberSwap) {
   xyz::indirect<int> a(xyz::in_place_t{}, 42);
   xyz::indirect<int> b(xyz::in_place_t{}, 101);

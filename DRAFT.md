@@ -1111,8 +1111,9 @@ constexpr indirect& operator=(indirect&& other) noexcept(
   constexpr indirect& operator=(U&& u);
 ```
 
-10. _Constraints_: `is_constructible_v<T, U>` is true.
-    `is_assignable_v<T&,U>` is true.
+10. _Constraints_: `is_constructible_v<T, U>` is `true`.
+    `is_assignable_v<T&,U>` is `true`.
+    `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
 
 11. _Mandates_: `T` is a complete type.
 

@@ -309,6 +309,20 @@ class indirect : private detail::empty_base_optimization<A> {
     return *this;
   }
 
+  template <class U, typename std::enable_if<
+                         (std::is_constructible<T, U>::value &&
+                          std::is_assignable<T&, U>::value &&
+                          !std::is_same<std::remove_cv_t<U>, indirect>::value),
+                         int>::type = 0>
+  constexpr indirect& operator=(U&& u) {
+    if (valueless_after_move()) {
+      p_ = construct_from(get_allocator(), std::forward<U>(u));
+    } else {
+      *p_ = std::forward<U>(u);
+    }
+    return *this;
+  }
+
   [[nodiscard]] const T& operator*() const& noexcept {
     assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return *p_;
