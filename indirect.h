@@ -267,6 +267,19 @@ class indirect {
     return *this;
   }
 
+  template <class U>
+  constexpr indirect& operator=(U&& u)
+    requires(std::is_constructible_v<T, U> && std::is_assignable_v<T&, U> &&
+             !std::is_same_v<std::remove_cvref_t<U>, indirect>)
+  {
+    if (valueless_after_move()) {
+      p_ = construct_from(alloc_, std::forward<U>(u));
+    } else {
+      *p_ = std::forward<U>(u);
+    }
+    return *this;
+  }
+
   [[nodiscard]] constexpr const T& operator*() const& noexcept {
     assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return *p_;
