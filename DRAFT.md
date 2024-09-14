@@ -761,7 +761,7 @@ class indirect {
 
   template <class... Us>
   explicit constexpr indirect(allocator_arg_t, const Allocator& a,
-                     in_place_t, Us&&... us);
+                              in_place_t, Us&&... us);
 
   template <class U>
   explicit constexpr indirect(U&& u);
@@ -835,7 +835,7 @@ indirect(Value) -> indirect<Value>;
 
 template <class Alloc, class Value>
 indirect(allocator_arg_t, Alloc, Value) -> indirect<
-    Value, typename allocator_traits<Alloc>::template rebind_alloc<Value>>;
+         Value, typename allocator_traits<Alloc>::template rebind_alloc<Value>>;
 ```
 
 #### X.Y.3 Constructors [indirect.ctor]
@@ -910,7 +910,7 @@ constexpr indirect(indirect&& other) noexcept;
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
-  noexcept(allocator_traits<Allocator>::is_always_equal::value);
+   noexcept(allocator_traits<Allocator>::is_always_equal::value);
 ```
 
 15. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
@@ -1346,7 +1346,7 @@ class polymorphic {
 
   template <class U, class I, class... Us>
   explicit constexpr polymorphic(in_place_type_t<U>,
-                                initializer_list<I> ilist, Us&&... us)
+                                 initializer_list<I> ilist, Us&&... us)
 
   template <class U, class I, class... Us>
   explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
@@ -1500,7 +1500,7 @@ explicit constexpr polymorphic(in_place_type_t<U>, Ts&&... ts);
 ```c++
 template <class U, class... Ts>
 explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
-                      in_place_type_t<U>, Ts&&... ts);
+                               in_place_type_t<U>, Ts&&... ts);
 ```
 
 21. _Constraints_: `is_base_of_v<T, U>` is `true` and `is_constructible_v<U,
@@ -1552,7 +1552,7 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
 ```c++
 template <class U, class I, class... Us>
 explicit constexpr polymorphic(in_place_type_t<U>,
-                              initializer_list<I> ilist, Us&&... us)
+                               initializer_list<I> ilist, Us&&... us)
 ```
 
 31. _Constraints_: `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
@@ -1569,8 +1569,8 @@ explicit constexpr polymorphic(in_place_type_t<U>,
 ```c++
 template <class U, class I, class... Us>
 explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
-                                in_place_type_t<U>,
-                                initializer_list<I> ilist, Us&&... us)
+                               in_place_type_t<U>,
+                               initializer_list<I> ilist, Us&&... us)
 ```
 
 34. _Constraints_: `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
