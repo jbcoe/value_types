@@ -44,6 +44,8 @@ should not be considered in isolation.
 
 ### Changes in R8
 
+* Avoid use of 'heap' and 'free-store' in favour of 'dynamically-allocated storage'.
+
 * Wording cleanup in parallel with independent implementation.
 
 * Add more explicit wording for use of `allocator_traits::construct` in
@@ -628,7 +630,7 @@ means calling `allocator_traits<allocator_type>::construct(al, p, args...)` wher
 `allocator_traits<allocator_type>::select_on_container_copy_construction` on the
 allocator belonging to the indirect object being copied. Move constructors obtain
 an allocator by move construction from the allocator belonging to the indirect
-object being moved. All other constructors for indirect type take a `const
+object being moved. All other constructors for this type take a `const
 allocator_type& argument`. _[Note: If an invocation of a constructor uses the
 default value of an optional allocator argument, then the allocator type must
 support value-initialization. --end note]_ A copy of this allocator is used for
