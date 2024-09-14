@@ -326,7 +326,7 @@ Where a nullable `indirect` or `polymorphic` is required, using `std::optional`
 is recommended. This may become common practice since `indirect` and
 `polymorphic` can replace smart pointers in composite classes, where they are
 currently used to (mis)represent component objects. Using dynamically-allocated
-storage for `T` should not make it nullable. Nullability must be explicitly opted 
+storage for `T` should not make it nullable. Nullability must be explicitly opted
 into by using `std::optional<indirect<T>>` or `std::optional<polymorphic<T>>`.
 
 ### Allocator support
@@ -380,7 +380,7 @@ propagates const and is allocator aware.
   marks member and non-member `swap` as noexcept and requires allocators to be
   equal.
 
-* Like `optional`, `indirect` knows the type of the owned object so it can 
+* Like `optional`, `indirect` knows the type of the owned object so it can
   forward comparison operators and hash to the underlying object. A valueless
   `indirect`, like an empty `optional`, hashes to an implementation-defined
   value.
@@ -477,7 +477,7 @@ where they would otherwise be a valid replacement.
 
 ### Tagged constructors
 
-Constructors for `indirect` and `polymorphic` taking an allocator or owned-object 
+Constructors for `indirect` and `polymorphic` taking an allocator or owned-object
 constructor arguments are tagged with `allocator_arg_t` and `in_place_t`
 (or `in_place_type_t`) respectively. This is consistent with the standard
 library’s use of tagged constructors in `optional`, `any` and `variant`.
@@ -627,7 +627,7 @@ means calling `allocator_traits<allocator_type>::construct(al, p, args...)` wher
 4. Copy constructors for an indirect type obtain an allocator by calling
 `allocator_traits<allocator_type>::select_on_container_copy_construction` on the
 allocator belonging to the indirect object being copied. Move constructors obtain
-an allocator by move construction from the allocator belonging to the indirect 
+an allocator by move construction from the allocator belonging to the indirect
 object being moved. All other constructors for indirect type take a `const
 allocator_type& argument`. _[Note: If an invocation of a constructor uses the
 default value of an optional allocator argument, then the allocator type must
@@ -644,7 +644,7 @@ move assignment, or swapping of the allocator only if ([container.reqmts]):
     (64.2)
     `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value`,
 
-    (64.3) 
+    (64.3)
     `allocator_traits<allocator_type>::propagate_on_container_swap::value`
 
     is `true` within the implementation of the corresponding indirect operation.
@@ -1113,17 +1113,17 @@ any memory allocation and element construction performed by these constructors
 and by all member functions during the lifetime of each polymorphic value
 object, or until the allocator is replaced. The allocator may be replaced only
 via assignment or `swap()`. Allocator replacement is performed by copy
-assignment, move assignment, or swapping of the allocator only if (see 
-[container.reqmts]): 
+assignment, move assignment, or swapping of the allocator only if (see
+[container.reqmts]):
 
-  (64.1) 
+  (64.1)
   `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value`,
 
   (64.2)
   `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value`, or
 
-  (64.3) 
-  `allocator_traits<allocator_type>::propagate_on_container_swap::value` is true 
+  (64.3)
+  `allocator_traits<allocator_type>::propagate_on_container_swap::value` is true
    within the implementation of the corresponding polymorphic value operation.
 
 5. A program that instantiates the definition of polymorphic for a non-object
@@ -1361,7 +1361,7 @@ constexpr polymorphic& operator=(const polymorphic& other);
   the allocator in `other` if the allocator needs updating.
 
   The previous owned object in `*this`, if any, is destroyed using
-  `allocator_traits<allocator_type>::destroy` and then the storage 
+  `allocator_traits<allocator_type>::destroy` and then the storage
   is deallocated.
 
   If the allocator needs updating, the allocator in `*this` is replaced with a
@@ -1391,7 +1391,7 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
   deallocated.
 
   Otherwise, if `alloc != other.alloc` is `true`; if `other` is not valueless, a
-  new owned object is constructed in `*this` using 
+  new owned object is constructed in `*this` using
   `allocator_traits<allocator_type>::construct` with the owned object from
   `other` as the argument as an rvalue, using either the allocator in `*this` or
   the allocator in `other` if the allocator needs updating. The previous owned
@@ -1932,7 +1932,7 @@ class Picture {
 
 ## Appendix C: Design choices, alternatives and breaking changes
 
-The table below shows the main design components considered, the design
+The table below shows the main design components considered, the key design
 decisions made, and the cost and impact of alternative design choices. As
 presented in this paper, the design of class templates `indirect` and
 `polymorphic` has been approved by the LEWG. The authors have until C++26 is
