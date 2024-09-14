@@ -25,7 +25,7 @@ with other standard library types (such as vector), allowing the compiler to
 correctly generate special member functions.
 
 The class template `indirect` confers value-like semantics on a
-free-store-allocated object. An `indirect` may hold an object of a class `T`.
+dynamically-allocated object. An `indirect` may hold an object of a class `T`.
 Copying the `indirect` will copy the object `T`. When an `indirect<T>` is
 accessed through a const access path, constness will propagate to the owned
 object.
@@ -51,6 +51,8 @@ should not be considered in isolation.
 * Add converting constructors to `indirect` and `polymorphic`.
 
 * Add intializer list constructors to `indirect` and `polymorphic`.
+
+* Avoid use of 'heap' and 'free-store' in favour of 'dynamically-allocated storage'.
 
 * Wording cleanup in parallel with independent implementation.
 
@@ -300,19 +302,18 @@ int main() {
 
 ### Value semantics
 
-Both `indirect` and `polymorphic` are value types whose owned object is
-dynamically-allocated (or some other memory resource controlled by the specified
-allocator).
+Both `indirect` and `polymorphic` are value types whose owned object's
+storage is managed by the specified allocator.
 
 When a value type is copied it gives rise to two independent objects that can be
 modified separately.
 
 The owned object is part of the logical state of `indirect` and `polymorphic`.
 Operations on a const-qualified object do not make changes to the object's
-logical state nor to the logical state of other objects.
+logical state nor to the logical state of owned objects.
 
 `indirect<T>` and `polymorphic<T>` are default constructible in cases where `T`
-is default constructible. Moving a value type into dynamically allocated storage
+is default constructible. Moving a value type into dynamically-allocated storage
 should not add or remove the ability to be default constructed.
 
 ### The valueless state and interaction with `std::optional`
@@ -334,9 +335,9 @@ moveable.
 Where a nullable `indirect` or `polymorphic` is required, using `std::optional`
 is recommended. This may become common practice since `indirect` and
 `polymorphic` can replace smart pointers in composite classes, where they are
-currently used to (mis)represent component objects. Putting `T` onto the free
-store should not make it nullable. Nullability must be explicitly opted into by
-using `std::optional<indirect<T>>` or `std::optional<polymorphic<T>>`.
+currently used to (mis)represent component objects. Using dynamically-allocated
+storage for `T` should not make it nullable. Nullability must be explicitly opted
+into by using `std::optional<indirect<T>>` or `std::optional<polymorphic<T>>`.
 
 ### Allocator support
 
@@ -345,8 +346,8 @@ suitable for use in allocator-aware composite types and containers. Existing
 allocator-aware types in the standard, such as `vector` and `map`, take an
 allocator type as a template parameter, provide `allocator_type`, and have
 constructor overloads taking an additional `allocator_type_t` and allocator
-instance as arguments. As `indirect` and `polymorphic` need to work with and in
-the same way as existing allocator-aware types, they too take an allocator type
+instance as arguments. As `indirect` and `polymorphic` need to work with, and in
+the same way, as existing allocator-aware types, they too take an allocator type
 as a template parameter, provide `allocator_type`, and have constructor
 overloads taking an additional `allocator_type_t` and allocator instance as
 arguments.
@@ -389,8 +390,8 @@ propagates const and is allocator aware.
   marks member and non-member `swap` as noexcept and requires allocators to be
   equal.
 
-* Like `optional`, `indirect` knows the type of the owned object so forwards
-  comparison operators and hash to the underlying object. A valueless
+* Like `optional`, `indirect` knows the type of the owned object so it can
+  forward comparison operators and hash to the underlying object. A valueless
   `indirect`, like an empty `optional`, hashes to an implementation-defined
   value.
 
@@ -422,15 +423,15 @@ propagates const and is allocator aware.
   non-member `swap` as noexcept and requires allocators to be equal.
 
 * Like `unique_ptr`, `polymorphic` does not know the type of the owned object
-  (it could be an instance of a derived type). As a result `polymorphic` cannot
+  (it could be an instance of a derived type). As a result, `polymorphic` cannot
   forward comparison operators or hash to the owned object.
 
 #### Similarities and differences with variant
 
 The sum type `variant<Ts...>` models one of several alternatives; `indirect<T>`
-models a single type `T`, but with different storage constraints.
+models a single type `T`, but with different storage constraints to `T`.
 
-Like `indirect`, a variant can get into a valueless state. For variant, this
+Like `indirect`, a variant can get into a valueless state. For `variant`, this
 valueless state is accessible when an exception is thrown when changing the
 type: variant has `bool valueless_by_exception()`. When all of the types `Ts`
 are comparable, `variant<Ts...>` supports comparison without preconditions: it
@@ -441,10 +442,10 @@ the possible states it can be in. For `indirect`, allowing comparison when in a
 valueless state necessitates the addition of an otherwise redundant check. After
 feedback from standard library implementers, we opt to allow hash and comparison
 of `indirect` in a valueless state, at cost, to avoid rendering the valueless
-state user-hostile.
+state undefined behaviour.
 
-Variant allows valueless objects to be passed around via copy, assignment, move
-and move assignment. There is no precondition on varaint that it must not be in
+`variant` allows valueless objects to be passed around via copy, assignment, move
+and move assignment. There is no precondition on `variant` that it must not be in
 a valueless state to be copied from, moved from, assigned from or move assigned
 from. While the notion that a valueless `indirect` or `polymorphic` is toxic and
 must not be passed around code is appealing, it would not interact well with
@@ -453,10 +454,10 @@ does not require a moved-from object to be valid for copy, move, assign or move
 assignment: the only restriction is that it should be in a well-formed but
 unspecified state. However, there is no precedent for standard library types to
 have preconditions on move, copy, assign or move assignment. We opt for
-consistency with existing standard library types (namely varaint which has a
+consistency with existing standard library types (namely `variant`, which has a
 valueless state) and allow copy, move, assignment and move assignment of a
 valueless `indirect` and `polymorphic`. Handling of the valueless state for
-indirect and polymorphic in move operations will not incur cost; for copy
+`indirect` and `polymorphic` in move operations will not incur cost; for copy
 operations, the cost of handling the valueless state will be insignificant
 compared to the cost of allocating memory. Introducing preconditions for copy,
 move, assign and move assign in a later revision of the C++ standard would be a
@@ -486,13 +487,13 @@ where they would otherwise be a valid replacement.
 
 ### Tagged constructors
 
-Constructors for `indirect` and `polymorphic` taking an allocator or owned
-object constructor arguments are tagged with `allocator_arg_t` and `in_place_t`
+Constructors for `indirect` and `polymorphic` taking an allocator or owned-object
+constructor arguments are tagged with `allocator_arg_t` and `in_place_t`
 (or `in_place_type_t`) respectively. This is consistent with the standard
 library’s use of tagged constructors in `optional`, `any` and `variant`.
 
 Without `in_place_t` the constructor of `indirect` would not be able to
-construct an owned object using that owned object’s allocator-extended
+construct an owned object using the owned object’s allocator-extended
 constructor. `indirect(std::in_place, std::allocator_arg, alloc, args)`
 unambiguously constructs an `indirect` with a default constructed allocator and
 an owned object constructed with an allocator extended constructor taking an
@@ -522,7 +523,7 @@ disallows “implicit conversion” from single arguments or braced initializers
 Given both `indirect` and `polymorphic` use dynamically-allocated storage, there
 are no instances where an object could be considered semantically equivalent to
 its constructor arguments (unlike `pair` or `variant`). To construct an
-`indirect` or `polymorphic` object, and with it use dynamically allocate memory,
+`indirect` or `polymorphic` object, and with it use dynamically-allocated memory,
 the user must explicitly use a constructor.
 
 The standard already marks multiple argument constructors as explicit for the
@@ -667,7 +668,6 @@ namespace std {
 
     template<class T> using polymorphic =
       polymorphic<T, polymorphic_allocator<T>>;
-
   }
 
 </ins>
@@ -693,11 +693,11 @@ means calling `allocator_traits<allocator_type>::construct(al, p, args...)` wher
 `p` is a pointer obtained by calling
 `allocator_traits<allocator_type>::allocate`.
 
-4. Copy constructors for an indirect value obtain an allocator by calling
+4. Copy constructors for an indirect type obtain an allocator by calling
 `allocator_traits<allocator_type>::select_on_container_copy_construction` on the
-allocator belonging to the indirect value being copied. Move constructors obtain
-an allocator by move construction from the allocator belonging to the object
-being moved. All other constructors for these types take a `const
+allocator belonging to the indirect object being copied. Move constructors obtain
+an allocator by move construction from the allocator belonging to the indirect
+object being moved. All other constructors for this type take a `const
 allocator_type& argument`. _[Note: If an invocation of a constructor uses the
 default value of an optional allocator argument, then the allocator type must
 support value-initialization. --end note]_ A copy of this allocator is used for
@@ -705,15 +705,16 @@ any memory allocation and element construction performed by these constructors
 and by all member functions during the lifetime of each indirect object,
 or until the allocator is replaced. The allocator may be replaced only via
 assignment or `swap()`. Allocator replacement is performed by copy assignment,
-move assignment, or swapping of the allocator only if
+move assignment, or swapping of the allocator only if ([container.reqmts]):
 
-    (3.1)
+    (64.1)
     `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value`,
 
-    (3.2)
+    (64.2)
     `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value`,
 
-    (3.3) `allocator_traits<allocator_type>::propagate_on_container_swap::value`
+    (64.3)
+    `allocator_traits<allocator_type>::propagate_on_container_swap::value`
 
     is `true` within the implementation of the corresponding indirect operation.
 
@@ -1078,8 +1079,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 
 6. _Effects_: If `addressof(other) == this` is `true`, there are no effects.
 
-  If
-  `allocator_traits<allocator_type>::propagate_on_container_move_assignment` is
+  If`allocator_traits<allocator_type>::propagate_on_container_move_assignment` is
   `true` then the allocator needs updating.
 
   If `other` is valueless, `*this` becomes valueless and the owned object in
@@ -1269,25 +1269,30 @@ p, args...)` where `p` is a pointer obtained by calling
 `allocator_traits<allocator_type>::rebind_traits<U>::allocate` and `U` is either
 `allocator_type::value_type` or an internal type used by the polymorphic value.
 
-4. Copy constructors for a polymorphic value obtain an allocator by calling
+4. Copy constructors for a polymorphic type obtain an allocator by calling
 `allocator_traits<allocator_type>::select_on_container_copy_construction` on the
-allocator belonging to the polymorphic value being copied. Move constructors
+allocator belonging to the polymorphic object being copied. Move constructors
 obtain an allocator by move construction from the allocator belonging to the
-object being moved. All other constructors for these types take a `const
-allocator_type& argument`. [Note 3: If an invocation of a constructor uses the
+object being moved. All other constructors for this type take a `const
+allocator_type& argument`. _[Note 3: If an invocation of a constructor uses the
 default value of an optional allocator argument, then the allocator type must
-support value-initialization.  end note] A copy of this allocator is used for
+support value-initialization. --end note]_ A copy of this allocator is used for
 any memory allocation and element construction performed by these constructors
 and by all member functions during the lifetime of each polymorphic value
 object, or until the allocator is replaced. The allocator may be replaced only
 via assignment or `swap()`. Allocator replacement is performed by copy
-assignment, move assignment, or swapping of the allocator only if (64.1)
-`allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value`,
-(64.2)
-`allocator_traits<allocator_type>::propagate_on_container_move_assignment::value`,
-or (64.3) `allocator_traits<allocator_type>::propagate_on_container_swap::value`
-is true within the implementation of the corresponding polymorphic value
-operation.
+assignment, move assignment, or swapping of the allocator only if (see
+[container.reqmts]):
+
+  (64.1)
+  `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value`,
+
+  (64.2)
+  `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value`, or
+
+  (64.3)
+  `allocator_traits<allocator_type>::propagate_on_container_swap::value` is true
+   within the implementation of the corresponding polymorphic value operation.
 
 5. A program that instantiates the definition of polymorphic for a non-object
    type, an array type, a specialization of `in_place_type_t` or a cv-qualified
@@ -1331,7 +1336,7 @@ class polymorphic {
 
   template <class U, class... Ts>
   explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
-                        in_place_type_t<U>, Ts&&... ts);
+                                 in_place_type_t<U>, Ts&&... ts);
 
   template <class U>
   explicit constexpr polymorphic(U&& u);
@@ -1589,8 +1594,7 @@ constexpr ~polymorphic();
 1. _Mandates_: `T` is a complete type.
 
 2. _Effects_: If `*this` is not valueless, destroys the owned object using
-  `allocator_traits<allocator_type>::destroy` and then the
-  storage is deallocated.
+  `allocator_traits<allocator_type>::destroy` and then the storage is deallocated.
 
 #### X.Z.5 Assignment [polymorphic.assign]
 
@@ -1611,8 +1615,8 @@ constexpr polymorphic& operator=(const polymorphic& other);
   the allocator in `other` if the allocator needs updating.
 
   The previous owned object in `*this`, if any, is destroyed using
-  `allocator_traits<allocator_type>::destroy` and then the
-  storage is deallocated.
+  `allocator_traits<allocator_type>::destroy` and then the storage
+  is deallocated.
 
   If the allocator needs updating, the allocator in `*this` is replaced with a
   copy of the allocator in `other`.
@@ -1725,7 +1729,7 @@ Bengt Gustafsson, Casey Carter, Rostislav Khlebnikov, Daniel Krugler, David
 Krauss, David Stone, Ed Catmur, Geoff Romer, German Diago, Jonathan Wakely,
 Kilian Henneberger, LanguageLawyer, Louis Dionne, Maciej Bogus, Malcolm Parsons,
 Matthew Calabrese, Nathan Myers, Neelofer Banglawala, Nevin Liber, Nina Ranns,
-Patrice Roy, Roger Orr, Stephan T Lavavej, Stephen Kelly, Thomas Koeppe, Thomas
+Patrice Roy, Roger Orr, Stephan T. Lavavej, Stephen Kelly, Thomas Koeppe, Thomas
 Russell, Tom Hudson, Tomasz Kaminski, Tony van Eerd and Ville Voutilainen for
 suggestions and useful discussion.
 
@@ -1773,8 +1777,7 @@ constructor to be implemented efficiently when the owned type and template type
 match. This would increase the object size beyond that of a single pointer as
 the discriminant must be stored.
 
-For the sake of minimal size and efficiency, we opted to use two class
-templates.
+For the sake of minimal size and efficiency, we opted to use two class templates.
 
 ### Copiers, deleters, pointer constructors, and allocator support
 
@@ -1846,7 +1849,7 @@ template <typename TT = T>
 indirect(const indirect& other) requires is_copy_constructible_v<TT>;
 ```
 
-An instantiation of the function template with `TT=T` is added to the overload
+An instantiation of the function template with `TT = T` is added to the overload
 set when `indirect` is copy-constructed and will be selected if the owned object
 type `T` is copy constructible. This would make copy construction conditional
 for `indirect` but not for `polymorphic`. We opt for consistency and make copy
@@ -1861,7 +1864,7 @@ this draft.
 
 We decided that there should be no implicit conversion of a value `T` to an
 `indirect<T>` or `polymorphic<T>`. An implicit conversion would require using
-the free store and memory allocation, which is best made explicit by the user.
+a memory resource and memory allocation, which is best made explicit by the user.
 
 ```c++
 Rectangle r(w, h);
@@ -1980,7 +1983,7 @@ small buffer is left to be specified by the implementation.
 The authors are sceptical of the value of a small buffer optimisation for
 objects from a type hierarchy. If the buffer is too small, all instances of
 `polymorphic` will be larger than needed. This is because they will allocate
-heap in addition to having the memory from the (empty) buffer as part of the
+memory in addition to having the memory from the (empty) buffer as part of the
 object size. If the buffer is too big, `polymorphic` objects will be larger than
 necessary, potentially introducing the need for `indirect<polymorphic<T>>`.
 
@@ -2187,7 +2190,7 @@ class Picture {
 
 ## Appendix C: Design choices, alternatives and breaking changes
 
-The table below shows the main design components considered, the design
+The table below shows the main design components considered, the key design
 decisions made, and the cost and impact of alternative design choices. As
 presented in this paper, the design of class templates `indirect` and
 `polymorphic` has been approved by the LEWG. The authors have until C++26 is
