@@ -3,7 +3,7 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-P3019R8
+P3019R9
 
 Working Group: Library Evolution, Library
 
@@ -42,7 +42,7 @@ should not be considered in isolation.
 
 ## History
 
-### Changes in R8
+### Changes in R9
 
 * Re-order constructors.
 
@@ -53,6 +53,8 @@ should not be considered in isolation.
 * Add intializer list constructors to `indirect` and `polymorphic`.
 
 * Avoid use of 'heap' and 'free-store' in favour of 'dynamically-allocated storage'.
+
+### Changes in R8
 
 * Wording cleanup in parallel with independent implementation.
 
