@@ -1,6 +1,6 @@
 {
-	"name": "C++",
+	"name": "xyz.value-types",
 	"build": {
 		"dockerfile": "Dockerfile"
-	},
+	}
 }
