@@ -3,15 +3,6 @@ workspace(name = "xyz_value_types")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
-    name = "bazel_skylib",
-    sha256 = "b8a1527901774180afc798aeb28c4634bdccf19c4d98e7bdd1ce79d1fe9aaad7",
-    urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.4.1/bazel-skylib-1.4.1.tar.gz",
-        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.4.1/bazel-skylib-1.4.1.tar.gz",
-    ],
-)
-
-http_archive(
   name = "com_google_googletest",
   sha256 = "755f9a39bc7205f5a0c428e920ddad092c33c8a1b46997def3f1d4a82aded6e1",
   urls = ["https://github.com/google/googletest/archive/5ab508a01f9eb089207ee87fd547d290da39d015.zip"],
@@ -23,4 +14,17 @@ http_archive(
     sha256 = "abfc22e33e3594d0edf8eaddaf4d84a2ffc491ad74b6a7edc6e7a608f690e691",
     strip_prefix = "benchmark-1.8.3",
     urls = ["https://github.com/google/benchmark/archive/v1.8.3.zip"],
+)
+
+http_archive(
+  name = "pybind11_bazel",
+  strip_prefix = "pybind11_bazel-2.12.0",
+  urls = ["https://github.com/pybind/pybind11_bazel/archive/v2.12.0.zip"],
+)
+
+http_archive(
+  name = "pybind11",
+  build_file = "@pybind11_bazel//:pybind11-BUILD.bazel",
+  strip_prefix = "pybind11-2.13.6",
+  urls = ["https://github.com/pybind/pybind11/archive/v2.13.6.zip"],
 )

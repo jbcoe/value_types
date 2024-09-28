@@ -1,3 +1,6 @@
+load("@pybind11_bazel//:build_defs.bzl", "pybind_extension")
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
+
 cc_library(
     name = "feature_check",
     hdrs = ["feature_check.h"],
@@ -151,4 +154,21 @@ cc_test(
         "tracking_allocator",
         "@com_google_googletest//:gtest_main",
     ],
+)
+
+pybind_extension(
+    name = "basic",
+    srcs = ["basic.cc"],
+)
+
+py_library(
+    name = "basic_lib",
+    data = [":basic"],
+    imports = ["."],
+)
+
+py_test(
+    name = "basic_test",
+    srcs = ["basic_test.py"],
+    deps = [":basic_lib"],
 )
