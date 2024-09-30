@@ -32,7 +32,7 @@ _Sean Parent \<<sparent@adobe.com>\>_
 New vocabulary types `indirect` and `polymorphic` for composite class design are
 proposed in P3019 [1]. Based on recommendations from LEWG, we follow up this
 work by adding support for single-argument construction, initializer-list
-construction and perfect-forwarding assignment to `indirect` and `polymorphic` where
+construction and perfect-forwarded assignment to `indirect` and `polymorphic` where
 appropriate.
 
 The design changes to P3019 are presented in this paper so that they can be reviewed
@@ -251,7 +251,7 @@ class polymorphic {
 
   template <class U, class I, class... Us>
   explicit constexpr polymorphic(in_place_type_t<U>,
-                                initializer_list<I> ilist, Us&&... us)
+                                 initializer_list<I> ilist, Us&&... us)
 
   template <class U, class I, class... Us>
   explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
