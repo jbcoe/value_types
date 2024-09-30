@@ -3,11 +3,11 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-P3019R9
+P3019R10
 
 Working Group: Library Evolution, Library
 
-Date: 2024-03-23
+Date: 2024-09-30
 
 _Jonathan Coe \<<jonathanbcoe@gmail.com>\>_
 
@@ -42,13 +42,23 @@ should not be considered in isolation.
 
 ## History
 
+### Changes in R10
+
+* Correct naming of explicit 'converting' constructors to 'single-argument' constructors.
+
+* Amend naming of indirect's 'converting' constructor to 'perfect-forwarded' assignment.
+
+* Correct changelog from R9.
+
 ### Changes in R9
+
+* Remove unnecessary 'throws' clause from indirect.
 
 * Re-order constructors.
 
-* Add converting assignment operator to `indirect`.
+* Add perfect-forwarded assignment operator to `indirect`.
 
-* Add converting constructors to `indirect` and `polymorphic`.
+* Add single-argument constructors to `indirect` and `polymorphic`.
 
 * Add intializer list constructors to `indirect` and `polymorphic`.
 
@@ -501,9 +511,9 @@ unambiguously constructs an `indirect` with a default constructed allocator and
 an owned object constructed with an allocator extended constructor taking an
 allocator `alloc` and constructor arguments `args`.
 
-### Converting constructors
+### Single-argument constructors
 
-In line with `optional` and `variant`, we add converting constructors to both
+In line with `optional` and `variant`, we add single-argument constructors to both
 `indirect` and `polymorphic` so they can be constructed from single values
 without the need to use `in_place` or `in_place_type`. As `indirect` and
 `polymorphic` are allocator-aware types, we also provide allocator-extended
@@ -535,12 +545,12 @@ With some suitably compelling motivation, the `explicit` keyword could be
 removed from some constructors in a later revision of the C++ standard without
 rendering code ill-formed.
 
-### Converting assignment
+### Perfect-forwarded assignment
 
-#### Converting assignment for `indirect`
+#### Perfect-forwarded assignment for `indirect`
 
-We add a converting assignment for `indirect` in line with the converting
-assignment operators from `optional` and `variant`.
+We add a perfect-forwarded assignment for `indirect` in line with the perfect-forwarded
+assignment operator from `optional` and converting assignment from `variant`.
 
 ```c++
 template <class U = T>
@@ -560,8 +570,8 @@ if (!i.valueless_after_move()) {
 }
 ```
 
-With converting assignment, handling the valueless state and potentially
-creating a new indirect object is done within the converting assignment. The
+With perfect-forwarded assignment, handling the valueless state and potentially
+creating a new indirect object is done within the perfect-forwarded assignment. The
 code below is equivalent to the code above:
 
 ```c++
@@ -570,9 +580,9 @@ foo(i); // could move from `i`.
 i = 5;
 ```
 
-#### Converting assignment for `polymorphic`
+#### Perfect-forwarded assignment for `polymorphic`
 
-There is no converting assignment for `polymorphic` as type information is
+There is no perfect-forwarded assignment for `polymorphic` as type information is
 erased. There is no optimisation opportunity to be made as a new object will
 need creating regardless of whether the target of assignment is valueless or
 not.
