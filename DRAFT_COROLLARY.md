@@ -71,9 +71,8 @@ constructors are marked as explicit, the same as other constructors in
 
 ### Perfect-forwarded assignment for `indirect`
 
-We add a perfect-forwarded assignment for `indirect` in line with
-the perfect-forwarded assignment assignment operator from `optional`
-and converting assignment from `variant`.
+We add a perfect-forwarded assignment operator for `indirect`
+in line with those from `optional` and `variant`.
 
 ```c++
 template <class U = T>

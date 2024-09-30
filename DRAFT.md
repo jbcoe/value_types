@@ -549,8 +549,8 @@ rendering code ill-formed.
 
 #### Perfect-forwarded assignment for `indirect`
 
-We add a perfect-forwarded assignment for `indirect` in line with the perfect-forwarded
-assignment operator from `optional` and converting assignment from `variant`.
+We add a perfect-forwarded assignment operator for `indirect`
+in line with those from `optional` and `variant`.
 
 ```c++
 template <class U = T>
