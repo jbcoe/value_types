@@ -1,5 +1,6 @@
 # Add missing constructors and assignment for `indirect` and `polymorphic`
- <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<!-- markdownlint-disable MD029 -->
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
@@ -15,17 +16,15 @@ _Antony Peacock \<<ant.peacock@gmail.com>\>_
 
 _Sean Parent \<<sparent@adobe.com>\>_
 
-# Contents
- - [Introduction](#introduction)
- - [Single-argument constructors](#single-argument-constructors)
- - [Perfect-forwarded assignment](#perfect-forwarded-assignment)
- - [Technical specifications](#technical-specifications)
- - [Reference implementation](#reference-implementation)
- - [Acknowledgements](#acknowledgements)
- - [References](#references)
+## Contents
 
-[//]: <>
-    (<=============================================================================>)
+- [Introduction](#introduction)
+- [Single-argument constructors](#single-argument-constructors)
+- [Perfect-forwarded assignment](#perfect-forwarded-assignment)
+- [Technical specifications](#technical-specifications)
+- [Reference implementation](#reference-implementation)
+- [Acknowledgements](#acknowledgements)
+- [References](#references)
 
 ## Introduction
 
@@ -351,8 +350,8 @@ draft at extremely short notice.
 [1] _`indirect` and `polymorphic`: Vocabulary Types for Composite Class Design_,
 \
 J. B. Coe, A. Peacock, and S. Parent, 2024 \
-https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p3019r6.html
+<https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p3019r6.html>
 
 [2] _An allocator-aware optional type_, \
 P. Halpern, N. D. Ranns, V. Voutilainen, 2024\
-https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p2047r7.html
+<https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p2047r7.html>
