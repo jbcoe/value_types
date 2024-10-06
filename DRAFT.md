@@ -1,5 +1,6 @@
 # `indirect` and `polymorphic`: Vocabulary Types for Composite Class Design
- <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<!-- markdownlint-disable MD029 -->
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
@@ -645,9 +646,11 @@ the standard library header `<memory>`.
 ## Technical specifications
 
 ### Header `<version>` synopsis [version.syn]
+
 Note to editors: Add the following macros with editor provided values to
 [version.syn]
-```
+
+```cpp
 #define __cpp_lib_indirect ??????L    // also in <memory>
 #define __cpp_lib_polymorphic ??????L // also in <memory>
 ```
@@ -1672,7 +1675,6 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
 
 8. _Remarks_: If any exception is thrown, there are no effects on `*this` or `other`.
 
-
 #### X.Z.6 Observers [polymorphic.observers]
 
 ```c++
@@ -1712,6 +1714,7 @@ constexpr void swap(polymorphic& other) noexcept(
   allocator_traits::propagate_on_container_swap::value
   || allocator_traits::is_always_equal::value);
 ```
+
 1. _Effects_: Swaps the states of `*this` and `other`, exchanging owned objects
   or valueless states. If
   `allocator_traits<allocator_type>::propagate_on_container_swap::value` is
@@ -1747,24 +1750,27 @@ suggestions and useful discussion.
 
 ## References
 
-_A Preliminary Proposal for a Deep-Copying Smart Pointer_, W. E. Brown, 2012\
-[http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3339.pdf]
+_A Preliminary Proposal for a Deep-Copying Smart Pointer_\
+W. E. Brown, 2012\
+<http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3339.pdf>
 
-_A polymorphic value-type for C++_, J. B. Coe, S. Parent 2019 \
-[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0201r6.html]
+_A polymorphic value-type for C++_\
+J. B. Coe, S. Parent 2019 \
+<https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0201r6.html>
 
-_A Free-Store-Allocated Value Type for C++_, J. B. Coe, A. Peacock 2022\
-[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1950r2.html]
+_A Free-Store-Allocated Value Type for C++_\
+J. B. Coe, A. Peacock 2022\
+<https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1950r2.html>
 
-_An allocator-aware optional type_, \
+_An allocator-aware optional type_\
 P. Halpern, N. D. Ranns, V. Voutilainen, 2024\
-[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p2047r7.html]
+<https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p2047r7.html>
 
 _MISRA Language Guidelines_\
-[https://ldra.com/misra/]
+<https://ldra.com/misra/>
 
 _High Integrity C++_\
-[https://www.perforce.com/resources/qac/high-integrity-cpp-coding-standard]
+<https://www.perforce.com/resources/qac/high-integrity-cpp-coding-standard>
 
 ## Appendix A: Detailed design decisions
 
