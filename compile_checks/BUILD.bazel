@@ -13,6 +13,18 @@ build_test(
 )
 
 cc_library(
+    name = "polymorphic_requirements",
+    srcs = ["polymorphic_requirements.cc"],
+    visibility = ["//visibility:private"],
+    deps = ["//:polymorphic"],
+)
+
+build_test(
+    name = "polymorphic_requirements_build_test",
+    targets = ["polymorphic_requirements"],
+)
+
+cc_library(
     name = "indirect_consteval",
     srcs = ["indirect_consteval.cc"],
     visibility = ["//visibility:private"],
