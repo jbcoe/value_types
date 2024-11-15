@@ -45,6 +45,14 @@ class DeletedDefaultConstructor {
   DeletedDefaultConstructor(const T&...) {}
 };
 
+template <typename T>
+class NoDefaultCtorAllocator : std::allocator<T> {
+  using std::allocator<T>::type;
+  NoDefaultCtorAllocator() = delete;
+  NoDefaultCtorAllocator(const NoDefaultCtorAllocator&) = default;
+  NoDefaultCtorAllocator(const Nope&) = delete;
+};
+
 template <typename T, typename Allocator = std::allocator<T>, typename... Us>
 consteval bool checks() {
   static_assert(std::is_same_v<typename Allocator::value_type, T>);
@@ -113,12 +121,17 @@ consteval bool checks() {
   return true;
 }
 
+// Check requirements for types used in checks.
+
 static_assert(!std::is_default_constructible_v<DeletedDefaultConstructor>);
 static_assert(!std::is_copy_constructible_v<DeletedCopy>);
 static_assert(std::is_constructible_v<DeletedDefaultConstructor, int>);
 static_assert(std::is_constructible_v<DeletedCopy, int>);
 static_assert(!std::is_constructible_v<DeletedDefaultConstructor, Nope>);
 static_assert(!std::is_constructible_v<DeletedCopy, Nope>);
+static_assert(!std::is_default_constructible_v<NoDefaultCtorAllocator<int>>);
+
+// Default constructible allocator.
 
 static_assert(checks<DeletedCopy, std::allocator<DeletedCopy>, int>());
 static_assert(checks<DeletedDefaultConstructor,
@@ -129,5 +142,20 @@ static_assert(checks<DeletedDefaultConstructor,
 static_assert(checks<DeletedCopy, std::allocator<DeletedCopy>, int, int>());
 static_assert(checks<DeletedDefaultConstructor,
                      std::allocator<DeletedDefaultConstructor>, int, int>());
+
+// Non-default constructible allocator.
+
+static_assert(checks<DeletedCopy, NoDefaultCtorAllocator<DeletedCopy>, int>());
+static_assert(checks<DeletedDefaultConstructor,
+                     NoDefaultCtorAllocator<DeletedDefaultConstructor>, int>());
+static_assert(checks<DeletedCopy, NoDefaultCtorAllocator<DeletedCopy>, Nope>());
+static_assert(
+    checks<DeletedDefaultConstructor,
+           NoDefaultCtorAllocator<DeletedDefaultConstructor>, Nope>());
+static_assert(
+    checks<DeletedCopy, NoDefaultCtorAllocator<DeletedCopy>, int, int>());
+static_assert(
+    checks<DeletedDefaultConstructor,
+           NoDefaultCtorAllocator<DeletedDefaultConstructor>, int, int>());
 
 }  // namespace xyz

@@ -54,6 +54,14 @@ class DeletedDefaultConstructor {
   DeletedDefaultConstructor(const T&...) {}
 };
 
+template <typename T>
+class NoDefaultCtorAllocator : std::allocator<T> {
+  using std::allocator<T>::type;
+  NoDefaultCtorAllocator() = delete;
+  NoDefaultCtorAllocator(const NoDefaultCtorAllocator&) = default;
+  NoDefaultCtorAllocator(const Nope&) = delete;
+};
+
 template <typename T, typename Allocator = std::allocator<T>, typename... Us>
 consteval bool checks() {
   static_assert(std::is_same_v<typename Allocator::value_type, T>);
@@ -90,8 +98,39 @@ consteval bool checks() {
   }
   // Allocator extended constructors.
 
+  // T is copy constructible and default constructible.
+  if constexpr (std::is_default_constructible_v<T> &&
+                std::is_copy_constructible_v<T>) {
+    static_assert(std::is_constructible_v<polymorphic_t, std::allocator_arg_t,
+                                          Allocator>);
+    static_assert(std::is_constructible_v<polymorphic_t, std::allocator_arg_t,
+                                          Allocator, T>);
+  }
+  // T is not copy constructible. All constructors are unavailable.
+  if constexpr (!std::is_copy_constructible_v<T>) {
+    static_assert(!std::is_constructible_v<polymorphic_t, std::allocator_arg_t,
+                                           Allocator>);
+    static_assert(!std::is_constructible_v<polymorphic_t, std::allocator_arg_t,
+                                           Allocator, T>);
+    static_assert(!std::is_constructible_v<polymorphic_t, std::allocator_arg_t,
+                                           Allocator, Us...>);
+    static_assert(
+        !std::is_constructible_v<polymorphic_t, std::allocator_arg_t, Allocator,
+                                 std::in_place_type_t<T>, Us...>);
+  } else /* constexpr */ {
+    // T is default constructible.
+    if constexpr (std::is_default_constructible_v<T>) {
+      static_assert(std::is_constructible_v<polymorphic_t, std::allocator_arg_t,
+                                            Allocator>);
+    } else /* constexpr */ {
+      static_assert(!std::is_constructible_v<polymorphic_t,
+                                             std::allocator_arg_t, Allocator>);
+    }
+  }
   return true;
 }
+
+// Check requirements for types used in checks.
 
 static_assert(!std::is_default_constructible_v<DeletedDefaultConstructor>);
 static_assert(!std::is_copy_constructible_v<DeletedCopy>);
@@ -100,6 +139,9 @@ static_assert(std::is_constructible_v<DeletedCopy, int>);
 static_assert(!std::is_constructible_v<AllCtors, Nope>);
 static_assert(!std::is_constructible_v<DeletedDefaultConstructor, Nope>);
 static_assert(!std::is_constructible_v<DeletedCopy, Nope>);
+static_assert(!std::is_default_constructible_v<NoDefaultCtorAllocator<int>>);
+
+// Default constructible allocator.
 
 static_assert(checks<DeletedCopy, std::allocator<DeletedCopy>, int>());
 static_assert(checks<DeletedDefaultConstructor,
@@ -115,5 +157,25 @@ static_assert(checks<DeletedCopy, std::allocator<DeletedCopy>, int, int>());
 static_assert(checks<DeletedDefaultConstructor,
                      std::allocator<DeletedDefaultConstructor>, int, int>());
 static_assert(checks<AllCtors, std::allocator<AllCtors>, int, int>());
+
+// Non-default constructible allocator.
+
+static_assert(checks<DeletedCopy, NoDefaultCtorAllocator<DeletedCopy>, int>());
+static_assert(checks<DeletedDefaultConstructor,
+                     NoDefaultCtorAllocator<DeletedDefaultConstructor>, int>());
+static_assert(checks<AllCtors, NoDefaultCtorAllocator<AllCtors>, int>());
+
+static_assert(checks<DeletedCopy, NoDefaultCtorAllocator<DeletedCopy>, Nope>());
+static_assert(
+    checks<DeletedDefaultConstructor,
+           NoDefaultCtorAllocator<DeletedDefaultConstructor>, Nope>());
+static_assert(checks<AllCtors, NoDefaultCtorAllocator<AllCtors>, Nope>());
+
+static_assert(
+    checks<DeletedCopy, NoDefaultCtorAllocator<DeletedCopy>, int, int>());
+static_assert(
+    checks<DeletedDefaultConstructor,
+           NoDefaultCtorAllocator<DeletedDefaultConstructor>, int, int>());
+static_assert(checks<AllCtors, NoDefaultCtorAllocator<AllCtors>, int, int>());
 
 }  // namespace xyz
