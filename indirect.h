@@ -86,8 +86,7 @@ class indirect {
   //  constructor is instantiated.
   template <class U = T, class TT = T>
   explicit constexpr indirect(std::allocator_arg_t, const A& alloc, U&& u)
-    requires(std::is_same_v<TT, std::remove_cvref_t<U>> &&
-             std::is_default_constructible_v<TT> &&
+    requires(std::is_constructible_v<TT, U> &&
              std::is_copy_constructible_v<TT> &&
              not std::is_same_v<std::remove_cvref_t<U>, std::in_place_t> &&
              not std::is_same_v<std::remove_cvref_t<U>, indirect>)
@@ -99,8 +98,8 @@ class indirect {
   //  constructor is instantiated.
   template <class U = T, class TT = T>
   explicit constexpr indirect(U&& u)
-    requires(std::is_same_v<TT, std::remove_cvref_t<U>> &&
-             std::is_default_constructible_v<TT> &&
+    requires(std::is_constructible_v<TT, U> &&
+             std::is_default_constructible_v<A> &&
              std::is_copy_constructible_v<TT> &&
              not std::is_same_v<std::remove_cvref_t<U>, std::in_place_t> &&
              not std::is_same_v<std::remove_cvref_t<U>, indirect>)
@@ -112,8 +111,7 @@ class indirect {
   template <class U = T, class TT = T>
   explicit constexpr indirect(std::allocator_arg_t, const A& alloc,
                               std::in_place_t, U&& u)
-    requires(std::is_same_v<TT, std::remove_cvref_t<U>> &&
-             std::is_default_constructible_v<TT> &&
+    requires(std::is_constructible_v<TT, U> &&
              std::is_copy_constructible_v<TT> &&
              not std::is_same_v<std::remove_cvref_t<U>, indirect>)
       : alloc_(alloc) {
@@ -124,7 +122,7 @@ class indirect {
   // is instantiated.
   template <class... Us, class TT = T>
   explicit constexpr indirect(std::in_place_t, Us&&... us)
-    requires(std::constructible_from<T, Us && ...> &&
+    requires(std::is_constructible_v<T, Us && ...> &&
              std::is_default_constructible_v<A> &&
              std::is_copy_constructible_v<TT>)
       : indirect(std::allocator_arg, A{}, std::in_place,
@@ -145,7 +143,7 @@ class indirect {
   template <class... Us, class TT = T>
   explicit constexpr indirect(std::allocator_arg_t, const A& alloc,
                               std::in_place_t, Us&&... us)
-    requires(std::constructible_from<T, Us && ...> &&
+    requires(std::is_constructible_v<T, Us && ...> &&
              std::is_copy_constructible_v<TT>)
       : alloc_(alloc) {
     p_ = construct_from(alloc_, std::forward<Us>(us)...);

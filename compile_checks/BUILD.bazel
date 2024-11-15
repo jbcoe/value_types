@@ -1,6 +1,18 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 
 cc_library(
+    name = "indirect_requirements",
+    srcs = ["indirect_requirements.cc"],
+    visibility = ["//visibility:private"],
+    deps = ["//:indirect"],
+)
+
+build_test(
+    name = "indirect_requirements_build_test",
+    targets = ["indirect_requirements"],
+)
+
+cc_library(
     name = "indirect_consteval",
     srcs = ["indirect_consteval.cc"],
     visibility = ["//visibility:private"],
