@@ -80,7 +80,7 @@ consteval bool checks() {
       static_assert(!std::is_constructible_v<polymorphic_t,
                                              std::in_place_type_t<T>, Us...>);
     } else /* constexpr */ {
-      // T is copy constructible.
+      // T is default constructible.
       if constexpr (std::is_default_constructible_v<T>) {
         static_assert(std::is_constructible_v<polymorphic_t>);
       } else /* constexpr */ {
