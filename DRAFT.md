@@ -61,6 +61,8 @@ should not be considered in isolation.
 
 * Require `is_same_v<remove_cv_ref_t<U>, U>` to simplify various requirements.
 
+* Require `is_same_v` checks to to the first constraints checked.
+
 * Add drafting note for use of italicised code font for exposition-only variables.
 
 * Use `derived_from` rather than `is_base_of_v` in requirements for polymorphic.
