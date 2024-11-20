@@ -45,7 +45,7 @@ should not be considered in isolation.
 
 ### Changes in R11
 
-* Strike unnecesary `remove_const` from specification of hash for indirect.
+* Remove unnecesary `remove_const` from the specification of hash for indirect.
 
 ### Changes in R10
 
@@ -559,7 +559,7 @@ We add a perfect-forwarded assignment operator for `indirect`
 in line with those from `optional` and `variant`.
 
 ```c++
-template <class U = T>
+template <class U=T>
 constexpr optional& operator=(U&& u);
 ```
 
@@ -717,13 +717,12 @@ means calling `allocator_traits<allocator_type>::construct(al, p, args...)` wher
 `allocator_traits<allocator_type>::select_on_container_copy_construction` on the
 allocator belonging to the indirect object being copied. Move constructors obtain
 an allocator by move construction from the allocator belonging to the indirect
-object being moved. All other constructors for this type take a `const
-allocator_type& argument`. _[Note: If an invocation of a constructor uses the
+object being moved. _[Note: If an invocation of a constructor uses the
 default value of an optional allocator argument, then the allocator type must
-support value-initialization. --end note]_ A copy of this allocator is used for
+support value-initialization. --end note]_ The member `alloc` is used for
 any memory allocation and element construction performed by these constructors
 and by all member functions during the lifetime of each indirect object,
-or until the allocator is replaced. The allocator may be replaced only via
+or until the allocator is replaced. The allocator `alloc` may be replaced only via
 assignment or `swap()`. Allocator replacement is performed by copy assignment,
 move assignment, or swapping of the allocator only if ([container.reqmts]):
 
@@ -783,19 +782,19 @@ class indirect {
   explicit constexpr indirect(allocator_arg_t, const Allocator& a,
                               in_place_t, Us&&... us);
 
-  template <class U>
+  template <class U=T>
   explicit constexpr indirect(U&& u);
 
-  template <class U>
+  template <class U=T>
   explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u);
 
-  template<class U, class... Us>
-  explicit constexpr indirect(in_place_t, initializer_list<U> ilist,
+  template<class I, class... Us>
+  explicit constexpr indirect(in_place_t, initializer_list<I> ilist,
                               Us&&... us);
 
-  template<class U, class... Us>
+  template<class I, class... Us>
   explicit constexpr indirect(allocator_arg_t, const Allocator& a,
-                              in_place_t, initializer_list<U> ilist,
+                              in_place_t, initializer_list<I> ilist,
                               Us&&... us);
 
   constexpr ~indirect();
@@ -804,7 +803,7 @@ class indirect {
 
   constexpr indirect& operator=(indirect&& other) noexcept(see below);
 
-  template <class U>
+  template <class U=T>
   constexpr indirect& operator=(U&& u);
 
   constexpr const T& operator*() const & noexcept;
@@ -866,7 +865,7 @@ _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
 `allocator_traits<allocator_type>::construct` throws.
 
 ```c++
-explicit constexpr indirect()
+explicit constexpr indirect();
 ```
 
 1. _Constraints_: `is_default_constructible_v<T>` is `true`.
@@ -878,7 +877,7 @@ explicit constexpr indirect()
 3. _Effects_: Constructs an owned object of type `T` with an empty argument list,
    using the allocator `alloc`.
 
-4. _Postconditions_: `*this` is not valueless.
+4. _TODO_: Delete and update numbering
 
 ```c++
 explicit constexpr indirect(allocator_arg_t, const Allocator& a);
@@ -892,7 +891,7 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a);
 7. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an owned
    object of type `T` with an empty argument list, using the allocator `alloc`.
 
-8. _Postconditions_: `*this` is not valueless.
+8. _TODO_: Delete and update numbering
 
 ```c++
 constexpr indirect(const indirect& other);
@@ -922,11 +921,9 @@ constexpr indirect(indirect&& other) noexcept;
 13. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
     is `false` then `T` is a complete type.
 
-14. _Effects_: If `other` is valueless, `*this` is valueless. Otherwise, if
-    `alloc == other.alloc` is `true` constructs an object of type `indirect`
-    that owns the owned object of `other`; `other` is valueless. Otherwise,
-    constructs an owned object of type `T` with `*std::move(other)`, using the
-    allocator `alloc`.
+14. _Effects_: `alloc` is direct-non-list initialised from std::move(`other.alloc`).
+  If `other` is valueless, `*this` is valueless. Otherwise `*this` takes
+  ownership of the owned object of `other`.
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
@@ -956,7 +953,7 @@ explicit constexpr indirect(in_place_t, Us&&... us);
 19. _Effects_: Constructs an owned object of type `T` with
     `std​::​forward<Us>(us)...`, using the allocator `alloc`.
 
-20. _Postconditions_: `*this` is not valueless.
+20. _TODO_: Delete and update numbering
 
 ```c++
 template <class... Us>
@@ -973,15 +970,15 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a, in_place_t, Us&
     allocator `alloc`.
 
 ```c++
-template <class U>
+template <class U=T>
 explicit constexpr indirect(U&& u);
 ```
 
-24. _Constraints_: `is_constructible_v<T, U>` is `true`.
+24. _Constraints_: `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
+    `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`.
+    `is_constructible_v<T, U>` is `true`.
     `is_copy_constructible_v<T>` is `true`.
     `is_default_constructible_v<allocator_type>` is `true`.
-    `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`.
-    `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
 
 25. _Mandates_: `T` is a complete type.
 
@@ -989,14 +986,15 @@ explicit constexpr indirect(U&& u);
     `std​::​forward<U>(u)`, using the allocator `alloc`.
 
 ```c++
-template <class U>
+template <class U=T>
 explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u);
 ```
 
-27. _Constraints_: `is_constructible_v<T, U>` is `true`.
-    `is_copy_constructible_v<T>` is `true`.
+27. _Constraints_: `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
     `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`.
-    `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
+    `is_constructible_v<T, U>` is `true`.
+    `is_copy_constructible_v<T>` is `true`.
+
 
 28. _Mandates_: `T` is a complete type.
 
@@ -1005,13 +1003,13 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u);
     allocator `alloc`.
 
 ```c++
-template<class U, class... Us>
-explicit constexpr indirect(in_place_t, initializer_list<U> ilist,
+template<class I, class... Us>
+explicit constexpr indirect(in_place_t, initializer_list<I> ilist,
                             Us&&... us);
 ```
 
 30. _Constraints_: `is_copy_constructible_v<T>` is `true`.
-    `is_constructible_v<T, initializer_list<I>, Us...>` is `true`.
+    `is_constructible_v<T, initializer_list<I>&, Us...>` is `true`.
     `is_default_constructible_v<allocator_type>` is `true`.
 
 31. _Mandates_: `T` is a complete type.
@@ -1021,14 +1019,14 @@ explicit constexpr indirect(in_place_t, initializer_list<U> ilist,
     the allocator `alloc`.
 
 ```c++
-template<class U, class... Us>
+template<class I, class... Us>
 explicit constexpr indirect(allocator_arg_t, const Allocator& a,
-                            in_place_t, initializer_list<U> ilist,
+                            in_place_t, initializer_list<I> ilist,
                             Us&&... us);
 ```
 
 33. _Constraints_: `is_copy_constructible_v<T>` is `true`.
-    `is_constructible_v<T, initializer_list<I>, Us...>` is `true`.
+    `is_constructible_v<T, initializer_list<I>&, Us...>` is `true`.
 
 34. _Mandates_: `T` is a complete type.
 
@@ -1127,13 +1125,13 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 9. _Remarks_: If any exception is thrown, there are no effects on `*this` or `other`.
 
 ```c++
-  template <class U>
+  template <class U=T>
   constexpr indirect& operator=(U&& u);
 ```
 
-10. _Constraints_: `is_constructible_v<T, U>` is `true`.
+10. _Constraints_: `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
+    `is_constructible_v<T, U>` is `true`.
     `is_assignable_v<T&,U>` is `true`.
-    `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
 
 11. _Mandates_: `T` is a complete type.
 
@@ -1358,10 +1356,10 @@ class polymorphic {
   explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                                  in_place_type_t<U>, Ts&&... ts);
 
-  template <class U>
+  template <class U=T>
   explicit constexpr polymorphic(U&& u);
 
-  template <class U>
+  template <class U=T>
   explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
 
   template <class U, class I, class... Us>
@@ -1420,7 +1418,7 @@ explicit constexpr polymorphic()
 3. _Effects_: Constructs an owned object of type `T` with an empty argument list
    using the allocator `alloc`.
 
-4. _Postconditions_: `*this` is not valueless.
+4. _TODO_: Delete and update numbering
 
 ```c++
 explicit constexpr polymorphic(allocator_arg_t, const Allocator& a);
@@ -1435,7 +1433,7 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a);
    owned object of type `T` with an empty argument list using the allocator
    `alloc`.
 
-8. _Postconditions_: `*this` is not valueless.
+8. _TODO_: Delete and update numbering
 
 ```c++
 constexpr polymorphic(const polymorphic& other);
@@ -1515,7 +1513,7 @@ explicit constexpr polymorphic(in_place_type_t<U>, Ts&&... ts);
 19. _Effects_: Constructs an owned object of type `U` with
     `std​::​forward<Ts>(ts)...` using the allocator `alloc`.
 
-20. _Postconditions_: `*this` is not valueless.
+20. _TODO_: Delete and update numbering
 
 ```c++
 template <class U, class... Ts>
@@ -1532,17 +1530,17 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
     owned object of type `U` with `std​::​forward<Ts>(ts)...` using the
     allocator `alloc`.
 
-24. _Postconditions_: `*this` is not valueless.
+24. _TODO_: Delete and update numbering
 
 ```c++
-template <class U>
+template <class U=T>
 explicit constexpr polymorphic(U&& u);
 ```
 
-25. _Constraints_: `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
+25. _Constraints_: `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
+   `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
    `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
    `is_constructible_v<remove_cvref_t<U>, U>` is `true`.
-   `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
    `is_default_constructible_v<allocator_type>` is `true`.
    `remove_cvref_t<U>` is not a specialization of `in_place_type_t`.
 
@@ -1552,14 +1550,14 @@ explicit constexpr polymorphic(U&& u);
   `std​::​forward<U>(u)` using the allocator `alloc`.
 
 ```c++
-template <class U>
+template <class U=T>
 explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
 ```
 
-28. _Constraints_: `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
+28. _Constraints_: `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
+   `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
    `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
    `is_constructible_v<remove_cvref_t<U>, U>` is `true`.
-   `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
    `is_default_constructible_v<allocator_type>` is `true`.
    `remove_cvref_t<U>` is not a specialization of `in_place_type_t`.
 
@@ -1575,10 +1573,10 @@ explicit constexpr polymorphic(in_place_type_t<U>,
                                initializer_list<I> ilist, Us&&... us)
 ```
 
-31. _Constraints_: `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
+31. _Constraints_: `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
+   `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
    `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
-   `is_constructible_v<remove_cvref_t<U>, U>` is `true`.
-   `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
+   `is_constructible_v<remove_cvref_t<U>, initializer_list<I>&, Us...>` is `true`.
    `remove_cvref_t<U>` is not a specialization of `in_place_type_t`.
 
 32. _Mandates_: `T` is a complete type.
@@ -1593,10 +1591,10 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                                initializer_list<I> ilist, Us&&... us)
 ```
 
-34. _Constraints_: `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
+34. _Constraints_: `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
+   `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
    `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
-   `is_constructible_v<remove_cvref_t<U>, U>` is `true`.
-   `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
+   `is_constructible_v<remove_cvref_t<U>, initializer_list<I>&, Us...>` is `true`.
    `remove_cvref_t<U>` is not a specialization of `in_place_type_t`.
 
 35. _Mandates_: `T` is a complete type.
