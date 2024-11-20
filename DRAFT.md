@@ -63,6 +63,8 @@ should not be considered in isolation.
 
 * Add drafting note for use of italicised code font for exposition-only variables.
 
+* Use `derived_from` rather than `is_base_of_v` in requirements for polymorphic.
+
 ### Changes in R10
 
 * Correct naming of explicit 'converting' constructors to 'single-argument' constructors.
@@ -1540,7 +1542,7 @@ explicit constexpr polymorphic(U&& u);
 
 25. _Constraints_: `is_same_v<remove_cv_ref_t<U>, U>`.
    `is_same_v<U, polymorphic>` is `false`.
-   `is_base_of_v<T, U>` is `true`.
+   `derived_from<U, T>` is `true`.
    `is_copy_constructible_v<U>` is `true`.
    `is_constructible_v<U, U>` is `true`.
    `U` is not a specialization of `in_place_type_t`.
@@ -1558,7 +1560,7 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
 
 28. _Constraints_: `is_same_v<remove_cv_ref_t<U>, U>`.
    `is_same_v<U, polymorphic>` is `false`.
-   `is_base_of_v<T, U>` is `true`.
+   `derived_from<U, T>` is `true`.
    `is_copy_constructible_v<U>` is `true`.
    `is_constructible_v<U, U>` is `true`.
    `U` is not a specialization of `in_place_type_t`.
@@ -1578,7 +1580,7 @@ explicit constexpr polymorphic(in_place_type_t<U>,
 
 31. _Constraints_: `is_same_v<remove_cv_ref_t<U>, U>`.
    `is_same_v<U, polymorphic>` is `false`.
-   `is_base_of_v<T, U>` is `true`.
+   `derived_from<U, T>` is `true`.
    `is_copy_constructible_v<U>` is `true`.
    `is_constructible_v<U, initializer_list<I>&, Us...>` is `true`.
    `is_default_constructible_v<allocator_type>` is `true`.
@@ -1597,7 +1599,7 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
 
 34. _Constraints_: `is_same_v<remove_cv_ref_t<U>, U>`.
    `is_same_v<U, polymorphic>` is `false`.
-   `is_base_of_v<T, U>` is `true`.
+   `derived_from<U, T>` is `true`.
    `is_copy_constructible_v<U>` is `true`.
    `is_constructible_v<U, initializer_list<I>&, Us...>` is `true`.
 
