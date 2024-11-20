@@ -65,6 +65,9 @@ should not be considered in isolation.
 
 * Use `derived_from` rather than `is_base_of_v` in requirements for polymorphic.
 
+* Change ordering of constructors to group `in_place_t` constructors of `indirect` and
+  `in_place_type_t` constructors of `polymorphic` consecutively in synopsis.
+
 ### Changes in R10
 
 * Correct naming of explicit 'converting' constructors to 'single-argument' constructors.
@@ -789,12 +792,6 @@ class indirect {
   explicit constexpr indirect(allocator_arg_t, const Allocator& a,
                               in_place_t, Us&&... us);
 
-  template <class U=T>
-  explicit constexpr indirect(U&& u);
-
-  template <class U=T>
-  explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u);
-
   template<class I, class... Us>
   explicit constexpr indirect(in_place_t, initializer_list<I> ilist,
                               Us&&... us);
@@ -803,6 +800,12 @@ class indirect {
   explicit constexpr indirect(allocator_arg_t, const Allocator& a,
                               in_place_t, initializer_list<I> ilist,
                               Us&&... us);
+
+  template <class U=T>
+  explicit constexpr indirect(U&& u);
+
+  template <class U=T>
+  explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u);
 
   constexpr ~indirect();
 
@@ -1345,12 +1348,6 @@ class polymorphic {
   explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                                  in_place_type_t<U>, Ts&&... ts);
 
-  template <class U=T>
-  explicit constexpr polymorphic(U&& u);
-
-  template <class U=T>
-  explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
-
   template <class U, class I, class... Us>
   explicit constexpr polymorphic(in_place_type_t<U>,
                                  initializer_list<I> ilist, Us&&... us);
@@ -1359,6 +1356,12 @@ class polymorphic {
   explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                                  in_place_type_t<U>,
                                  initializer_list<I> ilist, Us&&... us);
+
+  template <class U=T>
+  explicit constexpr polymorphic(U&& u);
+
+  template <class U=T>
+  explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
 
   constexpr ~polymorphic();
 
