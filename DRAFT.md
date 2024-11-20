@@ -1068,25 +1068,19 @@ constexpr indirect& operator=(const indirect& other);
 
 1. _Mandates_: `T` is a complete type.
 
-2. _Effects_: If `addressof(other) == this` is `true`, there are no effects.
+2. _Effects_: If `addressof(other) == this` is `true`, there are no effects. Otherwise:
 
-  The allocator needs updating if
-  `allocator_traits<allocator_type>::propagate_on_container_copy_assignment`
-  is `true`.
-  If `other` is valueless, `*this` becomes valueless and the owned object in
-  `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy`
-  and then the storage is deallocated.
-  Otherwise, if `alloc == other.alloc` is `true` and `*this` is not valueless,
-  `*other` is assigned to the owned object.
-  Otherwise a new owned object is constructed in `*this` using
-  `allocator_traits<allocator_type>::construct` with the owned object from
-  `other` as the argument, using either the allocator in `*this` or the
-  allocator in `other` if the allocator needs updating. The previously owned
-  object in `*this`, if any, is destroyed using
-  `allocator_traits<allocator_type>::destroy` and then the storage is
-  deallocated.
-  If the allocator needs updating, the allocator in `*this` is replaced with a
-  copy of the allocator in `other`.
+    2.1. The allocator needs updating if `allocator_traits<allocator_type>::propagate_on_container_copy_assignment` is `true`.
+
+    2.2. If `other` is valueless, `*this` becomes valueless and the owned object in `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy` and then the storage is deallocated.
+
+    2.3. Otherwise, if `alloc == other.alloc` is `true` and `*this` is not valueless, `*other` is assigned to the owned object.
+
+    2.4. Otherwise a new owned object is constructed in `*this` using `allocator_traits<allocator_type>::construct` with the owned object from `other` as the argument, using either the allocator in `*this` or the allocator in `other` if the allocator needs updating.
+
+    2.5. The previously owned object in `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy` and then the storage is deallocated.
+
+    2.6. If the allocator needs updating, the allocator in `*this` is replaced with a copy of the allocator in `other`.
 
 3. _Returns_: A reference to `*this`.
 
@@ -1106,25 +1100,19 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 5. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
     is `false`, then `T` is a complete type.
 
-6. _Effects_: If `addressof(other) == this` is `true`, there are no effects.
+6. _Effects_: If `addressof(other) == this` is `true`, there are no effects. Otherwise:
 
-  The allocator needs updating if
-  `allocator_traits<allocator_type>::propagate_on_container_move_assignment`
-  is `true`.
-  If `other` is valueless, `*this` becomes valueless and the owned object in
-  `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy`
-  and then the storage is deallocated.
-  Otherwise, if `alloc == other.alloc` is `true`, swaps the owned objects in `*this` and
-  `other`; the owned object in `other`, if any, is then destroyed using
-  `allocator_traits<allocator_type>::destroy` and then the storage is deallocated.
-  Otherwise constructs a new owned object with the owned object
-  `other` as the argument as an rvalue, using either the allocator in `*this` or
-  the allocator in `other` if the allocator needs updating. The previous owned
-  object in `*this`, if any, is destroyed using
-  `allocator_traits<allocator_type>::destroy` and then the storage is
-  deallocated.
-  If the allocator needs updating, the allocator in `*this` is
-  replaced with a copy of the allocator in `other`.
+    6.1. The allocator needs updating if `allocator_traits<allocator_type>::propagate_on_container_move_assignment` is `true`.
+
+    6.2. If `other` is valueless, `*this` becomes valueless and the owned object in `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy` and then the storage is deallocated.
+
+    6.3. Otherwise, if `alloc == other.alloc` is `true`, swaps the owned objects in `*this` and `other`; the owned object in `other`, if any, is then destroyed using `allocator_traits<allocator_type>::destroy` and then the storage is deallocated.
+
+    6.4. Otherwise constructs a new owned object with the owned object `other` as the argument as an rvalue, using either the allocator in `*this` or the allocator in `other` if the allocator needs updating.
+
+    6.5. The previously owned object in `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy` and then the storage is deallocated.
+
+    6.6. If the allocator needs updating, the allocator in `*this` is replaced with a copy of the allocator in `other`.
 
 7. _Postconditions_: `other` is valueless.
 
@@ -1628,19 +1616,15 @@ constexpr polymorphic& operator=(const polymorphic& other);
 
 1. _Mandates_: `T` is a complete type.
 
-2. _Effects_: If `addressof(other) == this` is `true`, there are no effects.
-  The allocator needs updating if
-  `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value`
-  is `true`.
-  If `other` is not valueless, a new owned object is constructed in `*this` using
-  `allocator_traits<allocator_type>::construct` with the owned
-  object from `other` as the argument, using either the allocator in `*this` or
-  the allocator in `other` if the allocator needs updating.
-  The previous owned object in `*this`, if any, is destroyed using
-  `allocator_traits<allocator_type>::destroy` and then the storage
-  is deallocated.
-  If the allocator needs updating, the allocator in `*this` is replaced with a
-  copy of the allocator in `other`.
+2. _Effects_: If `addressof(other) == this` is `true`, there are no effects. Otherwise:
+
+    2.1. The allocator needs updating if `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value` is `true`.
+
+    2.2. If `other` is not valueless, a new owned object is constructed in `*this` using `allocator_traits<allocator_type>::construct` with the owned object from `other` as the argument, using either the allocator in `*this` or the allocator in `other` if the allocator needs updating.
+
+    2.3 The previously owned object in `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy` and then the storage is deallocated.
+
+    2.4 If the allocator needs updating, the allocator in `*this` is replaced with a copy of the allocator in `other`.
 
 3. _Returns_: A reference to `*this`.
 
@@ -1655,24 +1639,17 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
 5. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
     is `false`, `T` is a complete type.
 
-6. _Effects_: If `addressof(other) == this` is `true`, there are no effects.
-  The allocator needs updating if
-  `allocator_traits<allocator_type>::propagate_on_container_move_assignment`
-  is `true`.
-  If `alloc == other.alloc` is `true`, swaps the owned objects in `*this` and
-  `other`; the owned object in `other`, if any, is then destroyed using
-  `allocator_traits<allocator_type>::destroy` and then the storage is
-  deallocated.
-  Otherwise, if `alloc != other.alloc` is `true`; if `other` is not valueless, a
-  new owned object is constructed in `*this` using
-  `allocator_traits<allocator_type>::construct` with the owned object from
-  `other` as the argument as an rvalue, using either the allocator in `*this` or
-  the allocator in `other` if the allocator needs updating. The previous owned
-  object in `*this`, if any, is destroyed using
-  `allocator_traits<allocator_type>::destroy` and then the storage is
-  deallocated.
-  If the allocator needs updating, the allocator in `*this` is replaced with a
-  copy of the allocator in `other`.
+6. _Effects_: If `addressof(other) == this` is `true`, there are no effects. Otherwise:
+
+    6.1. The allocator needs updating if `allocator_traits<allocator_type>::propagate_on_container_move_assignment` is `true`.
+
+    6.2. If `alloc == other.alloc` is `true`, swaps the owned objects in `*this` and `other`; the owned object in `other`, if any, is then destroyed using `allocator_traits<allocator_type>::destroy` and then the storage is deallocated.
+
+    6.3. Otherwise, if `alloc != other.alloc` is `true`; if `other` is not valueless, a new owned object is constructed in `*this` using `allocator_traits<allocator_type>::construct` with the owned object from `other` as the argument as an rvalue, using either the allocator in `*this` or the allocator in `other` if the allocator needs updating.
+
+    6.4. The previously owned object in `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy` and then the storage is deallocated.
+
+    6.5. If the allocator needs updating, the allocator in `*this` is replaced with a copy of the allocator in `other`.
 
 7. _Returns_: A reference to `*this`.
 
