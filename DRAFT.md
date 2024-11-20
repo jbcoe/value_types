@@ -715,7 +715,7 @@ namespace std {
 ### X.Y Class template indirect [indirect]
 
 [Drafting note: The member _`alloc`_ should be formatted as an exposition-only identifier,
-but limitations of the processor used to prepare this paper mean not all uses are italicised.]
+but limitations of the processor used to prepare this paper means not all uses are italicised.]
 
 #### X.Y.1 Class template indirect general [indirect.general]
 
@@ -736,9 +736,9 @@ means calling `allocator_traits<allocator_type>::construct(al, p, args...)` wher
 
 4. The member `alloc` is used for any memory allocation and element construction performed
 by member functions during the lifetime of each indirect object, or until the allocator is
-replaced. The allocator `alloc` may be replaced only via
-assignment or `swap()`. Allocator replacement is performed by copy assignment,
-move assignment, or swapping of the allocator only if ([container.reqmts]):
+replaced. The allocator `alloc` may only be replaced via assignment or `swap()`.
+Allocator replacement is performed by copy assignment, move assignment, or swapping of the
+allocator only if ([container.reqmts]):
 `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value`,
 or `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value`,
 or `allocator_traits<allocator_type>::propagate_on_container_swap::value`
@@ -944,7 +944,7 @@ constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
     is `false` then `T` is a complete type.
 
 16. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
-    valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc` is `true`
+    valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc` is `true`,
     constructs an object of type `indirect` that owns the owned object of `other`;
     `other` is valueless. Otherwise, constructs an owned object of type `T` with
     `*std::move(other)`, using the allocator `alloc`.
@@ -1203,7 +1203,7 @@ constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
   noexcept(lhs.swap(rhs)));
 ```
 
-2. _Effects_: Equivalent to `lhs.swap(rhs)`.
+3. _Effects_: Equivalent to `lhs.swap(rhs)`.
 
 #### X.Y.8 Relational operators [indirect.relops]
 
@@ -1255,13 +1255,13 @@ constexpr synth-three-way-result<T> operator<=>(const indirect& lhs, const U& rh
 #### X.Y.10 Hash support [indirect.hash]
 
 ```c++
-template <class T, class Alloc>
-struct hash<indirect<T, Alloc>>;
+template <class T, class Allocator>
+struct hash<indirect<T, Allocator>>;
 ```
 
-1. The specialization `hash<indirect<T, Alloc>>` is enabled ([unord.hash]) if
+1. The specialization `hash<indirect<T, Allocator>>` is enabled ([unord.hash]) if
 and only if `hash<T>` is enabled. When enabled for an object `i`
-of type `indirect<T, Alloc>`, then `hash<indirect<T, Alloc>>()(i)` evaluates to
+of type `indirect<T, Allocator>`, then `hash<indirect<T, Allocator>>()(i)` evaluates to
 either the same value as `hash<T>()(*i)`, if `i` is not valueless; otherwise to
 an implementation-defined value. The member functions are not guaranteed to be
 noexcept.
@@ -1293,7 +1293,7 @@ where `p` is a pointer obtained by calling
 
 4. The member `alloc` is used for any memory allocation and element construction
 performed by member functions during the lifetime of each polymorphic value object,
-or until the allocator is replaced. The allocator may be replaced only via assignment
+or until the allocator is replaced. The allocator may only be replaced via assignment
 or `swap()`. Allocator replacement is performed by copy assignment, move assignment,
 or swapping of the allocator only if (see [container.reqmts]):
 `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value`,
