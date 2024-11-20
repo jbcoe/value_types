@@ -61,6 +61,8 @@ should not be considered in isolation.
 
 * Require `is_same_v<remove_cv_ref_t<U>, U>` to simplify various requirements.
 
+* Add drafting note for use of italicised code font for exposition-only variables.
+
 ### Changes in R10
 
 * Correct naming of explicit 'converting' constructors to 'single-argument' constructors.
@@ -710,6 +712,9 @@ namespace std {
 
 ### X.Y Class template indirect [indirect]
 
+[Drafting note: The member _`alloc`_ should be formatted as an exposition-only identifier,
+but limitations of the processor used to prepare this paper mean not all uses are italicised.]
+
 #### X.Y.1 Class template indirect general [indirect.general]
 
 1. An indirect object manages the lifetime of an owned object. An indirect
@@ -1272,6 +1277,9 @@ an implementation-defined value. The member functions are not guaranteed to be
 noexcept.
 
 ### X.Z Class template polymorphic [polymorphic]
+
+[Drafting note: The member _`alloc`_ should be formatted as an exposition-only identifier,
+but limitations of the processor used to prepare this paper mean not all uses are italicised.]
 
 #### X.Z.1 Class template polymorphic general [polymorphic.general]
 
