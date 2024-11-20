@@ -52,6 +52,9 @@ should not be considered in isolation.
 
 * Consistently use `allocator_type` as the template parameter for `allocator_traits`.
 
+* Prevent `T` from being `in_place_t` or a specialization of `in_place_type_t` for
+  both indirect and polymorphic.
+
 ### Changes in R10
 
 * Correct naming of explicit 'converting' constructors to 'single-argument' constructors.
@@ -843,7 +846,7 @@ private:
 template <class Value>
 indirect(Value) -> indirect<Value>;
 
-template <class Alloc, class Value>
+template <class Allocator, class Value>
 indirect(allocator_arg_t, Allocator, Value) -> indirect<
          Value, typename allocator_traits<allocator_type>::template rebind_alloc<Value>>;
 ```
