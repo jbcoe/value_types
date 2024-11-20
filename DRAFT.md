@@ -47,6 +47,11 @@ should not be considered in isolation.
 
 * Remove unnecesary `remove_const` from the specification of hash for indirect.
 
+* Add a default template type parameter for single-argument constructors for
+  indirect and polymorphic and for indirect's perfect-forwarding assignment.
+
+* Consistently use `allocator_type` as the template parameter for `allocator_traits`.
+
 ### Changes in R10
 
 * Correct naming of explicit 'converting' constructors to 'single-argument' constructors.
@@ -839,8 +844,8 @@ template <class Value>
 indirect(Value) -> indirect<Value>;
 
 template <class Alloc, class Value>
-indirect(allocator_arg_t, Alloc, Value) -> indirect<
-         Value, typename allocator_traits<Alloc>::template rebind_alloc<Value>>;
+indirect(allocator_arg_t, Allocator, Value) -> indirect<
+         Value, typename allocator_traits<allocator_type>::template rebind_alloc<Value>>;
 ```
 
 #### X.Y.3 Constructors [indirect.ctor]
