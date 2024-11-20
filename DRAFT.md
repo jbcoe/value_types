@@ -1275,24 +1275,16 @@ program is ill-formed. Every object of type `polymorphic<T, Allocator>` uses an
 object of type `Allocator` to allocate and free storage for the owned object as
 needed.
 
-3. Constructing an owned object with arguments `args...` using an allocator `a`
+3. Constructing an owned object of type `U` with arguments `args...` using an allocator `a`
 means calling `allocator_traits<allocator_type>::rebind_traits<U>::construct(a,
 p, args...)` where `p` is a pointer obtained by calling
 `allocator_traits<allocator_type>::rebind_traits<U>::allocate` and `U` is either
 `allocator_type::value_type` or an internal type used by the polymorphic value.
 
-4. Copy constructors for a polymorphic type obtain an allocator by calling
-`allocator_traits<allocator_type>::select_on_container_copy_construction` on the
-allocator belonging to the polymorphic object being copied. Move constructors
-obtain an allocator by move construction from the allocator belonging to the
-object being moved. All other constructors for this type take a `const
-allocator_type& argument`. _[Note 3: If an invocation of a constructor uses the
-default value of an optional allocator argument, then the allocator type must
-support value-initialization. --end note]_ A copy of this allocator is used for
-any memory allocation and element construction performed by these constructors
-and by all member functions during the lifetime of each polymorphic value
-object, or until the allocator is replaced. The allocator may be replaced only
-via assignment or `swap()`. Allocator replacement is performed by copy
+4. `alloc` is used for any memory allocation and element construction performed by
+these constructors and by all member functions during the lifetime of each
+polymorphic value object, or until the allocator is replaced. The allocator may be
+replaced only via assignment or `swap()`. Allocator replacement is performed by copy
 assignment, move assignment, or swapping of the allocator only if (see
 [container.reqmts]):
 
@@ -1435,10 +1427,11 @@ constexpr polymorphic(const polymorphic& other);
 
 9. _Mandates_: `T` is a complete type.
 
-10. _Effects_: If `other` is valueless, `*this` is valueless. Otherwise,
-    constructs an owned object of type `U`, where `U` is the type of the owned
-    object in `other`, with the owned object in `other` using the allocator
-    `alloc`.
+10. _Effects_: `alloc` is direct-non-list-initialized with
+  `allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc)`.
+  If `other` is valueless, `*this` is valueless. Otherwise, constructs an owned object of
+  type `U`, where `U` is the type of the owned object in `other`, with the owned object in
+  `other` using the allocator `alloc`.
 
 ```c++
 constexpr polymorphic(allocator_arg_t, const Allocator& a,
@@ -1459,14 +1452,12 @@ constexpr polymorphic(polymorphic&& other) noexcept;
 13. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
     is `false`, then `T` is a complete type.
 
-14. _Effects_: If `other` is valueless, `*this` is valueless. Otherwise, if
-    `alloc == other.alloc` is `true`, either constructs an object of type
-    `polymorphic` that owns the owned object of other, making `other` valueless;
-    or, owns an object of the same type constructed from the owned object of
-    `other` considering that owned object as an rvalue. Otherwise, if `alloc !=
-    other.alloc` is `true`, constructs an object of type `polymorphic`,
-    considering the owned object in `other` as an rvalue, using the allocator
-    `alloc`.
+14. _Effects_: `alloc` is direct-non-list-initialized with
+  `std::move(other.alloc)`. If `other` is valueless, `*this` is valueless.
+  Otherwise, either `*this` takes ownership of the owned object of `other` or,
+  owns an object of the same type constructed from the owned object of
+  `other` considering that owned object as an rvalue, using the allocator
+  `alloc`.
 
   _[Drafting note: The above is intended to permit a small-buffer-optimization
   and handle the case where allocators compare equal but we do not want to swap
