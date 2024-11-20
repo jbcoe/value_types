@@ -714,25 +714,18 @@ means calling `allocator_traits<allocator_type>::construct(al, p, args...)` wher
 `allocator_traits<allocator_type>::allocate`.
 
 4. The member `alloc` is used for any memory allocation and element construction performed
-by these constructors and by all member functions during the lifetime of each indirect
-object, or until the allocator is replaced. The allocator `alloc` may be replaced only via
+by member functions during the lifetime of each indirect object, or until the allocator is
+replaced. The allocator `alloc` may be replaced only via
 assignment or `swap()`. Allocator replacement is performed by copy assignment,
 move assignment, or swapping of the allocator only if ([container.reqmts]):
-
-    (64.1)
-    `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value`,
-
-    (64.2)
-    `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value`,
-
-    (64.3)
-    `allocator_traits<allocator_type>::propagate_on_container_swap::value`
-
-    is `true` within the implementation of the corresponding indirect operation.
+`allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value`,
+or `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value`,
+or `allocator_traits<allocator_type>::propagate_on_container_swap::value`
+is `true` within the implementation of the corresponding indirect operation.
 
 5. A program that instantiates the definition of the template `indirect<T, Allocator>`
    with a type for the `T` parameter that is a non-object type, an array type,
-   `in_place_t`, or a cv-qualified type is ill-formed.
+   `in_place_t`, a specialization of `in_place_type_t`, or a cv-qualified type is ill-formed.
 
 6. The template parameter `T` of `indirect` may be an incomplete type.
 
@@ -1275,32 +1268,26 @@ program is ill-formed. Every object of type `polymorphic<T, Allocator>` uses an
 object of type `Allocator` to allocate and free storage for the owned object as
 needed.
 
-3. Constructing an owned object of type `U` with arguments `args...` using an allocator `a`
-means calling `allocator_traits<allocator_type>::rebind_traits<U>::construct(a,
-p, args...)` where `p` is a pointer obtained by calling
+3. Constructing an owned object of type `U` with arguments `args...` using an
+allocator `a` means calling
+`allocator_traits<allocator_type>::rebind_traits<U>::construct(a, p, args...)`
+where `p` is a pointer obtained by calling
 `allocator_traits<allocator_type>::rebind_traits<U>::allocate` and `U` is either
 `allocator_type::value_type` or an internal type used by the polymorphic value.
 
-4. `alloc` is used for any memory allocation and element construction performed by
-these constructors and by all member functions during the lifetime of each
-polymorphic value object, or until the allocator is replaced. The allocator may be
-replaced only via assignment or `swap()`. Allocator replacement is performed by copy
-assignment, move assignment, or swapping of the allocator only if (see
-[container.reqmts]):
-
-  (64.1)
-  `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value`,
-
-  (64.2)
-  `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value`, or
-
-  (64.3)
-  `allocator_traits<allocator_type>::propagate_on_container_swap::value` is true
-   within the implementation of the corresponding polymorphic value operation.
+4. The member `alloc` is used for any memory allocation and element construction
+performed by member functions during the lifetime of each polymorphic value object,
+or until the allocator is replaced. The allocator may be replaced only via assignment
+or `swap()`. Allocator replacement is performed by copy assignment, move assignment,
+or swapping of the allocator only if (see [container.reqmts]):
+`allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value`,
+or `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value`,
+or `allocator_traits<allocator_type>::propagate_on_container_swap::value` is true
+within the implementation of the corresponding polymorphic operation.
 
 5. A program that instantiates the definition of polymorphic for a non-object
-   type, an array type, a specialization of `in_place_type_t` or a cv-qualified
-   type is ill-formed.
+   type, an array type, `in_place_t`, a specialization of `in_place_type_t`,
+   or a cv-qualified type is ill-formed.
 
 6. The template parameter `T` of `polymorphic` may be an incomplete type.
 
@@ -1350,12 +1337,12 @@ class polymorphic {
 
   template <class U, class I, class... Us>
   explicit constexpr polymorphic(in_place_type_t<U>,
-                                 initializer_list<I> ilist, Us&&... us)
+                                 initializer_list<I> ilist, Us&&... us);
 
   template <class U, class I, class... Us>
   explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                                  in_place_type_t<U>,
-                                 initializer_list<I> ilist, Us&&... us)
+                                 initializer_list<I> ilist, Us&&... us);
 
   constexpr ~polymorphic();
 
@@ -1380,7 +1367,7 @@ class polymorphic {
   friend constexpr void swap(polymorphic& lhs,
                              polymorphic& rhs) noexcept(see below);
  private:
-  Allocator alloc = Alloc(); // exposition only
+  Allocator alloc = Allocator(); // exposition only
 };
 ```
 
@@ -1392,7 +1379,7 @@ _Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
 `allocator_traits<allocator_type>::construct` throws.
 
 ```c++
-explicit constexpr polymorphic()
+explicit constexpr polymorphic();
 ```
 
 1. _Constraints_: `is_default_constructible_v<T>` is `true`,
@@ -1425,7 +1412,7 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a);
 constexpr polymorphic(const polymorphic& other);
 ```
 
-9. _Mandates_: `T` is a complete type.
+9. _TODO_: Delete and update numbering
 
 10. _Effects_: `alloc` is direct-non-list-initialized with
   `allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc)`.
@@ -1438,7 +1425,7 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       const polymorphic& other);
 ```
 
-11. _Mandates_: `T` is a complete type.
+11. _TODO_: Delete and update numbering
 
 12. _Effects_: `alloc` is direct-non-list-initialized with `alloc`. If `other`
     is valueless, `*this` is valueless. Otherwise, constructs an owned object of
@@ -1449,8 +1436,7 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
 constexpr polymorphic(polymorphic&& other) noexcept;
 ```
 
-13. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
-    is `false`, then `T` is a complete type.
+13. _TODO_: Delete and update numbering
 
 14. _Effects_: `alloc` is direct-non-list-initialized with
   `std::move(other.alloc)`. If `other` is valueless, `*this` is valueless.
@@ -1468,8 +1454,7 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       polymorphic&& other) noexcept(allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-15. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
-    is `false`, then `T` is a complete type.
+15. _TODO_: Delete and update numbering
 
 16. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
     valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc` is
@@ -1489,8 +1474,10 @@ template <class U, class... Ts>
 explicit constexpr polymorphic(in_place_type_t<U>, Ts&&... ts);
 ```
 
-17. _Constraints_: `is_base_of_v<T, U>` is `true`. `is_constructible_v<U,
-  Ts...>` is `true`. `is_copy_constructible_v<U>` is `true`.
+17. _Constraints_: `is_same_v<remove_cv_ref_t<U>, U>` is true.
+  `derived_from<U, T>` is `true`.
+  `is_constructible_v<U, Ts...>` is `true`.
+  `is_copy_constructible_v<U>` is `true`.
   `is_default_constructible_v<allocator_type>` is `true`.
 
 18. _Mandates_: `T` is a complete type.
@@ -1506,8 +1493,10 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                                in_place_type_t<U>, Ts&&... ts);
 ```
 
-21. _Constraints_: `is_base_of_v<T, U>` is `true` and `is_constructible_v<U,
-  Ts...>` is `true` and `is_copy_constructible_v<U>` is `true`.
+21. _Constraints_: `is_same_v<remove_cv_ref_t<U>, U>` is true.
+  `derived_from<U, T>` is `true`.
+  `is_constructible_v<U, Ts...>` is `true`.
+  `is_copy_constructible_v<U>` is `true`.
 
 22. _Mandates_: `T` is a complete type.
 
@@ -1522,12 +1511,14 @@ template <class U=T>
 explicit constexpr polymorphic(U&& u);
 ```
 
-25. _Constraints_: `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
-   `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
-   `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
-   `is_constructible_v<remove_cvref_t<U>, U>` is `true`.
+25. _Constraints_: `is_same_v<remove_cv_ref<U>, U>`.
+   `is_same_v<U, polymorphic>` is `false`.
+   `is_base_of_v<T, U>` is `true`.
+   `is_copy_constructible_v<U>` is `true`.
+   `is_constructible_v<U, U>` is `true`.
    `is_default_constructible_v<allocator_type>` is `true`.
-   `remove_cvref_t<U>` is not a specialization of `in_place_type_t`.
+   `U` is not a specialization of `in_place_type_t`.
+   `is_default_constructible_v<Allocator>` is `true`.
 
 26. _Mandates_: `T` is a complete type.
 
@@ -1539,12 +1530,13 @@ template <class U=T>
 explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
 ```
 
-28. _Constraints_: `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
-   `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
-   `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
-   `is_constructible_v<remove_cvref_t<U>, U>` is `true`.
+28. _Constraints_: `is_same_v<remove_cv_ref<U>, U>`.
+   `is_same_v<U, polymorphic>` is `false`.
+   `is_base_of_v<T, U>` is `true`.
+   `is_copy_constructible_v<U>` is `true`.
+   `is_constructible_v<U, U>` is `true`.
    `is_default_constructible_v<allocator_type>` is `true`.
-   `remove_cvref_t<U>` is not a specialization of `in_place_type_t`.
+   `U` is not a specialization of `in_place_type_t`.
 
 29. _Mandates_: `T` is a complete type.
 
@@ -1555,38 +1547,39 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
 ```c++
 template <class U, class I, class... Us>
 explicit constexpr polymorphic(in_place_type_t<U>,
-                               initializer_list<I> ilist, Us&&... us)
+                               initializer_list<I> ilist, Us&&... us);
 ```
 
-31. _Constraints_: `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
-   `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
-   `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
-   `is_constructible_v<remove_cvref_t<U>, initializer_list<I>&, Us...>` is `true`.
-   `remove_cvref_t<U>` is not a specialization of `in_place_type_t`.
+31. _Constraints_: `is_same_v<remove_cv_ref<U>, U>`.
+   `is_same_v<U, polymorphic>` is `false`.
+   `is_base_of_v<T, U>` is `true`.
+   `is_copy_constructible_v<U>` is `true`.
+   `is_constructible_v<U, initializer_list<I>&, Us...>` is `true`.
+   `is_default_constructible_v<Allocator>` is `true`.
 
 32. _Mandates_: `T` is a complete type.
 
 33. _Effects_: Constructs an owned object of type `U` with the arguments
-    `ilist`, `std​::​forward<U>(u)` using the allocator `alloc`.
+    `ilist`, `std​::​forward<Us>(us)...` using the allocator `alloc`.
 
 ```c++
 template <class U, class I, class... Us>
 explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                                in_place_type_t<U>,
-                               initializer_list<I> ilist, Us&&... us)
+                               initializer_list<I> ilist, Us&&... us);
 ```
 
-34. _Constraints_: `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
-   `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
-   `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
-   `is_constructible_v<remove_cvref_t<U>, initializer_list<I>&, Us...>` is `true`.
-   `remove_cvref_t<U>` is not a specialization of `in_place_type_t`.
+34. _Constraints_: `is_same_v<remove_cv_ref<U>, U>`.
+   `is_same_v<U, polymorphic>` is `false`.
+   `is_base_of_v<T, U>` is `true`.
+   `is_copy_constructible_v<U>` is `true`.
+   `is_constructible_v<U, initializer_list<I>&, Us...>` is `true`.
 
 35. _Mandates_: `T` is a complete type.
 
 36. _Effects_: `alloc` is direct-non-list-initialized with `a`.
     Constructs an owned object of type `U` with the arguments `ilist`,
-    `std​::​forward<U>(u)` using the allocator `alloc`.
+    `std​::​forward<Us>(us)...` using the allocator `alloc`.
 
 #### X.Z.4 Destructor [polymorphic.dtor]
 
@@ -1608,19 +1601,16 @@ constexpr polymorphic& operator=(const polymorphic& other);
 1. _Mandates_: `T` is a complete type.
 
 2. _Effects_: If `addressof(other) == this` is `true`, there are no effects.
-
-  If `allocator_traits<alloctor_type>::propagate_on_container_copy_assignment` is
-  `true` then the allocator needs updating.
-
+  The allocator needs updating if
+  `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value`
+  is `true`.
   If `other` is not valueless, a new owned object is constructed in `*this` using
   `allocator_traits<allocator_type>::construct` with the owned
   object from `other` as the argument, using either the allocator in `*this` or
   the allocator in `other` if the allocator needs updating.
-
   The previous owned object in `*this`, if any, is destroyed using
   `allocator_traits<allocator_type>::destroy` and then the storage
   is deallocated.
-
   If the allocator needs updating, the allocator in `*this` is replaced with a
   copy of the allocator in `other`.
 
@@ -1638,15 +1628,12 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
     is `false`, `T` is a complete type.
 
 6. _Effects_: If `addressof(other) == this` is `true`, there are no effects.
-
-  If `allocator_traits<allocator_type>::propagate_on_container_move_assignment` is
-  `true` then the allocator needs updating.
-
+  The allocator needs updating if `allocator_traits<allocator_type>::propagate_on_container_move_assignment`
+  is `true`.
   If `alloc == other.alloc` is `true`, swaps the owned objects in `*this` and
   `other`; the owned object in `other`, if any, is then destroyed using
   `allocator_traits<allocator_type>::destroy` and then the storage is
   deallocated.
-
   Otherwise, if `alloc != other.alloc` is `true`; if `other` is not valueless, a
   new owned object is constructed in `*this` using
   `allocator_traits<allocator_type>::construct` with the owned object from
@@ -1655,7 +1642,6 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
   object in `*this`, if any, is destroyed using
   `allocator_traits<allocator_type>::destroy` and then the storage is
   deallocated.
-
   If the allocator needs updating, the allocator in `*this` is replaced with a
   copy of the allocator in `other`.
 
@@ -1699,8 +1685,8 @@ constexpr allocator_type get_allocator() const noexcept;
 
 ```c++
 constexpr void swap(polymorphic& other) noexcept(
-  allocator_traits::propagate_on_container_swap::value
-  || allocator_traits::is_always_equal::value);
+  allocator_traits<Allocator>::propagate_on_container_swap::value
+  || allocator_traits<Allocator>::is_always_equal::value);
 ```
 
 1. _Effects_: Swaps the states of `*this` and `other`, exchanging owned objects
