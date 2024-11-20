@@ -713,16 +713,9 @@ means calling `allocator_traits<allocator_type>::construct(al, p, args...)` wher
 `p` is a pointer obtained by calling
 `allocator_traits<allocator_type>::allocate`.
 
-4. Copy constructors for an indirect type obtain an allocator by calling
-`allocator_traits<allocator_type>::select_on_container_copy_construction` on the
-allocator belonging to the indirect object being copied. Move constructors obtain
-an allocator by move construction from the allocator belonging to the indirect
-object being moved. _[Note: If an invocation of a constructor uses the
-default value of an optional allocator argument, then the allocator type must
-support value-initialization. --end note]_ The member `alloc` is used for
-any memory allocation and element construction performed by these constructors
-and by all member functions during the lifetime of each indirect object,
-or until the allocator is replaced. The allocator `alloc` may be replaced only via
+4. The member `alloc` is used for any memory allocation and element construction performed
+by these constructors and by all member functions during the lifetime of each indirect
+object, or until the allocator is replaced. The allocator `alloc` may be replaced only via
 assignment or `swap()`. Allocator replacement is performed by copy assignment,
 move assignment, or swapping of the allocator only if ([container.reqmts]):
 
@@ -899,9 +892,10 @@ constexpr indirect(const indirect& other);
 
 9. _Mandates_: `T` is a complete type.
 
-10. _Effects_: If `other` is valueless, `*this` is valueless. Otherwise,
-    constructs an owned object of type `T` with `*other`, using the allocator
-    `alloc`.
+10. _Effects_: `alloc` is direct-non-list-initialized with
+  `allocator_traits<allocator_type>::select_on_container_copy_construction(other.alloc)`.
+  If `other` is valueless, `*this` is valueless. Otherwise, constructs an owned object of
+  type `T` with `*other`, using the allocator `alloc`.
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& a,
