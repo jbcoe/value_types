@@ -59,6 +59,8 @@ should not be considered in isolation.
   move constructor and allocator-extended move construction. The same does not apply for
   polymorphic which permits a small buffer optimization.
 
+* Require `is_same_v<remove_cv_ref_t<U>, U>` to simplify various requirements.
+
 ### Changes in R10
 
 * Correct naming of explicit 'converting' constructors to 'single-argument' constructors.
@@ -977,7 +979,7 @@ template <class U=T>
 explicit constexpr indirect(U&& u);
 ```
 
-24. _Constraints_: `is_same_v<remove_cv_ref<U>, U>` is `true`.
+24. _Constraints_: `is_same_v<remove_cv_ref_t<U>, U>` is `true`.
     `is_same_v<U, indirect>` is `false`.
     `is_same_v<U, in_place_t>` is `false`.
     `is_constructible_v<T, U>` is `true`.
@@ -994,7 +996,7 @@ template <class U=T>
 explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u);
 ```
 
-27. _Constraints_: `is_same_v<remove_cv_ref<U>, U>` is `true`.
+27. _Constraints_: `is_same_v<remove_cv_ref_t<U>, U>` is `true`.
     `is_same_v<U, indirect>` is `false`.
     `is_same_v<U, in_place_t>` is `false`.
     `is_constructible_v<T, U>` is `true`.
@@ -1528,14 +1530,13 @@ template <class U=T>
 explicit constexpr polymorphic(U&& u);
 ```
 
-25. _Constraints_: `is_same_v<remove_cv_ref<U>, U>`.
+25. _Constraints_: `is_same_v<remove_cv_ref_t<U>, U>`.
    `is_same_v<U, polymorphic>` is `false`.
    `is_base_of_v<T, U>` is `true`.
    `is_copy_constructible_v<U>` is `true`.
    `is_constructible_v<U, U>` is `true`.
-   `is_default_constructible_v<allocator_type>` is `true`.
    `U` is not a specialization of `in_place_type_t`.
-   `is_default_constructible_v<Allocator>` is `true`.
+   `is_default_constructible_v<allocator_type>` is `true`.
 
 26. _Mandates_: `T` is a complete type.
 
@@ -1547,13 +1548,13 @@ template <class U=T>
 explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
 ```
 
-28. _Constraints_: `is_same_v<remove_cv_ref<U>, U>`.
+28. _Constraints_: `is_same_v<remove_cv_ref_t<U>, U>`.
    `is_same_v<U, polymorphic>` is `false`.
    `is_base_of_v<T, U>` is `true`.
    `is_copy_constructible_v<U>` is `true`.
    `is_constructible_v<U, U>` is `true`.
-   `is_default_constructible_v<allocator_type>` is `true`.
    `U` is not a specialization of `in_place_type_t`.
+   `is_default_constructible_v<allocator_type>` is `true`.
 
 29. _Mandates_: `T` is a complete type.
 
@@ -1567,12 +1568,12 @@ explicit constexpr polymorphic(in_place_type_t<U>,
                                initializer_list<I> ilist, Us&&... us);
 ```
 
-31. _Constraints_: `is_same_v<remove_cv_ref<U>, U>`.
+31. _Constraints_: `is_same_v<remove_cv_ref_t<U>, U>`.
    `is_same_v<U, polymorphic>` is `false`.
    `is_base_of_v<T, U>` is `true`.
    `is_copy_constructible_v<U>` is `true`.
    `is_constructible_v<U, initializer_list<I>&, Us...>` is `true`.
-   `is_default_constructible_v<Allocator>` is `true`.
+   `is_default_constructible_v<allocator_type>` is `true`.
 
 32. _Mandates_: `T` is a complete type.
 
@@ -1586,7 +1587,7 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                                initializer_list<I> ilist, Us&&... us);
 ```
 
-34. _Constraints_: `is_same_v<remove_cv_ref<U>, U>`.
+34. _Constraints_: `is_same_v<remove_cv_ref_t<U>, U>`.
    `is_same_v<U, polymorphic>` is `false`.
    `is_base_of_v<T, U>` is `true`.
    `is_copy_constructible_v<U>` is `true`.
