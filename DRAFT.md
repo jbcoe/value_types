@@ -1689,7 +1689,7 @@ constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(
   noexcept(lhs.swap(rhs)));
 ```
 
-2. _Effects_: Equivalent to `lhs.swap(rhs)`.
+3. _Effects_: Equivalent to `lhs.swap(rhs)`.
 
 ## Reference implementation
 
