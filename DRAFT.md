@@ -4,7 +4,7 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-P3019R10
+D3019R11
 
 Working Group: Library Evolution, Library
 
@@ -43,6 +43,10 @@ should not be considered in isolation.
 
 ## History
 
+### Changes in R11
+
+* Strike unnecesary `remove_const` from specification of hash for indirect.
+
 ### Changes in R10
 
 * Correct naming of explicit 'converting' constructors to 'single-argument' constructors.
@@ -53,7 +57,8 @@ should not be considered in isolation.
 
 ### Changes in R9
 
-* Remove unnecessary 'throws' clause from indirect.
+* Move throws clauses from individual constructor specifications to the start of
+  constructors specification for indirect and polymorphic.
 
 * Re-order constructors.
 
@@ -1257,11 +1262,11 @@ struct hash<indirect<T, Alloc>>;
 ```
 
 1. The specialization `hash<indirect<T, Alloc>>` is enabled ([unord.hash]) if
-and only if `hash<remove_const_t<T>>` is enabled. When enabled for an object `i`
+and only if `hash<T>` is enabled. When enabled for an object `i`
 of type `indirect<T, Alloc>`, then `hash<indirect<T, Alloc>>()(i)` evaluates to
-either the same value as `hash<remove_const_t<T>>()(*i)`, if `i` is not
-valueless; otherwise to an implementation-defined value. The member functions
-are not guaranteed to be noexcept.
+either the same value as `hash<T>()(*i)`, if `i` is not valueless; otherwise to
+an implementation-defined value. The member functions are not guaranteed to be
+noexcept.
 
 ### X.Z Class template polymorphic [polymorphic]
 
