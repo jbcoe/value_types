@@ -318,14 +318,14 @@ access path should be `const` qualified.
 struct A {
     enum class Constness { CONST, NON_CONST };
     Constness foo() { return Constness::NON_CONST; }
-    Constness foo() const { return Constness::CONST; };
+    Constness foo() const { return Constness::CONST; }
 };
 
 class Composite {
     indirect<A> a_;
 
     Constness foo() { return a_->foo(); }
-    Constness foo() const { return a_->foo(); };
+    Constness foo() const { return a_->foo(); }
 };
 
 int main() {
