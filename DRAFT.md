@@ -55,6 +55,10 @@ should not be considered in isolation.
 * Prevent `T` from being `in_place_t` or a specialization of `in_place_type_t` for
   both indirect and polymorphic.
 
+* Add postconditions to say that the moved-from `indirect` is valueless in move assigment,
+  move constructor and allocator-extended move construction. The same does not apply for
+  polymorphic which permits a small buffer optimization.
+
 ### Changes in R10
 
 * Correct naming of explicit 'converting' constructors to 'single-argument' constructors.
@@ -920,6 +924,8 @@ constexpr indirect(indirect&& other) noexcept;
   If `other` is valueless, `*this` is valueless. Otherwise `*this` takes
   ownership of the owned object of `other`.
 
+X. _Postconditions_: `other` is valueless.
+
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
    noexcept(allocator_traits<allocator_type>::is_always_equal::value);
@@ -933,6 +939,8 @@ constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
     constructs an object of type `indirect` that owns the owned object of `other`;
     `other` is valueless. Otherwise, constructs an owned object of type `T` with
     `*std::move(other)`, using the allocator `alloc`.
+
+X. _Postconditions_: `other` is valueless.
 
 ```c++
 template <class... Us>
@@ -969,8 +977,9 @@ template <class U=T>
 explicit constexpr indirect(U&& u);
 ```
 
-24. _Constraints_: `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
-    `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`.
+24. _Constraints_: `is_same_v<remove_cv_ref<U>, U>` is `true`.
+    `is_same_v<U, indirect>` is `false`.
+    `is_same_v<U, in_place_t>` is `false`.
     `is_constructible_v<T, U>` is `true`.
     `is_copy_constructible_v<T>` is `true`.
     `is_default_constructible_v<allocator_type>` is `true`.
@@ -985,8 +994,9 @@ template <class U=T>
 explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u);
 ```
 
-27. _Constraints_: `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
-    `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`.
+27. _Constraints_: `is_same_v<remove_cv_ref<U>, U>` is `true`.
+    `is_same_v<U, indirect>` is `false`.
+    `is_same_v<U, in_place_t>` is `false`.
     `is_constructible_v<T, U>` is `true`.
     `is_copy_constructible_v<T>` is `true`.
 
@@ -1051,16 +1061,14 @@ constexpr indirect& operator=(const indirect& other);
 
 2. _Effects_: If `addressof(other) == this` is `true`, there are no effects.
 
-  If `allocator_traits<allocator_type>::propagate_on_container_copy_assignment` is
-  `true` then the allocator needs updating.
-
+  The allocator needs updating if
+  `allocator_traits<allocator_type>::propagate_on_container_copy_assignment`
+  is `true`.
   If `other` is valueless, `*this` becomes valueless and the owned object in
   `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy`
   and then the storage is deallocated.
-
   Otherwise, if `alloc == other.alloc` is `true` and `*this` is not valueless,
   `*other` is assigned to the owned object.
-
   Otherwise a new owned object is constructed in `*this` using
   `allocator_traits<allocator_type>::construct` with the owned object from
   `other` as the argument, using either the allocator in `*this` or the
@@ -1068,7 +1076,6 @@ constexpr indirect& operator=(const indirect& other);
   object in `*this`, if any, is destroyed using
   `allocator_traits<allocator_type>::destroy` and then the storage is
   deallocated.
-
   If the allocator needs updating, the allocator in `*this` is replaced with a
   copy of the allocator in `other`.
 
@@ -1092,24 +1099,21 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 
 6. _Effects_: If `addressof(other) == this` is `true`, there are no effects.
 
-  If`allocator_traits<allocator_type>::propagate_on_container_move_assignment` is
-  `true` then the allocator needs updating.
-
+  The allocator needs updating if
+  `allocator_traits<allocator_type>::propagate_on_container_move_assignment`
+  is `true`.
   If `other` is valueless, `*this` becomes valueless and the owned object in
   `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy`
   and then the storage is deallocated.
-
   Otherwise, if `alloc == other.alloc` is `true`, swaps the owned objects in `*this` and
   `other`; the owned object in `other`, if any, is then destroyed using
   `allocator_traits<allocator_type>::destroy` and then the storage is deallocated.
-
   Otherwise constructs a new owned object with the owned object
   `other` as the argument as an rvalue, using either the allocator in `*this` or
   the allocator in `other` if the allocator needs updating. The previous owned
   object in `*this`, if any, is destroyed using
   `allocator_traits<allocator_type>::destroy` and then the storage is
   deallocated.
-
   If the allocator needs updating, the allocator in `*this` is
   replaced with a copy of the allocator in `other`.
 
