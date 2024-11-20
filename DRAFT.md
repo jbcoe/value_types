@@ -703,7 +703,7 @@ object is _valueless_ if it has no owned object. An indirect object may only
 become valueless after it has been moved from.
 
 2. In every specialization `indirect<T, Allocator>`, if the type
-`allocator_traits<Allocator>::value_type` is not the same type as `T`, the
+`allocator_traits<allocator_type>::value_type` is not the same type as `T`, the
 program is ill-formed. Every object of type `indirect<T, Allocator>` uses an
 object of type `Allocator` to allocate and free storage for the owned object as
 needed.
@@ -743,8 +743,8 @@ class indirect {
  public:
   using value_type = T;
   using allocator_type = Allocator;
-  using pointer = typename allocator_traits<Allocator>::pointer;
-  using const_pointer = typename allocator_traits<Allocator>::const_pointer;
+  using pointer = typename allocator_traits<allocator_type>::pointer;
+  using const_pointer = typename allocator_traits<allocator_type>::const_pointer;
 
   constexpr indirect();
 
@@ -914,7 +914,7 @@ constexpr indirect(indirect&& other) noexcept;
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
-   noexcept(allocator_traits<Allocator>::is_always_equal::value);
+   noexcept(allocator_traits<allocator_type>::is_always_equal::value);
 ```
 
 15. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
@@ -1075,8 +1075,8 @@ constexpr indirect& operator=(const indirect& other);
 
 ```c++
 constexpr indirect& operator=(indirect&& other) noexcept(
-    allocator_traits<Allocator>::propagate_on_container_move_assignment::value ||
-    allocator_traits<Allocator>::is_always_equal::value);
+    allocator_traits<allocator_type>::propagate_on_container_move_assignment::value ||
+    allocator_traits<allocator_type>::is_always_equal::value);
 ```
 
 5. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
@@ -1173,17 +1173,21 @@ constexpr allocator_type get_allocator() const noexcept;
 
 ```c++
 constexpr void swap(indirect& other) noexcept(
-  allocator_traits::propagate_on_container_swap::value
-  || allocator_traits<Allocator>::is_always_equal::value);
+  allocator_traits<allocator_type>::propagate_on_container_swap::value
+  || allocator_traits<allocator_type>::is_always_equal::value);
 ```
 
-1. _Effects_: Swaps `p` and `other.p`. If
+1. _Preconditions_: If `allocator_traits<allocator_type>::propagate_on_container_swap::value`
+  is `true`, then `Allocator` meets the _Cpp17Swappable_ requirements.
+
+2. _Effects_: Swaps the states of `*this` and `other`, exchanging owned objects
+  or valueless states. If
   `allocator_traits<allocator_type>::propagate_on_container_swap::value` is
-  `true`, then `allocator_type` shall meet the _Cpp17Swappable_ requirements and
-  the allocators of `*this` and `other` are exchanged by calling `swap` as
-  described in [swappable.requirements]. Otherwise, the allocators are not
-  swapped, and the behavior is undefined unless `(*this).get_allocator() ==
-  other.get_allocator()` is `true`.
+  `true`, then the allocators of `*this` and `other` are exchanged by calling
+  `swap` as described in [swappable.requirements]. Otherwise, the allocators
+  are not swapped, and the behavior is undefined unless
+  `(*this).get_allocator() == other.get_allocator()`.\
+  _[Note: Does not call `swap` on the owned objects directly. --end note]_
 
 ```c++
 constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
@@ -1263,7 +1267,7 @@ polymorphic object is _valueless_ if it has no owned object. A polymorphic
 object may only become valueless after it has been moved from.
 
 2. In every specialization `polymorphic<T, Allocator>`, if the type
-`allocator_traits<Allocator>::value_type` is not the same type as`T`, the
+`allocator_traits<allocator_type>::value_type` is not the same type as`T`, the
 program is ill-formed. Every object of type `polymorphic<T, Allocator>` uses an
 object of type `Allocator` to allocate and free storage for the owned object as
 needed.
@@ -1305,8 +1309,8 @@ class polymorphic {
  public:
   using value_type = T;
   using allocator_type = Allocator;
-  using pointer = typename allocator_traits<Allocator>::pointer;
-  using const_pointer  = typename allocator_traits<Allocator>::const_pointer;
+  using pointer = typename allocator_traits<allocator_type>::pointer;
+  using const_pointer  = typename allocator_traits<allocator_type>::const_pointer;
 
   explicit constexpr polymorphic();
 
@@ -1451,7 +1455,8 @@ constexpr polymorphic(polymorphic&& other) noexcept;
 
 ```c++
 constexpr polymorphic(allocator_arg_t, const Allocator& a,
-                      polymorphic&& other) noexcept(allocator_traits<Allocator>::is_always_equal::value);
+                      polymorphic&& other)
+  noexcept(allocator_traits<allocator_type>::is_always_equal::value);
 ```
 
 15. _TODO_: Delete and update numbering
@@ -1620,15 +1625,16 @@ constexpr polymorphic& operator=(const polymorphic& other);
 
 ```c++
 constexpr polymorphic& operator=(polymorphic&& other) noexcept(
-    allocator_traits<Allocator>::propagate_on_container_move_assignment::value ||
-    allocator_traits<Allocator>::is_always_equal::value);
+    allocator_traits<allocator_type>::propagate_on_container_move_assignment::value ||
+    allocator_traits<allocator_type>::is_always_equal::value);
 ```
 
 5. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
     is `false`, `T` is a complete type.
 
 6. _Effects_: If `addressof(other) == this` is `true`, there are no effects.
-  The allocator needs updating if `allocator_traits<allocator_type>::propagate_on_container_move_assignment`
+  The allocator needs updating if
+  `allocator_traits<allocator_type>::propagate_on_container_move_assignment`
   is `true`.
   If `alloc == other.alloc` is `true`, swaps the owned objects in `*this` and
   `other`; the owned object in `other`, if any, is then destroyed using
@@ -1685,18 +1691,20 @@ constexpr allocator_type get_allocator() const noexcept;
 
 ```c++
 constexpr void swap(polymorphic& other) noexcept(
-  allocator_traits<Allocator>::propagate_on_container_swap::value
-  || allocator_traits<Allocator>::is_always_equal::value);
+  allocator_traits<allocator_type>::propagate_on_container_swap::value
+  || allocator_traits<allocator_type>::is_always_equal::value);
 ```
 
-1. _Effects_: Swaps the states of `*this` and `other`, exchanging owned objects
+1. _Preconditions_: If `allocator_traits<allocator_type>::propagate_on_container_swap::value`
+  is `true`, then `Allocator` meets the _Cpp17Swappable_ requirements.
+
+2. _Effects_: Swaps the states of `*this` and `other`, exchanging owned objects
   or valueless states. If
   `allocator_traits<allocator_type>::propagate_on_container_swap::value` is
-  `true`, then `allocator_type` shall meet the _Cpp17Swappable_ requirements and
-  the allocators of `*this` and `other` are exchanged by calling `swap` as
-  described in [swappable.requirements]. Otherwise, the allocators are not
-  swapped, and the behavior is undefined unless `(*this).get_allocator() ==
-  other.get_allocator()`.\
+  `true`, then the allocators of `*this` and `other` are exchanged by calling
+  `swap` as described in [swappable.requirements]. Otherwise, the allocators
+  are not swapped, and the behavior is undefined unless
+  `(*this).get_allocator() == other.get_allocator()`.\
   _[Note: Does not call `swap` on the owned objects directly. --end note]_
 
 ```c++
