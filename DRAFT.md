@@ -1486,12 +1486,11 @@ template <class U=T>
 explicit constexpr polymorphic(U&& u);
 ```
 
-11. _Constraints_:
-    * `is_same_v<remove_cvref_t<U>, U>` is `true`,
-    * `is_same_v<U, polymorphic>` is `false`,
-    * `derived_from<U, T>` is `true`,
-    * `is_copy_constructible_v<U>` is `true`,
-    * `U` is not a specialization of `in_place_type_t`, and
+11. _Constraints_: Where `UU` is `remove_cvref_t<U>`,
+    * `is_same_v<UU, polymorphic>` is `false`,
+    * `derived_from<UU, T>` is `true`,
+    * `is_copy_constructible_v<UU>` is `true`,
+    * `UU` is not a specialization of `in_place_type_t`, and
     * `is_default_constructible_v<Allocator>` is `true`.
 
 12. _Mandates_: `T` is a complete type.
@@ -1507,9 +1506,8 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
 14. _Constraints_: Where `UU` is `remove_cvref_t<U>`,
     * `is_same_v<UU, polymorphic>` is `false`,
     * `derived_from<UU, T>` is `true`,
-    * `is_copy_constructible_v<UU>` is `true`,
-    * `UU` is not a specialization of `in_place_type_t`, and
-    * `is_default_constructible_v<Allocator>` is `true`.
+    * `is_copy_constructible_v<UU>` is `true`, and
+    * `UU` is not a specialization of `in_place_type_t`.
 
 15. _Mandates_: `T` is a complete type.
 
