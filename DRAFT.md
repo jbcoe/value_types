@@ -883,7 +883,7 @@ explicit constexpr indirect();
 1. _Constraints_:
    * `is_default_constructible_v<T>` is `true`,
    * `is_copy_constructible_v<T>` is `true` and,
-   * `is_default_constructible_v<allocator_type>` is `true`.
+   * `is_default_constructible_v<Allocator>` is `true`.
 
 2. _Mandates_: `T` is a complete type.
 
@@ -964,7 +964,7 @@ explicit constexpr indirect(U&& u);
     * `is_same_v<UU, in_place_t>` is `false`,
     * `is_constructible_v<T, UU>` is `true`,
     * `is_copy_constructible_v<T>` is `true` and,
-    * `is_default_constructible_v<allocator_type>` is `true`.
+    * `is_default_constructible_v<Allocator>` is `true`.
 
 18. _Mandates_: `T` is a complete type.
 
@@ -996,7 +996,7 @@ explicit constexpr indirect(in_place_t, Us&&... us);
 23. _Constraints_:
     * `is_constructible_v<T, Us...>` is `true`,
     * `is_copy_constructible_v<T>` is `true` and,
-    * `is_default_constructible_v<allocator_type>` is `true`.
+    * `is_default_constructible_v<Allocator>` is `true`.
 
 24. _Mandates_: `T` is a complete type.
 
@@ -1027,7 +1027,7 @@ explicit constexpr indirect(in_place_t, initializer_list<I> ilist,
 29. _Constraints_:
     * `is_copy_constructible_v<T>` is `true`,
     * `is_constructible_v<T, initializer_list<I>&, Us...>` is `true` and,
-    * `is_default_constructible_v<allocator_type>` is `true`.
+    * `is_default_constructible_v<Allocator>` is `true`.
 
 30. _Mandates_: `T` is a complete type.
 
@@ -1406,7 +1406,7 @@ explicit constexpr polymorphic();
 1. _Constraints_:
    * `is_default_constructible_v<T>` is `true`,
    * `is_copy_constructible_v<T>` is `true` and,
-   * `is_default_constructible_v<allocator_type>` is `true`.
+   * `is_default_constructible_v<Allocator>` is `true`.
 
 2. _Mandates_: `T` is a complete type.
 
@@ -1492,7 +1492,7 @@ explicit constexpr polymorphic(U&& u);
     * `derived_from<U, T>` is `true`,
     * `is_copy_constructible_v<U>` is `true`,
     * `U` is not a specialization of `in_place_type_t` and,
-    * `is_default_constructible_v<allocator_type>` is `true`.
+    * `is_default_constructible_v<Allocator>` is `true`.
 
 12. _Mandates_: `T` is a complete type.
 
@@ -1509,7 +1509,7 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
     * `derived_from<UU, T>` is `true`,
     * `is_copy_constructible_v<UU>` is `true`,
     * `UU` is not a specialization of `in_place_type_t` and,
-    * `is_default_constructible_v<allocator_type>` is `true`.
+    * `is_default_constructible_v<Allocator>` is `true`.
 
 15. _Mandates_: `T` is a complete type.
 
@@ -1527,7 +1527,7 @@ explicit constexpr polymorphic(in_place_type_t<U>, Ts&&... ts);
     * `derived_from<U, T>` is `true`,
     * `is_constructible_v<U, Ts...>` is `true`,
     * `is_copy_constructible_v<U>` is `true` and,
-    * `is_default_constructible_v<allocator_type>` is `true`.
+    * `is_default_constructible_v<Allocator>` is `true`.
 
 18. _Mandates_: `T` is a complete type.
 
@@ -1564,7 +1564,7 @@ explicit constexpr polymorphic(in_place_type_t<U>,
     * `derived_from<U, T>` is `true`,
     * `is_copy_constructible_v<U>` is `true`,
     * `is_constructible_v<U, initializer_list<I>&, Us...>` is `true` and,
-    * `is_default_constructible_v<allocator_type>` is `true`.
+    * `is_default_constructible_v<Allocator>` is `true`.
 
 24. _Mandates_: `T` is a complete type.
 
