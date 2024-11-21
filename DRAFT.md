@@ -61,7 +61,7 @@ should not be considered in isolation.
 
 * Require `is_same_v<remove_cv_ref_t<U>, U>` to simplify various requirements.
 
-* Require `is_same_v` checks to to the first constraints checked.
+* Check `is_same_v` constraints first.
 
 * Add drafting note for use of italicised code font for exposition-only variables.
 
