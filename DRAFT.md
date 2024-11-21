@@ -929,7 +929,7 @@ constexpr indirect(indirect&& other) noexcept;
 11. _Mandates_: If `allocator_traits<Allocator>::is_always_equal::value`
     is `false` then `T` is a complete type.
 
-12. _Effects_: `alloc` is direct-non-list initialised from std::move(`other.alloc`).
+12. _Effects_: `alloc` is direct-non-list initialised from `std::move(other.alloc)`.
   If `other` is valueless, `*this` is valueless. Otherwise `*this` takes
   ownership of the owned object of `other`.
 
