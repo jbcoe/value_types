@@ -1130,7 +1130,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 ```
 
 10. _Constraints_: Where `UU` is `remove_cvref_t<U>`,
-    * `is_same_v<U, indirect>` is `false`,
+    * `is_same_v<UU, indirect>` is `false`,
     * `is_constructible_v<T, UU>` is `true` and,
     * `is_assignable_v<T&,UU>` is `true`.
 
