@@ -734,7 +734,7 @@ program is ill-formed. Every object of type `indirect<T, Allocator>` uses an
 object of type `Allocator` to allocate and free storage for the owned object as
 needed.
 
-3. Constructing an owned object with `args...` using `a`
+3. Constructing an owned object with `args...` using the allocator `a`
 means calling\
 `allocator_traits<Allocator>::construct(a, p, args...)` where `args` is an expression pack,
 `a` is an allocator, and `p` is a pointer obtained by calling `allocator_traits<Allocator>::allocate`.
@@ -1068,14 +1068,14 @@ constexpr ~indirect();
 constexpr indirect& operator=(const indirect& other);
 ```
 
-1. _Mandates_: `T` is a complete type `is_copy_assignable_v<T>` is `true`,
+1. _Mandates_: `T` is a complete type, `is_copy_assignable_v<T>` is `true`,
    and `is_copy_constructible_v<T>` is `true`.
 
 2. _Effects_: If `addressof(other) == this` is `true`, there are no effects.\
 Otherwise:
 
     2.1. The allocator needs updating if\
-    `allocator_traits<Allocator>::propagate_on_container_copy_assignment`\
+    `allocator_traits<Allocator>::propagate_on_container_copy_assignment::value`\
     is `true`.
 
     2.2. If `other` is valueless, `*this` becomes valueless and the owned object in `*this`, if any, is destroyed using `allocator_traits<Allocator>::destroy` and then the storage is deallocated.
@@ -1108,7 +1108,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 6. _Effects_: If `addressof(other) == this` is `true`, there are no effects. Otherwise:
 
     6.1. The allocator needs updating if\
-    `allocator_traits<Allocator>::propagate_on_container_move_assignment`\
+    `allocator_traits<Allocator>::propagate_on_container_move_assignment::value`\
     is `true`.
 
     6.2. If `other` is valueless, `*this` becomes valueless and the owned object in `*this`, if any, is destroyed using `allocator_traits<Allocator>::destroy` and then the storage is deallocated.
@@ -1296,7 +1296,7 @@ program is ill-formed. Every object of type `polymorphic<T, Allocator>` uses an
 object of type `Allocator` to allocate and free storage for the owned object as
 needed.
 
-3. Constructing an owned object of type `U` with `args...` using `a` means calling
+3. Constructing an owned object of type `U` with `args...` using the allocator `a` means calling
 `allocator_traits<Allocator>::construct(a, p, args...)` where
 `args` is an expression pack, `a` is an allocator, `p` points to storage suitable for
 an owned object of type `U`.
@@ -1647,7 +1647,7 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
 6. _Effects_: If `addressof(other) == this` is `true`, there are no effects. Otherwise:
 
     6.1. The allocator needs updating if\
-    `allocator_traits<Allocator>::propagate_on_container_move_assignment`\
+    `allocator_traits<Allocator>::propagate_on_container_move_assignment::value`\
     is `true`.
 
     6.2. If `alloc == other.alloc` is `true`, swaps the owned objects in `*this` and `other`; the owned object in `other`, if any, is then destroyed using `allocator_traits<Allocator>::destroy` and then the storage is deallocated.
