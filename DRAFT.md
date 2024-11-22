@@ -1296,9 +1296,10 @@ program is ill-formed. Every object of type `polymorphic<T, Allocator>` uses an
 object of type `Allocator` to allocate and free storage for the owned object as
 needed.
 
-3. Constructing an owned object of type `U` with arguments `args...` using an
-allocator `a` means calling `allocator_traits<Allocator>::rebind_traits<U>::construct(a, p, args...)` where `p` is a pointer obtained by calling
-`allocator_traits<Allocator>::rebind_traits<U>::allocate` and `U` is either
+3. Constructing an owned object of type `U` with `args...` using `a` means calling
+`allocator_traits<Allocator>::rebind_traits<U>::construct(a, p, args...)` where
+`args` is an expression pack, `a` is an allocator, `p` is a pointer obtained by calling
+`allocator_traits<Allocator>::rebind_traits<U>::allocate`, and `U` is either
 `allocator_type::value_type` or an internal type used by the polymorphic value.
 
 4. The member `alloc` is used for any memory allocation and element construction
