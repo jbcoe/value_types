@@ -734,10 +734,10 @@ program is ill-formed. Every object of type `indirect<T, Allocator>` uses an
 object of type `Allocator` to allocate and free storage for the owned object as
 needed.
 
-3. Constructing an owned object with `args...` using `al`
+3. Constructing an owned object with `args...` using `a`
 means calling\
-`allocator_traits<Allocator>::construct(al, p, args...)` where `args` is an expression pack,
-`al` is an allocator, and `p` is a pointer obtained by calling `allocator_traits<Allocator>::allocate`.
+`allocator_traits<Allocator>::construct(a, p, args...)` where `args` is an expression pack,
+`a` is an allocator, and `p` is a pointer obtained by calling `allocator_traits<Allocator>::allocate`.
 
 4. The member `alloc` is used for any memory allocation and element construction performed
 by member functions during the lifetime of each indirect object.
