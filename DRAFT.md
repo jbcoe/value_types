@@ -1115,7 +1115,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 
     6.3. Otherwise, if `alloc == other.alloc` is `true`, swaps the owned objects in `*this` and `other`; the owned object in `other`, if any, is then destroyed using `allocator_traits<Allocator>::destroy` and then the storage is deallocated.
 
-    6.4. Otherwise constructs a new owned object with the owned object `other` as the argument as an rvalue, using either the allocator in `*this` or the allocator in `other` if the allocator needs updating.
+    6.4. Otherwise constructs a new owned object with the owned object of `other` as the argument as an rvalue, using either the allocator in `*this` or the allocator in `other` if the allocator needs updating.
 
     6.5. The previously owned object in `*this`, if any, is destroyed using `allocator_traits<Allocator>::destroy` and then the storage is deallocated.
 
