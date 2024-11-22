@@ -1,14 +1,14 @@
-# `indirect` and `polymorphic`: Vocabulary Types for Composite Class Design
+<!-- markdownlint-disable MD029, MD041 -->
 
-<!-- markdownlint-disable MD029 -->
+# `indirect` and `polymorphic`: Vocabulary Types for Composite Class Design
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-P3019R10
+D3019R11
 
 Working Group: Library Evolution, Library
 
-Date: 2024-09-30
+Date: 2024-11-21
 
 _Jonathan Coe \<<jonathanbcoe@gmail.com>\>_
 
@@ -16,7 +16,7 @@ _Antony Peacock \<<ant.peacock@gmail.com>\>_
 
 _Sean Parent \<<sparent@adobe.com>\>_
 
-## Abstract
+# Abstract
 
 We propose the addition of two new class templates to the C++ Standard Library:
 `indirect<T>` and `polymorphic<T>`.
@@ -41,9 +41,36 @@ This proposal is a fusion of two earlier individual proposals, P1950 and P0201.
 The design of the two proposed class templates is sufficiently similar that they
 should not be considered in isolation.
 
-## History
+# History
 
-### Changes in R10
+## Changes in R11
+
+* Remove unnecesary `remove_const` from the specification of hash for indirect.
+
+* Add a default template type parameter for single-argument constructors for
+  indirect and polymorphic and for indirect's perfect-forwarding assignment.
+
+* Add postconditions to say that the moved-from `indirect` is valueless in move assigment,
+  move constructor and allocator-extended move construction. The same does not apply for
+  polymorphic which permits a small buffer optimization.
+
+* Add drafting note for use of italicised code font for exposition-only variables.
+
+* Prevent `T` from being `in_place_t` or a specialization of `in_place_type_t` for
+  both indirect and polymorphic.
+
+* Collect `in_place_t` and `in_place_type_t` constructors together.
+
+* Define `UU` as `remove_cvref_t<U>` to simplify various requirements.
+
+* Use `derived_from` rather than `is_base_of_v` in requirements for polymorphic.
+
+* Require `is_same_v<remove_cvref_t<U>, U>` for `polymorphic` constructors
+  taking `in_place_type_t<U>`.
+
+* Check `is_same_v` constraints first.
+
+## Changes in R10
 
 * Correct naming of explicit 'converting' constructors to 'single-argument' constructors.
 
@@ -51,9 +78,10 @@ should not be considered in isolation.
 
 * Correct changelog from R9.
 
-### Changes in R9
+## Changes in R9
 
-* Remove unnecessary 'throws' clause from indirect.
+* Move throws clauses from individual constructor specifications to the start of
+  constructors specification for indirect and polymorphic.
 
 * Re-order constructors.
 
@@ -65,7 +93,7 @@ should not be considered in isolation.
 
 * Avoid use of 'heap' and 'free-store' in favour of 'dynamically-allocated storage'.
 
-### Changes in R8
+## Changes in R8
 
 * Wording cleanup in parallel with independent implementation.
 
@@ -78,7 +106,7 @@ should not be considered in isolation.
 * Strike mandates `T` is a complete type from indirect comparison operators and
   hash for consistency with reference wrapper.
 
-### Changes in R7
+## Changes in R7
 
 * Discuss `indirect`'s non-conditional copy constructor in the light of
   implementation tricks that would enable it.
@@ -87,7 +115,7 @@ should not be considered in isolation.
 
 * Add motivation for `valueless_after_move` member function.
 
-### Changes in R6
+## Changes in R6
 
 * Add `std::in_place_t` argument to indirect constructors.
 
@@ -102,13 +130,13 @@ should not be considered in isolation.
 
 * Add drafting note on exception guarantees behaviour to `swap`.
 
-### Changes in R5
+## Changes in R5
 
 * Fix wording for assignment operators to provide strong exception guarantee.
 
 * Add missing wording for valueless hash.
 
-### Changes in R4
+## Changes in R4
 
 * Use constraints to require that the object owned by `indirect` is copy
   constructible. This ensures that `std::is_copy_constructible_v` does not give
@@ -139,7 +167,7 @@ should not be considered in isolation.
 * Remove references to `std::indirect`/`std::polymorphic` values terms under
   `[*.general]` sections.
 
-### Changes in R3
+## Changes in R3
 
 * Add explicit to constructors.
 
@@ -165,8 +193,8 @@ should not be considered in isolation.
 
 * Address constraints wording for `std::indirect` comparison operators.
 
-* Copy constructor now uses
-  `allocator_traits::select_on_container_copy_construction`.
+* Copy constructor now uses\
+`allocator_traits::select_on_container_copy_construction`.
 
 * Ensure swap and assign with self are nops.
 
@@ -182,7 +210,7 @@ should not be considered in isolation.
 
 * Wording review and additions to `<memory>` synopsis [memory.syn]
 
-### Changes in R2
+## Changes in R2
 
 * Add discussion on returning `auto` for `std::indirect` comparison operators.
 
@@ -190,7 +218,7 @@ should not be considered in isolation.
 
 * Update wording to support allocator awareness.
 
-### Changes in R1
+## Changes in R1
 
 * Add feature-test macros.
 
@@ -217,7 +245,7 @@ should not be considered in isolation.
 
 * Fix `sizeof` error.
 
-## Motivation
+# Motivation
 
 The standard library has no vocabulary type for a dynamically-allocated object
 with value semantics. When designing a composite class, we may need an object to
@@ -233,12 +261,12 @@ addition of two classes to avoid the cost of virtual dispatch (calling the copy
 constructor of a potentially derived-type object through type erasure) when
 copying of polymorphic objects is not needed.
 
-## Design requirements
+# Design requirements
 
 We review the fundamental design requirements of `indirect` and `polymorphic`
 that make them suitable for composite class design.
 
-### Special member functions
+## Special member functions
 
 Both class templates are suitable for use as members of composite classes where
 the compiler will generate special member functions. This means that the class
@@ -254,7 +282,7 @@ by the owned object type `T`.
 * `indirect<T, Alloc>` and `polymorphic<T, Alloc>` destroy the owned object in
   their destructors.
 
-### Deep copies
+## Deep copies
 
 Copies of `indirect<T>` and `polymorphic<T>` should own copies of the owned
 object created with the copy constructor of the owned object. In the case of
@@ -268,7 +296,7 @@ virtual dispatch will be used (through type erasure) in copying the
 a known set of types, prefer `std::variant` or `indirect<std::variant>` if
 indirect storage is required.
 
-### `const` propagation
+## `const` propagation
 
 When composite objects contain `pointer`, `unique_ptr` or `shared_ptr` members
 they allow non-const access to their respective pointees when accessed through a
@@ -295,14 +323,14 @@ access path should be `const` qualified.
 struct A {
     enum class Constness { CONST, NON_CONST };
     Constness foo() { return Constness::NON_CONST; }
-    Constness foo() const { return Constness::CONST; };
+    Constness foo() const { return Constness::CONST; }
 };
 
 class Composite {
     indirect<A> a_;
 
     Constness foo() { return a_->foo(); }
-    Constness foo() const { return a_->foo(); };
+    Constness foo() const { return a_->foo(); }
 };
 
 int main() {
@@ -313,7 +341,7 @@ int main() {
 }
 ```
 
-### Value semantics
+## Value semantics
 
 Both `indirect` and `polymorphic` are value types whose owned object's
 storage is managed by the specified allocator.
@@ -329,7 +357,7 @@ logical state nor to the logical state of owned objects.
 is default constructible. Moving a value type into dynamically-allocated storage
 should not add or remove the ability to be default constructed.
 
-### The valueless state and interaction with `std::optional`
+## The valueless state and interaction with `std::optional`
 
 Both `indirect` and `polymorphic` have a valueless state that is used to
 implement move. The valueless state is not intended to be observable to the
@@ -352,7 +380,7 @@ currently used to (mis)represent component objects. Using dynamically-allocated
 storage for `T` should not make it nullable. Nullability must be explicitly opted
 into by using `std::optional<indirect<T>>` or `std::optional<polymorphic<T>>`.
 
-### Allocator support
+## Allocator support
 
 Both `indirect` and `polymorphic` are allocator-aware types. They must be
 suitable for use in allocator-aware composite types and containers. Existing
@@ -365,13 +393,13 @@ as a template parameter, provide `allocator_type`, and have constructor
 overloads taking an additional `allocator_type_t` and allocator instance as
 arguments.
 
-### Modelled types
+## Modelled types
 
 The class templates `indirect` and `polymorphic` have strong similarities to
 existing class templates. These similarities motivate much of the design; we aim
 for consistency with existing library types, not innovation.
 
-#### Modelled types for `indirect`
+### Modelled types for `indirect`
 
 The class template `indirect` owns an object of known type, permits copies,
 propagates const and is allocator aware.
@@ -408,7 +436,7 @@ propagates const and is allocator aware.
   `indirect`, like an empty `optional`, hashes to an implementation-defined
   value.
 
-#### Modelled types for `polymorphic`
+### Modelled types for `polymorphic`
 
 The class template `polymorphic` owns an object of known type, requires copies,
 propagates const and is allocator aware.
@@ -439,7 +467,7 @@ propagates const and is allocator aware.
   (it could be an instance of a derived type). As a result, `polymorphic` cannot
   forward comparison operators or hash to the owned object.
 
-#### Similarities and differences with variant
+### Similarities and differences with variant
 
 The sum type `variant<Ts...>` models one of several alternatives; `indirect<T>`
 models a single type `T`, but with different storage constraints to `T`.
@@ -482,7 +510,7 @@ write code to determine how to format a valueless `indirect` or to validate that
 the `indirect` is not valueless before formatting `*i` (where `i` is an instance
 of `indirect` for some formattable type `T`).
 
-### `noexcept` and narrow contracts
+## `noexcept` and narrow contracts
 
 C++ library design guidelines recommend that member functions with narrow
 contracts (runtime preconditions) should not be marked `noexcept`. This is
@@ -498,7 +526,7 @@ Not marking `operator->` and `operator*` as `noexcept` for `indirect` and
 `polymorphic` would make them strictly less useful than `unique_ptr` in contexts
 where they would otherwise be a valid replacement.
 
-### Tagged constructors
+## Tagged constructors
 
 Constructors for `indirect` and `polymorphic` taking an allocator or owned-object
 constructor arguments are tagged with `allocator_arg_t` and `in_place_t`
@@ -512,7 +540,7 @@ unambiguously constructs an `indirect` with a default constructed allocator and
 an owned object constructed with an allocator extended constructor taking an
 allocator `alloc` and constructor arguments `args`.
 
-### Single-argument constructors
+## Single-argument constructors
 
 In line with `optional` and `variant`, we add single-argument constructors to both
 `indirect` and `polymorphic` so they can be constructed from single values
@@ -521,7 +549,7 @@ without the need to use `in_place` or `in_place_type`. As `indirect` and
 versions of these constructors, in line with those from `basic_optional` [2] and
 existing constructors from `indirect` and `polymorphic`.
 
-### Initializer-list constructors
+## Initializer-list constructors
 
 We add initializer-list constructors to both `indirect` and `polymorphic` in
 line with those in `optional` and `variant`. As `indirect` and `polymorphic` are
@@ -529,7 +557,7 @@ allocator-aware types, we provide allocator-extended versions of these
 constructors, in line with those from `basic_optional` [2] and existing
 constructors from `indirect` and `polymorphic`.
 
-### Explicit constructors
+## Explicit constructors
 
 Constructors for `indirect` and `polymorphic` are marked as explicit. This
 disallows “implicit conversion” from single arguments or braced initializers.
@@ -546,15 +574,15 @@ With some suitably compelling motivation, the `explicit` keyword could be
 removed from some constructors in a later revision of the C++ standard without
 rendering code ill-formed.
 
-### Perfect-forwarded assignment
+## Perfect-forwarded assignment
 
-#### Perfect-forwarded assignment for `indirect`
+### Perfect-forwarded assignment for `indirect`
 
 We add a perfect-forwarded assignment operator for `indirect`
 in line with those from `optional` and `variant`.
 
 ```c++
-template <class U = T>
+template <class U=T>
 constexpr optional& operator=(U&& u);
 ```
 
@@ -581,14 +609,14 @@ foo(i); // could move from `i`.
 i = 5;
 ```
 
-#### Perfect-forwarded assignment for `polymorphic`
+### Perfect-forwarded assignment for `polymorphic`
 
 There is no perfect-forwarded assignment for `polymorphic` as type information is
 erased. There is no optimisation opportunity to be made as a new object will
 need creating regardless of whether the target of assignment is valueless or
 not.
 
-### The `valueless_after_move` member function
+## The `valueless_after_move` member function
 
 Both `indirect` and `polymorphic` have a `valueless_after_move` member function
 that is used to query the object state. This member function should normally be
@@ -598,7 +626,7 @@ checks for the valueless state in cases where it cannot be verified statically
 or where explicit checks might be required by a coding standard such as MISRA or
 High Integrity C++.
 
-### Design for polymorphic types
+## Design for polymorphic types
 
 A type `PolymorphicInterface` used as a base class with `polymorphic` does not
 need a virtual destructor. The same mechanism that is used to call the copy
@@ -629,7 +657,7 @@ containing derived-type objects.
 
 All derived types owned by a `polymorphic` must be publicly copy constructible.
 
-## Prior work
+# Prior work
 
 This proposal continues the work started in [P0201] and [P1950].
 
@@ -638,14 +666,14 @@ the mixing of value and pointer semantics. We believe that the unambiguous value
 semantics of `indirect` and `polymorphic` as described in this proposal address
 these concerns.
 
-## Impact on the standard
+# Impact on the standard
 
 This proposal is a pure library extension. It requires additions to be made to
 the standard library header `<memory>`.
 
-## Technical specifications
+# Technical specifications
 
-### Header `<version>` synopsis [version.syn]
+## Header `<version>` synopsis [version.syn]
 
 Note to editors: Add the following macros with editor provided values to
 [version.syn]
@@ -655,7 +683,7 @@ Note to editors: Add the following macros with editor provided values to
 #define __cpp_lib_polymorphic ??????L // also in <memory>
 ```
 
-### Header `<memory>` synopsis [memory]
+## Header `<memory>` synopsis [memory]
 
 ```c++
 namespace std {
@@ -664,7 +692,8 @@ namespace std {
   template<class Pointer = void, class Smart, class... Args>
     auto inout_ptr(Smart& s, Args&&... args);
 
-<ins> // DRAFTING NOTE: not sure how to typeset <ins> reasonably in markdown
+<ins>
+// DRAFTING NOTE: not sure how to typeset <ins> reasonably in markdown
   // [indirect], class template indirect
   template<class T, class Allocator = allocator<T>>
     class indirect;
@@ -684,14 +713,16 @@ namespace std {
     template<class T> using polymorphic =
       polymorphic<T, polymorphic_allocator<T>>;
   }
-
 </ins>
 }
 ```
 
-### X.Y Class template indirect [indirect]
+## X.Y Class template indirect [indirect]
 
-#### X.Y.1 Class template indirect general [indirect.general]
+[Drafting note: The member _`alloc`_ should be formatted as an exposition-only identifier,
+but limitations of the processor used to prepare this paper means not all uses are italicised.]
+
+### X.Y.1 Class template indirect general [indirect.general]
 
 1. An indirect object manages the lifetime of an owned object. An indirect
 object is _valueless_ if it has no owned object. An indirect object may only
@@ -703,39 +734,24 @@ program is ill-formed. Every object of type `indirect<T, Allocator>` uses an
 object of type `Allocator` to allocate and free storage for the owned object as
 needed.
 
-3. Constructing an owned object with arguments `args...` using an allocator `al`
-means calling `allocator_traits<allocator_type>::construct(al, p, args...)` where
-`p` is a pointer obtained by calling
-`allocator_traits<allocator_type>::allocate`.
+3. Constructing an owned object with `args...` using `a`
+means calling\
+`allocator_traits<Allocator>::construct(a, p, args...)` where `args` is an expression pack,
+`a` is an allocator, and `p` is a pointer obtained by calling `allocator_traits<Allocator>::allocate`.
 
-4. Copy constructors for an indirect type obtain an allocator by calling
-`allocator_traits<allocator_type>::select_on_container_copy_construction` on the
-allocator belonging to the indirect object being copied. Move constructors obtain
-an allocator by move construction from the allocator belonging to the indirect
-object being moved. All other constructors for this type take a `const
-allocator_type& argument`. _[Note: If an invocation of a constructor uses the
-default value of an optional allocator argument, then the allocator type must
-support value-initialization. --end note]_ A copy of this allocator is used for
-any memory allocation and element construction performed by these constructors
-and by all member functions during the lifetime of each indirect object,
-or until the allocator is replaced. The allocator may be replaced only via
-assignment or `swap()`. Allocator replacement is performed by copy assignment,
-move assignment, or swapping of the allocator only if ([container.reqmts]):
-
-    (64.1)
-    `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value`,
-
-    (64.2)
-    `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value`,
-
-    (64.3)
-    `allocator_traits<allocator_type>::propagate_on_container_swap::value`
-
-    is `true` within the implementation of the corresponding indirect operation.
+4. The member `alloc` is used for any memory allocation and element construction performed
+by member functions during the lifetime of each indirect object.
+The allocator `alloc` may only be replaced via assignment or `swap()`.
+Allocator replacement is performed by copy assignment, move assignment, or swapping of the
+allocator only if ([container.reqmts]):
+`allocator_traits<Allocator>::propagate_on_container_copy_assignment::value`, or\
+`allocator_traits<Allocator>::propagate_on_container_move_assignment::value`, or\
+`allocator_traits<Allocator>::propagate_on_container_swap::value`
+is `true` within the implementation of the corresponding indirect operation.
 
 5. A program that instantiates the definition of the template `indirect<T, Allocator>`
    with a type for the `T` parameter that is a non-object type, an array type,
-   `in_place_t`, or a cv-qualified type is ill-formed.
+   `in_place_t`, a specialization of `in_place_type_t`, or a cv-qualified type is ill-formed.
 
 6. The template parameter `T` of `indirect` may be an incomplete type.
 
@@ -745,7 +761,7 @@ move assignment, or swapping of the allocator only if ([container.reqmts]):
 8. If a program declares an explicit or partial specialization of `indirect`,
    the behavior is undefined.
 
-#### X.Y.2 Class template indirect synopsis [indirect.syn]
+### X.Y.2 Class template indirect synopsis [indirect.syn]
 
 ```c++
 template <class T, class Allocator = allocator<T>>
@@ -771,6 +787,12 @@ class indirect {
   constexpr indirect(allocator_arg_t, const Allocator& a,
                      indirect&& other) noexcept(see below);
 
+  template <class U=T>
+  explicit constexpr indirect(U&& u);
+
+  template <class U=T>
+  explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u);
+
   template <class... Us>
   explicit constexpr indirect(in_place_t, Us&&... us);
 
@@ -778,19 +800,13 @@ class indirect {
   explicit constexpr indirect(allocator_arg_t, const Allocator& a,
                               in_place_t, Us&&... us);
 
-  template <class U>
-  explicit constexpr indirect(U&& u);
-
-  template <class U>
-  explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u);
-
-  template<class U, class... Us>
-  explicit constexpr indirect(in_place_t, initializer_list<U> ilist,
+  template<class I, class... Us>
+  explicit constexpr indirect(in_place_t, initializer_list<I> ilist,
                               Us&&... us);
 
-  template<class U, class... Us>
+  template<class I, class... Us>
   explicit constexpr indirect(allocator_arg_t, const Allocator& a,
-                              in_place_t, initializer_list<U> ilist,
+                              in_place_t, initializer_list<I> ilist,
                               Us&&... us);
 
   constexpr ~indirect();
@@ -799,7 +815,7 @@ class indirect {
 
   constexpr indirect& operator=(indirect&& other) noexcept(see below);
 
-  template <class U>
+  template <class U=T>
   constexpr indirect& operator=(U&& u);
 
   constexpr const T& operator*() const & noexcept;
@@ -848,65 +864,64 @@ private:
 template <class Value>
 indirect(Value) -> indirect<Value>;
 
-template <class Alloc, class Value>
-indirect(allocator_arg_t, Alloc, Value) -> indirect<
-         Value, typename allocator_traits<Alloc>::template rebind_alloc<Value>>;
+template <class Allocator, class Value>
+indirect(allocator_arg_t, Allocator, Value) -> indirect<Value,
+         typename allocator_traits<Allocator>::template rebind_alloc<Value>>;
 ```
 
-#### X.Y.3 Constructors [indirect.ctor]
+### X.Y.3 Constructors [indirect.ctor]
 
 The following element applies to all functions in [indirect.ctor]:
 
-_Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
-`allocator_traits<allocator_type>::construct` throws.
+_Throws_: Nothing unless `allocator_traits<Allocator>::allocate` or
+`allocator_traits<Allocator>::construct` throws.
 
 ```c++
-explicit constexpr indirect()
+explicit constexpr indirect();
 ```
 
-1. _Constraints_: `is_default_constructible_v<T>` is `true`.
-  `is_copy_constructible_v<T>` is `true`.
-  `is_default_constructible_v<allocator_type>` is `true`.
+1. _Constraints_:
+   * `is_default_constructible_v<T>` is `true`,
+   * `is_copy_constructible_v<T>` is `true`, and
+   * `is_default_constructible_v<Allocator>` is `true`.
 
 2. _Mandates_: `T` is a complete type.
 
 3. _Effects_: Constructs an owned object of type `T` with an empty argument list,
    using the allocator `alloc`.
 
-4. _Postconditions_: `*this` is not valueless.
-
 ```c++
 explicit constexpr indirect(allocator_arg_t, const Allocator& a);
 ```
 
-5. _Constraints_: `is_default_constructible_v<T>` is `true`.
-  `is_copy_constructible_v<T>` is `true`.
+4. _Constraints_:
+   * `is_default_constructible_v<T>` is `true` and
+   * `is_copy_constructible_v<T>` is `true`.
 
-6. _Mandates_: `T` is a complete type.
+5. _Mandates_: `T` is a complete type.
 
-7. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an owned
+6. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an owned
    object of type `T` with an empty argument list, using the allocator `alloc`.
-
-8. _Postconditions_: `*this` is not valueless.
 
 ```c++
 constexpr indirect(const indirect& other);
 ```
 
-9. _Mandates_: `T` is a complete type.
+7. _Mandates_: `T` is a complete type and `is_copy_constructible_v<T>` is `true`.
 
-10. _Effects_: If `other` is valueless, `*this` is valueless. Otherwise,
-    constructs an owned object of type `T` with `*other`, using the allocator
-    `alloc`.
+8. _Effects_: `alloc` is direct-non-list-initialized with\
+  `allocator_traits<Allocator>::select_on_container_copy_construction(other.alloc)`.
+  If `other` is valueless, `*this` is valueless. Otherwise, constructs an owned object of
+  type `T` with `*other`, using the allocator `alloc`.
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& a,
                    const indirect& other);
 ```
 
-11. _Mandates_: `T` is a complete type.
+9. _Mandates_: `T` is a complete type and `is_copy_constructible_v<T>` is `true`.
 
-12. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
+10. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
     valueless, `*this` is valueless. Otherwise, constructs an owned object of
     type `T` with `*other`, using the allocator `alloc`.
 
@@ -914,124 +929,128 @@ constexpr indirect(allocator_arg_t, const Allocator& a,
 constexpr indirect(indirect&& other) noexcept;
 ```
 
-13. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
-    is `false` then `T` is a complete type.
+11. _Effects_: `alloc` is direct-non-list-initialized from `std::move(other.alloc)`.
+  If `other` is valueless, `*this` is valueless. Otherwise `*this` takes
+  ownership of the owned object of `other`.
 
-14. _Effects_: If `other` is valueless, `*this` is valueless. Otherwise, if
-    `alloc == other.alloc` is `true` constructs an object of type `indirect`
-    that owns the owned object of `other`; `other` is valueless. Otherwise,
-    constructs an owned object of type `T` with `*std::move(other)`, using the
-    allocator `alloc`.
+12. _Postconditions_: `other` is valueless.
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
    noexcept(allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-15. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
+13. _Mandates_: If `allocator_traits<Allocator>::is_always_equal::value`
     is `false` then `T` is a complete type.
 
-16. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
-    valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc` is `true`
-    constructs an object of type `indirect` that owns the owned object of `other`;
-    `other` is valueless. Otherwise, constructs an owned object of type `T` with
+14. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
+    valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc` is `true`,
+    constructs an object of type `indirect` that takes ownership of the owned object of `other`.
+    Otherwise, constructs an owned object of type `T` with
     `*std::move(other)`, using the allocator `alloc`.
+
+15. _Postconditions_: `other` is valueless.
+
+```c++
+template <class U=T>
+explicit constexpr indirect(U&& u);
+```
+
+16. _Constraints_: Where `UU` is `remove_cvref_t<U>`,
+    * `is_same_v<UU, indirect>` is `false`,
+    * `is_same_v<UU, in_place_t>` is `false`,
+    * `is_constructible_v<T, U>` is `true`,
+    * `is_copy_constructible_v<T>` is `true`, and
+    * `is_default_constructible_v<Allocator>` is `true`.
+
+17. _Mandates_: `T` is a complete type.
+
+18. _Effects_: Constructs an owned object of type `T` with
+    `std​::​forward<U>(u)`, using the allocator `alloc`.
+
+```c++
+template <class U=T>
+explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u);
+```
+
+19. _Constraints_: Where `UU` is `remove_cvref_t<U>`,
+    * `is_same_v<UU, indirect>` is `false`,
+    * `is_same_v<UU, in_place_t>` is `false`,
+    * `is_constructible_v<T, U>` is `true`, and
+    * `is_copy_constructible_v<T>` is `true`.
+
+20. _Mandates_: `T` is a complete type.
+
+21. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs
+    an owned object of type `T` with `std​::​forward<U>(u)`, using the
+    allocator `alloc`.
 
 ```c++
 template <class... Us>
 explicit constexpr indirect(in_place_t, Us&&... us);
 ```
 
-17. _Constraints_: `is_constructible_v<T, Us...>` is `true`.
-   `is_copy_constructible_v<T>` is `true`.
-   `is_default_constructible_v<allocator_type>` is `true`.
+22. _Constraints_:
+    * `is_constructible_v<T, Us...>` is `true`,
+    * `is_copy_constructible_v<T>` is `true`, and
+    * `is_default_constructible_v<Allocator>` is `true`.
 
-18. _Mandates_: `T` is a complete type.
+23. _Mandates_: `T` is a complete type.
 
-19. _Effects_: Constructs an owned object of type `T` with
+24. _Effects_: Constructs an owned object of type `T` with
     `std​::​forward<Us>(us)...`, using the allocator `alloc`.
-
-20. _Postconditions_: `*this` is not valueless.
 
 ```c++
 template <class... Us>
-explicit constexpr indirect(allocator_arg_t, const Allocator& a, in_place_t, Us&& ...us);
+explicit constexpr indirect(allocator_arg_t, const Allocator& a,
+                            in_place_t, Us&& ...us);
 ```
 
-21. _Constraints_: `is_constructible_v<T, Us...>` is `true`.
-  `is_copy_constructible_v<T>` is `true`.
+25. _Constraints_:
+    * `is_constructible_v<T, Us...>` is `true` and
+    * `is_copy_constructible_v<T>` is `true`.
 
-22. _Mandates_: `T` is a complete type.
+26. _Mandates_: `T` is a complete type.
 
-23. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
+27. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
     owned object of type `T` with `std​::​forward<Us>(us)...`, using the
     allocator `alloc`.
 
 ```c++
-template <class U>
-explicit constexpr indirect(U&& u);
-```
-
-24. _Constraints_: `is_constructible_v<T, U>` is `true`.
-    `is_copy_constructible_v<T>` is `true`.
-    `is_default_constructible_v<allocator_type>` is `true`.
-    `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`.
-    `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
-
-25. _Mandates_: `T` is a complete type.
-
-26. _Effects_: Constructs an owned object of type `T` with
-    `std​::​forward<U>(u)`, using the allocator `alloc`.
-
-```c++
-template <class U>
-explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u);
-```
-
-27. _Constraints_: `is_constructible_v<T, U>` is `true`.
-    `is_copy_constructible_v<T>` is `true`.
-    `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`.
-    `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
-
-28. _Mandates_: `T` is a complete type.
-
-29. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs
-    an owned object of type `T` with `std​::​forward<U>(u)`, using the
-    allocator `alloc`.
-
-```c++
-template<class U, class... Us>
-explicit constexpr indirect(in_place_t, initializer_list<U> ilist,
+template<class I, class... Us>
+explicit constexpr indirect(in_place_t, initializer_list<I> ilist,
                             Us&&... us);
 ```
 
-30. _Constraints_: `is_copy_constructible_v<T>` is `true`.
-    `is_constructible_v<T, initializer_list<I>, Us...>` is `true`.
-    `is_default_constructible_v<allocator_type>` is `true`.
+28. _Constraints_:
+    * `is_copy_constructible_v<T>` is `true`,
+    * `is_constructible_v<T, initializer_list<I>&, Us...>` is `true`, and
+    * `is_default_constructible_v<Allocator>` is `true`.
 
-31. _Mandates_: `T` is a complete type.
+29. _Mandates_: `T` is a complete type.
 
-32. _Effects_: Constructs an owned object of type `T` with
+30. _Effects_: Constructs an owned object of type `T` with
     the arguments `ilist`, `std​::​forward<Us>(us)...`, using
     the allocator `alloc`.
 
 ```c++
-template<class U, class... Us>
+template<class I, class... Us>
 explicit constexpr indirect(allocator_arg_t, const Allocator& a,
-                            in_place_t, initializer_list<U> ilist,
+                            in_place_t, initializer_list<I> ilist,
                             Us&&... us);
 ```
 
-33. _Constraints_: `is_copy_constructible_v<T>` is `true`.
-    `is_constructible_v<T, initializer_list<I>, Us...>` is `true`.
+31. _Constraints_:
+    * `is_copy_constructible_v<T>` is `true` and
+    * `is_constructible_v<T, initializer_list<I>&, Us...>` is `true`.
 
-34. _Mandates_: `T` is a complete type.
+32. _Mandates_: `T` is a complete type.
 
-35. _Effects_: `alloc` is direct-non-list-initialized with `a`.
+33. _Effects_: `alloc` is direct-non-list-initialized with `a`.
     Constructs an owned object of type `T` with the arguments
     `ilist`, `std​::​forward<Us>(us)...`, using the allocator `alloc`.
 
-#### X.Y.4 Destructor [indirect.dtor]
+### X.Y.4 Destructor [indirect.dtor]
 
 ```c++
 constexpr ~indirect();
@@ -1040,39 +1059,34 @@ constexpr ~indirect();
 1. _Mandates_: `T` is a complete type.
 
 2. _Effects_: If `*this` is not valueless, destroys the owned object using
-  `allocator_traits<allocator_type>::destroy` and then the storage is
+  `allocator_traits<Allocator>::destroy` and then the storage is
   deallocated.
 
-#### X.Y.5 Assignment [indirect.assign]
+### X.Y.5 Assignment [indirect.assign]
 
 ```c++
 constexpr indirect& operator=(const indirect& other);
 ```
 
-1. _Mandates_: `T` is a complete type.
+1. _Mandates_: `T` is a complete type `is_copy_assignable_v<T>` is `true`,
+   and `is_copy_constructible_v<T>` is `true`.
 
-2. _Effects_: If `addressof(other) == this` is `true`, there are no effects.
+2. _Effects_: If `addressof(other) == this` is `true`, there are no effects.\
+Otherwise:
 
-  If `allocator_traits<allocator_type>::propagate_on_container_copy_assignment` is
-  `true` then the allocator needs updating.
+    2.1. The allocator needs updating if\
+    `allocator_traits<Allocator>::propagate_on_container_copy_assignment`\
+    is `true`.
 
-  If `other` is valueless, `*this` becomes valueless and the owned object in
-  `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy`
-  and then the storage is deallocated.
+    2.2. If `other` is valueless, `*this` becomes valueless and the owned object in `*this`, if any, is destroyed using `allocator_traits<Allocator>::destroy` and then the storage is deallocated.
 
-  Otherwise, if `alloc == other.alloc` is `true` and `*this` is not valueless,
-  `*other` is assigned to the owned object.
+    2.3. Otherwise, if `alloc == other.alloc` is `true` and `*this` is not valueless, equivalent to `**this = *other`.
 
-  Otherwise a new owned object is constructed in `*this` using
-  `allocator_traits<allocator_type>::construct` with the owned object from
-  `other` as the argument, using either the allocator in `*this` or the
-  allocator in `other` if the allocator needs updating. The previously owned
-  object in `*this`, if any, is destroyed using
-  `allocator_traits<allocator_type>::destroy` and then the storage is
-  deallocated.
+    2.4. Otherwise a new owned object is constructed in `*this` using `allocator_traits<Allocator>::construct` with the owned object from `other` as the argument, using either the allocator in `*this` or the allocator in `other` if the allocator needs updating.
 
-  If the allocator needs updating, the allocator in `*this` is replaced with a
-  copy of the allocator in `other`.
+    2.5. The previously owned object in `*this`, if any, is destroyed using `allocator_traits<Allocator>::destroy` and then the storage is deallocated.
+
+    2.6. If the allocator needs updating, the allocator in `*this` is replaced with a copy of the allocator in `other`.
 
 3. _Returns_: A reference to `*this`.
 
@@ -1089,31 +1103,23 @@ constexpr indirect& operator=(indirect&& other) noexcept(
     allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-5. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
-    is `false`, then `T` is a complete type.
+5. _Mandates_: `T` is a complete type and `is_copy_constructible_t<T>` is `true`.
 
-6. _Effects_: If `addressof(other) == this` is `true`, there are no effects.
+6. _Effects_: If `addressof(other) == this` is `true`, there are no effects. Otherwise:
 
-  If`allocator_traits<allocator_type>::propagate_on_container_move_assignment` is
-  `true` then the allocator needs updating.
+    6.1. The allocator needs updating if\
+    `allocator_traits<Allocator>::propagate_on_container_move_assignment`\
+    is `true`.
 
-  If `other` is valueless, `*this` becomes valueless and the owned object in
-  `*this`, if any, is destroyed using `allocator_traits<allocator_type>::destroy`
-  and then the storage is deallocated.
+    6.2. If `other` is valueless, `*this` becomes valueless and the owned object in `*this`, if any, is destroyed using `allocator_traits<Allocator>::destroy` and then the storage is deallocated.
 
-  Otherwise, if `alloc == other.alloc` is `true`, swaps the owned objects in `*this` and
-  `other`; the owned object in `other`, if any, is then destroyed using
-  `allocator_traits<allocator_type>::destroy` and then the storage is deallocated.
+    6.3. Otherwise, if `alloc == other.alloc` is `true`, swaps the owned objects in `*this` and `other`; the owned object in `other`, if any, is then destroyed using `allocator_traits<Allocator>::destroy` and then the storage is deallocated.
 
-  Otherwise constructs a new owned object with the owned object
-  `other` as the argument as an rvalue, using either the allocator in `*this` or
-  the allocator in `other` if the allocator needs updating. The previous owned
-  object in `*this`, if any, is destroyed using
-  `allocator_traits<allocator_type>::destroy` and then the storage is
-  deallocated.
+    6.4. Otherwise constructs a new owned object with the owned object of `other` as the argument as an rvalue, using either the allocator in `*this` or the allocator in `other` if the allocator needs updating.
 
-  If the allocator needs updating, the allocator in `*this` is
-  replaced with a copy of the allocator in `other`.
+    6.5. The previously owned object in `*this`, if any, is destroyed using `allocator_traits<Allocator>::destroy` and then the storage is deallocated.
+
+    6.6. If the allocator needs updating, the allocator in `*this` is replaced with a copy of the allocator in `other`.
 
 7. _Postconditions_: `other` is valueless.
 
@@ -1122,23 +1128,25 @@ constexpr indirect& operator=(indirect&& other) noexcept(
 9. _Remarks_: If any exception is thrown, there are no effects on `*this` or `other`.
 
 ```c++
-  template <class U>
+  template <class U=T>
   constexpr indirect& operator=(U&& u);
 ```
 
-10. _Constraints_: `is_constructible_v<T, U>` is `true`.
-    `is_assignable_v<T&,U>` is `true`.
-    `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
+10. _Constraints_: Where `UU` is `remove_cvref_t<U>`,
+    * `is_same_v<UU, indirect>` is `false`,
+    * `is_constructible_v<T, U>` is `true`, and
+    * `is_assignable_v<T&, U>` is `true`.
 
-11. _Mandates_: `T` is a complete type.
+11. _Mandates_: `T` is a complete type and `is_copy_constructible_t<T>` is `true`.
 
-12. _Effects_: If `*this` is valueless then equivalent to
+12. _Effects_: If `*this` is valueless then equivalent to\
     `*this = indirect(allocator_arg, alloc, std::forward<U>(u));`.
-    Otherwise, equivalent to `**this = std::forward<U>(u)`.
+    Otherwise, equivalent to\
+    `**this = std::forward<U>(u)`.
 
 13. _Returns_: A reference to `*this`.
 
-#### X.Y.6 Observers [indirect.observers]
+### X.Y.6 Observers [indirect.observers]
 
 ```c++
 constexpr const T& operator*() const & noexcept;
@@ -1179,30 +1187,35 @@ constexpr allocator_type get_allocator() const noexcept;
 
 8. _Returns_: `alloc`.
 
-#### X.Y.7 Swap [indirect.swap]
+### X.Y.7 Swap [indirect.swap]
 
 ```c++
 constexpr void swap(indirect& other) noexcept(
-  allocator_traits::propagate_on_container_swap::value
+  allocator_traits<Allocator>::propagate_on_container_swap::value
   || allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-1. _Effects_: Swaps `p` and `other.p`. If
-  `allocator_traits<allocator_type>::propagate_on_container_swap::value` is
-  `true`, then `allocator_type` shall meet the _Cpp17Swappable_ requirements and
-  the allocators of `*this` and `other` are exchanged by calling `swap` as
-  described in [swappable.requirements]. Otherwise, the allocators are not
-  swapped, and the behavior is undefined unless `(*this).get_allocator() ==
-  other.get_allocator()` is `true`.
+1. _Preconditions_: If\
+  `allocator_traits<Allocator>::propagate_on_container_swap::value`\
+  is `true`, then `Allocator` meets the _Cpp17Swappable_ requirements.
+  Otherwise `get_allocator() == other.get_allocator()` is `true`.
+
+2. _Effects_: Swaps the states of `*this` and `other`, exchanging owned objects
+  or valueless states. If\
+  `allocator_traits<Allocator>::propagate_on_container_swap::value`\
+  is `true`, then the allocators of `*this` and `other` are exchanged by calling
+  `swap` as described in [swappable.requirements]. Otherwise, the allocators
+  are not swapped.
+  _[Note: Does not call `swap` on the owned objects directly. --end note]_
 
 ```c++
 constexpr void swap(indirect& lhs, indirect& rhs) noexcept(
   noexcept(lhs.swap(rhs)));
 ```
 
-2. _Effects_: Equivalent to `lhs.swap(rhs)`.
+3. _Effects_: Equivalent to `lhs.swap(rhs)`.
 
-#### X.Y.8 Relational operators [indirect.relops]
+### X.Y.8 Relational operators [indirect.relops]
 
 ```c++
 template <class U, class AA>
@@ -1212,22 +1225,23 @@ constexpr bool operator==(const indirect& lhs, const indirect<U, AA>& rhs)
 
 1. _Constraints_: `*lhs == *rhs` is well-formed and its result is convertible to bool.
 
-2. _Returns_: If `lhs` is valueless or `rhs` is valueless,
-  `lhs.valueless_after_move() == rhs.valueless_after_move()`; otherwise `*lhs ==
-  *rhs`.
+2. _Returns_: If `lhs` is valueless or `rhs` is valueless,\
+  `lhs.valueless_after_move() == rhs.valueless_after_move()`; otherwise `*lhs == *rhs`.
 
 ```c++
 template <class U, class AA>
-constexpr synth-three-way-result<T> operator<=>(const indirect& lhs, const indirect<U, AA>& rhs)
+constexpr synth-three-way-result<T> operator<=>(const indirect& lhs,
+                                                const indirect<U, AA>& rhs)
   noexcept(noexcept(synth-three-way(*lhs, *rhs)));
 ```
 
 3. _Constraints_: `*lhs <=> *rhs` is well-formed.
 
-4. _Returns_: If `lhs` is valueless or `rhs` is valueless,
-  `!lhs.valueless_after_move() <=> !rhs.valueless_after_move()`; otherwise `synth-three-way(*lhs, *rhs)`.
+4. _Returns_: If `lhs` is valueless or `rhs` is valueless,\
+  `!lhs.valueless_after_move() <=> !rhs.valueless_after_move()`; otherwise\
+  `synth-three-way(*lhs, *rhs)`.
 
-#### X.Y.9 Comparison with T [indirect.comp.with.t]
+### X.Y.9 Comparison with T [indirect.comp.with.t]
 
 ```c++
 template <class U>
@@ -1241,7 +1255,8 @@ constexpr bool operator==(const indirect& lhs, const U& rhs)
 
 ```c++
 template <class U>
-constexpr synth-three-way-result<T> operator<=>(const indirect& lhs, const U& rhs)
+constexpr synth-three-way-result<T> operator<=>(const indirect& lhs,
+                                                const U& rhs)
   noexcept(noexcept(synth-three-way(*lhs, rhs)));
 ```
 
@@ -1249,23 +1264,26 @@ constexpr synth-three-way-result<T> operator<=>(const indirect& lhs, const U& rh
 
 4. _Returns_: If `rhs` is valueless, `false < true`; otherwise `synth-three-way(*lhs, rhs)`.
 
-#### X.Y.10 Hash support [indirect.hash]
+### X.Y.10 Hash support [indirect.hash]
 
 ```c++
-template <class T, class Alloc>
-struct hash<indirect<T, Alloc>>;
+template <class T, class Allocator>
+struct hash<indirect<T, Allocator>>;
 ```
 
-1. The specialization `hash<indirect<T, Alloc>>` is enabled ([unord.hash]) if
-and only if `hash<remove_const_t<T>>` is enabled. When enabled for an object `i`
-of type `indirect<T, Alloc>`, then `hash<indirect<T, Alloc>>()(i)` evaluates to
-either the same value as `hash<remove_const_t<T>>()(*i)`, if `i` is not
-valueless; otherwise to an implementation-defined value. The member functions
-are not guaranteed to be noexcept.
+1. The specialization `hash<indirect<T, Allocator>>` is enabled ([unord.hash]) if
+and only if `hash<T>` is enabled. When enabled for an object `i`
+of type `indirect<T, Allocator>`, then `hash<indirect<T, Allocator>>()(i)` evaluates to
+either the same value as `hash<T>()(*i)`, if `i` is not valueless; otherwise to
+an implementation-defined value. The member functions are not guaranteed to be
+noexcept.
 
-### X.Z Class template polymorphic [polymorphic]
+## X.Z Class template polymorphic [polymorphic]
 
-#### X.Z.1 Class template polymorphic general [polymorphic.general]
+[Drafting note: The member _`alloc`_ should be formatted as an exposition-only identifier,
+but limitations of the processor used to prepare this paper mean not all uses are italicised.]
+
+### X.Z.1 Class template polymorphic general [polymorphic.general]
 
 1. A polymorphic object manages the lifetime of an owned object. A polymorphic
 object may own objects of different types at different points in its lifetime. A
@@ -1278,40 +1296,26 @@ program is ill-formed. Every object of type `polymorphic<T, Allocator>` uses an
 object of type `Allocator` to allocate and free storage for the owned object as
 needed.
 
-3. Constructing an owned object with arguments `args...` using an allocator `a`
-means calling `allocator_traits<allocator_type>::rebind_traits<U>::construct(a,
-p, args...)` where `p` is a pointer obtained by calling
-`allocator_traits<allocator_type>::rebind_traits<U>::allocate` and `U` is either
-`allocator_type::value_type` or an internal type used by the polymorphic value.
+3. Constructing an owned object of type `U` with `args...` using `a` means calling
+`allocator_traits<Allocator>::construct(a, p, args...)` where
+`args` is an expression pack, `a` is an allocator, `p` points to storage suitable for
+an owned object of type `U`.
 
-4. Copy constructors for a polymorphic type obtain an allocator by calling
-`allocator_traits<allocator_type>::select_on_container_copy_construction` on the
-allocator belonging to the polymorphic object being copied. Move constructors
-obtain an allocator by move construction from the allocator belonging to the
-object being moved. All other constructors for this type take a `const
-allocator_type& argument`. _[Note 3: If an invocation of a constructor uses the
-default value of an optional allocator argument, then the allocator type must
-support value-initialization. --end note]_ A copy of this allocator is used for
-any memory allocation and element construction performed by these constructors
-and by all member functions during the lifetime of each polymorphic value
-object, or until the allocator is replaced. The allocator may be replaced only
-via assignment or `swap()`. Allocator replacement is performed by copy
-assignment, move assignment, or swapping of the allocator only if (see
-[container.reqmts]):
-
-  (64.1)
-  `allocator_traits<allocator_type>::propagate_on_container_copy_assignment::value`,
-
-  (64.2)
-  `allocator_traits<allocator_type>::propagate_on_container_move_assignment::value`, or
-
-  (64.3)
-  `allocator_traits<allocator_type>::propagate_on_container_swap::value` is true
-   within the implementation of the corresponding polymorphic value operation.
+4. The member `alloc` is used for any memory allocation and element construction
+performed by member functions during the lifetime of each polymorphic value object,
+or until the allocator is replaced. The allocator may only be replaced via assignment
+or `swap()`. Allocator replacement is performed by copy assignment, move assignment,
+or swapping of the allocator only if (see [container.reqmts]):\
+`allocator_traits<Allocator>::propagate_on_container_copy_assignment::value`,\
+or\
+`allocator_traits<Allocator>::propagate_on_container_move_assignment::value`,\
+or\
+`allocator_traits<Allocator>::propagate_on_container_swap::value` is true
+within the implementation of the corresponding polymorphic operation.
 
 5. A program that instantiates the definition of polymorphic for a non-object
-   type, an array type, a specialization of `in_place_type_t` or a cv-qualified
-   type is ill-formed.
+   type, an array type, `in_place_t`, a specialization of `in_place_type_t`,
+   or a cv-qualified type is ill-formed.
 
 6. The template parameter `T` of `polymorphic` may be an incomplete type.
 
@@ -1321,7 +1325,7 @@ assignment, move assignment, or swapping of the allocator only if (see
 8. If a program declares an explicit or partial specialization of `polymorphic`,
    the behavior is undefined.
 
-#### X.Z.2 Class template polymorphic synopsis [polymorphic.syn]
+### X.Z.2 Class template polymorphic synopsis [polymorphic.syn]
 
 ```c++
 template <class T, class Allocator = allocator<T>>
@@ -1346,6 +1350,13 @@ class polymorphic {
   constexpr polymorphic(allocator_arg_t, const Allocator& a,
                         polymorphic&& other) noexcept(see below);
 
+  template <class U=T>
+  explicit constexpr polymorphic(U&& u);
+
+  template <class U=T>
+  explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
+                                 U&& u);
+
   template <class U, class... Ts>
   explicit constexpr polymorphic(in_place_type_t<U>, Ts&&... ts);
 
@@ -1353,20 +1364,14 @@ class polymorphic {
   explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                                  in_place_type_t<U>, Ts&&... ts);
 
-  template <class U>
-  explicit constexpr polymorphic(U&& u);
-
-  template <class U>
-  explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
-
   template <class U, class I, class... Us>
   explicit constexpr polymorphic(in_place_type_t<U>,
-                                 initializer_list<I> ilist, Us&&... us)
+                                 initializer_list<I> ilist, Us&&... us);
 
   template <class U, class I, class... Us>
   explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                                  in_place_type_t<U>,
-                                 initializer_list<I> ilist, Us&&... us)
+                                 initializer_list<I> ilist, Us&&... us);
 
   constexpr ~polymorphic();
 
@@ -1391,66 +1396,61 @@ class polymorphic {
   friend constexpr void swap(polymorphic& lhs,
                              polymorphic& rhs) noexcept(see below);
  private:
-  Allocator alloc = Alloc(); // exposition only
+  Allocator alloc = Allocator(); // exposition only
 };
 ```
 
-#### X.Z.3 Constructors [polymorphic.ctor]
+### X.Z.3 Constructors [polymorphic.ctor]
 
 The following element applies to all functions in [polymorphic.ctor]:
 
-_Throws_: Nothing unless `allocator_traits<allocator_type>::allocate` or
-`allocator_traits<allocator_type>::construct` throws.
+_Throws_: Nothing unless `allocator_traits<Allocator>::allocate`\
+or `allocator_traits<Allocator>::construct` throws.
 
 ```c++
-explicit constexpr polymorphic()
+explicit constexpr polymorphic();
 ```
 
-1. _Constraints_: `is_default_constructible_v<T>` is `true`,
-  `is_copy_constructible_v<T>` is `true`.
-  `is_default_constructible_v<allocator_type>` is `true`.
+1. _Constraints_:
+   * `is_default_constructible_v<T>` is `true`,
+   * `is_copy_constructible_v<T>` is `true`, and
+   * `is_default_constructible_v<Allocator>` is `true`.
 
 2. _Mandates_: `T` is a complete type.
 
 3. _Effects_: Constructs an owned object of type `T` with an empty argument list
    using the allocator `alloc`.
 
-4. _Postconditions_: `*this` is not valueless.
-
 ```c++
 explicit constexpr polymorphic(allocator_arg_t, const Allocator& a);
 ```
 
-5. _Constraints_: `is_default_constructible_v<T>` is `true`,
-  `is_copy_constructible_v<T>` is `true`.
+4. _Constraints_:
+   * `is_default_constructible_v<T>` is `true` and
+   * `is_copy_constructible_v<T>` is `true`.
 
-6. _Mandates_: `T` is a complete type.
+5. _Mandates_: `T` is a complete type.
 
-7. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
+6. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
    owned object of type `T` with an empty argument list using the allocator
    `alloc`.
-
-8. _Postconditions_: `*this` is not valueless.
 
 ```c++
 constexpr polymorphic(const polymorphic& other);
 ```
 
-9. _Mandates_: `T` is a complete type.
-
-10. _Effects_: If `other` is valueless, `*this` is valueless. Otherwise,
-    constructs an owned object of type `U`, where `U` is the type of the owned
-    object in `other`, with the owned object in `other` using the allocator
-    `alloc`.
+7. _Effects_: `alloc` is direct-non-list-initialized with\
+  `allocator_traits<Allocator>::select_on_container_copy_construction(other.alloc)`.
+  If `other` is valueless, `*this` is valueless. Otherwise, constructs an owned object of
+  type `U`, where `U` is the type of the owned object in `other`, with the owned object in
+  `other` using the allocator `alloc`.
 
 ```c++
 constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       const polymorphic& other);
 ```
 
-11. _Mandates_: `T` is a complete type.
-
-12. _Effects_: `alloc` is direct-non-list-initialized with `alloc`. If `other`
+8. _Effects_: `alloc` is direct-non-list-initialized with `alloc`. If `other`
     is valueless, `*this` is valueless. Otherwise, constructs an owned object of
     type `U`, where `U` is the type of the owned object in `other`, with the
     owned object in `other` using the allocator `alloc`.
@@ -1459,17 +1459,12 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
 constexpr polymorphic(polymorphic&& other) noexcept;
 ```
 
-13. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
-    is `false`, then `T` is a complete type.
-
-14. _Effects_: If `other` is valueless, `*this` is valueless. Otherwise, if
-    `alloc == other.alloc` is `true`, either constructs an object of type
-    `polymorphic` that owns the owned object of other, making `other` valueless;
-    or, owns an object of the same type constructed from the owned object of
-    `other` considering that owned object as an rvalue. Otherwise, if `alloc !=
-    other.alloc` is `true`, constructs an object of type `polymorphic`,
-    considering the owned object in `other` as an rvalue, using the allocator
-    `alloc`.
+9. _Effects_: `alloc` is direct-non-list-initialized with
+  `std::move(other.alloc)`. If `other` is valueless, `*this` is valueless.
+  Otherwise, either `*this` takes ownership of the owned object of `other` or,
+  owns an object of the same type constructed from the owned object of
+  `other` considering that owned object as an rvalue, using the allocator
+  `alloc`.
 
   _[Drafting note: The above is intended to permit a small-buffer-optimization
   and handle the case where allocators compare equal but we do not want to swap
@@ -1477,13 +1472,11 @@ constexpr polymorphic(polymorphic&& other) noexcept;
 
 ```c++
 constexpr polymorphic(allocator_arg_t, const Allocator& a,
-                      polymorphic&& other) noexcept(allocator_traits<Allocator>::is_always_equal::value);
+                      polymorphic&& other)
+  noexcept(allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-15. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
-    is `false`, then `T` is a complete type.
-
-16. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
+10. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
     valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc` is
     `true`, either constructs an object of type `polymorphic` that owns the
     owned object of other, making `other` valueless; or, owns an object of the
@@ -1497,20 +1490,57 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
   pointers.]_
 
 ```c++
+template <class U=T>
+explicit constexpr polymorphic(U&& u);
+```
+
+11. _Constraints_: Where `UU` is `remove_cvref_t<U>`,
+    * `is_same_v<UU, polymorphic>` is `false`,
+    * `derived_from<UU, T>` is `true`,
+    * `is_copy_constructible_v<UU>` is `true`,
+    * `is_constructible_v<UU, U>` is `true`,
+    * `UU` is not a specialization of `in_place_type_t`, and
+    * `is_default_constructible_v<Allocator>` is `true`.
+
+12. _Mandates_: `T` is a complete type.
+
+13. _Effects_: Constructs an owned object of type `U` with
+  `std​::​forward<U>(u)` using the allocator `alloc`.
+
+```c++
+template <class U=T>
+explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
+```
+
+14. _Constraints_: Where `UU` is `remove_cvref_t<U>`,
+    * `is_same_v<UU, polymorphic>` is `false`,
+    * `derived_from<UU, T>` is `true`,
+    * `is_copy_constructible_v<UU>` is `true`,
+    * `is_constructible_v<UU, U>` is `true`, and
+    * `UU` is not a specialization of `in_place_type_t`.
+
+15. _Mandates_: `T` is a complete type.
+
+16. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs
+    an owned object of type `U` with `std​::​forward<U>(u)` using the
+    allocator `alloc`.
+
+```c++
 template <class U, class... Ts>
 explicit constexpr polymorphic(in_place_type_t<U>, Ts&&... ts);
 ```
 
-17. _Constraints_: `is_base_of_v<T, U>` is `true`. `is_constructible_v<U,
-  Ts...>` is `true`. `is_copy_constructible_v<U>` is `true`.
-  `is_default_constructible_v<allocator_type>` is `true`.
+17. _Constraints_:
+    * `is_same_v<remove_cvref_t<U>, U>` is `true`,
+    * `derived_from<U, T>` is `true`,
+    * `is_constructible_v<U, Ts...>` is `true`,
+    * `is_copy_constructible_v<U>` is `true`, and
+    * `is_default_constructible_v<Allocator>` is `true`.
 
 18. _Mandates_: `T` is a complete type.
 
 19. _Effects_: Constructs an owned object of type `U` with
     `std​::​forward<Ts>(ts)...` using the allocator `alloc`.
-
-20. _Postconditions_: `*this` is not valueless.
 
 ```c++
 template <class U, class... Ts>
@@ -1518,89 +1548,58 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                                in_place_type_t<U>, Ts&&... ts);
 ```
 
-21. _Constraints_: `is_base_of_v<T, U>` is `true` and `is_constructible_v<U,
-  Ts...>` is `true` and `is_copy_constructible_v<U>` is `true`.
+20. _Constraints_:
+    * `is_same_v<remove_cvref_t<U>, U>` is `true`,
+    * `derived_from<U, T>` is `true`,
+    * `is_constructible_v<U, Ts...>` is `true`, and
+    * `is_copy_constructible_v<U>` is `true`.
 
-22. _Mandates_: `T` is a complete type.
+21. _Mandates_: `T` is a complete type.
 
-23. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
+22. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
     owned object of type `U` with `std​::​forward<Ts>(ts)...` using the
-    allocator `alloc`.
-
-24. _Postconditions_: `*this` is not valueless.
-
-```c++
-template <class U>
-explicit constexpr polymorphic(U&& u);
-```
-
-25. _Constraints_: `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
-   `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
-   `is_constructible_v<remove_cvref_t<U>, U>` is `true`.
-   `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
-   `is_default_constructible_v<allocator_type>` is `true`.
-   `remove_cvref_t<U>` is not a specialization of `in_place_type_t`.
-
-26. _Mandates_: `T` is a complete type.
-
-27. _Effects_: Constructs an owned object of type `U` with
-  `std​::​forward<U>(u)` using the allocator `alloc`.
-
-```c++
-template <class U>
-explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
-```
-
-28. _Constraints_: `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
-   `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
-   `is_constructible_v<remove_cvref_t<U>, U>` is `true`.
-   `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
-   `is_default_constructible_v<allocator_type>` is `true`.
-   `remove_cvref_t<U>` is not a specialization of `in_place_type_t`.
-
-29. _Mandates_: `T` is a complete type.
-
-30. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs
-    an owned object of type `U` with `std​::​forward<U>(u)` using the
     allocator `alloc`.
 
 ```c++
 template <class U, class I, class... Us>
 explicit constexpr polymorphic(in_place_type_t<U>,
-                               initializer_list<I> ilist, Us&&... us)
+                               initializer_list<I> ilist, Us&&... us);
 ```
 
-31. _Constraints_: `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
-   `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
-   `is_constructible_v<remove_cvref_t<U>, U>` is `true`.
-   `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
-   `remove_cvref_t<U>` is not a specialization of `in_place_type_t`.
+23. _Constraints_:
+    * `is_same_v<remove_cvref_t<U>, U>` is `true`,
+    * `is_same_v<U, polymorphic>` is `false`,
+    * `derived_from<U, T>` is `true`,
+    * `is_copy_constructible_v<U>` is `true`,
+    * `is_constructible_v<U, initializer_list<I>&, Us...>` is `true`, and
+    * `is_default_constructible_v<Allocator>` is `true`.
 
-32. _Mandates_: `T` is a complete type.
+24. _Mandates_: `T` is a complete type.
 
-33. _Effects_: Constructs an owned object of type `U` with the arguments
-    `ilist`, `std​::​forward<U>(u)` using the allocator `alloc`.
+25. _Effects_: Constructs an owned object of type `U` with the arguments
+    `ilist`, `std​::​forward<Us>(us)...` using the allocator `alloc`.
 
 ```c++
 template <class U, class I, class... Us>
 explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                                in_place_type_t<U>,
-                               initializer_list<I> ilist, Us&&... us)
+                               initializer_list<I> ilist, Us&&... us);
 ```
 
-34. _Constraints_: `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
-   `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
-   `is_constructible_v<remove_cvref_t<U>, U>` is `true`.
-   `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
-   `remove_cvref_t<U>` is not a specialization of `in_place_type_t`.
+26. _Constraints_:
+    * `is_same_v<remove_cvref_t<U>, U>` is `true`,
+    * `is_same_v<U, polymorphic>` is `false`,
+    * `derived_from<U, T>` is `true`,
+    * `is_copy_constructible_v<U>` is `true`, and
+    * `is_constructible_v<U, initializer_list<I>&, Us...>` is `true`.
 
-35. _Mandates_: `T` is a complete type.
+27. _Mandates_: `T` is a complete type.
 
-36. _Effects_: `alloc` is direct-non-list-initialized with `a`.
+28. _Effects_: `alloc` is direct-non-list-initialized with `a`.
     Constructs an owned object of type `U` with the arguments `ilist`,
-    `std​::​forward<U>(u)` using the allocator `alloc`.
+    `std​::​forward<Us>(us)...` using the allocator `alloc`.
 
-#### X.Z.4 Destructor [polymorphic.dtor]
+### X.Z.4 Destructor [polymorphic.dtor]
 
 ```c++
 constexpr ~polymorphic();
@@ -1609,9 +1608,9 @@ constexpr ~polymorphic();
 1. _Mandates_: `T` is a complete type.
 
 2. _Effects_: If `*this` is not valueless, destroys the owned object using
-  `allocator_traits<allocator_type>::destroy` and then the storage is deallocated.
+  `allocator_traits<Allocator>::destroy` and then the storage is deallocated.
 
-#### X.Z.5 Assignment [polymorphic.assign]
+### X.Z.5 Assignment [polymorphic.assign]
 
 ```c++
 constexpr polymorphic& operator=(const polymorphic& other);
@@ -1619,22 +1618,18 @@ constexpr polymorphic& operator=(const polymorphic& other);
 
 1. _Mandates_: `T` is a complete type.
 
-2. _Effects_: If `addressof(other) == this` is `true`, there are no effects.
+2. _Effects_: If `addressof(other) == this` is `true`, there are no effects. Otherwise:
 
-  If `allocator_traits<alloctor_type>::propagate_on_container_copy_assignment` is
-  `true` then the allocator needs updating.
+    2.1. The allocator needs updating if\
+    `allocator_traits<Allocator>::propagate_on_container_copy_assignment::value`\
+    is `true`.
 
-  If `other` is not valueless, a new owned object is constructed in `*this` using
-  `allocator_traits<allocator_type>::construct` with the owned
-  object from `other` as the argument, using either the allocator in `*this` or
-  the allocator in `other` if the allocator needs updating.
+    2.2. If `other` is not valueless, a new owned object is constructed in `*this` using\
+    `allocator_traits<Allocator>::construct` with the owned object from `other` as the argument, using either the allocator in `*this` or the allocator in `other` if the allocator needs updating.
 
-  The previous owned object in `*this`, if any, is destroyed using
-  `allocator_traits<allocator_type>::destroy` and then the storage
-  is deallocated.
+    2.3 The previously owned object in `*this`, if any, is destroyed using `allocator_traits<Allocator>::destroy` and then the storage is deallocated.
 
-  If the allocator needs updating, the allocator in `*this` is replaced with a
-  copy of the allocator in `other`.
+    2.4 If the allocator needs updating, the allocator in `*this` is replaced with a copy of the allocator in `other`.
 
 3. _Returns_: A reference to `*this`.
 
@@ -1646,36 +1641,28 @@ constexpr polymorphic& operator=(polymorphic&& other) noexcept(
     allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-5. _Mandates_: If `allocator_traits<allocator_type>::is_always_equal::value`
+5. _Mandates_: If `allocator_traits<Allocator>::is_always_equal::value`
     is `false`, `T` is a complete type.
 
-6. _Effects_: If `addressof(other) == this` is `true`, there are no effects.
+6. _Effects_: If `addressof(other) == this` is `true`, there are no effects. Otherwise:
 
-  If `allocator_traits<allocator_type>::propagate_on_container_move_assignment` is
-  `true` then the allocator needs updating.
+    6.1. The allocator needs updating if\
+    `allocator_traits<Allocator>::propagate_on_container_move_assignment`\
+    is `true`.
 
-  If `alloc == other.alloc` is `true`, swaps the owned objects in `*this` and
-  `other`; the owned object in `other`, if any, is then destroyed using
-  `allocator_traits<allocator_type>::destroy` and then the storage is
-  deallocated.
+    6.2. If `alloc == other.alloc` is `true`, swaps the owned objects in `*this` and `other`; the owned object in `other`, if any, is then destroyed using `allocator_traits<Allocator>::destroy` and then the storage is deallocated.
 
-  Otherwise, if `alloc != other.alloc` is `true`; if `other` is not valueless, a
-  new owned object is constructed in `*this` using
-  `allocator_traits<allocator_type>::construct` with the owned object from
-  `other` as the argument as an rvalue, using either the allocator in `*this` or
-  the allocator in `other` if the allocator needs updating. The previous owned
-  object in `*this`, if any, is destroyed using
-  `allocator_traits<allocator_type>::destroy` and then the storage is
-  deallocated.
+    6.3. Otherwise, if `alloc != other.alloc` is `true`; if `other` is not valueless, a new owned object is constructed in `*this` using `allocator_traits<Allocator>::construct` with the owned object from `other` as the argument as an rvalue, using either the allocator in `*this` or the allocator in `other` if the allocator needs updating.
 
-  If the allocator needs updating, the allocator in `*this` is replaced with a
-  copy of the allocator in `other`.
+    6.4. The previously owned object in `*this`, if any, is destroyed using `allocator_traits<Allocator>::destroy` and then the storage is deallocated.
+
+    6.5. If the allocator needs updating, the allocator in `*this` is replaced with a copy of the allocator in `other`.
 
 7. _Returns_: A reference to `*this`.
 
 8. _Remarks_: If any exception is thrown, there are no effects on `*this` or `other`.
 
-#### X.Z.6 Observers [polymorphic.observers]
+### X.Z.6 Observers [polymorphic.observers]
 
 ```c++
 constexpr const T& operator*() const noexcept;
@@ -1707,22 +1694,25 @@ constexpr allocator_type get_allocator() const noexcept;
 
 6. _Returns_: `alloc`.
 
-#### X.Z.7 Swap [polymorphic.swap]
+### X.Z.7 Swap [polymorphic.swap]
 
 ```c++
 constexpr void swap(polymorphic& other) noexcept(
-  allocator_traits::propagate_on_container_swap::value
-  || allocator_traits::is_always_equal::value);
+  allocator_traits<Allocator>::propagate_on_container_swap::value
+  || allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-1. _Effects_: Swaps the states of `*this` and `other`, exchanging owned objects
-  or valueless states. If
-  `allocator_traits<allocator_type>::propagate_on_container_swap::value` is
-  `true`, then `allocator_type` shall meet the _Cpp17Swappable_ requirements and
-  the allocators of `*this` and `other` are exchanged by calling `swap` as
-  described in [swappable.requirements]. Otherwise, the allocators are not
-  swapped, and the behavior is undefined unless `(*this).get_allocator() ==
-  other.get_allocator()`.\
+1. _Preconditions_: If\
+  `allocator_traits<Allocator>::propagate_on_container_swap::value`\
+  is `true`, then `Allocator` meets the _Cpp17Swappable_ requirements.
+  Otherwise `get_allocator() == other.get_allocator()` is `true`.
+
+2. _Effects_: Swaps the states of `*this` and `other`, exchanging owned objects
+  or valueless states. If\
+  `allocator_traits<Allocator>::propagate_on_container_swap::value`\
+  is `true`, then the allocators of `*this` and `other` are exchanged by calling
+  `swap` as described in [swappable.requirements]. Otherwise, the allocators
+  are not swapped.
   _[Note: Does not call `swap` on the owned objects directly. --end note]_
 
 ```c++
@@ -1730,14 +1720,14 @@ constexpr void swap(polymorphic& lhs, polymorphic& rhs) noexcept(
   noexcept(lhs.swap(rhs)));
 ```
 
-2. _Effects_: Equivalent to `lhs.swap(rhs)`.
+3. _Effects_: Equivalent to `lhs.swap(rhs)`.
 
-## Reference implementation
+# Reference implementation
 
 A C++20 reference implementation of this proposal is available on GitHub at
-[https://www.github.com/jbcoe/value_types].
+<https://www.github.com/jbcoe/value_types>.
 
-## Acknowledgements
+# Acknowledgements
 
 The authors would like to thank Lewis Baker, Andrew Bennieston, Josh Berne,
 Bengt Gustafsson, Casey Carter, Rostislav Khlebnikov, Daniel Krugler, David
@@ -1748,7 +1738,7 @@ Patrice Roy, Roger Orr, Stephan T. Lavavej, Stephen Kelly, Thomas Koeppe, Thomas
 Russell, Tom Hudson, Tomasz Kaminski, Tony van Eerd and Ville Voutilainen for
 suggestions and useful discussion.
 
-## References
+# References
 
 _A Preliminary Proposal for a Deep-Copying Smart Pointer_\
 W. E. Brown, 2012\
@@ -1772,13 +1762,13 @@ _MISRA Language Guidelines_\
 _High Integrity C++_\
 <https://www.perforce.com/resources/qac/high-integrity-cpp-coding-standard>
 
-## Appendix A: Detailed design decisions
+# Appendix A: Detailed design decisions
 
 We discuss some of the decisions that were made in the design of `indirect` and
 `polymorphic`. Where there are multiple options, we discuss the advantages and
 disadvantages of each.
 
-### Two class templates, not one
+## Two class templates, not one
 
 It is conceivable that a single class template could be used as a vocabulary
 type for an indirect value type supporting polymorphism. However, implementing
@@ -1797,7 +1787,7 @@ the discriminant must be stored.
 
 For the sake of minimal size and efficiency, we opted to use two class templates.
 
-### Copiers, deleters, pointer constructors, and allocator support
+## Copiers, deleters, pointer constructors, and allocator support
 
 The older types `indirect_value` and `polymorphic_value` had constructors that
 take a pointer, copier, and deleter. The copier and deleter could be used to
@@ -1817,7 +1807,7 @@ implementation and cannot be added retrospectively. As `indirect` and
 types, such as `std::map` and `std::vector`, it is important that they have
 allocator support in contexts where allocators are used.
 
-### Pointer-like helper functions
+## Pointer-like helper functions
 
 Earlier revisions of `polymorphic_value` had helper functions to get access to
 the underlying pointer. These were removed under the advice of the Library
@@ -1828,7 +1818,7 @@ Pointer-like accessors like `dynamic_pointer_cast` and `static_pointer_cast`,
 which are provided for `std::shared_ptr`, could be added in a later revision of
 the standard if required.
 
-### Constraints on incomplete types and conditional constructors
+## Constraints on incomplete types and conditional constructors
 
 Both `indirect` and `polymorphic` support incomplete types. Support for an
 incomplete type requires deferring the instantiation of functions with
@@ -1878,7 +1868,7 @@ break. It might be simpler to add new types for non-copyable `indirect` and
 `polymorphic` objects, although we do not propose the addition of such types in
 this draft.
 
-### Implicit conversions
+## Implicit conversions
 
 We decided that there should be no implicit conversion of a value `T` to an
 `indirect<T>` or `polymorphic<T>`. An implicit conversion would require using
@@ -1898,7 +1888,7 @@ polymorphic<Shape> s(std::in_place_type<Rectangle>, r);
 assert(dynamic_cast<Rectangle*>(&*s) != nullptr);
 ```
 
-### Explicit conversions
+## Explicit conversions
 
 The older class template `polymorphic_value` had explicit conversions, allowing
 construction of a `polymorphic_value<T>` from a `polymorphic_value<U>`, where
@@ -1927,7 +1917,7 @@ outside of tests.
 
 A converting constructor could be added in a future version of the C++ standard.
 
-### Comparisons for `indirect`
+## Comparisons for `indirect`
 
 We implement comparisons for `indirect` in terms of `operator==` and
 `operator<=>` returning `bool` and `auto` respectively.
@@ -1943,7 +1933,7 @@ likely only give partial support for a theoretical DSL which may well make use
 of other operators like `operator+` and `operator-` which are not supported for
 `indirect`.
 
-### Supporting `operator()` `operator[]`
+## Supporting `operator()` `operator[]`
 
 There is no need for `indirect` or `polymorphic` to provide a function call or
 an indexing operator. Users who wish to do that can simply access the value and
@@ -1951,7 +1941,7 @@ call its operator. Furthermore, unlike comparisons, function calls or indexing
 operators do not compose further; for example, a composite would not be able to
 automatically generate a composited `operator()` or an `operator[]`.
 
-### Supporting arithmetic operators
+## Supporting arithmetic operators
 
 While we could provide support for arithmetic operators, `+`, `-` ,`*`, `/`, to
 `indirect` in the same way that we support comparisons, we have chosen not to do
@@ -1963,7 +1953,7 @@ standard. If support for arithmetic operators for valueless or empty objects is
 later added to the standard library in a coherent way, it could be added for
 `indirect` at that time.
 
-### Member function `emplace`
+## Member function `emplace`
 
 Neither `indirect` nor `polymorphic` support `emplace` as a member function. The
 member function `emplace` could be added as :
@@ -1991,7 +1981,7 @@ some_polymorphic = polymorphic(in_place_type<U>, /* arguments */);
 Support for an emplace member function could be added in a future version of the
 C++ standard.
 
-### Small Buffer Optimisation
+## Small Buffer Optimisation
 
 It is possible to implement `polymorphic` with a small buffer optimisation,
 similar to that used in `std::function`. This would allow `polymorphic` to store
@@ -2025,19 +2015,19 @@ size of the buffer would be dictated by the size of the stored object. This
 removes support for incomplete types and locates storage for the object locally,
 defeating the purpose of `indirect`.
 
-## Appendix B: Before and after examples
+# Appendix B: Before and after examples
 
 We include some minimal, illustrative examples of how `indirect` and
 `polymorphic` can be used to simplify composite class design.
 
-### Using `indirect` for binary compatibility using the PIMPL idiom
+## Using `indirect` for binary compatibility using the PIMPL idiom
 
 Without `indirect`, we use `std::unique_ptr` to manage the lifetime of the
 implementation object. All const-qualified methods of the composite will need to
 be manually checked to ensure that they are not calling non-const qualified
 methods of component objects.
 
-#### Before, without using `indirect`
+### Before, without using `indirect`
 
 ```c++
 // Class.h
@@ -2088,7 +2078,7 @@ void Class::do_something() {
 }
 ```
 
-#### After, using `indirect`
+### After, using `indirect`
 
 ```c++
 // Class.h
@@ -2127,14 +2117,14 @@ void Class::do_something() {
 }
 ```
 
-### Using `polymorphic` for a composite class
+## Using `polymorphic` for a composite class
 
 Without `polymorphic`, we use `std::unique_ptr` to manage the lifetime of
 component objects. All const-qualified methods of the composite will need to be
 manually checked to ensure that they are not calling non-const qualified methods
 of component objects.
 
-#### Before, without using `polymorphic`
+### Before, without using `polymorphic`
 
 ```c++
 class Canvas;
@@ -2178,7 +2168,7 @@ class Picture {
 
 ```
 
-#### After, using `polymorphic`
+### After, using `polymorphic`
 
 ```c++
 class Canvas;
@@ -2206,7 +2196,7 @@ class Picture {
 };
 ```
 
-## Appendix C: Design choices, alternatives and breaking changes
+# Appendix C: Design choices, alternatives and breaking changes
 
 The table below shows the main design components considered, the key design
 decisions made, and the cost and impact of alternative design choices. As
