@@ -1068,7 +1068,8 @@ constexpr ~indirect();
 constexpr indirect& operator=(const indirect& other);
 ```
 
-1. _Mandates_: `T` is a complete type.
+1. _Mandates_: `T` is a complete type `is_copy_assignable_v<T>` is `true`,
+   and `is_copy_constructible_v<T>` is `true`.
 
 2. _Effects_: If `addressof(other) == this` is `true`, there are no effects.\
 Otherwise:
@@ -1102,7 +1103,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
     allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-5. _Mandates_: `T` is a complete type.
+5. _Mandates_: `T` is a complete type and `is_copy_constructible_t<T>` is `true`.
 
 6. _Effects_: If `addressof(other) == this` is `true`, there are no effects. Otherwise:
 
@@ -1136,7 +1137,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
     * `is_constructible_v<T, U>` is `true`, and
     * `is_assignable_v<T&, U>` is `true`.
 
-11. _Mandates_: `T` is a complete type.
+11. _Mandates_: `T` is a complete type and `is_copy_constructible_t<T>` is `true`.
 
 12. _Effects_: If `*this` is valueless then equivalent to\
     `*this = indirect(allocator_arg, alloc, std::forward<U>(u));`.
