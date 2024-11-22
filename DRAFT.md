@@ -1297,10 +1297,9 @@ object of type `Allocator` to allocate and free storage for the owned object as
 needed.
 
 3. Constructing an owned object of type `U` with `args...` using `a` means calling
-`allocator_traits<Allocator>::rebind_traits<U>::construct(a, p, args...)` where
-`args` is an expression pack, `a` is an allocator, `p` is a pointer obtained by calling
-`allocator_traits<Allocator>::rebind_traits<U>::allocate`, and `U` is either
-`allocator_type::value_type` or an internal type used by the polymorphic value.
+`allocator_traits<Allocator>::construct(a, p, args...)` where
+`args` is an expression pack, `a` is an allocator, `p` points to storage suitable for
+an owned object of type `U`.
 
 4. The member `alloc` is used for any memory allocation and element construction
 performed by member functions during the lifetime of each polymorphic value object,
