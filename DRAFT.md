@@ -1102,8 +1102,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
     allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-5. _Mandates_: If `allocator_traits<Allocator>::is_always_equal::value`
-    is `false`, then `T` is a complete type.
+5. _Mandates_: `T` is a complete type.
 
 6. _Effects_: If `addressof(other) == this` is `true`, there are no effects. Otherwise:
 
