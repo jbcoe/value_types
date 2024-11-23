@@ -165,7 +165,7 @@ class polymorphic {
   template <typename TT = T>
   explicit constexpr polymorphic()
     requires(std::is_default_constructible_v<TT> &&
-             std::is_copy_constructible_v<TT>)
+             std::is_copy_constructible_v<TT> && std::default_initializable<A>)
       : polymorphic(std::allocator_arg_t{}, A{}) {}
 
   template <class U>
@@ -181,7 +181,8 @@ class polymorphic {
   constexpr explicit polymorphic(U&& u)
     requires(not std::same_as<polymorphic, std::remove_cvref_t<U>>) &&
             std::copy_constructible<std::remove_cvref_t<U>> &&
-            std::derived_from<std::remove_cvref_t<U>, T>
+            std::derived_from<std::remove_cvref_t<U>, T> &&
+            std::default_initializable<A>
       : polymorphic(std::allocator_arg_t{}, A{}, std::forward<U>(u)) {}
 
   template <class U, class... Ts>

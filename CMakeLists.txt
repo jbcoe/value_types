@@ -102,6 +102,7 @@ target_sources(polymorphic_cxx17
 if (${XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT})
 
     add_subdirectory(benchmarks)
+    add_subdirectory(compile_checks)
 
     if(!MSVC)
         # There are issues with constexpr/consteval in MSVC 2019 and MSVC 2022.
