@@ -19,7 +19,7 @@ cc_library(
 )
 build_test(
     name = "indirect_as_member_build_test",
-    targets = ["indirect_in_variant"],
+    targets = ["indirect_as_member"],
 )
 
 cc_library(
