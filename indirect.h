@@ -67,8 +67,7 @@ class indirect {
   // is instantiated.
   template <class TT = T>
   explicit constexpr indirect(std::allocator_arg_t, const A& alloc)
-    requires(std::is_default_constructible_v<TT> &&
-             std::is_copy_constructible_v<TT>)
+    requires(std::default_initializable<TT> && std::copy_constructible<TT>)
       : alloc_(alloc) {
     p_ = construct_from(alloc_);
   }
@@ -77,20 +76,18 @@ class indirect {
   // is instantiated.
   template <class TT = T>
   explicit constexpr indirect()
-    requires(std::is_default_constructible_v<A> &&
-             std::is_default_constructible_v<TT> &&
-             std::is_copy_constructible_v<TT>)
+    requires(std::default_initializable<A> && std::default_initializable<TT> &&
+             std::copy_constructible<TT>)
       : indirect(std::allocator_arg, A{}) {}
 
   //  The template type TT defers the constraint evaluation until the
   //  constructor is instantiated.
   template <class U = T, class TT = T>
   explicit constexpr indirect(std::allocator_arg_t, const A& alloc, U&& u)
-    requires(!std::is_same_v<std::remove_cvref_t<U>, indirect> &&
-             !std::is_same_v<std::remove_cvref_t<U>, std::in_place_t> &&
-             std::is_same_v<TT, std::remove_cvref_t<U>> &&
-             std::is_default_constructible_v<TT> &&
-             std::is_copy_constructible_v<TT>)
+    requires(!std::same_as<std::remove_cvref_t<U>, indirect> &&
+             !std::same_as<std::remove_cvref_t<U>, std::in_place_t> &&
+             std::same_as<TT, std::remove_cvref_t<U>> &&
+             std::default_initializable<TT> && std::copy_constructible<TT>)
       : alloc_(alloc) {
     p_ = construct_from(alloc_, std::forward<U>(u));
   }
@@ -99,11 +96,10 @@ class indirect {
   //  constructor is instantiated.
   template <class U = T, class TT = T>
   explicit constexpr indirect(U&& u)
-    requires(!std::is_same_v<std::remove_cvref_t<U>, indirect> &&
-             !std::is_same_v<std::remove_cvref_t<U>, std::in_place_t> &&
-             std::is_same_v<TT, std::remove_cvref_t<U>> &&
-             std::is_default_constructible_v<TT> &&
-             std::is_copy_constructible_v<TT>)
+    requires(!std::same_as<std::remove_cvref_t<U>, indirect> &&
+             !std::same_as<std::remove_cvref_t<U>, std::in_place_t> &&
+             std::same_as<TT, std::remove_cvref_t<U>> &&
+             std::default_initializable<TT> && std::copy_constructible<TT>)
       : indirect(std::allocator_arg, A{}, std::in_place_t{},
                  std::forward<U>(u)) {}
 
@@ -112,10 +108,9 @@ class indirect {
   template <class U = T, class TT = T>
   explicit constexpr indirect(std::allocator_arg_t, const A& alloc,
                               std::in_place_t, U&& u)
-    requires(!std::is_same_v<std::remove_cvref_t<U>, indirect> &&
-             std::is_same_v<TT, std::remove_cvref_t<U>> &&
-             std::is_default_constructible_v<TT> &&
-             std::is_copy_constructible_v<TT>)
+    requires(!std::same_as<std::remove_cvref_t<U>, indirect> &&
+             std::same_as<TT, std::remove_cvref_t<U>> &&
+             std::default_initializable<TT> && std::copy_constructible<TT>)
       : alloc_(alloc) {
     p_ = construct_from(alloc_, std::forward<U>(u));
   }
@@ -124,9 +119,8 @@ class indirect {
   // is instantiated.
   template <class... Us, class TT = T>
   explicit constexpr indirect(std::in_place_t, Us&&... us)
-    requires(std::is_constructible_v<T, Us && ...> &&
-             std::is_default_constructible_v<A> &&
-             std::is_copy_constructible_v<TT>)
+    requires(std::constructible_from<T, Us && ...> &&
+             std::default_initializable<A> && std::copy_constructible<TT>)
       : indirect(std::allocator_arg, A{}, std::in_place,
                  std::forward<Us>(us)...) {}
 
@@ -145,8 +139,8 @@ class indirect {
   template <class... Us, class TT = T>
   explicit constexpr indirect(std::allocator_arg_t, const A& alloc,
                               std::in_place_t, Us&&... us)
-    requires(std::is_constructible_v<T, Us && ...> &&
-             std::is_copy_constructible_v<TT>)
+    requires(std::constructible_from<T, Us && ...> &&
+             std::copy_constructible<TT>)
       : alloc_(alloc) {
     p_ = construct_from(alloc_, std::forward<Us>(us)...);
   }
@@ -156,9 +150,9 @@ class indirect {
   template <class U = T, class TT = T, class... Us>
   explicit constexpr indirect(std::in_place_t, std::initializer_list<U> ilist,
                               Us&&... us)
-    requires(std::is_default_constructible_v<A> &&
-             std::is_constructible_v<TT, std::initializer_list<U>, Us...> &&
-             std::is_copy_constructible_v<TT>)
+    requires(std::default_initializable<A> &&
+             std::constructible_from<TT, std::initializer_list<U>, Us...> &&
+             std::copy_constructible<TT>)
       : indirect(std::allocator_arg, A{}, std::in_place, ilist,
                  std::forward<Us>(us)...) {}
 
@@ -168,8 +162,8 @@ class indirect {
   explicit constexpr indirect(std::allocator_arg_t, const A& alloc,
                               std::in_place_t, std::initializer_list<U> ilist,
                               Us&&... us)
-    requires(std::is_constructible_v<TT, std::initializer_list<U>, Us...> &&
-             std::is_copy_constructible_v<TT>)
+    requires(std::constructible_from<TT, std::initializer_list<U>, Us...> &&
+             std::copy_constructible<TT>)
       : alloc_(alloc) {
     p_ = construct_from(alloc_, ilist, std::forward<Us>(us)...);
   }
@@ -217,7 +211,7 @@ class indirect {
     if (other.valueless_after_move()) {
       reset();
     } else {
-      if (std::is_copy_assignable_v<T> && !valueless_after_move() &&
+      if (std::assignable_from<T&, T> && !valueless_after_move() &&
           alloc_ == other.alloc_) {
         *p_ = *other;
       } else {
@@ -269,8 +263,8 @@ class indirect {
 
   template <class U>
   constexpr indirect& operator=(U&& u)
-    requires(!std::is_same_v<std::remove_cvref_t<U>, indirect> &&
-             std::is_constructible_v<T, U> && std::is_assignable_v<T&, U>)
+    requires(!std::same_as<std::remove_cvref_t<U>, indirect> &&
+             std::constructible_from<T, U> && std::assignable_from<T&, U>)
   {
     if (valueless_after_move()) {
       p_ = construct_from(alloc_, std::forward<U>(u));
