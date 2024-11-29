@@ -24,7 +24,6 @@ target_link_libraries(indirect_pimpl
 
 if(NOT MSVC)
     add_library(polymorphic_consteval OBJECT)
-    add_library(polymorphic_consteval "")
     target_sources(polymorphic_consteval
         PRIVATE
             polymorphic_consteval.cc
