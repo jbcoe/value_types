@@ -7,7 +7,8 @@
 namespace xyz::testing {
 
 struct Number {
-  friend bool operator==(const Number&, const Number&) = default;
+  friend bool operator==(const Number&, const Number&);
+  friend std::strong_ordering operator<=>(const Number&, const Number&);
 };
 
 struct BinOp;
@@ -15,15 +16,18 @@ struct BinOp;
 struct Expression {
   std::variant<xyz::indirect<BinOp>, Number> info;
 
-  friend bool operator==(const Expression&, const Expression&) = default;
+  friend bool operator==(const Expression&, const Expression&);
+  friend std::strong_ordering operator<=>(const Expression&, const Expression&);
 };
 
 struct BinOp {
-  friend bool operator==(const BinOp&, const BinOp&) = default;
+  friend bool operator==(const BinOp&, const BinOp&);
+  friend std::strong_ordering operator<=>(const BinOp&, const BinOp&);
 };
 
 static_assert(std::is_default_constructible_v<Expression>);
 static_assert(std::is_copy_constructible_v<Expression>);
 static_assert(std::equality_comparable<Expression>);
+static_assert(std::three_way_comparable<Expression>);
 
 }  //  namespace xyz::testing
