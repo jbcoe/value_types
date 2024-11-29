@@ -1,6 +1,28 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 
 cc_library(
+    name = "indirect_in_variant",
+    srcs = ["indirect_in_variant.cc"],
+    visibility = ["//visibility:private"],
+    deps = ["//:indirect"],
+)
+build_test(
+    name = "indirect_in_variant_build_test",
+    targets = ["indirect_in_variant"],
+)
+
+cc_library(
+    name = "indirect_as_member",
+    srcs = ["indirect_as_member.cc"],
+    visibility = ["//visibility:private"],
+    deps = ["//:indirect"],
+)
+build_test(
+    name = "indirect_as_member_build_test",
+    targets = ["indirect_as_member"],
+)
+
+cc_library(
     name = "indirect_consteval",
     srcs = ["indirect_consteval.cc"],
     visibility = ["//visibility:private"],
