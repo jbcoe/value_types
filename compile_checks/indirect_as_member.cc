@@ -4,10 +4,16 @@
 #include "indirect.h"
 namespace xyz::testing {
 
-struct number {};
+struct A;
 
 struct Composite {
-  xyz::indirect<struct A> data;
+  xyz::indirect<A> data;
+
+  Composite();
+  Composite(const Composite&);
+  Composite(Composite&&);
+  Composite& operator=(const Composite&);
+  Composite& operator=(Composite&&);
 
   friend bool operator==(const Composite&, const Composite&);
   friend std::strong_ordering operator<=>(const Composite&, const Composite&);

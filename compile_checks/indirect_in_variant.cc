@@ -16,6 +16,12 @@ struct BinOp;
 struct Expression {
   std::variant<Number, xyz::indirect<BinOp>> info;
 
+  Expression();
+  Expression(const Expression&);
+  Expression(Expression&&);
+  Expression& operator=(const Expression&);
+  Expression& operator=(Expression&&);
+
   friend bool operator==(const Expression&, const Expression&);
   friend std::strong_ordering operator<=>(const Expression&, const Expression&);
 };
