@@ -4,8 +4,6 @@
 #include "indirect.h"
 namespace xyz::testing {
 
-struct number {};
-
 struct Composite {
   xyz::indirect<struct A> data;
 
