@@ -67,14 +67,9 @@ jobs:
               lib: "libc++18",
             }
           - {
-              name: "Visual Studio 2019",
-              os: windows-latest,
-              compiler: { type: VISUAL, version: 16, cc: "cl", cxx: "cl" },
-            }
-          - {
               name: "Visual Studio 2022",
               os: windows-latest,
-              compiler: { type: VISUAL, version: 17, cc: "cl", cxx: "cl" },
+              compiler: { type: VISUAL, version: 19, cc: "cl", cxx: "cl" },
             }
           - {
               name: "MacOS Apple Clang 15",
@@ -108,7 +103,7 @@ jobs:
           version: ${{ matrix.settings.compiler.version }}
           platform: x64
       - name: Select Xcode 14.0
-        if: matrix.config.compiler.type == 'APPLE_CLANG' && matrix.config.compiler.version == '14.0'
+        if: matrix.settings.compiler.type == 'APPLE_CLANG' && matrix.settings.compiler.version == '14.0'
         shell: bash
         run: |
           sudo xcode-select -s "/Applications/Xcode_14.0.app"

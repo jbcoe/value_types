@@ -22,18 +22,16 @@ target_link_libraries(indirect_pimpl
         common_compiler_settings
 )
 
-if(NOT MSVC)
-    add_library(polymorphic_consteval OBJECT)
-    target_sources(polymorphic_consteval
-        PRIVATE
-            polymorphic_consteval.cc
-    )
-    target_link_libraries(polymorphic_consteval
-        PRIVATE
-            polymorphic
-            common_compiler_settings
-    )
-endif()
+add_library(polymorphic_consteval OBJECT)
+target_sources(polymorphic_consteval
+    PRIVATE
+        polymorphic_consteval.cc
+)
+target_link_libraries(polymorphic_consteval
+    PRIVATE
+        polymorphic
+        common_compiler_settings
+)
 
 add_library(polymorphic_pimpl OBJECT)
 target_sources(polymorphic_pimpl
@@ -59,15 +57,13 @@ target_link_libraries(indirect_as_member
         common_compiler_settings
 )
 
-if(NOT MSVC)
-    add_library(indirect_in_variant OBJECT)
-    target_sources(indirect_in_variant
-        PRIVATE
-            indirect_in_variant.cc
-    )
-    target_link_libraries(indirect_in_variant
-        PRIVATE
-            indirect
-            common_compiler_settings
-    )
-endif()
+add_library(indirect_in_variant OBJECT)
+target_sources(indirect_in_variant
+    PRIVATE
+        indirect_in_variant.cc
+)
+target_link_libraries(indirect_in_variant
+    PRIVATE
+        indirect
+        common_compiler_settings
+)
