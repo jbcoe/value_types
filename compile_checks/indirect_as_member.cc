@@ -4,8 +4,10 @@
 #include "indirect.h"
 namespace xyz::testing {
 
+struct A;
+
 struct Composite {
-  xyz::indirect<struct A> data;
+  xyz::indirect<A> data;
 
   friend bool operator==(const Composite&, const Composite&);
   friend std::strong_ordering operator<=>(const Composite&, const Composite&);

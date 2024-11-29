@@ -11,8 +11,10 @@ struct Number {
   friend std::strong_ordering operator<=>(const Number&, const Number&);
 };
 
+struct BinOp;
+
 struct Expression {
-  std::variant<Number, xyz::indirect<struct BinOp>> info;
+  std::variant<Number, xyz::indirect<BinOp>> info;
 
   friend bool operator==(const Expression&, const Expression&);
   friend std::strong_ordering operator<=>(const Expression&, const Expression&);
