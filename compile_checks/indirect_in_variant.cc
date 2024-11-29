@@ -14,7 +14,7 @@ struct Number {
 struct BinOp;
 
 struct Expression {
-  std::variant<xyz::indirect<BinOp>, Number> info;
+  std::variant<Number, xyz::indirect<BinOp>> info;
 
   Expression();
   Expression(const Expression&);
