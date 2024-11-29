@@ -1,7 +1,4 @@
-vt_add_library(
-    NAME indirect_consteval
-    ALIAS value_types::indirect_consteval
-)
+add_library(indirect_consteval OBJECT)
 target_sources(indirect_consteval
     PRIVATE
         indirect_consteval.cc
@@ -12,10 +9,7 @@ target_link_libraries(indirect_consteval
         common_compiler_settings
 )
 
-vt_add_library(
-    NAME indirect_pimpl
-    ALIAS value_types::indirect_pimpl
-)
+add_library(indirect_pimpl OBJECT)
 target_sources(indirect_pimpl
     PRIVATE
         indirect_pimpl.h
@@ -29,10 +23,7 @@ target_link_libraries(indirect_pimpl
 )
 
 if(NOT MSVC)
-    vt_add_library(
-        NAME polymorphic_consteval
-        ALIAS value_types::polymorphic_consteval
-    )
+    add_library(polymorphic_consteval OBJECT)
     add_library(polymorphic_consteval "")
     target_sources(polymorphic_consteval
         PRIVATE
@@ -45,10 +36,7 @@ if(NOT MSVC)
     )
 endif()
 
-vt_add_library(
-    NAME polymorphic_pimpl
-    ALIAS value_types::polymorphic_pimpl
-)
+add_library(polymorphic_pimpl OBJECT)
 target_sources(polymorphic_pimpl
     PRIVATE
         polymorphic_pimpl.h
@@ -58,5 +46,27 @@ target_sources(polymorphic_pimpl
 target_link_libraries(polymorphic_pimpl
     PRIVATE
         polymorphic
+        common_compiler_settings
+)
+
+add_library(indirect_as_member OBJECT)
+target_sources(indirect_as_member
+    PRIVATE
+        indirect_as_member.cc
+)
+target_link_libraries(indirect_as_member
+    PRIVATE
+        indirect
+        common_compiler_settings
+)
+
+add_library(indirect_in_variant OBJECT)
+target_sources(indirect_in_variant
+    PRIVATE
+        indirect_in_variant.cc
+)
+target_link_libraries(indirect_in_variant
+    PRIVATE
+        indirect
         common_compiler_settings
 )
