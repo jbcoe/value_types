@@ -74,7 +74,7 @@ We add a perfect-forwarded assignment operator for `indirect`
 in line with those from `optional` and `variant`.
 
 ```c++
-template <class U = T>
+template <class U=T>
 constexpr optional& operator=(U&& u);
 ```
 
@@ -123,24 +123,24 @@ class indirect {
 
   // ... existing constructors
 
-  template <class U>
+  template <class U=T>
   explicit constexpr indirect(U&& u);
 
   template <class U>
   explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u);
 
   template<class U, class... Us>
-  explicit constexpr indirect(in_place_t, initializer_list<U> ilist,
+  explicit constexpr indirect(in_place_t, initializer_list<I> ilist,
                               Us&&... us);
 
   template<class U, class... Us>
   explicit constexpr indirect(allocator_arg_t, const Allocator& a,
-                              in_place_t, initializer_list<U> ilist,
+                              in_place_t, initializer_list<I> ilist,
                               Us&&... us);
 
   // Remaining constructors and assignment ...
 
-  template <class U>
+  template <class U=T>
   constexpr indirect& operator=(U&& u);
 
   // Remaining member functions ...
@@ -150,87 +150,91 @@ class indirect {
 ### X.Y.3 Constructors [indirect.ctor]
 
 ```c++
-template <class U>
+template <class U=T>
 explicit constexpr indirect(U&& u);
 ```
 
-24. _Constraints_: `is_constructible_v<T, U>` is `true`.
+A. _Constraints_: `is_same_v<remove_cv_ref_t<U>, U>` is `true`.
+    `is_same_v<U, indirect>` is `false`.
+    `is_same_v<U, in_place_t>` is `false`.
+    `is_constructible_v<T, U>` is `true`.
     `is_copy_constructible_v<T>` is `true`.
     `is_default_constructible_v<allocator_type>` is `true`.
-    `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`.
-    `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
 
-25. _Mandates_: `T` is a complete type.
+B. _Mandates_: `T` is a complete type.
 
-26. _Effects_: Constructs an owned object of type `T` with
+C. _Effects_: Constructs an owned object of type `T` with
     `std​::​forward<U>(u)`, using the allocator `alloc`.
 
 ```c++
-template <class U>
+template <class U=T>
 explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u);
 ```
 
-27. _Constraints_: `is_constructible_v<T, U>` is `true`.
+D. _Constraints_: `is_same_v<remove_cv_ref_t<U>, U>` is `true`.
+    `is_same_v<U, indirect>` is `false`.
+    `is_same_v<U, in_place_t>` is `false`.
+    `is_constructible_v<T, U>` is `true`.
     `is_copy_constructible_v<T>` is `true`.
-    `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`.
-    `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
 
-28. _Mandates_: `T` is a complete type.
+E. _Mandates_: `T` is a complete type.
 
-29. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs
+F. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs
     an owned object of type `T` with `std​::​forward<U>(u)`, using the
     allocator `alloc`.
 
 ```c++
-template<class U, class... Us>
-explicit constexpr indirect(in_place_t, initializer_list<U> ilist,
+template<class I, class... Us>
+explicit constexpr indirect(in_place_t, initializer_list<I> ilist,
                             Us&&... us);
 ```
 
-30. _Constraints_: `is_copy_constructible_v<T>` is `true`.
-    `is_constructible_v<T, initializer_list<I>, Us...>` is `true`.
+G. _Constraints_: `is_copy_constructible_v<T>` is `true`.
+    `is_constructible_v<T, initializer_list<I>&, Us...>` is `true`.
     `is_default_constructible_v<allocator_type>` is `true`.
 
-31. _Mandates_: `T` is a complete type.
+H. _Mandates_: `T` is a complete type.
 
-32. _Effects_: Constructs an owned object of type `T` with
+I. _Effects_: Constructs an owned object of type `T` with
     the arguments `ilist`, `std​::​forward<Us>(us)...`, using
     the allocator `alloc`.
 
 ```c++
-template<class U, class... Us>
+template<class I, class... Us>
 explicit constexpr indirect(allocator_arg_t, const Allocator& a,
-                            in_place_t, initializer_list<U> ilist,
+                            in_place_t, initializer_list<I> ilist,
                             Us&&... us);
 ```
 
-33. _Constraints_: `is_copy_constructible_v<T>` is `true`.
-    `is_constructible_v<T, initializer_list<I>, Us...>` is `true`.
+J. _Constraints_: `is_copy_constructible_v<T>` is `true`.
+    `is_constructible_v<T, initializer_list<I>&, Us...>` is `true`.
 
-34. _Mandates_: `T` is a complete type.
+K. _Mandates_: `T` is a complete type.
 
-35. _Effects_: `alloc` is direct-non-list-initialized with `a`.
+L. _Effects_: `alloc` is direct-non-list-initialized with `a`.
     Constructs an owned object of type `T` with the arguments
     `ilist`, `std​::​forward<Us>(us)...`, using the allocator `alloc`.
+
 
 ### X.Y.5 Assignment [indirect.assign]
 
 ```c++
-  template <class U>
+  template <class U=T>
   constexpr indirect& operator=(U&& u);
 ```
 
-10. _Constraints_: `is_constructible_v<T, U>` is `true`.
+A. _Constraints_: `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
+    `is_constructible_v<T, U>` is `true`.
     `is_assignable_v<T&,U>` is `true`.
-    `is_same_v<remove_cvref_t<U>, indirect>` is `false`.
 
-11. _Mandates_: `T` is a complete type.
+B. _Mandates_: `T` is a complete type.
 
-12. _Effects_: If `*this` is valueless then equivalent to
+C. _Effects_: If `*this` is valueless then equivalent to
     `*this = indirect(allocator_arg, alloc, std::forward<U>(u));`.
     Otherwise, equivalent to `**this = std::forward<U>(u)`.
 
-13. _Returns_: A reference to `*this`.
+D. _Returns_: A reference to `*this`.
+
 
 ### X.Y Class template polymorphic [polymorphic]
 
@@ -242,10 +246,10 @@ class polymorphic {
 
   // ... existing constructors
 
-  template <class U>
+  template <class U=T>
   explicit constexpr polymorphic(U&& u);
 
-  template <class U>
+  template <class U=T>
   explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
 
   template <class U, class I, class... Us>
@@ -264,39 +268,43 @@ class polymorphic {
 #### X.Z.3 Constructors [polymorphic.ctor]
 
 ```c++
-template <class U>
+template <class U=T>
 explicit constexpr polymorphic(U&& u);
 ```
 
-25. _Constraints_: `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
-   `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
-   `is_constructible_v<remove_cvref_t<U>, U>` is `true`.
-   `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
+A. _Constraints_: `is_same_v<remove_cv_ref_t<U>, U>`.
+   `is_same_v<U, polymorphic>` is `false`.
+   `derived_from<U, T>` is `true`.
+   `is_copy_constructible_v<U>` is `true`.
+   `is_constructible_v<U, U>` is `true`.
+   `U` is not a specialization of `in_place_type_t`.
    `is_default_constructible_v<allocator_type>` is `true`.
-   `remove_cvref_t<U>` is not a specialization of `in_place_type_t`.
 
-26. _Mandates_: `T` is a complete type.
+B. _Mandates_: `T` is a complete type.
 
-27. _Effects_: Constructs an owned object of type `U` with
+C. _Effects_: Constructs an owned object of type `U` with
   `std​::​forward<U>(u)` using the allocator `alloc`.
 
+
 ```c++
-template <class U>
+template <class U=T>
 explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
 ```
 
-28. _Constraints_: `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
-   `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
-   `is_constructible_v<remove_cvref_t<U>, U>` is `true`.
-   `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
+D. _Constraints_: `is_same_v<remove_cv_ref_t<U>, U>`.
+   `is_same_v<U, polymorphic>` is `false`.
+   `derived_from<U, T>` is `true`.
+   `is_copy_constructible_v<U>` is `true`.
+   `is_constructible_v<U, U>` is `true`.
+   `U` is not a specialization of `in_place_type_t`.
    `is_default_constructible_v<allocator_type>` is `true`.
-   `remove_cvref_t<U>` is not a specialization of `in_place_type_t`.
 
-29. _Mandates_: `T` is a complete type.
+E. _Mandates_: `T` is a complete type.
 
-30. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs
+F. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs
     an owned object of type `U` with `std​::​forward<U>(u)` using the
     allocator `alloc`.
+
 
 ```c++
 template <class U, class I, class... Us>
@@ -304,16 +312,18 @@ explicit constexpr polymorphic(in_place_type_t<U>,
                                initializer_list<I> ilist, Us&&... us)
 ```
 
-31. _Constraints_: `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
-   `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
-   `is_constructible_v<remove_cvref_t<U>, U>` is `true`.
-   `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
-   `remove_cvref_t<U>` is not a specialization of `in_place_type_t`.
+G. _Constraints_: `is_same_v<remove_cv_ref_t<U>, U>`.
+   `is_same_v<U, polymorphic>` is `false`.
+   `derived_from<U, T>` is `true`.
+   `is_copy_constructible_v<U>` is `true`.
+   `is_constructible_v<U, initializer_list<I>&, Us...>` is `true`.
+   `is_default_constructible_v<allocator_type>` is `true`.
 
-32. _Mandates_: `T` is a complete type.
+H. _Mandates_: `T` is a complete type.
 
-33. _Effects_: Constructs an owned object of type `U` with the arguments
-    `ilist`, `std​::​forward<U>(u)` using the allocator `alloc`.
+I. _Effects_: Constructs an owned object of type `U` with the arguments
+    `ilist`, `std​::​forward<Us>(us)...` using the allocator `alloc`.
+
 
 ```c++
 template <class U, class I, class... Us>
@@ -322,17 +332,17 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                                initializer_list<I> ilist, Us&&... us)
 ```
 
-34. _Constraints_: `is_base_of_v<T, remove_cvref_t<U>>` is `true`.
-   `is_copy_constructible_v<remove_cvref_t<U>>` is `true`.
-   `is_constructible_v<remove_cvref_t<U>, U>` is `true`.
-   `is_same_v<remove_cvref_t<U>, polymorphic>` is `false`.
-   `remove_cvref_t<U>` is not a specialization of `in_place_type_t`.
+J. _Constraints_: `is_same_v<remove_cv_ref_t<U>, U>`.
+   `is_same_v<U, polymorphic>` is `false`.
+   `derived_from<U, T>` is `true`.
+   `is_copy_constructible_v<U>` is `true`.
+   `is_constructible_v<U, initializer_list<I>&, Us...>` is `true`.
 
-35. _Mandates_: `T` is a complete type.
+K. _Mandates_: `T` is a complete type.
 
-36. _Effects_: `alloc` is direct-non-list-initialized with `a`.
+L. _Effects_: `alloc` is direct-non-list-initialized with `a`.
     Constructs an owned object of type `U` with the arguments `ilist`,
-    `std​::​forward<U>(u)` using the allocator `alloc`.
+    `std​::​forward<Us>(us)...` using the allocator `alloc`.
 
 ## Reference implementation
 
