@@ -9,6 +9,12 @@ struct A;
 struct Composite {
   xyz::indirect<A> data;
 
+  Composite();
+  Composite(const Composite&);
+  Composite(Composite&&);
+  Composite& operator=(const Composite&);
+  Composite& operator=(Composite&&);
+
   friend bool operator==(const Composite&, const Composite&);
   friend std::strong_ordering operator<=>(const Composite&, const Composite&);
 };
