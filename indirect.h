@@ -55,6 +55,10 @@ inline constexpr bool is_indirect_v<indirect<T, A>> = true;
 
 template <class T, class A = std::allocator<T>>
 class indirect {
+  // Note: We use an additional template argument TT=T for some constructors
+  // to defer constraint evaluation until function instantiation.
+  // This enables indirect to be instantiated with an incomplete type.
+
   using allocator_traits = std::allocator_traits<A>;
 
  public:
@@ -63,114 +67,42 @@ class indirect {
   using pointer = typename allocator_traits::pointer;
   using const_pointer = typename allocator_traits::const_pointer;
 
-  // The template type TT defers the constraint evaluation until the constructor
-  // is instantiated.
+  //
+  // Constructors.
+  //
+
   template <class TT = T>
-  explicit constexpr indirect(std::allocator_arg_t, const A& alloc)
-    requires(std::is_default_constructible_v<TT> &&
-             std::is_copy_constructible_v<TT>)
-      : alloc_(alloc) {
+  explicit constexpr indirect()
+    requires(std::default_initializable<TT> && std::copy_constructible<TT> &&
+             std::default_initializable<A>)
+      : alloc_() {
     p_ = construct_from(alloc_);
   }
 
-  // The template type TT defers the constraint evaluation until the constructor
-  // is instantiated.
-  template <class TT = T>
-  explicit constexpr indirect()
-    requires(std::is_default_constructible_v<A> &&
-             std::is_default_constructible_v<TT> &&
-             std::is_copy_constructible_v<TT>)
-      : indirect(std::allocator_arg, A{}) {}
-
-  //  The template type TT defers the constraint evaluation until the
-  //  constructor is instantiated.
-  template <class U = T, class TT = T>
-  explicit constexpr indirect(std::allocator_arg_t, const A& alloc, U&& u)
-    requires(!std::is_same_v<std::remove_cvref_t<U>, indirect> &&
-             !std::is_same_v<std::remove_cvref_t<U>, std::in_place_t> &&
-             std::is_same_v<TT, std::remove_cvref_t<U>> &&
-             std::is_default_constructible_v<TT> &&
-             std::is_copy_constructible_v<TT>)
-      : alloc_(alloc) {
-    p_ = construct_from(alloc_, std::forward<U>(u));
-  }
-
-  //  The template type TT defers the constraint evaluation until the
-  //  constructor is instantiated.
   template <class U = T, class TT = T>
   explicit constexpr indirect(U&& u)
-    requires(!std::is_same_v<std::remove_cvref_t<U>, indirect> &&
-             !std::is_same_v<std::remove_cvref_t<U>, std::in_place_t> &&
-             std::is_same_v<TT, std::remove_cvref_t<U>> &&
-             std::is_default_constructible_v<TT> &&
-             std::is_copy_constructible_v<TT>)
-      : indirect(std::allocator_arg, A{}, std::in_place_t{},
-                 std::forward<U>(u)) {}
-
-  //  The template type TT defers the constraint evaluation until the
-  //  constructor is instantiated.
-  template <class U = T, class TT = T>
-  explicit constexpr indirect(std::allocator_arg_t, const A& alloc,
-                              std::in_place_t, U&& u)
-    requires(!std::is_same_v<std::remove_cvref_t<U>, indirect> &&
-             std::is_same_v<TT, std::remove_cvref_t<U>> &&
-             std::is_default_constructible_v<TT> &&
-             std::is_copy_constructible_v<TT>)
-      : alloc_(alloc) {
+    requires(!std::same_as<std::remove_cvref_t<U>, indirect> &&
+             !std::same_as<std::remove_cvref_t<U>, std::in_place_t> &&
+             std::constructible_from<TT, U> && std::copy_constructible<TT> &&
+             std::default_initializable<A>)
+      : alloc_() {
     p_ = construct_from(alloc_, std::forward<U>(u));
   }
 
-  // The template type TT defers the constraint evaluation until the constructor
-  // is instantiated.
   template <class... Us, class TT = T>
   explicit constexpr indirect(std::in_place_t, Us&&... us)
-    requires(std::is_constructible_v<T, Us && ...> &&
-             std::is_default_constructible_v<A> &&
-             std::is_copy_constructible_v<TT>)
-      : indirect(std::allocator_arg, A{}, std::in_place,
-                 std::forward<Us>(us)...) {}
-
-  constexpr indirect(std::allocator_arg_t, const A& alloc,
-                     const indirect& other)
-      : alloc_(alloc) {
-    if (other.valueless_after_move()) {
-      p_ = nullptr;
-      return;
-    }
-    p_ = construct_from(alloc_, *other);
-  }
-
-  // The template type TT defers the constraint evaluation until the constructor
-  // is instantiated.
-  template <class... Us, class TT = T>
-  explicit constexpr indirect(std::allocator_arg_t, const A& alloc,
-                              std::in_place_t, Us&&... us)
-    requires(std::is_constructible_v<T, Us && ...> &&
-             std::is_copy_constructible_v<TT>)
-      : alloc_(alloc) {
+    requires(std::constructible_from<T, Us && ...> &&
+             std::copy_constructible<TT> && std::default_initializable<A>)
+      : alloc_() {
     p_ = construct_from(alloc_, std::forward<Us>(us)...);
   }
 
-  // The template type TT defers the constraint evaluation until the constructor
-  // is instantiated.
   template <class U = T, class TT = T, class... Us>
   explicit constexpr indirect(std::in_place_t, std::initializer_list<U> ilist,
                               Us&&... us)
-    requires(std::is_default_constructible_v<A> &&
-             std::is_constructible_v<TT, std::initializer_list<U>, Us...> &&
-             std::is_copy_constructible_v<TT>)
-      : indirect(std::allocator_arg, A{}, std::in_place, ilist,
-                 std::forward<Us>(us)...) {}
-
-  // The template type TT defers the constraint evaluation until the constructor
-  // is instantiated.
-  template <class U = T, class TT = T, class... Us>
-  explicit constexpr indirect(std::allocator_arg_t, const A& alloc,
-                              std::in_place_t, std::initializer_list<U> ilist,
-                              Us&&... us)
-    requires(std::is_constructible_v<TT, std::initializer_list<U>, Us...> &&
-             std::is_copy_constructible_v<TT>)
-      : alloc_(alloc) {
+    requires(std::constructible_from<TT, std::initializer_list<U>&, Us...> &&
+             std::copy_constructible<TT> && std::default_initializable<A>)
+      : alloc_() {
     p_ = construct_from(alloc_, ilist, std::forward<Us>(us)...);
   }
 
@@ -178,7 +110,74 @@ class indirect {
       : indirect(std::allocator_arg,
                  allocator_traits::select_on_container_copy_construction(
                      other.alloc_),
-                 other) {}
+                 other) {
+    static_assert(std::copy_constructible<T>);
+  }
+
+  constexpr indirect(indirect&& other) noexcept(
+      allocator_traits::is_always_equal::value)
+      : indirect(std::allocator_arg, other.alloc_, std::move(other)) {}
+
+  //
+  // Allocator-extended constructors.
+  //
+
+  template <class TT = T>
+  explicit constexpr indirect(std::allocator_arg_t, const A& alloc)
+    requires(std::default_initializable<TT> && std::copy_constructible<TT>)
+      : alloc_(alloc) {
+    p_ = construct_from(alloc_);
+  }
+
+  template <class U = T, class TT = T>
+  explicit constexpr indirect(std::allocator_arg_t, const A& alloc, U&& u)
+    requires(!std::same_as<std::remove_cvref_t<U>, indirect> &&
+             !std::same_as<std::remove_cvref_t<U>, std::in_place_t> &&
+             std::constructible_from<TT, U> && std::copy_constructible<TT>)
+      : alloc_(alloc) {
+    p_ = construct_from(alloc_, std::forward<U>(u));
+  }
+
+  template <class U = T, class TT = T>
+  explicit constexpr indirect(std::allocator_arg_t, const A& alloc,
+                              std::in_place_t, U&& u)
+    requires(!std::same_as<std::remove_cvref_t<U>, indirect> &&
+             std::constructible_from<TT, std::remove_cvref_t<U>> &&
+             std::copy_constructible<TT>)
+      : alloc_(alloc) {
+    p_ = construct_from(alloc_, std::forward<U>(u));
+  }
+
+  template <class... Us, class TT = T>
+  explicit constexpr indirect(std::allocator_arg_t, const A& alloc,
+                              std::in_place_t, Us&&... us)
+    requires(std::constructible_from<T, Us && ...> &&
+             std::copy_constructible<TT>)
+      : alloc_(alloc) {
+    p_ = construct_from(alloc_, std::forward<Us>(us)...);
+  }
+
+  template <class U = T, class TT = T, class... Us>
+  explicit constexpr indirect(std::allocator_arg_t, const A& alloc,
+                              std::in_place_t, std::initializer_list<U> ilist,
+                              Us&&... us)
+    requires(std::constructible_from<TT, std::initializer_list<U>&, Us...> &&
+             std::copy_constructible<TT>)
+      : alloc_(alloc) {
+    p_ = construct_from(alloc_, ilist, std::forward<Us>(us)...);
+  }
+
+  constexpr indirect(std::allocator_arg_t, const A& alloc,
+                     const indirect& other)
+      : alloc_(alloc) {
+    static_assert(std::copy_constructible<T>);
+
+    if (other.valueless_after_move()) {
+      p_ = nullptr;
+      return;
+    }
+    p_ = construct_from(alloc_, *other);
+  }
 
   constexpr indirect(
       std::allocator_arg_t, const A& alloc,
@@ -199,11 +198,15 @@ class indirect {
     }
   }
 
-  constexpr indirect(indirect&& other) noexcept(
-      allocator_traits::is_always_equal::value)
-      : indirect(std::allocator_arg, other.alloc_, std::move(other)) {}
+  //
+  // Destructor.
+  //
 
   constexpr ~indirect() { reset(); }
+
+  //
+  // Assignment.
+  //
 
   constexpr indirect& operator=(const indirect& other) {
     if (this == &other) return *this;
@@ -217,7 +220,7 @@ class indirect {
     if (other.valueless_after_move()) {
       reset();
     } else {
-      if (std::is_copy_assignable_v<T> && !valueless_after_move() &&
+      if (std::assignable_from<T&, T> && !valueless_after_move() &&
           alloc_ == other.alloc_) {
         *p_ = *other;
       } else {
@@ -269,8 +272,8 @@ class indirect {
 
   template <class U>
   constexpr indirect& operator=(U&& u)
-    requires(!std::is_same_v<std::remove_cvref_t<U>, indirect> &&
-             std::is_constructible_v<T, U> && std::is_assignable_v<T&, U>)
+    requires(!std::same_as<std::remove_cvref_t<U>, indirect> &&
+             std::constructible_from<T, U> && std::assignable_from<T&, U>)
   {
     if (valueless_after_move()) {
       p_ = construct_from(alloc_, std::forward<U>(u));
@@ -279,6 +282,10 @@ class indirect {
     }
     return *this;
   }
+
+  //
+  // Accessors.
+  //
 
   [[nodiscard]] constexpr const T& operator*() const& noexcept {
     assert(!valueless_after_move());  // LCOV_EXCL_LINE
@@ -316,6 +323,10 @@ class indirect {
 
   constexpr allocator_type get_allocator() const noexcept { return alloc_; }
 
+  //
+  // Modifiers.
+  //
+
   constexpr void swap(indirect& other) noexcept(
       std::allocator_traits<A>::propagate_on_container_swap::value ||
       std::allocator_traits<A>::is_always_equal::value) {
@@ -337,6 +348,10 @@ class indirect {
                              indirect& rhs) noexcept(noexcept(lhs.swap(rhs))) {
     lhs.swap(rhs);
   }
+
+  //
+  // Comparison operators.
+  //
 
   template <class U, class AA>
   [[nodiscard]] friend constexpr bool operator==(

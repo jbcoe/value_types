@@ -6,6 +6,7 @@ cc_library(
     visibility = ["//visibility:private"],
     deps = ["//:indirect"],
 )
+
 build_test(
     name = "indirect_in_variant_build_test",
     targets = ["indirect_in_variant"],
@@ -17,6 +18,7 @@ cc_library(
     visibility = ["//visibility:private"],
     deps = ["//:indirect"],
 )
+
 build_test(
     name = "indirect_as_member_build_test",
     targets = ["indirect_as_member"],
@@ -76,4 +78,28 @@ cc_library(
 build_test(
     name = "polymorphic_pimpl_build_test",
     targets = ["polymorphic_pimpl"],
+)
+
+cc_library(
+    name = "polymorphic_in_variant",
+    srcs = ["polymorphic_in_variant.cc"],
+    visibility = ["//visibility:private"],
+    deps = ["//:polymorphic"],
+)
+
+build_test(
+    name = "polymorphic_in_variant_build_test",
+    targets = ["polymorphic_in_variant"],
+)
+
+cc_library(
+    name = "polymorphic_as_member",
+    srcs = ["polymorphic_as_member.cc"],
+    visibility = ["//visibility:private"],
+    deps = ["//:polymorphic"],
+)
+
+build_test(
+    name = "polymorphic_as_member_build_test",
+    targets = ["polymorphic_as_member"],
 )
