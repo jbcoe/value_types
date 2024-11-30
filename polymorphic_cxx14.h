@@ -61,6 +61,7 @@ namespace xyz {
 // These implementations must be kept in sync.
 // We duplicate implementations to allow this header to work as a single
 // include. https://godbolt.org needs single-file includes.
+
 namespace xyz {
 namespace detail {
 template <class T, bool CanBeEmptyBaseClass =
