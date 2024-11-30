@@ -74,9 +74,28 @@ jobs:
               lib: "libc++18",
             }
           - {
-              name: "Visual Studio 2022",
+              name: "Visual Studio 2019",
               os: windows-latest,
-              compiler: { type: VISUAL, version: 19, cc: "cl", cxx: "cl" },
+              compiler:
+                { type: VISUAL, version: 16, cc: "cl", cxx: "cl" },
+            }
+          - {
+              name: "Visual Studio 2022 v17",
+              os: windows-latest,
+              compiler:
+                { type: VISUAL, version: 17, cc: "cl", cxx: "cl" },
+            }
+          - {
+              name: "Visual Studio 2022 v18",
+              os: windows-latest,
+              compiler:
+                { type: VISUAL, version: 18, cc: "cl", cxx: "cl" },
+            }
+          - {
+              name: "Visual Studio 2022 v19",
+              os: windows-latest,
+              compiler:
+                { type: VISUAL, version: 19, cc: "cl", cxx: "cl" },
             }
           - {
               name: "MacOS Apple Clang 15",
