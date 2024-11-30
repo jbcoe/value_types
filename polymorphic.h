@@ -115,6 +115,10 @@ class direct_control_block final : public control_block<T, A> {
 
 template <class T, class A = std::allocator<T>>
 class polymorphic {
+  // Note: We use an additional template argument TT=T for some constructors
+  // to defer constraint evaluation until function instantiation.
+  // This enables indirect to be instantiated with an incomplete type.
+
   using cblock_t = detail::control_block<T, A>;
   cblock_t* cb_;
 
@@ -150,23 +154,62 @@ class polymorphic {
   using pointer = typename allocator_traits::pointer;
   using const_pointer = typename allocator_traits::const_pointer;
 
-  // The template type TT defers the constraint evaluation until the constructor
-  // is instantiated.
+  //
+  // Constructors.
+  //
+
+  template <typename TT = T>
+  explicit constexpr polymorphic()
+    requires(std::default_initializable<TT> && std::copy_constructible<TT>)
+      : polymorphic(std::allocator_arg_t{}, A{}) {}
+
+  template <class U>
+  constexpr explicit polymorphic(U&& u)
+    requires(!std::same_as<polymorphic, std::remove_cvref_t<U>>) &&
+            std::copy_constructible<std::remove_cvref_t<U>> &&
+            std::derived_from<std::remove_cvref_t<U>, T> &&
+            std::default_initializable<A>
+      : polymorphic(std::allocator_arg_t{}, A{}, std::forward<U>(u)) {}
+
+  template <class U, class... Ts>
+  explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts)
+    requires std::same_as<std::remove_cvref_t<U>, U> &&
+             std::constructible_from<U, Ts&&...> &&
+             std::copy_constructible<U> && std::derived_from<U, T> &&
+             std::default_initializable<A>
+      : polymorphic(std::allocator_arg_t{}, A{}, std::in_place_type<U>,
+                    std::forward<Ts>(ts)...) {}
+
+  template <class U, class I, class... Ts>
+  explicit constexpr polymorphic(std::in_place_type_t<U>,
+                                 std::initializer_list<I> ilist, Ts&&... ts)
+    requires std::same_as<std::remove_cvref_t<U>, U> &&
+             std::constructible_from<U, std::initializer_list<I>, Ts&&...> &&
+             std::copy_constructible<U> && std::derived_from<U, T> &&
+             std::default_initializable<A>
+      : polymorphic(std::allocator_arg_t{}, A{}, std::in_place_type<U>, ilist,
+                    std::forward<Ts>(ts)...) {}
+
+  constexpr polymorphic(const polymorphic& other)
+      : polymorphic(std::allocator_arg_t{},
+                    allocator_traits::select_on_container_copy_construction(
+                        other.alloc_),
+                    other) {}
+
+  constexpr polymorphic(polymorphic&& other) noexcept(
+      allocator_traits::is_always_equal::value)
+      : polymorphic(std::allocator_arg_t{}, other.alloc_, std::move(other)) {}
+
+  //
+  // Allocator-extended constructors.
+  //
+
   template <typename TT = T>
   explicit constexpr polymorphic(std::allocator_arg_t, const A& alloc)
-    requires(std::is_default_constructible_v<TT> &&
-             std::is_copy_constructible_v<TT>)
+    requires(std::default_initializable<TT> && std::copy_constructible<TT>)
       : alloc_(alloc) {
     cb_ = create_control_block<T>();
   }
-
-  // The template type TT defers the constraint evaluation until the constructor
-  // is instantiated.
-  template <typename TT = T>
-  explicit constexpr polymorphic()
-    requires(std::is_default_constructible_v<TT> &&
-             std::is_copy_constructible_v<TT>)
-      : polymorphic(std::allocator_arg_t{}, A{}) {}
 
   template <class U>
   constexpr explicit polymorphic(std::allocator_arg_t, const A& alloc, U&& u)
@@ -177,46 +220,26 @@ class polymorphic {
     cb_ = create_control_block<std::remove_cvref_t<U>>(std::forward<U>(u));
   }
 
-  template <class U>
-  constexpr explicit polymorphic(U&& u)
-    requires(not std::same_as<polymorphic, std::remove_cvref_t<U>>) &&
-            std::copy_constructible<std::remove_cvref_t<U>> &&
-            std::derived_from<std::remove_cvref_t<U>, T>
-      : polymorphic(std::allocator_arg_t{}, A{}, std::forward<U>(u)) {}
-
   template <class U, class... Ts>
   explicit constexpr polymorphic(std::allocator_arg_t, const A& alloc,
                                  std::in_place_type_t<U>, Ts&&... ts)
-    requires std::constructible_from<U, Ts&&...> &&
+    requires std::same_as<std::remove_cvref_t<U>, U> &&
+             std::constructible_from<U, Ts&&...> &&
              std::copy_constructible<U> && std::derived_from<U, T>
       : alloc_(alloc) {
     cb_ = create_control_block<U>(std::forward<Ts>(ts)...);
   }
 
-  template <class U, class... Ts>
-  explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts)
-    requires std::constructible_from<U, Ts&&...> &&
-             std::copy_constructible<U> && std::derived_from<U, T>
-      : polymorphic(std::allocator_arg_t{}, A{}, std::in_place_type<U>,
-                    std::forward<Ts>(ts)...) {}
-
   template <class U, class I, class... Ts>
   explicit constexpr polymorphic(std::allocator_arg_t, const A& alloc,
                                  std::in_place_type_t<U>,
                                  std::initializer_list<I> ilist, Ts&&... ts)
-    requires std::constructible_from<U, std::initializer_list<I>, Ts&&...> &&
+    requires std::same_as<std::remove_cvref_t<U>, U> &&
+             std::constructible_from<U, std::initializer_list<I>, Ts&&...> &&
              std::copy_constructible<U> && std::derived_from<U, T>
       : alloc_(alloc) {
     cb_ = create_control_block<U>(ilist, std::forward<Ts>(ts)...);
   }
-
-  template <class U, class I, class... Ts>
-  explicit constexpr polymorphic(std::in_place_type_t<U>,
-                                 std::initializer_list<I> ilist, Ts&&... ts)
-    requires std::constructible_from<U, std::initializer_list<I>, Ts&&...> &&
-             std::copy_constructible<U> && std::derived_from<U, T>
-      : polymorphic(std::allocator_arg_t{}, A{}, std::in_place_type<U>, ilist,
-                    std::forward<Ts>(ts)...) {}
 
   constexpr polymorphic(std::allocator_arg_t, const A& alloc,
                         const polymorphic& other)
@@ -227,12 +250,6 @@ class polymorphic {
       cb_ = nullptr;
     }
   }
-
-  constexpr polymorphic(const polymorphic& other)
-      : polymorphic(std::allocator_arg_t{},
-                    allocator_traits::select_on_container_copy_construction(
-                        other.alloc_),
-                    other) {}
 
   constexpr polymorphic(
       std::allocator_arg_t, const A& alloc,
@@ -253,11 +270,15 @@ class polymorphic {
     }
   }
 
-  constexpr polymorphic(polymorphic&& other) noexcept(
-      allocator_traits::is_always_equal::value)
-      : polymorphic(std::allocator_arg_t{}, other.alloc_, std::move(other)) {}
+  //
+  // Destructor.
+  //
 
   constexpr ~polymorphic() { reset(); }
+
+  //
+  // Assignment operators.
+  //
 
   constexpr polymorphic& operator=(const polymorphic& other) {
     if (this == &other) return *this;
@@ -319,6 +340,10 @@ class polymorphic {
     return *this;
   }
 
+  //
+  // Accessors.
+  //
+
   [[nodiscard]] constexpr pointer operator->() noexcept {
     assert(!valueless_after_move());  // LCOV_EXCL_LINE
     return cb_->p_;
@@ -344,6 +369,10 @@ class polymorphic {
   }
 
   constexpr allocator_type get_allocator() const noexcept { return alloc_; }
+
+  //
+  // Modifiers.
+  //
 
   constexpr void swap(polymorphic& other) noexcept(
       std::allocator_traits<A>::propagate_on_container_swap::value ||
