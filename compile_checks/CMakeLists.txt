@@ -67,3 +67,25 @@ target_link_libraries(indirect_in_variant
         indirect
         common_compiler_settings
 )
+
+add_library(polymorphic_as_member OBJECT)
+target_sources(polymorphic_as_member
+    PRIVATE
+        polymorphic_as_member.cc
+)
+target_link_libraries(polymorphic_as_member
+    PRIVATE
+        polymorphic
+        common_compiler_settings
+)
+
+add_library(polymorphic_in_variant OBJECT)
+target_sources(polymorphic_in_variant
+    PRIVATE
+        polymorphic_in_variant.cc
+)
+target_link_libraries(polymorphic_in_variant
+    PRIVATE
+        polymorphic
+        common_compiler_settings
+)
