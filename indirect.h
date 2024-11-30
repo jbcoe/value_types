@@ -100,7 +100,7 @@ class indirect {
   template <class U = T, class TT = T, class... Us>
   explicit constexpr indirect(std::in_place_t, std::initializer_list<U> ilist,
                               Us&&... us)
-    requires(std::constructible_from<TT, std::initializer_list<U>, Us...> &&
+    requires(std::constructible_from<TT, std::initializer_list<U>&, Us...> &&
              std::copy_constructible<TT> && std::default_initializable<A>)
       : alloc_() {
     p_ = construct_from(alloc_, ilist, std::forward<Us>(us)...);
@@ -161,7 +161,7 @@ class indirect {
   explicit constexpr indirect(std::allocator_arg_t, const A& alloc,
                               std::in_place_t, std::initializer_list<U> ilist,
                               Us&&... us)
-    requires(std::constructible_from<TT, std::initializer_list<U>, Us...> &&
+    requires(std::constructible_from<TT, std::initializer_list<U>&, Us...> &&
              std::copy_constructible<TT>)
       : alloc_(alloc) {
     p_ = construct_from(alloc_, ilist, std::forward<Us>(us)...);
