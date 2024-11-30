@@ -18,6 +18,10 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==============================================================================*/
 
+#if __cplusplus < 202002L
+#error "C++20 is required for indirect"
+#endif
+
 #ifndef XYZ_INDIRECT_H
 #define XYZ_INDIRECT_H
 
