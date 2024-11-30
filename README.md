@@ -32,20 +32,17 @@ of writing and maintaining error-prone boilerplate code.
 
 ## Standardization
 
-We'd like to see `indirect` and `polymorphic` included in a future version of
-the C++ standard. Prior work on standardizing similar types, `indirect_value`
-and `polymorphic_value` can be found at
+`indirect` and `polymorphic` have been accepted into the C++ draft standard for
+2026 as part of [`indirect` and `polymorphic`: Vocabulary Types for Composite
+Class Design](https://isocpp.org/files/papers/P3019R11.pdf)
 
-* [A polymorphic value-type for
-  C++](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0201r5.html)
-
-* [indirect_value: A Free-Store-Allocated Value Type For
-  C++](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1950r2.html)
-
-Design of these two types is so deeply coupled that future work will proceed in
-[an updated paper](DRAFT.md).
+The reference implementation in this repository differs slightly from the
+proposal: we use concepts for requirements to support incomplete types in
+variants. We will submit a library issue to the C++ standard committee to amend
+the proposal.
 
 ## Use
+
 The `indirect` and `polymorphic` class templates are header-only. To use them,
 include the headers `indirect.h` and `polymorphic.h` in your project.
 
