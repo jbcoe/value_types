@@ -1004,4 +1004,10 @@ TEST(IndirectTest, TaggedAllocatorsNotEqualMoveConstructFromValueless) {
   EXPECT_TRUE(iii.valueless_after_move());
 }
 
+TEST(IndirectTest, SupportNonCopyableType) {
+  xyz::indirect<xyz::NonCopyable> a;
+  auto aa = std::move(a);
+  EXPECT_TRUE(a.valueless_after_move());
+}
+
 }  // namespace
