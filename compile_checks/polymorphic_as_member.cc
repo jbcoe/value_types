@@ -9,12 +9,6 @@ struct A;
 struct Composite {
   xyz::polymorphic<A> data;
 
-  Composite();
-  Composite(const Composite&);
-  Composite(Composite&&);
-  Composite& operator=(const Composite&);
-  Composite& operator=(Composite&&);
-
   friend bool operator==(const Composite&, const Composite&);
   friend std::strong_ordering operator<=>(const Composite&, const Composite&);
 };
