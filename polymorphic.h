@@ -115,10 +115,6 @@ class direct_control_block final : public control_block<T, A> {
 
 template <class T, class A = std::allocator<T>>
 class polymorphic {
-  // Note: We use an additional template argument TT=T for some constructors
-  // to defer constraint evaluation until function instantiation.
-  // This enables indirect to be instantiated with an incomplete type.
-
   using cblock_t = detail::control_block<T, A>;
   cblock_t* cb_;
 
@@ -158,10 +154,11 @@ class polymorphic {
   // Constructors.
   //
 
-  template <typename TT = T>
   explicit constexpr polymorphic()
-    requires(std::default_initializable<TT> && std::copy_constructible<TT>)
-      : polymorphic(std::allocator_arg_t{}, A{}) {}
+    requires std::default_initializable<A>
+      : polymorphic(std::allocator_arg_t{}, A{}) {
+    static_assert(std::default_initializable<T> && std::copy_constructible<T>);
+  }
 
   template <class U>
   constexpr explicit polymorphic(U&& u)
@@ -204,10 +201,10 @@ class polymorphic {
   // Allocator-extended constructors.
   //
 
-  template <typename TT = T>
   explicit constexpr polymorphic(std::allocator_arg_t, const A& alloc)
-    requires(std::default_initializable<TT> && std::copy_constructible<TT>)
       : alloc_(alloc) {
+    static_assert(std::default_initializable<T> && std::copy_constructible<T>);
+
     cb_ = create_control_block<T>();
   }
 
