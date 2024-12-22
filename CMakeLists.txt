@@ -47,12 +47,56 @@ target_sources(indirect
 )
 
 xyz_add_library(
+    NAME indirect_cxx14
+    ALIAS xyz_value_types::indirect_cxx14
+    DEFINITIONS XYZ_INDIRECT_CXX_14
+    VERSION 14
+)
+target_sources(indirect_cxx14
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect_cxx14.h>
+)
+
+xyz_add_library(
+    NAME indirect_cxx17
+    ALIAS xyz_value_types::indirect_cxx17
+    DEFINITIONS XYZ_INDIRECT_CXX_14
+    VERSION 17
+)
+target_sources(indirect_cxx17
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect_cxx14.h>
+)
+
+xyz_add_library(
     NAME polymorphic
     ALIAS xyz_value_types::polymorphic
 )
 target_sources(polymorphic
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h>
+)
+
+xyz_add_library(
+    NAME polymorphic_cxx14
+    ALIAS xyz_value_types::polymorphic_cxx14
+    DEFINITIONS XYZ_POLYMORPHIC_CXX_14
+    VERSION 14
+)
+target_sources(polymorphic_cxx14
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic_cxx14.h>
+)
+
+xyz_add_library(
+    NAME polymorphic_cxx17
+    ALIAS xyz_value_types::polymorphic_cxx17
+    DEFINITIONS XYZ_POLYMORPHIC_CXX_14
+    VERSION 17
+)
+target_sources(polymorphic_cxx17
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic_cxx14.h>
 )
 
 if (${XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT})
@@ -102,9 +146,37 @@ if (${XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT})
         )
 
         xyz_add_test(
+            NAME indirect_cxx14_test
+            LINK_LIBRARIES indirect_cxx14
+            FILES indirect_test.cc
+            VERSION 14
+        )
+
+        xyz_add_test(
+            NAME indirect_cxx17_test
+            LINK_LIBRARIES indirect_cxx17
+            FILES indirect_test.cc
+            VERSION 17
+        )
+
+        xyz_add_test(
             NAME polymorphic_test
             LINK_LIBRARIES polymorphic
             FILES polymorphic_test.cc
+        )
+
+        xyz_add_test(
+            NAME polymorphic_cxx14_test
+            LINK_LIBRARIES polymorphic_cxx14
+            FILES polymorphic_test.cc
+            VERSION 14
+        )
+
+        xyz_add_test(
+            NAME polymorphic_cxx17_test
+            LINK_LIBRARIES polymorphic_cxx17
+            FILES polymorphic_test.cc
+            VERSION 17
         )
 
         if (ENABLE_CODE_COVERAGE)
