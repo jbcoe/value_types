@@ -101,34 +101,22 @@ class indirect : private detail::empty_base_optimization<A> {
   using pointer = typename allocator_traits::pointer;
   using const_pointer = typename allocator_traits::const_pointer;
 
-  template <class TT = T,
-            typename std::enable_if<std::is_default_constructible<TT>::value,
-                                    int>::type = 0,
-            typename std::enable_if<std::is_copy_constructible<TT>::value,
-                                    int>::type = 0>
   indirect(std::allocator_arg_t, const A& alloc) : alloc_base(alloc) {
     p_ = construct_from(alloc_base::get());
   }
 
-  template <class AA = A,
+  template <typename AA = A,
             typename std::enable_if<std::is_default_constructible<AA>::value,
-                                    int>::type = 0,
-            class TT = T,
-            typename std::enable_if<std::is_default_constructible<TT>::value,
-                                    int>::type = 0,
-            typename std::enable_if<std::is_copy_constructible<TT>::value,
                                     int>::type = 0>
   indirect() : indirect(std::allocator_arg, A()) {}
 
   template <
-      class U, class TT = T,
+      class U,
       typename std::enable_if<
           std::is_same<
               T, typename std::remove_cv<
                      typename std::remove_reference<U>::type>::type>::value,
           int>::type = 0,
-      typename std::enable_if<std::is_copy_constructible<TT>::value,
-                              int>::type = 0,
       typename std::enable_if<
           !std::is_same<typename std::remove_cv<
                             typename std::remove_reference<U>::type>::type,
@@ -140,14 +128,12 @@ class indirect : private detail::empty_base_optimization<A> {
   }
 
   template <
-      class U, class TT = T,
+      class U,
       typename std::enable_if<
           std::is_same<
               T, typename std::remove_cv<
                      typename std::remove_reference<U>::type>::type>::value,
           int>::type = 0,
-      typename std::enable_if<std::is_copy_constructible<TT>::value,
-                              int>::type = 0,
       typename std::enable_if<
           !std::is_same<typename std::remove_cv<
                             typename std::remove_reference<U>::type>::type,
@@ -158,9 +144,6 @@ class indirect : private detail::empty_base_optimization<A> {
 
   template <class... Us,
             typename std::enable_if<std::is_constructible<T, Us&&...>::value,
-                                    int>::type = 0,
-            typename TT = T,
-            typename std::enable_if<std::is_copy_constructible<TT>::value,
                                     int>::type = 0>
   indirect(std::allocator_arg_t, const A& alloc, xyz::in_place_t, Us&&... us)
       : alloc_base(alloc) {
@@ -172,9 +155,6 @@ class indirect : private detail::empty_base_optimization<A> {
                                     int>::type = 0,
             class AA = A,
             typename std::enable_if<std::is_default_constructible<AA>::value,
-                                    int>::type = 0,
-            typename TT = T,
-            typename std::enable_if<std::is_copy_constructible<TT>::value,
                                     int>::type = 0>
   explicit indirect(xyz::in_place_t, Us&&... us)
       : indirect(std::allocator_arg, A(), xyz::in_place_t{},
@@ -184,10 +164,7 @@ class indirect : private detail::empty_base_optimization<A> {
       class U, class... Us,
       typename std::enable_if<
           std::is_constructible<T, std::initializer_list<U>, Us&&...>::value,
-          int>::type = 0,
-      typename TT = T,
-      typename std::enable_if<std::is_copy_constructible<TT>::value,
-                              int>::type = 0>
+          int>::type = 0>
   indirect(std::allocator_arg_t, const A& alloc, xyz::in_place_t,
            std::initializer_list<U> ilist, Us&&... us)
       : alloc_base(alloc) {
@@ -198,7 +175,7 @@ class indirect : private detail::empty_base_optimization<A> {
       class AA = A,
       typename std::enable_if<std::is_default_constructible<AA>::value,
                               int>::type = 0,
-      class TT = T, class U, class... Us,
+      class U, class... Us,
       typename std::enable_if<
           std::is_constructible<T, std::initializer_list<U>, Us&&...>::value,
           int>::type = 0>
@@ -208,6 +185,8 @@ class indirect : private detail::empty_base_optimization<A> {
 
   indirect(std::allocator_arg_t, const A& alloc, const indirect& other)
       : alloc_base(alloc) {
+    static_assert(std::is_copy_constructible<T>::value,
+                  "T must be copy constructible");
     if (other.valueless_after_move()) {
       p_ = nullptr;
       return;
