@@ -53,7 +53,7 @@ should not be considered in isolation.
 
 * `T` in `indirect` only needs to be copy-constructible for the copy constructor(s).
 
-* TODO: Add discussion of constraints and incomplete type support.
+* Add discussion of constraints and incomplete type support.
 
 * TODO: Fix spec of `<=>`.
 
@@ -1706,14 +1706,43 @@ A C++20 reference implementation of this proposal is available on GitHub at
 
 # Acknowledgements
 
-The authors would like to thank Lewis Baker, Andrew Bennieston, Josh Berne,
-Bengt Gustafsson, Casey Carter, Rostislav Khlebnikov, Daniel Krugler, David
-Krauss, David Stone, Ed Catmur, Geoff Romer, German Diago, Jonathan Wakely,
-Kilian Henneberger, LanguageLawyer, Louis Dionne, Maciej Bogus, Malcolm Parsons,
-Matthew Calabrese, Nathan Myers, Neelofer Banglawala, Nevin Liber, Nina Ranns,
-Patrice Roy, Roger Orr, Stephan T. Lavavej, Stephen Kelly, Thomas Koeppe, Thomas
-Russell, Tom Hudson, Tomasz Kaminski, Tony van Eerd and Ville Voutilainen for
-suggestions and useful discussion.
+The authors would like to thank
+Andrew Bennieston,
+Bengt Gustafsson,
+Casey Carter,
+Daniel Krugler,
+David Krauss,
+David Stone,
+Ed Catmur,
+Geoff Romer,
+German Diago,
+Jan Moeller,
+Jonathan Wakely,
+Josh Berne,
+Kilian Henneberger,
+LanguageLawyer,
+Lewis Baker,
+Louis Dionne,
+Maciej Bogus,
+Malcolm Parsons,
+Matthew Calabrese,
+Nathan Myers,
+Neelofer Banglawala,
+Nevin Liber,
+Nina Ranns,
+Patrice Roy,
+Roger Orr,
+Rostislav Khlebnikov,
+Stephan T. Lavavej,
+Stephen Kelly,
+Thomas Koeppe,
+Thomas Russell,
+Tom Hudson,
+Tomasz Kaminski,
+Tony van Eerd
+and
+Ville Voutilainen
+for suggestions and useful discussion.
 
 # References
 
@@ -1922,21 +1951,26 @@ static_assert(std::is_copy_constructible_v<polymorphic<Incomplete>>); // Passes.
 `indirect` and `polymorphic` use static assertions (mandates clauses) which are
 evaluated at function instantiation time to provide better compiler errors.
 
+For example, the code sample below:
+
 ```c++
 indirect<NonCopyable> copy(const indirect<NonCopyable>& i) {
   return i;
 }
 ```
 
-gives the error:
+gives the following errors:
 
 ```sh
-indirect.h:108:19: error: static assertion failed
+indirect.h:LINE:COLUMN: error: static assertion failed
   LINE |     static_assert(std::copy_constructible<T>);
 
 note: in instantiation of member function 'indirect<NonCopyable>::indirect' requested here
  LINE |   return i;
 ```
+
+Arthur O'Dwyer has written a blog post on the topic of constraints and incomplete types
+[vector-is-copyable-except-when-its-not](https://quuxplusone.github.io/blog/2020/02/05/vector-is-copyable-except-when-its-not/).
 
 ## Implicit conversions
 
