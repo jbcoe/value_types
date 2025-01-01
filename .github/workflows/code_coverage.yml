@@ -81,9 +81,11 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target coverage-cobertura
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4.4.1
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        uses: codecov/codecov-action@v5
         with:
+          fail_ci_if_error: true
           working-directory: ${{github.workspace}}/build/coverage
           files: ${{github.workspace}}/build/coverage/cobertura_coverage.xml
+          verbose: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
