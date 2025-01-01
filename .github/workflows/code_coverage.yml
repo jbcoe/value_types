@@ -56,15 +56,23 @@ jobs:
         # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
         run: ctest -C ${{env.BUILD_TYPE}}
 
-      - name: Gcov
-        # Run GCov target to collect coverage information.
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target gcov
+      - name: Fastcov
+        # Run Fastcov target to collect coverage information.
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target coverage
 
       - name: Lcov
         # Run LCov target to generate code coverage report
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target lcov
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target coverage-lcov
 
-      - name: Upload
-        working-directory: ${{github.workspace}}/build
-        # Run LCov target to generate code coverage report
-        run: bash <(curl -s https://codecov.io/bash) -X gcov || echo "Codecov did not collect coverage reports"
+      - name: Cobertura
+        # Run Cobertura target to generate code coverage report in XML
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target coverage-cobertura
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4.4.1
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          working-directory: ${{github.workspace}}/build/coverage
+          files: ${{github.workspace}}/build/coverage/cobertura_coverage.xml
+
