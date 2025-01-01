@@ -39,7 +39,7 @@ within the build stage.
       [EXTRA_ARGS <args>]
   )
 
-When using the virtialemv as a dependency in a custom target then make sure to depend
+When using the virtualenv as a dependency in a custom target then make sure to depend
 on the python executable ${envdir}/bin/python to ensure that the setup command is run first.
 
 Example
@@ -338,6 +338,15 @@ function(coverage_target_clean_intermediate_file)
 endfunction()
 
 
+set_property(GLOBAL PROPERTY global_coverage_test_targets)
+
+function(add_coverage TNAME)
+    message(WARNING "Adding coverage for target "${TNAME})
+    get_property(tmp GLOBAL PROPERTY global_coverage_test_targets)
+    set(tmp "${tmp};${TNAME}")
+    set_property(GLOBAL PROPERTY global_coverage_test_targets "${tmp}")
+endfunction()
+
 
 function(enable_code_coverage)
     set(options QUIET VERBOSE)
@@ -409,14 +418,14 @@ function(enable_code_coverage)
         endif ()
     endforeach()
 
-    targets_get_all(RESULT allTargets DIRECTORY ${PROJECT_SOURCE_DIR})
+    get_property(allTargets GLOBAL PROPERTY global_coverage_test_targets)
     if (COVERAGE_VERBOSE)
         message(STATUS "Coverage: All project targets: ${allTargets}")
     endif()
 
     targets_filter_for_sources(RESULT targetsWithSource TARGETS ${allTargets})
     if (COVERAGE_VERBOSE)
-        message(STATUS "Coverage: Targets with sources: ${targetsWithSource}}")
+        message(STATUS "Coverage: Targets with sources: ${targetsWithSource}")
     endif()
 
     foreach(target IN LISTS targetsWithSource)
@@ -452,6 +461,7 @@ function(enable_code_coverage)
         COMMAND
             ${COVERAGE_FASTCOV_BIN}
                 --gcov ${GCOV_BIN}
+                --exclude ${CMAKE_BINARY_DIR}
                 --include ${PROJECT_SOURCE_DIR}
                 --zerocounters
         DEPENDS
@@ -485,7 +495,7 @@ function(enable_code_coverage)
         COMMAND
             ${COVERAGE_FASTCOV_BIN}
                 --gcov ${GCOV_BIN}
-                #--exclude ${CMAKE_CURRENT_BINARY_DIR}
+                --exclude ${CMAKE_CURRENT_BINARY_DIR}
                 --include ${PROJECT_SOURCE_DIR}
                 --lcov
                 --verbose

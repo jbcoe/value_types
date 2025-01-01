@@ -106,5 +106,8 @@ function(xyz_add_test)
 
     endif()
 
+    if (ENABLE_CODE_COVERAGE)
+        add_coverage(${XYZ_NAME})
+    endif()
 
 endfunction()
