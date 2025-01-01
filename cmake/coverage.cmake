@@ -39,7 +39,7 @@ within the build stage.
       [EXTRA_ARGS <args>]
   )
 
-When using the virtialemv as a dependency in a custom target then make sure to depend
+When using the virtualenv as a dependency in a custom target then make sure to depend
 on the python executable ${envdir}/bin/python to ensure that the setup command is run first.
 
 Example
