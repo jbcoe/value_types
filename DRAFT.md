@@ -1795,9 +1795,148 @@ Pointer-like accessors like `dynamic_pointer_cast` and `static_pointer_cast`,
 which are provided for `std::shared_ptr`, could be added in a later revision of
 the standard if required.
 
-## Mandates vs constraints for incomplete type support
+## Constraints and incomplete type support
 
-TODO: Explain why we use mandates, not constraints, for incomplete type support.
+Using either SFINAE, or requires clauses (from C++20 onwards), member functions
+can be constrained so that they are only available when certain conditions are met.
+
+For instance:
+
+```c++
+template <typename T>
+class wrapper {
+  T t;
+
+ public:
+  wrapper()
+  requires std::is_default_constructible_v<T>;
+
+  wrapper(const wrapper& other)
+  requires std::is_copy_constructible_v<T>;
+};
+```
+
+The wrapper type is only default constructible if the wrapped type `T` is
+default constructible and only copy constructible if the wrapped type T `T`
+is copy constructible.
+
+Imposing constraints like this requires that the type `T` is complete at the
+time the class-template is instantiated. Both polymorphic and indirect are
+designed to work with incomplete types so constraining member functions with
+requires clauses (or SFINAE) is not an option.
+
+In revision 4 of this proposal, the authors were invited to use a deferred deduced
+type to allow constraints to be applied to member functions. This would allow the class
+to be instantiated for with `T` as an incomplete type, as member function constraints
+would only be checked at member function instantiation time.
+
+For instance:
+
+```c++
+template <typename T>
+class constrained_wrapper {
+  T* t; // Use a pointer for incomplete type support.
+
+ public:
+  template <typename TT=T>
+  constrained_wrapper()
+  requires std::is_default_constructible_v<TT>;
+
+  // Constraining the copy constructor is more involved
+  // but possible and omitted for brevity.
+};
+```
+
+By making the default constructor into a function template, and placing the
+constraint of the inferred template type `TT`, evaluation of the constraint
+is deferred to function instantiation time at which point `TT` will be
+deduced to be `T`and will need to be complete for the constraint to be evaluated.
+
+Support for indirect with constraints on a deferred deduced type differs across toolchains
+and inhibits usability.
+
+When indirect's member functions are constrained with a deferred deduced type, MSVC requires
+member functions to be explicitly declared so that they can later be defaulted when the type is
+complete. Such behaviour makes using a constrained `indirect` hard to teach and inconsistent
+with the design of the standard library.
+
+```c++
+struct Number {}; // Complete type.
+
+struct BinOp; // Incomplete type.
+
+struct Expression {
+  std::variant<Number, constrained_indirect<BinOp>> info;
+
+  Expression();
+  Expression(const Expression&);
+  Expression(Expression&&);
+  Expression& operator=(const Expression&);
+  Expression& operator=(Expression&&);
+};
+```
+
+Clang and GCC permit the far more succinct code below.
+
+```c++
+struct Number {}; // Complete type.
+
+struct BinOp; // Incomplete type.
+
+struct Expression {
+  std::variant<Number, constrained_indirect<BinOp>> info;
+};
+```
+
+As proposed, `indirect` and `polymorphic` follow the design of `vector` and will sometimes
+falsely advertise copyability or default constructibility. If correct type-traits should be
+imposed upon standard library types that support incomplete types, this should be done
+consistently across types in a future revision of the standard.
+
+```c++
+struct Copyable {
+  Copyable() = default;
+  Copyable(const Copyable&) = delete;
+};
+
+struct NonCopyable {
+  NonCopyable() = default;
+  NonCopyable(const NonCopyable&) = delete;
+};
+
+struct Incomplete;
+
+static_assert(std::is_copy_constructible_v<std::vector<Copyable>>); // Passes.
+static_assert(std::is_copy_constructible_v<std::vector<NonCopyable>>); // Passes.
+static_assert(std::is_copy_constructible_v<std::vector<Incomplete>>); // Passes.
+
+static_assert(std::is_copy_constructible_v<indirect<Copyable>>); // Passes.
+static_assert(std::is_copy_constructible_v<indirect<NonCopyable>>); // Passes.
+static_assert(std::is_copy_constructible_v<indirect<Incomplete>>); // Passes.
+
+static_assert(std::is_copy_constructible_v<polymorphic<Copyable>>); // Passes.
+static_assert(std::is_copy_constructible_v<polymorphic<NonCopyable>>); // Passes.
+static_assert(std::is_copy_constructible_v<polymorphic<Incomplete>>); // Passes.
+```
+
+`indirect` and `polymorphic` use static assertions (mandates clauses) which are
+evaluated at function instantiation time to provide better compiler errors.
+
+```c++
+indirect<NonCopyable> copy(const indirect<NonCopyable>& i) {
+  return i;
+}
+```
+
+gives the error:
+
+```sh
+indirect.h:108:19: error: static assertion failed
+  LINE |     static_assert(std::copy_constructible<T>);
+
+note: in instantiation of member function 'indirect<NonCopyable>::indirect' requested here
+ LINE |   return i;
+```
 
 ## Implicit conversions
 
