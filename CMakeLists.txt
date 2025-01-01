@@ -79,7 +79,7 @@ if (${XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT})
         enable_testing()
 
         if (ENABLE_CODE_COVERAGE)
-            set(LCOV_EXTRA_FLAGS "--ignore-errors mismatch")
+            set(LCOV_EXTRA_FLAGS "--no-external --rc lcov_branch_coverage=1 --filter branch,function")
             FetchContent_Declare(
                 codecoverage
                 GIT_REPOSITORY https://github.com/RWTH-HPC/CMake-codecov.git
