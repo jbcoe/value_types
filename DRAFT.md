@@ -45,13 +45,15 @@ should not be considered in isolation.
 
 ## Changes in R12
 
-* TODO: Fix `indirect` synopsis to include `explicit` on all constructors.
+* Fix `indirect` synopsis to include `explicit` on constructors.
 
 * TODO: Change _constraints_ on incomplete type `T` to _mandates_.
 
 * TODO: Remove _mandates_ that `T` is a complete type where this is required by type_traits.
 
 * TODO: `T` in `indirect` only needs to be copy-constructible for the copy constructor(s).
+
+* TODO: Add discussion of constraints and incomplete type support.
 
 * TODO: Fix spec of `<=>`.
 
@@ -288,7 +290,11 @@ by the owned object type `T`.
 * `indirect<T, Alloc>` and `polymorphic<T, Alloc>` are default constructible in
   cases where `T` is default constructible.
 
-* `indirect<T, Alloc>` and `polymorphic<T, Alloc>` are unconditionally copy
+* `indirect<T, Alloc>` is copy constructible and assignable when `T` is copy
+  constructible; `indirect<T, Alloc>` is unconditionally move constructible
+  and move assignable.
+
+* `polymorphic<T, Alloc>` is unconditionally copy
   constructible and assignable, move constructible and move assignable.
 
 * `indirect<T, Alloc>` and `polymorphic<T, Alloc>` destroy the owned object in
@@ -1819,57 +1825,9 @@ Pointer-like accessors like `dynamic_pointer_cast` and `static_pointer_cast`,
 which are provided for `std::shared_ptr`, could be added in a later revision of
 the standard if required.
 
-## Constraints on incomplete types and conditional constructors
+## Mandates vs constraints for incomplete type support
 
-TODO - REWRITE
-
-Both `indirect` and `polymorphic` support incomplete types. Support for an
-incomplete type requires deferring the instantiation of functions with
-requirements until they are used.
-
-The default constructor of `indirect` requires that `T` is default
-constructible. We cannot write this constraint as a requirement on `T` because
-that would require `T` to be a complete type at class instantiation time.
-Instead we write the constraint as a requirement on a deduced type `TT` to defer
-evaluation of the constraint until the default constructor is instantiated.
-
-```c++
-template <typename TT = T>
-indirect() requires is_default_constructible_v<TT>;
-```
-
-We can use this technique to write constraints on the default constructor of
-`indirect` and `polymorphic`. Both `indirect` and `polymorphic` are
-conditionally default constructible.
-
-The same technique cannot be used for the copy or move constructor of
-`polymorphic` because that would require type information on an open set of
-erased types, which is not possible: a `polymorphic` object can contain any type
-that is derived from `T`, we cannot write a constraint that requires that all
-such types are copy constructible. We make `polymorphic` unconditionally copy
-and move constructible. The authors do not envisage that this could be relaxed
-in a future version of the C++ standard.
-
-While a copy constructor cannot be a template, in C++20 and later we can
-conditionally constrain copy construction of `indirect` by defining:
-
-```c++
-indirect(const indirect& other) requires false = delete;
-
-template <typename TT = T>
-indirect(const indirect& other) requires is_copy_constructible_v<TT>;
-```
-
-An instantiation of the function template with `TT = T` is added to the overload
-set when `indirect` is copy-constructed and will be selected if the owned object
-type `T` is copy constructible. This would make copy construction conditional
-for `indirect` but not for `polymorphic`. We opt for consistency and make copy
-construction unconditional for both `indirect` and `polymorphic`. Making
-`indirect` conditionally copy constructible in a future version of the C++
-standard would require adding a template function as above and would be an ABI
-break. It might be simpler to add new types for non-copyable `indirect` and
-`polymorphic` objects, although we do not propose the addition of such types in
-this draft.
+TODO: Explain why we use mandates, not constraints, for incomplete type support.
 
 ## Implicit conversions
 
