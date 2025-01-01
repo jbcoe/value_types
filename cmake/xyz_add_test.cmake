@@ -104,10 +104,10 @@ function(xyz_add_test)
             WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         )
 
-        if (ENABLE_CODE_COVERAGE)
-            add_coverage(${XYZ_NAME})
-        endif()
     endif()
 
+    if (ENABLE_CODE_COVERAGE)
+        add_coverage(${XYZ_NAME})
+    endif()
 
 endfunction()

@@ -16,14 +16,13 @@ include(GNUInstallDirs)
 include(CMakeDependentOption)
 include(CMakePackageConfigHelpers)
 
-# Ensure code coverage is switched off for Mac OS until the code coverage library addresses the AppleClang issue
-cmake_dependent_option(ENABLE_CODE_COVERAGE "Enable code coverage" ON "\"${CMAKE_CXX_COMPILER_ID}\" STREQUAL \"Clang\" OR \"${CMAKE_CXX_COMPILER_ID}\" STREQUAL \"GNU\"" OFF)
 option(ENABLE_SANITIZERS "Enable Address Sanitizer and Undefined Behaviour Sanitizer if available" OFF)
 
 # Include necessary submodules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # Custom CMake Includes
+include(coverage)
 include(xyz_add_library)
 include(xyz_add_test)
 
@@ -78,23 +77,6 @@ if (${XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT})
 
         enable_testing()
 
-        if (ENABLE_CODE_COVERAGE)
-            FetchContent_Declare(
-                codecoverage
-                GIT_REPOSITORY https://github.com/RWTH-HPC/CMake-codecov.git
-            )
-
-            FetchContent_GetProperties(codecoverage)
-            if(NOT codecoverage_POPULATED)
-                FetchContent_Populate(codecoverage)
-                list(APPEND CMAKE_MODULE_PATH ${codecoverage_SOURCE_DIR}/cmake)
-            endif()
-
-            set(ENABLE_COVERAGE ON CACHE BOOL "Enable coverage build." FORCE)
-            find_package(codecov)
-            list(APPEND LCOV_REMOVE_PATTERNS "'/usr/*'")
-        endif()
-
         xyz_add_test(
             NAME indirect_test
             LINK_LIBRARIES indirect
@@ -108,7 +90,7 @@ if (${XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT})
         )
 
         if (ENABLE_CODE_COVERAGE)
-            coverage_evaluate()
+            enable_code_coverage()
         endif()
 
     endif(${BUILD_TESTING})
