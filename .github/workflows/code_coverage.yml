@@ -84,7 +84,7 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           fail_ci_if_error: true
-          working-directory: ${{github.workspace}}/build/coverage
+          #working-directory: ${{github.workspace}}/build/coverage
           files: ${{github.workspace}}/build/coverage/cobertura_coverage.xml
           verbose: true
         env:
