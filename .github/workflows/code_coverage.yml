@@ -75,4 +75,3 @@ jobs:
         with:
           working-directory: ${{github.workspace}}/build/coverage
           files: ${{github.workspace}}/build/coverage/cobertura_coverage.xml
-
