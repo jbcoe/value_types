@@ -83,9 +83,8 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
-          fail_ci_if_error: true
-          #working-directory: ${{github.workspace}}/build/coverage
           files: ${{github.workspace}}/build/coverage/cobertura_coverage.xml
+          fail_ci_if_error: true
           verbose: true
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
