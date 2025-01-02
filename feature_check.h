@@ -21,6 +21,50 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef XYZ_FEATURE_CHECK_H
 #define XYZ_FEATURE_CHECK_H
 
+// The purpose of this header is to provide macros checking whether certain C++
+// features (like std::optional) are available.
+
+//
+// XYZ_HAS_STD_OPTIONAL
+// The macro is defined, when std::optional is available.
+//
+#ifdef XYZ_HAS_STD_OPTIONAL
+#error "XYZ_HAS_STD_OPTIONAL is already defined"
+#endif  // XYZ_HAS_STD_OPTIONAL
+
+#if (__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+#define XYZ_HAS_STD_OPTIONAL
+#endif  //(__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >=
+        // 201703L)
+
+//
+// XYZ_HAS_STD_IN_PLACE_TYPE_T
+// The macro is defined, when std::in_place_type_t is available.
+//
+
+#ifdef XYZ_HAS_STD_IN_PLACE_TYPE_T
+#error "XYZ_HAS_STD_IN_PLACE_TYPE_T is already defined"
+#endif  // XYZ_HAS_STD_IN_PLACE_TYPE_T
+
+#if (__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+#define XYZ_HAS_STD_IN_PLACE_TYPE_T
+#endif  //(__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >=
+        // 201703L)
+
+#ifdef XYZ_HAS_STD_IN_PLACE_T
+#error "XYZ_HAS_STD_IN_PLACE_T is already defined"
+#endif  // XYZ_HAS_STD_IN_PLACE_T
+
+#if (__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+#define XYZ_HAS_STD_IN_PLACE_T
+#endif  //(__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >=
+        // 201703L)
+
+#if (__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+#define XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
+#endif  //(__cplusplus >= 201703L) || (defined(_MSVC_LANG) && _MSVC_LANG >=
+        // 201703L)
+
 //
 // XYZ_HAS_STD_MEMORY_RESOURCE
 // The macro is defined, when the header <memory_resource> and its content is

@@ -4,7 +4,7 @@
 [![license][badge.license]][license] [![issues][badge.issues]][issues]
 [![pre-commit][badge.pre-commit]][pre-commit]
 
-[badge.language]: https://img.shields.io/badge/language-C%2B%2B20-yellow.svg
+[badge.language]: https://img.shields.io/badge/language-C%2B%2B14-yellow.svg
 [badge.codecov]:
     https://img.shields.io/codecov/c/github/jbcoe/value_types/master.svg?logo=codecov
 [badge.license]: https://img.shields.io/badge/license-MIT-blue.svg
@@ -32,14 +32,18 @@ of writing and maintaining error-prone boilerplate code.
 
 ## Standardization
 
-`indirect` and `polymorphic` have been accepted into the C++ draft standard for
-2026 as part of [`indirect` and `polymorphic`: Vocabulary Types for Composite
-Class Design](https://isocpp.org/files/papers/P3019R11.pdf)
+We'd like to see `indirect` and `polymorphic` included in a future version of
+the C++ standard. Prior work on standardizing similar types, `indirect_value`
+and `polymorphic_value` can be found at
 
-The reference implementation in this repository differs slightly from the
-proposal: we use concepts for requirements to support incomplete types in
-variants. We will submit a library issue to the C++ standard committee to amend
-the proposal.
+* [A polymorphic value-type for
+  C++](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0201r5.html)
+
+* [indirect_value: A Free-Store-Allocated Value Type For
+  C++](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1950r2.html)
+
+Design of these two types is so deeply coupled that future work will proceed in
+[an updated paper](DRAFT.md).
 
 ## Use
 
@@ -86,6 +90,23 @@ by adding the includes:
 #include <https://raw.githubusercontent.com/jbcoe/value_types/main/indirect.h>
 #include <https://raw.githubusercontent.com/jbcoe/value_types/main/polymorphic.h>
 ```
+
+### Compatibility
+
+We have C++14 implementations of `indirect` and `polymorphic` available as
+`indirect_cxx14.h` and `polymorphic_cxx14.h`.
+
+C++14 implementations can be tried out in compiler explorer by using the includes:
+
+```cpp
+#include <https://raw.githubusercontent.com/jbcoe/value_types/main/indirect_cxx14.h>
+#include <https://raw.githubusercontent.com/jbcoe/value_types/main/polymorphic_cxx14.h>
+```
+
+or by including headers `indirect_cxx14.h` and `polymorphic_cxx14.h` into your project.
+
+We duplicate some code between the C++20 and C++14 implementations so that
+single-file includes work.
 
 ## License
 
