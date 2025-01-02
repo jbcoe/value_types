@@ -55,7 +55,9 @@ should not be considered in isolation.
 
 * Add discussion of constraints and incomplete type support.
 
-* TODO: Fix spec of `<=>`.
+* Fix spec of `<=>` to use `synth-three-way-result`.
+
+* Remove constraints on `operator==` and `operator<=>` for `indirect`.
 
 ## Changes in R11
 
@@ -867,12 +869,12 @@ class indirect {
   template <class U, class AA>
   friend constexpr auto operator<=>(
     const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below)
-    -> compare_three_way_result_t<T, U>;
+    -> synth-three-way-result<T, U>;
 
   template <class U>
   friend constexpr auto operator<=>(
     const indirect& lhs, const U& rhs) noexcept(see below)
-    -> compare_three_way_result_t<T, U>;
+    -> synth-three-way-result<T, U>;
 
 private:
   pointer p; // exposition only
@@ -1215,21 +1217,17 @@ constexpr bool operator==(const indirect& lhs, const indirect<U, AA>& rhs)
   noexcept(noexcept(*lhs == *rhs));
 ```
 
-1. _Constraints_: `*lhs == *rhs` is well-formed and its result is convertible to bool.
-
-2. _Returns_: If `lhs` is valueless or `rhs` is valueless,\
+1. _Returns_: If `lhs` is valueless or `rhs` is valueless,\
   `lhs.valueless_after_move() == rhs.valueless_after_move()`; otherwise `*lhs == *rhs`.
 
 ```c++
 template <class U, class AA>
-constexpr synth-three-way-result<T> operator<=>(const indirect& lhs,
+constexpr synth-three-way-result<T, U> operator<=>(const indirect& lhs,
                                                 const indirect<U, AA>& rhs)
   noexcept(noexcept(synth-three-way(*lhs, *rhs)));
 ```
 
-3. _Constraints_: `*lhs <=> *rhs` is well-formed.
-
-4. _Returns_: If `lhs` is valueless or `rhs` is valueless,\
+2. _Returns_: If `lhs` is valueless or `rhs` is valueless,\
   `!lhs.valueless_after_move() <=> !rhs.valueless_after_move()`; otherwise\
   `synth-three-way(*lhs, *rhs)`.
 
@@ -1241,20 +1239,16 @@ constexpr bool operator==(const indirect& lhs, const U& rhs)
   noexcept(noexcept(*lhs == rhs));
 ```
 
-1. _Constraints_: `*lhs == rhs` is well-formed.
-
-2. _Returns_: If `lhs` is valueless, false; otherwise `*lhs == rhs`.
+1. _Returns_: If `lhs` is valueless, false; otherwise `*lhs == rhs`.
 
 ```c++
 template <class U>
-constexpr synth-three-way-result<T> operator<=>(const indirect& lhs,
+constexpr synth-three-way-result<T, U> operator<=>(const indirect& lhs,
                                                 const U& rhs)
   noexcept(noexcept(synth-three-way(*lhs, rhs)));
 ```
 
-3. _Constraints_: `*lhs <=> rhs` is well-formed.
-
-4. _Returns_: If `rhs` is valueless, `false < true`; otherwise `synth-three-way(*lhs, rhs)`.
+2. _Returns_: If `rhs` is valueless, `false < true`; otherwise `synth-three-way(*lhs, rhs)`.
 
 ### X.Y.10 Hash support [indirect.hash]
 
