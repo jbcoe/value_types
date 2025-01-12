@@ -18,7 +18,13 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==============================================================================*/
 
+#ifdef XYZ_INDIRECT_CXX_14
+#include "indirect_cxx14.h"
+#endif  // XYZ_INDIRECT_CXX_14
+
+#ifndef XYZ_INDIRECT_H
 #include "indirect.h"
+#endif  // XYZ_INDIRECT_H
 
 #include <gtest/gtest.h>
 
@@ -32,19 +38,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifdef XYZ_HAS_STD_MEMORY_RESOURCE
 #include <memory_resource>
 #endif  // XYZ_HAS_STD_MEMORY_RESOURCE
-#ifdef XYZ_HAS_STD_OPTIONAL
-#include <optional>
-#endif  // XYZ_HAS_STD_OPTIONAL
 #include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <vector>
-
-#if defined(XYZ_HAS_STD_IN_PLACE_T) && !defined(XYZ_INDIRECT_CXX_14)
-namespace xyz {
-using std::in_place_t;
-}  // namespace xyz
-#endif  // defined(XYZ_HAS_STD_IN_PLACE_T) && !defined(XYZ_INDIRECT_CXX_14)
 
 namespace {
 
@@ -1002,6 +999,12 @@ TEST(IndirectTest, TaggedAllocatorsNotEqualMoveConstructFromValueless) {
   xyz::indirect<int, xyz::TaggedAllocator<int>> iii(std::allocator_arg, aa,
                                                     std::move(i));
   EXPECT_TRUE(iii.valueless_after_move());
+}
+
+TEST(IndirectTest, SupportNonCopyableType) {
+  xyz::indirect<xyz::NonCopyable> a;
+  auto aa = std::move(a);
+  EXPECT_TRUE(a.valueless_after_move());
 }
 
 }  // namespace

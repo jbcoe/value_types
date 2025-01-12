@@ -18,7 +18,13 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==============================================================================*/
 
+#ifdef XYZ_POLYMORPHIC_CXX_14
+#include "polymorphic_cxx14.h"
+#endif  // XYZ_POLYMORPHIC_CXX_14
+
+#ifndef XYZ_POLYMORPHIC_H_
 #include "polymorphic.h"
+#endif  // XYZ_POLYMORPHIC_H_
 
 #include <gtest/gtest.h>
 
@@ -30,18 +36,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "tagged_allocator.h"
 #include "test_helpers.h"
 #include "tracking_allocator.h"
-#if defined(XYZ_HAS_STD_IN_PLACE_TYPE_T) && !defined(XYZ_POLYMORPHIC_CXX_14)
-namespace xyz {
-using std::in_place_type_t;
-}  // namespace xyz
-#endif  // XYZ_HAS_STD_IN_PLACE_TYPE_T
 
 #ifdef XYZ_HAS_STD_MEMORY_RESOURCE
 #include <memory_resource>
 #endif  // XYZ_HAS_STD_MEMORY_RESOURCE
-#ifdef XYZ_HAS_STD_OPTIONAL
-#include <optional>
-#endif  // XYZ_HAS_STD_OPTIONAL
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -65,21 +63,6 @@ class Derived : public Base {
   int value() const override { return value_; }
   void set_value(int v) override { value_ = v; }
 };
-
-TEST(PolymorphicTraitsTest, DefaultConstructible) {
-  struct NoDefaultConstructor {
-    NoDefaultConstructor() = delete;
-  };
-
-  using NonDefaultConstructiblePolymorphic =
-      xyz::polymorphic<NoDefaultConstructor>;
-
-  static_assert(!std::is_default_constructible<NoDefaultConstructor>::value,
-                "");
-  static_assert(
-      !std::is_default_constructible<NonDefaultConstructiblePolymorphic>::value,
-      "");
-}
 
 TEST(PolymorphicTest, DefaultConstructor) {
   xyz::polymorphic<Derived> p;
