@@ -1828,7 +1828,7 @@ the standard if required.
 
 ## Constraints and incomplete type support
 
-Using either SFINAE, or requires clauses (from C++20 onwards), member functions
+Using either SFINAE or requires clauses (from C++20 onwards), member functions
 can be constrained so that they are only available when certain conditions are met.
 
 For instance:
@@ -1852,7 +1852,7 @@ default constructible and only copy constructible if the wrapped type `T`
 is copy constructible.
 
 Imposing constraints like this requires that the type `T` is complete at the
-time the class template is instantiated. Both polymorphic and indirect are
+time the class template is instantiated. Both `polymorphic` and `indirect` are
 designed to work with incomplete types so constraining member functions with
 requires clauses (or SFINAE) is not an option.
 
@@ -2049,8 +2049,8 @@ automatically generate a composited `operator()` or an `operator[]`.
 
 While we could provide support for arithmetic operators, `+`, `-` ,`*`, `/`, to
 `indirect` in the same way that we support comparisons, we have chosen not to do
-so. The arithmetic operators would need to support a valueless state which there
-is no precedent for in the standard library.
+so. The arithmetic operators would need to support a valueless state for which
+there is no precedent in the standard library.
 
 Support for arithmetic operators could be added in a future version of the C++
 standard. If support for arithmetic operators for valueless or empty objects is
