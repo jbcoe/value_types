@@ -295,8 +295,8 @@ the compiler will generate special member functions. This means that the class
 templates should provide the special member functions where they are supported
 by the owned object type `T`. As `T` may be an incomplete type, the special member
 functions are unconditionally available to participate in overload resolution but
-may lead to an ill-formed program if they are called for a type that does not support
-them.
+would lead to an ill-formed program if they are called for a type that does not
+support them.
 
 ## Deep copies
 
