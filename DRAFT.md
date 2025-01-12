@@ -2049,7 +2049,7 @@ automatically generate a composited `operator()` or an `operator[]`.
 
 While we could provide support for arithmetic operators, `+`, `-` ,`*`, `/`, to
 `indirect` in the same way that we support comparisons, we have chosen not to do
-so. The arithmetic operators would need to support a valueless state for which 
+so. The arithmetic operators would need to support a valueless state for which
 there is no precedent in the standard library.
 
 Support for arithmetic operators could be added in a future version of the C++
