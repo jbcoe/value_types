@@ -128,9 +128,37 @@ if (${XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT})
         )
 
         xyz_add_test(
+            NAME indirect_cxx14_test
+            LINK_LIBRARIES indirect_cxx14
+            FILES indirect_test.cc
+            VERSION 14
+        )
+
+        xyz_add_test(
+            NAME indirect_cxx17_test
+            LINK_LIBRARIES indirect_cxx17
+            FILES indirect_test.cc
+            VERSION 17
+        )
+
+        xyz_add_test(
             NAME polymorphic_test
             LINK_LIBRARIES polymorphic
             FILES polymorphic_test.cc
+        )
+
+        xyz_add_test(
+            NAME polymorphic_cxx14_test
+            LINK_LIBRARIES polymorphic_cxx14
+            FILES polymorphic_test.cc
+            VERSION 14
+        )
+
+        xyz_add_test(
+            NAME polymorphic_cxx17_test
+            LINK_LIBRARIES polymorphic_cxx17
+            FILES polymorphic_test.cc
+            VERSION 17
         )
 
         if (ENABLE_CODE_COVERAGE)
