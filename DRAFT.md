@@ -45,9 +45,17 @@ should not be considered in isolation.
 
 ## Changes in R12
 
-* Fix `indirect` synopsis to include `explicit` on default constructor.
+* Fix `indirect` synopsis to include `explicit` on the default constructor.
 
 * Replace "may only be X" with "may be X only" in specification of `indirect` and `polymorphic`.
+
+* Change _constraints_ on incomplete type `T` to _mandates_.
+
+* Remove _mandates_ that `T` is a complete type where this is required by type_traits.
+
+* `T` in `indirect` only needs to be copy-constructible for the copy constructor(s).
+
+* Add discussion of constraints and incomplete type support.
 
 ## Changes in R11
 
@@ -282,7 +290,11 @@ by the owned object type `T`.
 * `indirect<T, Alloc>` and `polymorphic<T, Alloc>` are default constructible in
   cases where `T` is default constructible.
 
-* `indirect<T, Alloc>` and `polymorphic<T, Alloc>` are unconditionally copy
+* `indirect<T, Alloc>` is copy constructible and assignable when `T` is copy
+  constructible; `indirect<T, Alloc>` is unconditionally move constructible
+  and move assignable.
+
+* `polymorphic<T, Alloc>` is unconditionally copy
   constructible and assignable, move constructible and move assignable.
 
 * `indirect<T, Alloc>` and `polymorphic<T, Alloc>` destroy the owned object in
@@ -886,12 +898,9 @@ _Throws_: Nothing unless `allocator_traits<Allocator>::allocate` or
 explicit constexpr indirect();
 ```
 
-1. _Constraints_:
-   * `is_default_constructible_v<T>` is `true`,
-   * `is_copy_constructible_v<T>` is `true`, and
-   * `is_default_constructible_v<Allocator>` is `true`.
+1. _Constraints_: `is_default_constructible_v<Allocator>` is `true`.
 
-2. _Mandates_: `T` is a complete type.
+2. _Mandates_: `is_default_constructible_v<T>` is `true`.
 
 3. _Effects_: Constructs an owned object of type `T` with an empty argument list,
    using the allocator `alloc`.
@@ -900,22 +909,18 @@ explicit constexpr indirect();
 explicit constexpr indirect(allocator_arg_t, const Allocator& a);
 ```
 
-4. _Constraints_:
-   * `is_default_constructible_v<T>` is `true` and
-   * `is_copy_constructible_v<T>` is `true`.
+4. _Mandates_: `is_default_constructible_v<T>` is `true`.
 
-5. _Mandates_: `T` is a complete type.
-
-6. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an owned
+5. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an owned
    object of type `T` with an empty argument list, using the allocator `alloc`.
 
 ```c++
 constexpr indirect(const indirect& other);
 ```
 
-7. _Mandates_: `T` is a complete type and `is_copy_constructible_v<T>` is `true`.
+6. _Mandates_: `is_copy_constructible_v<T>` is `true`.
 
-8. _Effects_: `alloc` is direct-non-list-initialized with\
+7. _Effects_: `alloc` is direct-non-list-initialized with\
   `allocator_traits<Allocator>::select_on_container_copy_construction(other.alloc)`.
   If `other` is valueless, `*this` is valueless. Otherwise, constructs an owned object of
   type `T` with `*other`, using the allocator `alloc`.
@@ -925,9 +930,9 @@ constexpr indirect(allocator_arg_t, const Allocator& a,
                    const indirect& other);
 ```
 
-9. _Mandates_: `T` is a complete type and `is_copy_constructible_v<T>` is `true`.
+8. _Mandates_: `is_copy_constructible_v<T>` is `true`.
 
-10. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
+9. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
     valueless, `*this` is valueless. Otherwise, constructs an owned object of
     type `T` with `*other`, using the allocator `alloc`.
 
@@ -935,43 +940,40 @@ constexpr indirect(allocator_arg_t, const Allocator& a,
 constexpr indirect(indirect&& other) noexcept;
 ```
 
-11. _Effects_: `alloc` is direct-non-list-initialized from `std::move(other.alloc)`.
+10. _Effects_: `alloc` is direct-non-list-initialized from `std::move(other.alloc)`.
   If `other` is valueless, `*this` is valueless. Otherwise `*this` takes
   ownership of the owned object of `other`.
 
-12. _Postconditions_: `other` is valueless.
+11. _Postconditions_: `other` is valueless.
 
 ```c++
 constexpr indirect(allocator_arg_t, const Allocator& a, indirect&& other)
    noexcept(allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-13. _Mandates_: If `allocator_traits<Allocator>::is_always_equal::value`
+12. _Mandates_: If `allocator_traits<Allocator>::is_always_equal::value`
     is `false` then `T` is a complete type.
 
-14. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
+13. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
     valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc` is `true`,
     constructs an object of type `indirect` that takes ownership of the owned object of `other`.
     Otherwise, constructs an owned object of type `T` with
     `*std::move(other)`, using the allocator `alloc`.
 
-15. _Postconditions_: `other` is valueless.
+14. _Postconditions_: `other` is valueless.
 
 ```c++
 template <class U=T>
 explicit constexpr indirect(U&& u);
 ```
 
-16. _Constraints_: Where `UU` is `remove_cvref_t<U>`,
-    * `is_same_v<UU, indirect>` is `false`,
-    * `is_same_v<UU, in_place_t>` is `false`,
-    * `is_constructible_v<T, U>` is `true`,
-    * `is_copy_constructible_v<T>` is `true`, and
+15. _Constraints_:
+    * `is_same_v<remove_cvref_t<U>, indirect>` is `false`,
+    * `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`,
+    * `is_constructible_v<T, U>` is `true` and
     * `is_default_constructible_v<Allocator>` is `true`.
 
-17. _Mandates_: `T` is a complete type.
-
-18. _Effects_: Constructs an owned object of type `T` with
+16. _Effects_: Constructs an owned object of type `T` with
     `std​::​forward<U>(u)`, using the allocator `alloc`.
 
 ```c++
@@ -979,15 +981,12 @@ template <class U=T>
 explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u);
 ```
 
-19. _Constraints_: Where `UU` is `remove_cvref_t<U>`,
-    * `is_same_v<UU, indirect>` is `false`,
-    * `is_same_v<UU, in_place_t>` is `false`,
-    * `is_constructible_v<T, U>` is `true`, and
-    * `is_copy_constructible_v<T>` is `true`.
+17. _Constraints_:
+    * `is_same_v<remove_cvref_t<U>, indirect>` is `false`,
+    * `is_same_v<remove_cvref_t<U>, in_place_t>` is `false` and
+    * `is_constructible_v<T, U>` is `true`.
 
-20. _Mandates_: `T` is a complete type.
-
-21. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs
+18. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs
     an owned object of type `T` with `std​::​forward<U>(u)`, using the
     allocator `alloc`.
 
@@ -996,14 +995,11 @@ template <class... Us>
 explicit constexpr indirect(in_place_t, Us&&... us);
 ```
 
-22. _Constraints_:
-    * `is_constructible_v<T, Us...>` is `true`,
-    * `is_copy_constructible_v<T>` is `true`, and
+19. _Constraints_:
+    * `is_constructible_v<T, Us...>` is `true` and
     * `is_default_constructible_v<Allocator>` is `true`.
 
-23. _Mandates_: `T` is a complete type.
-
-24. _Effects_: Constructs an owned object of type `T` with
+20. _Effects_: Constructs an owned object of type `T` with
     `std​::​forward<Us>(us)...`, using the allocator `alloc`.
 
 ```c++
@@ -1012,13 +1008,9 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a,
                             in_place_t, Us&& ...us);
 ```
 
-25. _Constraints_:
-    * `is_constructible_v<T, Us...>` is `true` and
-    * `is_copy_constructible_v<T>` is `true`.
+21. _Constraints_: `is_constructible_v<T, Us...>` is `true`.
 
-26. _Mandates_: `T` is a complete type.
-
-27. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
+22. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
     owned object of type `T` with `std​::​forward<Us>(us)...`, using the
     allocator `alloc`.
 
@@ -1028,14 +1020,11 @@ explicit constexpr indirect(in_place_t, initializer_list<I> ilist,
                             Us&&... us);
 ```
 
-28. _Constraints_:
-    * `is_copy_constructible_v<T>` is `true`,
+23. _Constraints_:
     * `is_constructible_v<T, initializer_list<I>&, Us...>` is `true`, and
     * `is_default_constructible_v<Allocator>` is `true`.
 
-29. _Mandates_: `T` is a complete type.
-
-30. _Effects_: Constructs an owned object of type `T` with
+24. _Effects_: Constructs an owned object of type `T` with
     the arguments `ilist`, `std​::​forward<Us>(us)...`, using
     the allocator `alloc`.
 
@@ -1046,13 +1035,9 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a,
                             Us&&... us);
 ```
 
-31. _Constraints_:
-    * `is_copy_constructible_v<T>` is `true` and
-    * `is_constructible_v<T, initializer_list<I>&, Us...>` is `true`.
+25. _Constraints_: `is_constructible_v<T, initializer_list<I>&, Us...>` is `true`.
 
-32. _Mandates_: `T` is a complete type.
-
-33. _Effects_: `alloc` is direct-non-list-initialized with `a`.
+26. _Effects_: `alloc` is direct-non-list-initialized with `a`.
     Constructs an owned object of type `T` with the arguments
     `ilist`, `std​::​forward<Us>(us)...`, using the allocator `alloc`.
 
@@ -1074,8 +1059,9 @@ constexpr ~indirect();
 constexpr indirect& operator=(const indirect& other);
 ```
 
-1. _Mandates_: `T` is a complete type, `is_copy_assignable_v<T>` is `true`,
-   and `is_copy_constructible_v<T>` is `true`.
+1. _Mandates_:
+   * `is_copy_assignable_v<T>` is `true` and
+   * `is_copy_constructible_v<T>` is `true`.
 
 2. _Effects_: If `addressof(other) == this` is `true`, there are no effects.\
 Otherwise:
@@ -1109,7 +1095,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
     allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-5. _Mandates_: `T` is a complete type and `is_copy_constructible_t<T>` is `true`.
+5. _Mandates_: `is_copy_constructible_t<T>` is `true`.
 
 6. _Effects_: If `addressof(other) == this` is `true`, there are no effects. Otherwise:
 
@@ -1143,7 +1129,7 @@ constexpr indirect& operator=(indirect&& other) noexcept(
     * `is_constructible_v<T, U>` is `true`, and
     * `is_assignable_v<T&, U>` is `true`.
 
-11. _Mandates_: `T` is a complete type and `is_copy_constructible_t<T>` is `true`.
+11. _Mandates_: `is_copy_constructible_t<T>` is `true`.
 
 12. _Effects_: If `*this` is valueless then equivalent to\
     `*this = indirect(allocator_arg, alloc, std::forward<U>(u));`.
@@ -1417,12 +1403,11 @@ or `allocator_traits<Allocator>::construct` throws.
 explicit constexpr polymorphic();
 ```
 
-1. _Constraints_:
-   * `is_default_constructible_v<T>` is `true`,
-   * `is_copy_constructible_v<T>` is `true`, and
-   * `is_default_constructible_v<Allocator>` is `true`.
+1. _Constraints_: `is_default_constructible_v<Allocator>` is `true`.
 
-2. _Mandates_: `T` is a complete type.
+2. _Mandates_:
+   * `is_default_constructible_v<T>` is `true` and
+   * `is_copy_constructible_v<T>` is `true`.
 
 3. _Effects_: Constructs an owned object of type `T` with an empty argument list
    using the allocator `alloc`.
@@ -1431,13 +1416,11 @@ explicit constexpr polymorphic();
 explicit constexpr polymorphic(allocator_arg_t, const Allocator& a);
 ```
 
-4. _Constraints_:
+4. _Mandates_:
    * `is_default_constructible_v<T>` is `true` and
    * `is_copy_constructible_v<T>` is `true`.
 
-5. _Mandates_: `T` is a complete type.
-
-6. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
+5. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
    owned object of type `T` with an empty argument list using the allocator
    `alloc`.
 
@@ -1445,7 +1428,7 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a);
 constexpr polymorphic(const polymorphic& other);
 ```
 
-7. _Effects_: `alloc` is direct-non-list-initialized with\
+6. _Effects_: `alloc` is direct-non-list-initialized with\
   `allocator_traits<Allocator>::select_on_container_copy_construction(other.alloc)`.
   If `other` is valueless, `*this` is valueless. Otherwise, constructs an owned object of
   type `U`, where `U` is the type of the owned object in `other`, with the owned object in
@@ -1456,7 +1439,7 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       const polymorphic& other);
 ```
 
-8. _Effects_: `alloc` is direct-non-list-initialized with `alloc`. If `other`
+7. _Effects_: `alloc` is direct-non-list-initialized with `alloc`. If `other`
     is valueless, `*this` is valueless. Otherwise, constructs an owned object of
     type `U`, where `U` is the type of the owned object in `other`, with the
     owned object in `other` using the allocator `alloc`.
@@ -1465,7 +1448,7 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
 constexpr polymorphic(polymorphic&& other) noexcept;
 ```
 
-9. _Effects_: `alloc` is direct-non-list-initialized with
+8. _Effects_: `alloc` is direct-non-list-initialized with
   `std::move(other.alloc)`. If `other` is valueless, `*this` is valueless.
   Otherwise, either `*this` takes ownership of the owned object of `other` or,
   owns an object of the same type constructed from the owned object of
@@ -1482,7 +1465,7 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
   noexcept(allocator_traits<Allocator>::is_always_equal::value);
 ```
 
-10. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
+9. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other` is
     valueless, `*this` is valueless. Otherwise, if `alloc == other.alloc` is
     `true`, either constructs an object of type `polymorphic` that owns the
     owned object of other, making `other` valueless; or, owns an object of the
@@ -1500,7 +1483,7 @@ template <class U=T>
 explicit constexpr polymorphic(U&& u);
 ```
 
-11. _Constraints_: Where `UU` is `remove_cvref_t<U>`,
+10. _Constraints_: Where `UU` is `remove_cvref_t<U>`,
     * `is_same_v<UU, polymorphic>` is `false`,
     * `derived_from<UU, T>` is `true`,
     * `is_copy_constructible_v<UU>` is `true`,
@@ -1508,9 +1491,7 @@ explicit constexpr polymorphic(U&& u);
     * `UU` is not a specialization of `in_place_type_t`, and
     * `is_default_constructible_v<Allocator>` is `true`.
 
-12. _Mandates_: `T` is a complete type.
-
-13. _Effects_: Constructs an owned object of type `U` with
+11. _Effects_: Constructs an owned object of type `U` with
   `std​::​forward<U>(u)` using the allocator `alloc`.
 
 ```c++
@@ -1518,16 +1499,14 @@ template <class U=T>
 explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
 ```
 
-14. _Constraints_: Where `UU` is `remove_cvref_t<U>`,
+12. _Constraints_: Where `UU` is `remove_cvref_t<U>`,
     * `is_same_v<UU, polymorphic>` is `false`,
     * `derived_from<UU, T>` is `true`,
     * `is_copy_constructible_v<UU>` is `true`,
     * `is_constructible_v<UU, U>` is `true`, and
     * `UU` is not a specialization of `in_place_type_t`.
 
-15. _Mandates_: `T` is a complete type.
-
-16. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs
+13. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs
     an owned object of type `U` with `std​::​forward<U>(u)` using the
     allocator `alloc`.
 
@@ -1536,16 +1515,14 @@ template <class U, class... Ts>
 explicit constexpr polymorphic(in_place_type_t<U>, Ts&&... ts);
 ```
 
-17. _Constraints_:
+14. _Constraints_:
     * `is_same_v<remove_cvref_t<U>, U>` is `true`,
     * `derived_from<U, T>` is `true`,
     * `is_constructible_v<U, Ts...>` is `true`,
     * `is_copy_constructible_v<U>` is `true`, and
     * `is_default_constructible_v<Allocator>` is `true`.
 
-18. _Mandates_: `T` is a complete type.
-
-19. _Effects_: Constructs an owned object of type `U` with
+15. _Effects_: Constructs an owned object of type `U` with
     `std​::​forward<Ts>(ts)...` using the allocator `alloc`.
 
 ```c++
@@ -1554,15 +1531,13 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                                in_place_type_t<U>, Ts&&... ts);
 ```
 
-20. _Constraints_:
+16. _Constraints_:
     * `is_same_v<remove_cvref_t<U>, U>` is `true`,
     * `derived_from<U, T>` is `true`,
     * `is_constructible_v<U, Ts...>` is `true`, and
     * `is_copy_constructible_v<U>` is `true`.
 
-21. _Mandates_: `T` is a complete type.
-
-22. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
+17. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
     owned object of type `U` with `std​::​forward<Ts>(ts)...` using the
     allocator `alloc`.
 
@@ -1572,7 +1547,7 @@ explicit constexpr polymorphic(in_place_type_t<U>,
                                initializer_list<I> ilist, Us&&... us);
 ```
 
-23. _Constraints_:
+18. _Constraints_:
     * `is_same_v<remove_cvref_t<U>, U>` is `true`,
     * `is_same_v<U, polymorphic>` is `false`,
     * `derived_from<U, T>` is `true`,
@@ -1580,9 +1555,7 @@ explicit constexpr polymorphic(in_place_type_t<U>,
     * `is_constructible_v<U, initializer_list<I>&, Us...>` is `true`, and
     * `is_default_constructible_v<Allocator>` is `true`.
 
-24. _Mandates_: `T` is a complete type.
-
-25. _Effects_: Constructs an owned object of type `U` with the arguments
+19. _Effects_: Constructs an owned object of type `U` with the arguments
     `ilist`, `std​::​forward<Us>(us)...` using the allocator `alloc`.
 
 ```c++
@@ -1592,16 +1565,14 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
                                initializer_list<I> ilist, Us&&... us);
 ```
 
-26. _Constraints_:
+20. _Constraints_:
     * `is_same_v<remove_cvref_t<U>, U>` is `true`,
     * `is_same_v<U, polymorphic>` is `false`,
     * `derived_from<U, T>` is `true`,
     * `is_copy_constructible_v<U>` is `true`, and
     * `is_constructible_v<U, initializer_list<I>&, Us...>` is `true`.
 
-27. _Mandates_: `T` is a complete type.
-
-28. _Effects_: `alloc` is direct-non-list-initialized with `a`.
+21. _Effects_: `alloc` is direct-non-list-initialized with `a`.
     Constructs an owned object of type `U` with the arguments `ilist`,
     `std​::​forward<Us>(us)...` using the allocator `alloc`.
 
@@ -1735,14 +1706,43 @@ A C++20 reference implementation of this proposal is available on GitHub at
 
 # Acknowledgements
 
-The authors would like to thank Lewis Baker, Andrew Bennieston, Josh Berne,
-Bengt Gustafsson, Casey Carter, Rostislav Khlebnikov, Daniel Krugler, David
-Krauss, David Stone, Ed Catmur, Geoff Romer, German Diago, Jonathan Wakely,
-Kilian Henneberger, LanguageLawyer, Louis Dionne, Maciej Bogus, Malcolm Parsons,
-Matthew Calabrese, Nathan Myers, Neelofer Banglawala, Nevin Liber, Nina Ranns,
-Patrice Roy, Roger Orr, Stephan T. Lavavej, Stephen Kelly, Thomas Koeppe, Thomas
-Russell, Tom Hudson, Tomasz Kaminski, Tony van Eerd and Ville Voutilainen for
-suggestions and useful discussion.
+The authors would like to thank
+Andrew Bennieston,
+Bengt Gustafsson,
+Casey Carter,
+Daniel Krugler,
+David Krauss,
+David Stone,
+Ed Catmur,
+Geoff Romer,
+German Diago,
+Jan Moeller,
+Jonathan Wakely,
+Josh Berne,
+Kilian Henneberger,
+LanguageLawyer,
+Lewis Baker,
+Louis Dionne,
+Maciej Bogus,
+Malcolm Parsons,
+Matthew Calabrese,
+Nathan Myers,
+Neelofer Banglawala,
+Nevin Liber,
+Nina Ranns,
+Patrice Roy,
+Roger Orr,
+Rostislav Khlebnikov,
+Stephan T. Lavavej,
+Stephen Kelly,
+Thomas Koeppe,
+Thomas Russell,
+Tom Hudson,
+Tomasz Kaminski,
+Tony van Eerd
+and
+Ville Voutilainen
+for suggestions and useful discussion.
 
 # References
 
@@ -1824,55 +1824,151 @@ Pointer-like accessors like `dynamic_pointer_cast` and `static_pointer_cast`,
 which are provided for `std::shared_ptr`, could be added in a later revision of
 the standard if required.
 
-## Constraints on incomplete types and conditional constructors
+## Constraints and incomplete type support
 
-Both `indirect` and `polymorphic` support incomplete types. Support for an
-incomplete type requires deferring the instantiation of functions with
-requirements until they are used.
+Using either SFINAE, or requires clauses (from C++20 onwards), member functions
+can be constrained so that they are only available when certain conditions are met.
 
-The default constructor of `indirect` requires that `T` is default
-constructible. We cannot write this constraint as a requirement on `T` because
-that would require `T` to be a complete type at class instantiation time.
-Instead we write the constraint as a requirement on a deduced type `TT` to defer
-evaluation of the constraint until the default constructor is instantiated.
+For instance:
 
 ```c++
-template <typename TT = T>
-indirect() requires is_default_constructible_v<TT>;
+template <typename T>
+class wrapper {
+  T t;
+
+ public:
+  wrapper()
+  requires std::is_default_constructible_v<T>;
+
+  wrapper(const wrapper& other)
+  requires std::is_copy_constructible_v<T>;
+};
 ```
 
-We can use this technique to write constraints on the default constructor of
-`indirect` and `polymorphic`. Both `indirect` and `polymorphic` are
-conditionally default constructible.
+The wrapper type is only default constructible if the wrapped type `T` is
+default constructible and only copy constructible if the wrapped type `T`
+is copy constructible.
 
-The same technique cannot be used for the copy or move constructor of
-`polymorphic` because that would require type information on an open set of
-erased types, which is not possible: a `polymorphic` object can contain any type
-that is derived from `T`, we cannot write a constraint that requires that all
-such types are copy constructible. We make `polymorphic` unconditionally copy
-and move constructible. The authors do not envisage that this could be relaxed
-in a future version of the C++ standard.
+Imposing constraints like this requires that the type `T` is complete at the
+time the class template is instantiated. Both polymorphic and indirect are
+designed to work with incomplete types so constraining member functions with
+requires clauses (or SFINAE) is not an option.
 
-While a copy constructor cannot be a template, in C++20 and later we can
-conditionally constrain copy construction of `indirect` by defining:
+In revision 4 of this proposal, the authors were invited to use a deferred deduced
+type to allow constraints to be applied to member functions. This would allow the class
+to be instantiated with `T` as an incomplete type, as member function constraints
+would only be checked at member function instantiation time.
+
+For instance:
 
 ```c++
-indirect(const indirect& other) requires false = delete;
+template <typename T>
+class constrained_wrapper {
+  T* t; // Use a pointer for incomplete type support.
 
-template <typename TT = T>
-indirect(const indirect& other) requires is_copy_constructible_v<TT>;
+ public:
+  template <typename TT=T>
+  constrained_wrapper()
+  requires std::is_default_constructible_v<TT>;
+
+  // Constraining the copy constructor is more involved
+  // but possible and omitted for brevity.
+};
 ```
 
-An instantiation of the function template with `TT = T` is added to the overload
-set when `indirect` is copy-constructed and will be selected if the owned object
-type `T` is copy constructible. This would make copy construction conditional
-for `indirect` but not for `polymorphic`. We opt for consistency and make copy
-construction unconditional for both `indirect` and `polymorphic`. Making
-`indirect` conditionally copy constructible in a future version of the C++
-standard would require adding a template function as above and would be an ABI
-break. It might be simpler to add new types for non-copyable `indirect` and
-`polymorphic` objects, although we do not propose the addition of such types in
-this draft.
+By making the default constructor into a function template, and placing the
+constraint of the inferred template type `TT`, evaluation of the constraint
+is deferred to function instantiation time at which point `TT` will be
+deduced to be `T`and will need to be complete for the constraint to be evaluated.
+
+Support for indirect with constraints on a deferred, deduced type differs across toolchains
+and inhibits usability. When indirect's member functions are constrained with a deferred deduced
+type, MSVC requires member functions to be explicitly declared so that they can later be defaulted
+when the type is complete. Such behaviour makes using a constrained `indirect` hard to teach and
+inconsistent with the design of current components (like vector) in the standard library.
+
+```c++
+struct Number {}; // Complete type.
+
+struct BinOp; // Incomplete type.
+
+struct Expression {
+  std::variant<Number, constrained_indirect<BinOp>> info;
+
+  Expression();
+  Expression(const Expression&);
+  Expression(Expression&&);
+  Expression& operator=(const Expression&);
+  Expression& operator=(Expression&&);
+};
+```
+
+Clang and GCC permit the far more succinct code below.
+
+```c++
+struct Number {}; // Complete type.
+
+struct BinOp; // Incomplete type.
+
+struct Expression {
+  std::variant<Number, constrained_indirect<BinOp>> info;
+};
+```
+
+As proposed, `indirect` and `polymorphic` follow the design of `vector` and will sometimes
+falsely advertise copyability or default constructibility. If correct type-traits should be
+imposed upon standard library types that support incomplete types, this should be done
+consistently across types in a future revision of the standard.
+
+```c++
+struct Copyable {
+  Copyable() = default;
+  Copyable(const Copyable&) = delete;
+};
+
+struct NonCopyable {
+  NonCopyable() = default;
+  NonCopyable(const NonCopyable&) = delete;
+};
+
+struct Incomplete;
+
+static_assert(std::is_copy_constructible_v<std::vector<Copyable>>); // Passes.
+static_assert(std::is_copy_constructible_v<std::vector<NonCopyable>>); // Passes.
+static_assert(std::is_copy_constructible_v<std::vector<Incomplete>>); // Passes.
+
+static_assert(std::is_copy_constructible_v<indirect<Copyable>>); // Passes.
+static_assert(std::is_copy_constructible_v<indirect<NonCopyable>>); // Passes.
+static_assert(std::is_copy_constructible_v<indirect<Incomplete>>); // Passes.
+
+static_assert(std::is_copy_constructible_v<polymorphic<Copyable>>); // Passes.
+static_assert(std::is_copy_constructible_v<polymorphic<NonCopyable>>); // Passes.
+static_assert(std::is_copy_constructible_v<polymorphic<Incomplete>>); // Passes.
+```
+
+`indirect` and `polymorphic` use static assertions (mandates clauses) which are
+evaluated at function instantiation time to provide better compiler errors.
+
+For example, the code sample below:
+
+```c++
+indirect<NonCopyable> copy(const indirect<NonCopyable>& i) {
+  return i;
+}
+```
+
+gives the following errors:
+
+```sh
+indirect.h:LINE:COLUMN: error: static assertion failed
+  LINE |     static_assert(std::copy_constructible<T>);
+
+note: in instantiation of member function 'indirect<NonCopyable>::indirect' requested here
+ LINE |   return i;
+```
+
+Arthur O'Dwyer has written a blog post on the topic of constraints and incomplete types
+[vector-is-copyable-except-when-its-not](https://quuxplusone.github.io/blog/2020/02/05/vector-is-copyable-except-when-its-not/).
 
 ## Implicit conversions
 
