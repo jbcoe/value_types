@@ -4,7 +4,7 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-D3019R12
+P3019R12
 
 Working Group: Library Evolution, Library
 
@@ -53,7 +53,7 @@ should not be considered in isolation.
 
 * Remove _mandates_ that `T` is a complete type where this is implicitly required by type_traits.
 
-* `T` in `indirect` only needs to be copy-constructible for the copy constructor(s).
+* `T` in `indirect` needs to be copy-constructible only for the copy constructor(s).
 
 * Add discussion of constraints and incomplete type support.
 
@@ -76,7 +76,7 @@ should not be considered in isolation.
   move constructor and allocator-extended move construction. The same does not apply for
   polymorphic which permits a small buffer optimization.
 
-* Add drafting note for use of italicised code font for exposition-only variables.
+* Add drafting note for use of italicised code font for exposition only variables.
 
 * Prevent `T` from being `in_place_t` or a specialization of `in_place_type_t` for
   both indirect and polymorphic.
@@ -504,7 +504,7 @@ from. While the notion that a valueless `indirect` or `polymorphic` is toxic and
 must not be passed around code is appealing, it would not interact well with
 generic code which may need to handle a variety of types. Note that the standard
 does not require a moved-from object to be valid for copy, move, assign or move
-assignment: the only restriction is that it should be in a well-formed but
+assignment: the restriction is only that it should be in a well-formed but
 unspecified state. However, there is no precedent for standard library types to
 have preconditions on move, copy, assign or move assignment. We opt for
 consistency with existing standard library types (namely `variant`, which has a
@@ -731,7 +731,7 @@ namespace std {
 
 ## X.Y Class template indirect [indirect]
 
-[Drafting note: The member _`alloc`_ should be formatted as an exposition-only identifier,
+[Drafting note: The member _`alloc`_ should be formatted as an exposition only identifier,
 but limitations of the processor used to prepare this paper means not all uses are italicised.]
 
 ### X.Y.1 Class template indirect general [indirect.general]
@@ -1264,7 +1264,7 @@ noexcept.
 
 ## X.Z Class template polymorphic [polymorphic]
 
-[Drafting note: The member _`alloc`_ should be formatted as an exposition-only identifier,
+[Drafting note: The member _`alloc`_ should be formatted as an exposition only identifier,
 but limitations of the processor used to prepare this paper mean not all uses are italicised.]
 
 ### X.Z.1 Class template polymorphic general [polymorphic.general]
@@ -1819,7 +1819,7 @@ the standard if required.
 ## Constraints and incomplete type support
 
 Using either SFINAE, or requires clauses (from C++20 onwards), member functions
-can be constrained so that they are only available when certain conditions are met.
+can be constrained so that they are available only when certain conditions are met.
 
 For instance:
 
@@ -1837,8 +1837,8 @@ class wrapper {
 };
 ```
 
-The wrapper type is only default constructible if the wrapped type `T` is
-default constructible and only copy constructible if the wrapped type `T`
+The wrapper type is default constructible only if the wrapped type `T` is
+default constructible and copy constructible only if the wrapped type `T`
 is copy constructible.
 
 Imposing constraints like this requires that the type `T` is complete at the
@@ -1849,7 +1849,7 @@ requires clauses (or SFINAE), as shown above, is not an option.
 In revision 4 of this proposal, the authors were invited to use a deferred deduced
 type to allow constraints to be applied to member functions. This would allow the class
 to be instantiated with `T` as an incomplete type, as member function constraints
-would only be checked at member function instantiation time.
+would be checked at only member function instantiation time.
 
 For instance:
 
@@ -2023,7 +2023,7 @@ user-defined comparison operators which could be helpful when the underlying
 type is part of a domain-specific-language (DSL) that uses comparison operators
 for a different purpose. However, this would be inconsistent with other standard
 library types like `optional`, `variant` and `reference_wrapper`. Moreover, we'd
-likely only give partial support for a theoretical DSL which may well make use
+likely give only partial support for a theoretical DSL which may well make use
 of other operators like `operator+` and `operator-` which are not supported for
 `indirect`.
 
