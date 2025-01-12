@@ -49,17 +49,21 @@ should not be considered in isolation.
 
 * Replace "may only be X" with "may be X only" in specification of `indirect` and `polymorphic`.
 
-* Change _constraints_ on incomplete type `T` to _mandates_.
+* Change _constraints_ on `T` where `T` could be an incomplete type to _mandates_.
 
-* Remove _mandates_ that `T` is a complete type where this is required by type_traits.
+* Remove _mandates_ that `T` is a complete type where this is implicitly required by type_traits.
 
 * `T` in `indirect` only needs to be copy-constructible for the copy constructor(s).
 
 * Add discussion of constraints and incomplete type support.
 
-* Fix spec of `<=>` to use `synth-three-way-result`.
+* Fix specification of `<=>` to use `synth-three-way-result`.
 
-* Remove constraints on `operator==` and `operator<=>` for `indirect`.
+* Change _constraints_ on `operator==` for `indirect` to _mandates_.
+
+* Remove constraints on `operator<=>` for `indirect`.
+
+* Updates to non-technical specification sections to reflect design revisions for constraints and comparison.
 
 ## Changes in R11
 
@@ -289,20 +293,10 @@ that make them suitable for composite class design.
 Both class templates are suitable for use as members of composite classes where
 the compiler will generate special member functions. This means that the class
 templates should provide the special member functions where they are supported
-by the owned object type `T`.
-
-* `indirect<T, Alloc>` and `polymorphic<T, Alloc>` are default constructible in
-  cases where `T` is default constructible.
-
-* `indirect<T, Alloc>` is copy constructible and assignable when `T` is copy
-  constructible; `indirect<T, Alloc>` is unconditionally move constructible
-  and move assignable.
-
-* `polymorphic<T, Alloc>` is unconditionally copy
-  constructible and assignable, move constructible and move assignable.
-
-* `indirect<T, Alloc>` and `polymorphic<T, Alloc>` destroy the owned object in
-  their destructors.
+by the owned object type `T`. As `T` may be an incomplete type, the special member
+functions are unconditionally available to participate in overload resolution but
+may lead to an ill-formed program if they are called for a type that does not support
+them.
 
 ## Deep copies
 
@@ -375,10 +369,6 @@ The owned object is part of the logical state of `indirect` and `polymorphic`.
 Operations on a const-qualified object do not make changes to the object's
 logical state nor to the logical state of owned objects.
 
-`indirect<T>` and `polymorphic<T>` are default constructible in cases where `T`
-is default constructible. Moving a value type into dynamically-allocated storage
-should not add or remove the ability to be default constructed.
-
 ## The valueless state and interaction with `std::optional`
 
 Both `indirect` and `polymorphic` have a valueless state that is used to
@@ -427,8 +417,8 @@ The class template `indirect` owns an object of known type, permits copies,
 propagates const and is allocator aware.
 
 * Like `optional` and `unique_ptr`, `indirect` can be in a valueless state;
-  `indirect` can only get into the valueless state after being moved from, or
-  assignment or construction from a valueless state.
+  `indirect` can get into the valueless state only after being moved from, or
+  after assignment or construction from a valueless state.
 
 * `unique_ptr` and `optional` have preconditions for `operator->` and
   `operator*`: the behavior is undefined if `*this` does not contain a value.
@@ -460,12 +450,12 @@ propagates const and is allocator aware.
 
 ### Modelled types for `polymorphic`
 
-The class template `polymorphic` owns an object of known type, requires copies,
+The class template `polymorphic` owns an object of unknown type, requires copies,
 propagates const and is allocator aware.
 
 * Like `optional` and `unique_ptr`, `polymorphic` can be in a valueless state;
-  `polymorphic` can only get into the valueless state after being moved from, or
-  assignment or construction from a valueless state.
+  `polymorphic` can get into the valueless state only after being moved from, or
+  after assignment or construction from a valueless state.
 
 * `unique_ptr` and `optional` have preconditions for `operator->` and
   `operator*`: the behavior is undefined if `*this` does not contain a value.
@@ -504,8 +494,8 @@ check which type is the engaged type to perform comparison; valueless is one of
 the possible states it can be in. For `indirect`, allowing comparison when in a
 valueless state necessitates the addition of an otherwise redundant check. After
 feedback from standard library implementers, we opt to allow hash and comparison
-of `indirect` in a valueless state, at cost, to avoid rendering the valueless
-state undefined behaviour.
+of `indirect` in a valueless state, at cost, to avoid making comparison or
+hash of `indirect` in a valueless state undefined behaviour.
 
 `variant` allows valueless objects to be passed around via copy, assignment, move
 and move assignment. There is no precondition on `variant` that it must not be in
@@ -641,7 +631,7 @@ not.
 ## The `valueless_after_move` member function
 
 Both `indirect` and `polymorphic` have a `valueless_after_move` member function
-that is used to query the object state. This member function should normally be
+that is used to query the object state. This member function should rarely be
 called: it should be clear through static analysis whether or not an object has
 been moved from. The `valueless_after_move` member function allows explicit
 checks for the valueless state in cases where it cannot be verified statically
@@ -1854,7 +1844,7 @@ is copy constructible.
 Imposing constraints like this requires that the type `T` is complete at the
 time the class template is instantiated. Both polymorphic and indirect are
 designed to work with incomplete types so constraining member functions with
-requires clauses (or SFINAE) is not an option.
+requires clauses (or SFINAE), as shown above, is not an option.
 
 In revision 4 of this proposal, the authors were invited to use a deferred deduced
 type to allow constraints to be applied to member functions. This would allow the class
@@ -1879,11 +1869,11 @@ class constrained_wrapper {
 ```
 
 By making the default constructor into a function template, and placing the
-constraint of the inferred template type `TT`, evaluation of the constraint
-is deferred to function instantiation time at which point `TT` will be
-deduced to be `T`and will need to be complete for the constraint to be evaluated.
+constraint on the inferred template type `TT`, evaluation of the constraint
+is deferred to function instantiation time, at which point the type `TT` will be
+deduced to be `T` and will need to be complete for the constraint to be evaluated.
 
-Support for indirect with constraints on a deferred, deduced type differs across toolchains
+Support for indirect with constraints on a deferred deduced type differs across toolchains
 and inhibits usability. When indirect's member functions are constrained with a deferred deduced
 type, MSVC requires member functions to be explicitly declared so that they can later be defaulted
 when the type is complete. Such behaviour makes using a constrained `indirect` hard to teach and
@@ -1970,7 +1960,7 @@ note: in instantiation of member function 'indirect<NonCopyable>::indirect' requ
 ```
 
 Arthur O'Dwyer has written a blog post on the topic of constraints and incomplete types
-[vector-is-copyable-except-when-its-not](https://quuxplusone.github.io/blog/2020/02/05/vector-is-copyable-except-when-its-not/).
+<https://quuxplusone.github.io/blog/2020/02/05/vector-is-copyable-except-when-its-not>.
 
 ## Implicit conversions
 
@@ -2314,11 +2304,11 @@ could be potentially significant and unwelcome.
 |--|--|--|--|:--:|
 |Member `emplace`| No member `emplace` | Add member `emplace` | Pure addition | No |
 |`operator bool`| No `operator bool` | Add `operator bool` | Changes semantics | No |
-|`indirect` comparsion preconditions | `indirect` must not be valueless | Allows comparison of valueless objects | Runtime cost | No |
-|`indirect` hash preconditions| `indirect` must not be valueless | Allows hash of valueless objects | Runtime cost | No |
+|`indirect` comparsion preconditions | Allow comparison of valueless objects | `indirect` must not be valueless | Previously valid code would invoke undefined behaviour | Yes |
+|`indirect` hash preconditions| Allow hash of valueless objects | `indirect` must not be valueless | Previously valid code would invoke undefined behaviour | Yes |
 |Copy and copy assign preconditions| Object can be valueless | Forbids copying of valueless objects | Previously valid code would invoke undefined behaviour | Yes |
 |Move and move assign preconditions| Object can be valueless | Forbids moving of valueless objects | Previously valid code would invoke undefined behaviour | Yes |
-|Requirements on `T` in `polymorphic<T>` | No requirement that `T` has virtual functions | Add _Mandates_ or _Constraints_ to require `T` to have virtual functions | Code becomes ill-formed | Yes |
+|Requirements on `T` in `polymorphic<T>` | No requirement that `T` has virtual functions | Add _Mandates_ to require `T` to have virtual functions | Code becomes ill-formed | Yes |
 |State of default-constructed object| Default-constructed object (where valid) has a value | Make default-constructed object valueless | Changes semantics; necessitates adding `operator bool` and allowing move, copy and compare of valueless (empty) objects | Yes |
 |Small buffer optimisation for polymorphic|SBO is not required, settings are hidden|Add buffer size and alignment as template parameters| Breaks ABI; forces implementers to use SBO | Yes |
 |`noexcept` for accessors|Accessors are `noexcept` like `unique_ptr` and `optional`| Remove `noexcept` from accessors | User functions marked `noexcept` could be broken | Yes |
