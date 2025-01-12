@@ -1217,7 +1217,10 @@ constexpr bool operator==(const indirect& lhs, const indirect<U, AA>& rhs)
   noexcept(noexcept(*lhs == *rhs));
 ```
 
-1. _Returns_: If `lhs` is valueless or `rhs` is valueless,\
+1. _Mandates_: The expression `*lhs == *rhs` is well-formed and its result
+  is convertible to bool.
+
+2. _Returns_: If `lhs` is valueless or `rhs` is valueless,\
   `lhs.valueless_after_move() == rhs.valueless_after_move()`; otherwise `*lhs == *rhs`.
 
 ```c++
@@ -1227,7 +1230,7 @@ constexpr synth-three-way-result<T, U> operator<=>(const indirect& lhs,
   noexcept(noexcept(synth-three-way(*lhs, *rhs)));
 ```
 
-2. _Returns_: If `lhs` is valueless or `rhs` is valueless,\
+3. _Returns_: If `lhs` is valueless or `rhs` is valueless,\
   `!lhs.valueless_after_move() <=> !rhs.valueless_after_move()`; otherwise\
   `synth-three-way(*lhs, *rhs)`.
 
@@ -1239,7 +1242,10 @@ constexpr bool operator==(const indirect& lhs, const U& rhs)
   noexcept(noexcept(*lhs == rhs));
 ```
 
-1. _Returns_: If `lhs` is valueless, false; otherwise `*lhs == rhs`.
+1. _Mandates_: The expression `*lhs == rhs` is well-formed and its result
+  is convertible to bool.
+
+2. _Returns_: If `lhs` is valueless, false; otherwise `*lhs == rhs`.
 
 ```c++
 template <class U>
@@ -1248,7 +1254,7 @@ constexpr synth-three-way-result<T, U> operator<=>(const indirect& lhs,
   noexcept(noexcept(synth-three-way(*lhs, rhs)));
 ```
 
-2. _Returns_: If `rhs` is valueless, `false < true`; otherwise `synth-three-way(*lhs, rhs)`.
+3. _Returns_: If `rhs` is valueless, `false < true`; otherwise `synth-three-way(*lhs, rhs)`.
 
 ### X.Y.10 Hash support [indirect.hash]
 
