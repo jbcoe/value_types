@@ -4,11 +4,11 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-P3019R11
+D3019R12
 
 Working Group: Library Evolution, Library
 
-Date: 2024-11-22
+Date: 2024-12-12
 
 _Jonathan Coe \<<jonathanbcoe@gmail.com>\>_
 
@@ -42,6 +42,12 @@ The design of the two proposed class templates is sufficiently similar that they
 should not be considered in isolation.
 
 # History
+
+## Changes in R12
+
+* Fix `indirect` synopsis to include `explicit` on default constructor.
+
+* Replace "may only be X" with "may be X only" in specification of `indirect` and `polymorphic`.
 
 ## Changes in R11
 
@@ -725,8 +731,8 @@ but limitations of the processor used to prepare this paper means not all uses a
 ### X.Y.1 Class template indirect general [indirect.general]
 
 1. An indirect object manages the lifetime of an owned object. An indirect
-object is _valueless_ if it has no owned object. An indirect object may only
-become valueless after it has been moved from.
+object is _valueless_ if it has no owned object. An indirect object may
+become valueless only after it has been moved from.
 
 2. In every specialization `indirect<T, Allocator>`, if the type
 `allocator_traits<Allocator>::value_type` is not the same type as `T`, the
@@ -741,7 +747,7 @@ means calling\
 
 4. The member `alloc` is used for any memory allocation and element construction performed
 by member functions during the lifetime of each indirect object.
-The allocator `alloc` may only be replaced via assignment or `swap()`.
+The allocator `alloc` may be replaced only via assignment or `swap()`.
 Allocator replacement is performed by copy assignment, move assignment, or swapping of the
 allocator only if ([container.reqmts]):
 `allocator_traits<Allocator>::propagate_on_container_copy_assignment::value`, or\
@@ -772,7 +778,7 @@ class indirect {
   using pointer = typename allocator_traits<Allocator>::pointer;
   using const_pointer = typename allocator_traits<Allocator>::const_pointer;
 
-  constexpr indirect();
+  explicit constexpr indirect();
 
   explicit constexpr indirect(allocator_arg_t, const Allocator& a);
 
@@ -1288,7 +1294,7 @@ but limitations of the processor used to prepare this paper mean not all uses ar
 1. A polymorphic object manages the lifetime of an owned object. A polymorphic
 object may own objects of different types at different points in its lifetime. A
 polymorphic object is _valueless_ if it has no owned object. A polymorphic
-object may only become valueless after it has been moved from.
+object may become valueless only after it has been moved from.
 
 2. In every specialization `polymorphic<T, Allocator>`, if the type
 `allocator_traits<Allocator>::value_type` is not the same type as`T`, the
@@ -1303,7 +1309,7 @@ an owned object of type `U`.
 
 4. The member `alloc` is used for any memory allocation and element construction
 performed by member functions during the lifetime of each polymorphic value object,
-or until the allocator is replaced. The allocator may only be replaced via assignment
+or until the allocator is replaced. The allocator may be replaced only via assignment
 or `swap()`. Allocator replacement is performed by copy assignment, move assignment,
 or swapping of the allocator only if (see [container.reqmts]):\
 `allocator_traits<Allocator>::propagate_on_container_copy_assignment::value`,\
