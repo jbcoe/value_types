@@ -38,10 +38,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifdef XYZ_HAS_STD_MEMORY_RESOURCE
 #include <memory_resource>
 #endif  // XYZ_HAS_STD_MEMORY_RESOURCE
+#ifdef XYZ_HAS_STD_OPTIONAL
+#include <optional>
+#endif  // XYZ_HAS_STD_OPTIONAL
 #include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
+#if defined(XYZ_HAS_STD_IN_PLACE_T) && !defined(XYZ_INDIRECT_CXX_14)
+namespace xyz {
+using std::in_place_t;
+}  // namespace xyz
+#endif  // defined(XYZ_HAS_STD_IN_PLACE_T) && !defined(XYZ_INDIRECT_CXX_14)
 
 namespace {
 
