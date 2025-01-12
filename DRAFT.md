@@ -8,7 +8,7 @@ D3019R12
 
 Working Group: Library Evolution, Library
 
-Date: 2024-12-10
+Date: 2024-12-12
 
 _Jonathan Coe \<<jonathanbcoe@gmail.com>\>_
 
@@ -45,7 +45,9 @@ should not be considered in isolation.
 
 ## Changes in R12
 
-* Fix `indirect` synopsis to include `explicit` on constructors.
+* Fix `indirect` synopsis to include `explicit` on the default constructor.
+
+* Replace "may only be X" with "may be X only" in specification of `indirect` and `polymorphic`.
 
 * Change _constraints_ on incomplete type `T` to _mandates_.
 
@@ -55,7 +57,9 @@ should not be considered in isolation.
 
 * Add discussion of constraints and incomplete type support.
 
-* TODO: Fix spec of `<=>`.
+* Fix spec of `<=>` to use `synth-three-way-result`.
+
+* Remove constraints on `operator==` and `operator<=>` for `indirect`.
 
 ## Changes in R11
 
@@ -743,8 +747,8 @@ but limitations of the processor used to prepare this paper means not all uses a
 ### X.Y.1 Class template indirect general [indirect.general]
 
 1. An indirect object manages the lifetime of an owned object. An indirect
-object is _valueless_ if it has no owned object. An indirect object may only
-become valueless after it has been moved from.
+object is _valueless_ if it has no owned object. An indirect object may
+become valueless only after it has been moved from.
 
 2. In every specialization `indirect<T, Allocator>`, if the type
 `allocator_traits<Allocator>::value_type` is not the same type as `T`, the
@@ -759,7 +763,7 @@ means calling\
 
 4. The member `alloc` is used for any memory allocation and element construction performed
 by member functions during the lifetime of each indirect object.
-The allocator `alloc` may only be replaced via assignment or `swap()`.
+The allocator `alloc` may be replaced only via assignment or `swap()`.
 Allocator replacement is performed by copy assignment, move assignment, or swapping of the
 allocator only if ([container.reqmts]):
 `allocator_traits<Allocator>::propagate_on_container_copy_assignment::value`, or\
@@ -867,12 +871,12 @@ class indirect {
   template <class U, class AA>
   friend constexpr auto operator<=>(
     const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below)
-    -> compare_three_way_result_t<T, U>;
+    -> synth-three-way-result<T, U>;
 
   template <class U>
   friend constexpr auto operator<=>(
     const indirect& lhs, const U& rhs) noexcept(see below)
-    -> compare_three_way_result_t<T, U>;
+    -> synth-three-way-result<T, U>;
 
 private:
   pointer p; // exposition only
@@ -1215,21 +1219,20 @@ constexpr bool operator==(const indirect& lhs, const indirect<U, AA>& rhs)
   noexcept(noexcept(*lhs == *rhs));
 ```
 
-1. _Constraints_: `*lhs == *rhs` is well-formed and its result is convertible to bool.
+1. _Mandates_: The expression `*lhs == *rhs` is well-formed and its result
+  is convertible to bool.
 
 2. _Returns_: If `lhs` is valueless or `rhs` is valueless,\
   `lhs.valueless_after_move() == rhs.valueless_after_move()`; otherwise `*lhs == *rhs`.
 
 ```c++
 template <class U, class AA>
-constexpr synth-three-way-result<T> operator<=>(const indirect& lhs,
+constexpr synth-three-way-result<T, U> operator<=>(const indirect& lhs,
                                                 const indirect<U, AA>& rhs)
   noexcept(noexcept(synth-three-way(*lhs, *rhs)));
 ```
 
-3. _Constraints_: `*lhs <=> *rhs` is well-formed.
-
-4. _Returns_: If `lhs` is valueless or `rhs` is valueless,\
+3. _Returns_: If `lhs` is valueless or `rhs` is valueless,\
   `!lhs.valueless_after_move() <=> !rhs.valueless_after_move()`; otherwise\
   `synth-three-way(*lhs, *rhs)`.
 
@@ -1241,20 +1244,19 @@ constexpr bool operator==(const indirect& lhs, const U& rhs)
   noexcept(noexcept(*lhs == rhs));
 ```
 
-1. _Constraints_: `*lhs == rhs` is well-formed.
+1. _Mandates_: The expression `*lhs == rhs` is well-formed and its result
+  is convertible to bool.
 
 2. _Returns_: If `lhs` is valueless, false; otherwise `*lhs == rhs`.
 
 ```c++
 template <class U>
-constexpr synth-three-way-result<T> operator<=>(const indirect& lhs,
+constexpr synth-three-way-result<T, U> operator<=>(const indirect& lhs,
                                                 const U& rhs)
   noexcept(noexcept(synth-three-way(*lhs, rhs)));
 ```
 
-3. _Constraints_: `*lhs <=> rhs` is well-formed.
-
-4. _Returns_: If `rhs` is valueless, `false < true`; otherwise `synth-three-way(*lhs, rhs)`.
+3. _Returns_: If `rhs` is valueless, `false < true`; otherwise `synth-three-way(*lhs, rhs)`.
 
 ### X.Y.10 Hash support [indirect.hash]
 
@@ -1280,7 +1282,7 @@ but limitations of the processor used to prepare this paper mean not all uses ar
 1. A polymorphic object manages the lifetime of an owned object. A polymorphic
 object may own objects of different types at different points in its lifetime. A
 polymorphic object is _valueless_ if it has no owned object. A polymorphic
-object may only become valueless after it has been moved from.
+object may become valueless only after it has been moved from.
 
 2. In every specialization `polymorphic<T, Allocator>`, if the type
 `allocator_traits<Allocator>::value_type` is not the same type as`T`, the
@@ -1295,7 +1297,7 @@ an owned object of type `U`.
 
 4. The member `alloc` is used for any memory allocation and element construction
 performed by member functions during the lifetime of each polymorphic value object,
-or until the allocator is replaced. The allocator may only be replaced via assignment
+or until the allocator is replaced. The allocator may be replaced only via assignment
 or `swap()`. Allocator replacement is performed by copy assignment, move assignment,
 or swapping of the allocator only if (see [container.reqmts]):\
 `allocator_traits<Allocator>::propagate_on_container_copy_assignment::value`,\
