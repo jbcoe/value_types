@@ -1846,17 +1846,17 @@ class wrapper {
 ```
 
 The wrapper type is only default constructible if the wrapped type `T` is
-default constructible and only copy constructible if the wrapped type T `T`
+default constructible and only copy constructible if the wrapped type `T`
 is copy constructible.
 
 Imposing constraints like this requires that the type `T` is complete at the
-time the class-template is instantiated. Both polymorphic and indirect are
+time the class template is instantiated. Both polymorphic and indirect are
 designed to work with incomplete types so constraining member functions with
 requires clauses (or SFINAE) is not an option.
 
 In revision 4 of this proposal, the authors were invited to use a deferred deduced
 type to allow constraints to be applied to member functions. This would allow the class
-to be instantiated for with `T` as an incomplete type, as member function constraints
+to be instantiated with `T` as an incomplete type, as member function constraints
 would only be checked at member function instantiation time.
 
 For instance:
@@ -1881,13 +1881,11 @@ constraint of the inferred template type `TT`, evaluation of the constraint
 is deferred to function instantiation time at which point `TT` will be
 deduced to be `T`and will need to be complete for the constraint to be evaluated.
 
-Support for indirect with constraints on a deferred deduced type differs across toolchains
-and inhibits usability.
-
-When indirect's member functions are constrained with a deferred deduced type, MSVC requires
-member functions to be explicitly declared so that they can later be defaulted when the type is
-complete. Such behaviour makes using a constrained `indirect` hard to teach and inconsistent
-with the design of the standard library.
+Support for indirect with constraints on a deferred, deduced type differs across toolchains
+and inhibits usability. When indirect's member functions are constrained with a deferred deduced
+type, MSVC requires member functions to be explicitly declared so that they can later be defaulted
+when the type is complete. Such behaviour makes using a constrained `indirect` hard to teach and
+inconsistent with the design of current components (like vector) in the standard library.
 
 ```c++
 struct Number {}; // Complete type.

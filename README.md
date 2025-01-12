@@ -83,7 +83,7 @@ public:
 
 ### Compiler explorer
 
-You can try out `indirect` and `polymorphic` in [Compiler explorer](https://godbolt.org/)
+You can try out `indirect` and `polymorphic` in [Compiler Explorer](https://godbolt.org/)
 by adding the includes:
 
 ```cpp
@@ -96,7 +96,7 @@ by adding the includes:
 We have C++14 implementations of `indirect` and `polymorphic` available as
 `indirect_cxx14.h` and `polymorphic_cxx14.h`.
 
-C++14 implementations can be tried out in compiler explorer by using the includes:
+C++14 implementations can be tried out in Compiler Explorer by using the includes:
 
 ```cpp
 #include <https://raw.githubusercontent.com/jbcoe/value_types/main/indirect_cxx14.h>
