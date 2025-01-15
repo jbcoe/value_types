@@ -562,11 +562,8 @@ class indirect : private detail::empty_base_optimization<A> {
 template <typename Value>
 indirect(Value) -> indirect<Value>;
 
-template <typename Value>
-indirect(xyz::in_place_t, Value) -> indirect<Value>;
-
 template <typename Alloc, typename Value>
-indirect(std::allocator_arg_t, Alloc, xyz::in_place_t, Value) -> indirect<
+indirect(std::allocator_arg_t, Alloc, Value) -> indirect<
     Value, typename std::allocator_traits<Alloc>::template rebind_alloc<Value>>;
 #endif  // XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
 

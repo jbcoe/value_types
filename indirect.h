@@ -436,11 +436,8 @@ concept is_hashable = requires(T t) { std::hash<T>{}(t); };
 template <typename Value>
 indirect(Value) -> indirect<Value>;
 
-template <typename Value>
-indirect(std::in_place_t, Value) -> indirect<Value>;
-
 template <typename Alloc, typename Value>
-indirect(std::allocator_arg_t, Alloc, std::in_place_t, Value) -> indirect<
+indirect(std::allocator_arg_t, Alloc, Value) -> indirect<
     Value, typename std::allocator_traits<Alloc>::template rebind_alloc<Value>>;
 
 }  // namespace xyz

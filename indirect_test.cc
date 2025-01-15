@@ -124,14 +124,8 @@ TEST(IndirectTest, TemplateArgumentDeduction) {
   EXPECT_EQ(*a, 42);
 }
 
-TEST(IndirectTest, TemplateArgumentDeductionInPlace) {
-  xyz::indirect a(xyz::in_place_t{}, 42);
-  EXPECT_EQ(*a, 42);
-}
-
 TEST(IndirectTest, TemplateArgumentDeductionWithAllocator) {
-  xyz::indirect a(std::allocator_arg, std::allocator<int>{}, xyz::in_place_t{},
-                  42);
+  xyz::indirect a(std::allocator_arg, std::allocator<int>{}, 42);
   EXPECT_EQ(*a, 42);
 }
 #endif  // XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
