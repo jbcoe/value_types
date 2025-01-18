@@ -860,12 +860,12 @@ class indirect {
 
   template <class U, class AA>
   friend constexpr auto operator<=>(
-    const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below)
+    const indirect& lhs, const indirect<U, AA>& rhs)
     -> synth-three-way-result<T, U>;
 
   template <class U>
   friend constexpr auto operator<=>(
-    const indirect& lhs, const U& rhs) noexcept(see below)
+    const indirect& lhs, const U& rhs)
     -> synth-three-way-result<T, U>;
 
 private:
@@ -1218,8 +1218,7 @@ constexpr bool operator==(const indirect& lhs, const indirect<U, AA>& rhs)
 ```c++
 template <class U, class AA>
 constexpr synth-three-way-result<T, U> operator<=>(const indirect& lhs,
-                                                const indirect<U, AA>& rhs)
-  noexcept(noexcept(synth-three-way(*lhs, *rhs)));
+                                                const indirect<U, AA>& rhs);
 ```
 
 3. _Returns_: If `lhs` is valueless or `rhs` is valueless,\
@@ -1242,8 +1241,7 @@ constexpr bool operator==(const indirect& lhs, const U& rhs)
 ```c++
 template <class U>
 constexpr synth-three-way-result<T, U> operator<=>(const indirect& lhs,
-                                                const U& rhs)
-  noexcept(noexcept(synth-three-way(*lhs, rhs)));
+                                                const U& rhs);
 ```
 
 3. _Returns_: If `rhs` is valueless, `false < true`; otherwise `synth-three-way(*lhs, rhs)`.
