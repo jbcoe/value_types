@@ -4,11 +4,11 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-D3019R12
+D3019R13
 
 Working Group: Library Evolution, Library
 
-Date: 2025-01-12
+Date: 2025-01-18
 
 _Jonathan Coe \<<jonathanbcoe@gmail.com>\>_
 
@@ -42,6 +42,10 @@ The design of the two proposed class templates is sufficiently similar that they
 should not be considered in isolation.
 
 # History
+
+## Changes in R13
+
+* Remove noexcept specification from `operator<=>` for `indirect`.
 
 ## Changes in R12
 
@@ -860,12 +864,12 @@ class indirect {
 
   template <class U, class AA>
   friend constexpr auto operator<=>(
-    const indirect& lhs, const indirect<U, AA>& rhs) noexcept(see below)
+    const indirect& lhs, const indirect<U, AA>& rhs)
     -> synth-three-way-result<T, U>;
 
   template <class U>
   friend constexpr auto operator<=>(
-    const indirect& lhs, const U& rhs) noexcept(see below)
+    const indirect& lhs, const U& rhs)
     -> synth-three-way-result<T, U>;
 
 private:
@@ -1218,8 +1222,7 @@ constexpr bool operator==(const indirect& lhs, const indirect<U, AA>& rhs)
 ```c++
 template <class U, class AA>
 constexpr synth-three-way-result<T, U> operator<=>(const indirect& lhs,
-                                                const indirect<U, AA>& rhs)
-  noexcept(noexcept(synth-three-way(*lhs, *rhs)));
+                                                const indirect<U, AA>& rhs);
 ```
 
 3. _Returns_: If `lhs` is valueless or `rhs` is valueless,\
@@ -1242,8 +1245,7 @@ constexpr bool operator==(const indirect& lhs, const U& rhs)
 ```c++
 template <class U>
 constexpr synth-three-way-result<T, U> operator<=>(const indirect& lhs,
-                                                const U& rhs)
-  noexcept(noexcept(synth-three-way(*lhs, rhs)));
+                                                const U& rhs);
 ```
 
 3. _Returns_: If `rhs` is valueless, `false < true`; otherwise `synth-three-way(*lhs, rhs)`.
