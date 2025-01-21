@@ -559,7 +559,7 @@ an owned object constructed with an allocator extended constructor taking an
 allocator `alloc` and constructor arguments `args`.
 
 For comparison, `indirect(std::allocator_arg, a, std::in_place, std::allocator_arg, alloc, args)`
-constructs an `indirect` with an allocator `a` an owned object
+constructs an `indirect` with an allocator `a` and an owned object
 constructed with an allocator extended constructor taking an allocator
 `alloc` and constructor arguments `args`.
 
