@@ -47,6 +47,8 @@ should not be considered in isolation.
 
 * Remove noexcept specification from `operator<=>` for `indirect`.
 
+* Add a second clarifying example to tagged constructors explanatory text.
+
 ## Changes in R12
 
 * Fix `indirect` synopsis to include `explicit` on the default constructor.
