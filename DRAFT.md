@@ -554,13 +554,13 @@ library’s use of tagged constructors in `optional`, `any` and `variant`.
 Without `in_place_t` the constructor of `indirect` would not be able to
 construct an owned object using the owned object’s allocator-extended
 constructor. `indirect(std::in_place, std::allocator_arg, alloc, args)`
-constructs an `indirect` with a default constructed allocator and
-an owned object constructed with an allocator extended constructor taking an
+constructs an `indirect` with a default-constructed allocator and
+an owned object constructed with an allocator-extended constructor taking an
 allocator `alloc` and constructor arguments `args`.
 
 For comparison, `indirect(std::allocator_arg, a, std::in_place, std::allocator_arg, alloc, args)`
 constructs an `indirect` with an allocator `a` an owned object
-constructed with an allocator extended constructor taking an allocator
+constructed with an allocator-extended constructor taking an allocator
 `alloc` and constructor arguments `args`.
 
 ## Single-argument constructors
