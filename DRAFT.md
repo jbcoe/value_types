@@ -1440,7 +1440,7 @@ constexpr polymorphic(allocator_arg_t, const Allocator& a,
                       const polymorphic& other);
 ```
 
-7. _Effects_: `alloc` is direct-non-list-initialized with `alloc`. If `other`
+7. _Effects_: `alloc` is direct-non-list-initialized with `a`. If `other`
     is valueless, `*this` is valueless. Otherwise, constructs an owned object of
     type `U`, where `U` is the type of the owned object in `other`, with the
     owned object in `other` using the allocator `alloc`.
