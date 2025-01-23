@@ -47,6 +47,8 @@ should not be considered in isolation.
 
 * Remove noexcept specification from `operator<=>` for `indirect`.
 
+* Add a second clarifying example to tagged constructors explanatory text.
+
 ## Changes in R12
 
 * Fix `indirect` synopsis to include `explicit` on the default constructor.
@@ -552,9 +554,14 @@ library’s use of tagged constructors in `optional`, `any` and `variant`.
 Without `in_place_t` the constructor of `indirect` would not be able to
 construct an owned object using the owned object’s allocator-extended
 constructor. `indirect(std::in_place, std::allocator_arg, alloc, args)`
-unambiguously constructs an `indirect` with a default constructed allocator and
-an owned object constructed with an allocator extended constructor taking an
+constructs an `indirect` with a default-constructed allocator and
+an owned object constructed with an allocator-extended constructor taking an
 allocator `alloc` and constructor arguments `args`.
+
+For comparison, `indirect(std::allocator_arg, a, std::in_place, std::allocator_arg, alloc, args)`
+constructs an `indirect` with an allocator `a` and an owned object
+constructed with an allocator-extended constructor taking an allocator
+`alloc` and constructor arguments `args`.
 
 ## Single-argument constructors
 
