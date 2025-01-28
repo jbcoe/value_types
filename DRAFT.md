@@ -49,6 +49,13 @@ should not be considered in isolation.
 
 * Add a second clarifying example to tagged constructors explanatory text.
 
+* Remove constraint `is_same_v<U, polymorphic>` is `false` on polymorphic constructors
+  taking `in_place_type_t` and an intializer list.
+
+* Order `polymorphic` constructor constraints consistently.
+
+* Remove needless introduction of `UU` in `indirect` constraints.
+
 ## Changes in R12
 
 * Fix `indirect` synopsis to include `explicit` on the default constructor.
