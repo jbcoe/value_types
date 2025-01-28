@@ -1129,8 +1129,8 @@ constexpr indirect& operator=(indirect&& other) noexcept(
   constexpr indirect& operator=(U&& u);
 ```
 
-10. _Constraints_: Where `UU` is `remove_cvref_t<U>`,
-    * `is_same_v<UU, indirect>` is `false`,
+10. _Constraints_:
+    * `is_same_v<remove_cvref_t<U>, indirect>` is `false`,
     * `is_constructible_v<T, U>` is `true`, and
     * `is_assignable_v<T&, U>` is `true`.
 
@@ -1487,8 +1487,8 @@ explicit constexpr polymorphic(U&& u);
 10. _Constraints_: Where `UU` is `remove_cvref_t<U>`,
     * `is_same_v<UU, polymorphic>` is `false`,
     * `derived_from<UU, T>` is `true`,
-    * `is_copy_constructible_v<UU>` is `true`,
     * `is_constructible_v<UU, U>` is `true`,
+    * `is_copy_constructible_v<UU>` is `true`,
     * `UU` is not a specialization of `in_place_type_t`, and
     * `is_default_constructible_v<Allocator>` is `true`.
 
@@ -1503,8 +1503,8 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a, U&& u);
 12. _Constraints_: Where `UU` is `remove_cvref_t<U>`,
     * `is_same_v<UU, polymorphic>` is `false`,
     * `derived_from<UU, T>` is `true`,
-    * `is_copy_constructible_v<UU>` is `true`,
-    * `is_constructible_v<UU, U>` is `true`, and
+    * `is_constructible_v<UU, U>` is `true`,
+    * `is_copy_constructible_v<UU>` is `true`, and
     * `UU` is not a specialization of `in_place_type_t`.
 
 13. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs
@@ -1550,10 +1550,9 @@ explicit constexpr polymorphic(in_place_type_t<U>,
 
 18. _Constraints_:
     * `is_same_v<remove_cvref_t<U>, U>` is `true`,
-    * `is_same_v<U, polymorphic>` is `false`,
     * `derived_from<U, T>` is `true`,
-    * `is_copy_constructible_v<U>` is `true`,
-    * `is_constructible_v<U, initializer_list<I>&, Us...>` is `true`, and
+    * `is_constructible_v<U, initializer_list<I>&, Us...>` is `true`,
+    * `is_copy_constructible_v<U>` is `true`, and
     * `is_default_constructible_v<Allocator>` is `true`.
 
 19. _Effects_: Constructs an owned object of type `U` with the arguments
@@ -1568,10 +1567,9 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a,
 
 20. _Constraints_:
     * `is_same_v<remove_cvref_t<U>, U>` is `true`,
-    * `is_same_v<U, polymorphic>` is `false`,
     * `derived_from<U, T>` is `true`,
-    * `is_copy_constructible_v<U>` is `true`, and
-    * `is_constructible_v<U, initializer_list<I>&, Us...>` is `true`.
+    * `is_constructible_v<U, initializer_list<I>&, Us...>` is `true`, and
+    * `is_copy_constructible_v<U>` is `true`.
 
 21. _Effects_: `alloc` is direct-non-list-initialized with `a`.
     Constructs an owned object of type `U` with the arguments `ilist`,
