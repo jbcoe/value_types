@@ -1,3 +1,6 @@
+// The class Incomplete be comes complete in this source file.
+// Forward declared functions are explictly defaulted or defined as needed.
+
 #include "incomplete_types.h"
 
 namespace xyz::testing {

@@ -1,3 +1,5 @@
+// Wrapper types with members templated on an incomplete type.
+
 #include <memory>
 #include <vector>
 

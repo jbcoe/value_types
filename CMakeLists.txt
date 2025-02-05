@@ -102,6 +102,7 @@ if (${XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT})
 
     add_subdirectory(benchmarks)
     add_subdirectory(compile_checks)
+    add_subdirectory(incomplete_types)
 
     if (${BUILD_TESTING})
         FetchContent_Declare(
