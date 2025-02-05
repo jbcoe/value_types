@@ -30,6 +30,12 @@ struct UniquePtrMember {
 
 struct WrapperMember {
   xyz::wrapper<Incomplete> x;
+
+  WrapperMember();
+  WrapperMember(const WrapperMember&);
+  ~WrapperMember();
+
+  friend bool operator==(const WrapperMember& lhs, const WrapperMember& rhs);
 };
 
 // struct ConstrainedWrapperMember {

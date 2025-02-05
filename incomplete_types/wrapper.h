@@ -10,10 +10,6 @@ class wrapper {
  public:
   wrapper() : t_(new T()) {}
 
-  template <typename... Us>
-  wrapper(Us&&... us) : t_(new T(std::forward<Us>(us)...)) {}
-
-  template <typename... Us>
   wrapper(const wrapper& other) : t_(new T(*other.t_)) {}
 
   ~wrapper() { delete t_; }
@@ -34,11 +30,6 @@ class constrained_wrapper {
   constrained_wrapper()
     requires std::copy_constructible<TT>
       : t_(new T()) {}
-
-  template <typename TT = T, typename... Us>
-  constrained_wrapper(Us&&... us)
-    requires std::constructible_from<TT, Us...>
-      : t_(new T(std::forward<Us>(us)...)) {}
 
   constrained_wrapper(const constrained_wrapper& other)
     requires false;

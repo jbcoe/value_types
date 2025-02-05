@@ -23,4 +23,9 @@ bool operator==(const UniquePtrMember& lhs, const UniquePtrMember& rhs) {
   return *lhs.x == *rhs.x;
 }
 
+WrapperMember::WrapperMember() = default;
+WrapperMember::WrapperMember(const WrapperMember& other) = default;
+WrapperMember::~WrapperMember() = default;
+bool operator==(const WrapperMember& lhs, const WrapperMember& rhs) = default;
+
 }  // namespace xyz::testing
