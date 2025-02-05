@@ -38,14 +38,15 @@ struct WrapperMember {
   friend bool operator==(const WrapperMember& lhs, const WrapperMember& rhs);
 };
 
-// struct ConstrainedWrapperMember {
-//   xyz::constrained_wrapper<Incomplete> x;
+struct ConstrainedWrapperMember {
+  xyz::constrained_wrapper<Incomplete> x;
 
-//   ConstrainedWrapperMember();
-//   ConstrainedWrapperMember(const ConstrainedWrapperMember&);
-//   friend bool operator==(const ConstrainedWrapperMember& lhs,
-//                          const ConstrainedWrapperMember& rhs);
-//   ~ConstrainedWrapperMember();
-// };
+  ConstrainedWrapperMember();
+  ConstrainedWrapperMember(const ConstrainedWrapperMember&);
+  ~ConstrainedWrapperMember();
+
+  friend bool operator==(const ConstrainedWrapperMember& lhs,
+                         const ConstrainedWrapperMember& rhs);
+};
 
 }  // namespace xyz::testing

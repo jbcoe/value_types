@@ -28,4 +28,11 @@ WrapperMember::WrapperMember(const WrapperMember& other) = default;
 WrapperMember::~WrapperMember() = default;
 bool operator==(const WrapperMember& lhs, const WrapperMember& rhs) = default;
 
+ConstrainedWrapperMember::ConstrainedWrapperMember() = default;
+ConstrainedWrapperMember::ConstrainedWrapperMember(
+    const ConstrainedWrapperMember& other) = default;
+ConstrainedWrapperMember::~ConstrainedWrapperMember() = default;
+bool operator==(const ConstrainedWrapperMember& lhs,
+                const ConstrainedWrapperMember& rhs) = default;
+
 }  // namespace xyz::testing

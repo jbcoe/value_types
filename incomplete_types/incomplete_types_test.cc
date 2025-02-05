@@ -4,9 +4,9 @@
 
 namespace {
 
-using xyz::testing::VectorMember;
-// using xyz::testing::ConstrainedWrapperMember;
+using xyz::testing::ConstrainedWrapperMember;
 using xyz::testing::UniquePtrMember;
+using xyz::testing::VectorMember;
 using xyz::testing::WrapperMember;
 
 TEST(VectorMember, DefaultConstructCopyAndCompare) {
@@ -27,13 +27,13 @@ TEST(WrapperMember, DefaultConstructCopyAndCompare) {
   WrapperMember a;
   WrapperMember aa(a);
 
-  // EXPECT_EQ(a, aa);
+  EXPECT_EQ(a, aa);
 }
 
-// TEST(ConstrainedWrapperMember, DefaultConstructCopyAndCompare) {
-//   ConstrainedWrapperMember a;
-//   ConstrainedWrapperMember aa(a);
+TEST(ConstrainedWrapperMember, DefaultConstructCopyAndCompare) {
+  ConstrainedWrapperMember a;
+  ConstrainedWrapperMember aa(a);
 
-//   EXPECT_EQ(a, aa);
-// }
+  EXPECT_EQ(a, aa);
+}
 }  // namespace

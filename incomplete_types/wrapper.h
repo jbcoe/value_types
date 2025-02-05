@@ -34,7 +34,7 @@ class constrained_wrapper {
   constrained_wrapper(const constrained_wrapper& other)
     requires false;
 
-  template <typename TT>
+  template <typename TT = T>
   constrained_wrapper(const constrained_wrapper& other)
     requires std::copy_constructible<TT>
       : t_(new T(*other.t_)) {}
