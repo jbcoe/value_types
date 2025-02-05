@@ -17,19 +17,20 @@ struct VectorMember {
   friend bool operator==(const VectorMember& lhs, const VectorMember& rhs);
 };
 
-// struct UniquePtrMember {
-//   std::unique_ptr<Incomplete> x;
+struct UniquePtrMember {
+  std::unique_ptr<Incomplete> x;
 
-//   UniquePtrMember();
-//   UniquePtrMember(const UniquePtrMember&);
-//   ~UniquePtrMember();
-//   friend bool operator==(const UniquePtrMember& lhs,
-//                          const UniquePtrMember& rhs);
-// };
+  UniquePtrMember();
+  UniquePtrMember(const UniquePtrMember&);
+  ~UniquePtrMember();
 
-// struct WrapperMember {
-//   xyz::wrapper<Incomplete> x;
-// };
+  friend bool operator==(const UniquePtrMember& lhs,
+                         const UniquePtrMember& rhs);
+};
+
+struct WrapperMember {
+  xyz::wrapper<Incomplete> x;
+};
 
 // struct ConstrainedWrapperMember {
 //   xyz::constrained_wrapper<Incomplete> x;

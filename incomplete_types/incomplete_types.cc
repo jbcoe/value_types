@@ -14,4 +14,13 @@ bool operator==(const VectorMember& lhs, const VectorMember& rhs) {
   return lhs.xs.size() == rhs.xs.size();  // since Incompletes are always equal.
 }
 
+UniquePtrMember::UniquePtrMember() : x(new Incomplete()) {}
+UniquePtrMember::UniquePtrMember(const UniquePtrMember& other)
+    : x(new Incomplete(*other.x)) {}
+UniquePtrMember::~UniquePtrMember() = default;
+
+bool operator==(const UniquePtrMember& lhs, const UniquePtrMember& rhs) {
+  return *lhs.x == *rhs.x;
+}
+
 }  // namespace xyz::testing

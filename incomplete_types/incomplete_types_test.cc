@@ -6,7 +6,7 @@ namespace {
 
 using xyz::testing::VectorMember;
 // using xyz::testing::ConstrainedWrapperMember;
-// using xyz::testing::UniquePtrMember;
+using xyz::testing::UniquePtrMember;
 // using xyz::testing::WrapperMember;
 
 TEST(VectorMember, DefaultConstructCopyAndCompare) {
@@ -16,12 +16,12 @@ TEST(VectorMember, DefaultConstructCopyAndCompare) {
   EXPECT_EQ(a, aa);
 }
 
-// TEST(UniquePtrMember, DefaultConstructCopyAndCompare) {
-//   UniquePtrMember a;
-//   UniquePtrMember aa(a);
+TEST(UniquePtrMember, DefaultConstructCopyAndCompare) {
+  UniquePtrMember a;
+  UniquePtrMember aa(a);
 
-//   EXPECT_EQ(a, aa);
-// }
+  EXPECT_EQ(a, aa);
+}
 
 // TEST(WrapperMember, DefaultConstructCopyAndCompare) {
 //   WrapperMember a;
