@@ -103,14 +103,3 @@ build_test(
     name = "polymorphic_as_member_build_test",
     targets = ["polymorphic_as_member"],
 )
-
-cc_library(
-    name = "wrapper",
-    srcs = ["wrapper.cc"],
-    visibility = ["//visibility:private"],
-)
-
-build_test(
-    name = "wrapper_build_test",
-    targets = ["wrapper"],
-)

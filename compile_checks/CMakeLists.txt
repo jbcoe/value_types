@@ -89,20 +89,3 @@ target_link_libraries(polymorphic_in_variant
         polymorphic
         common_compiler_settings
 )
-
-
-add_library(wrapper OBJECT)
-target_sources(wrapper
-    PRIVATE
-        wrapper.cc
-)
-set_target_properties(wrapper
-    PROPERTIES
-        CXX_STANDARD 20
-        CXX_STANDARD_REQUIRED YES
-        CXX_EXTENSIONS NO
-)
-target_link_libraries(wrapper
-    PRIVATE
-        common_compiler_settings
-)
