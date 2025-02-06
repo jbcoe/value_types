@@ -107,7 +107,7 @@ if (${XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT})
     if (${BUILD_TESTING})
         FetchContent_Declare(
           googletest
-          URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+          URL https://github.com/google/googletest/releases/download/v1.15.2/googletest-1.15.2.tar.gz
         )
         # For Windows: Prevent overriding the parent project's compiler/linker settings
         set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
