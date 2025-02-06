@@ -43,13 +43,6 @@ VariantWrapperMember::~VariantWrapperMember() = default;
 bool VariantWrapperMember::operator==(const VariantWrapperMember& other) const =
     default;
 
-VariantCWrapperMember::VariantCWrapperMember() = default;
-VariantCWrapperMember::VariantCWrapperMember(
-    const VariantCWrapperMember& other) = default;
-VariantCWrapperMember::~VariantCWrapperMember() = default;
-bool VariantCWrapperMember::operator==(
-    const VariantCWrapperMember& other) const = default;
-
 VariantVectorMember::VariantVectorMember() = default;
 VariantVectorMember::VariantVectorMember(const VariantVectorMember& other) =
     default;

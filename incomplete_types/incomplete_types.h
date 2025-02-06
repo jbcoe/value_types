@@ -59,15 +59,6 @@ struct VariantWrapperMember {
 
   bool operator==(const VariantWrapperMember& other) const;
 };
-struct VariantCWrapperMember {
-  std::variant<xyz::constrained_wrapper<Incomplete>, int> x;
-
-  VariantCWrapperMember();
-  VariantCWrapperMember(const VariantCWrapperMember&);
-  ~VariantCWrapperMember();
-
-  bool operator==(const VariantCWrapperMember& other) const;
-};
 
 struct VariantVectorMember {
   std::variant<std::vector<Incomplete>, int> x;

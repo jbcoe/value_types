@@ -11,7 +11,6 @@ namespace {
 
 using xyz::testing::ConstrainedWrapperMember;
 using xyz::testing::UniquePtrMember;
-using xyz::testing::VariantCWrapperMember;
 using xyz::testing::VariantVectorMember;
 using xyz::testing::VariantWrapperMember;
 using xyz::testing::VectorMember;
@@ -48,13 +47,6 @@ TEST(ConstrainedWrapperMember, DefaultConstructCopyAndCompare) {
 TEST(VariantWrapperMember, DefaultConstructCopyAndCompare) {
   VariantWrapperMember a;
   VariantWrapperMember aa(a);
-
-  EXPECT_EQ(a, aa);
-}
-
-TEST(VariantCWrapperMember, DefaultConstructCopyAndCompare) {
-  VariantCWrapperMember a;
-  VariantCWrapperMember aa(a);
 
   EXPECT_EQ(a, aa);
 }
