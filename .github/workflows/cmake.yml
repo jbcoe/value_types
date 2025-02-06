@@ -72,6 +72,13 @@ jobs:
               lib: "libc++18",
             }
           - {
+              name: "Ubuntu Clang-19 + libc++",
+              os: ubuntu-24.04,
+              compiler:
+                { type: CLANG, version: 19, cc: "clang-19", cxx: "clang++-19", std: 20},
+              lib: "libc++19",
+            }
+          - {
               name: "Visual Studio 2019",
               os: windows-latest,
               compiler:
