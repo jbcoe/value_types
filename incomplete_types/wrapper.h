@@ -15,8 +15,8 @@ class wrapper {
   ~wrapper() { delete t_; }
 
   template <typename U>
-  friend bool operator==(const wrapper& lhs, const wrapper<U>& rhs) {
-    return *lhs.t_ == *rhs.t_;
+  bool operator==(const wrapper<U>& other) const {
+    return *t_ == *other.t_;
   }
 };
 
@@ -42,11 +42,10 @@ class constrained_wrapper {
   ~constrained_wrapper() { delete t_; }
 
   template <typename U>
-  friend bool operator==(const constrained_wrapper& lhs,
-                         const constrained_wrapper<U>& rhs)
+  bool operator==(const constrained_wrapper<U>& other) const
     requires std::equality_comparable_with<T, U>
   {
-    return *lhs.t_ == *rhs.t_;
+    return *t_ == *other.t_;
   }
 };
 

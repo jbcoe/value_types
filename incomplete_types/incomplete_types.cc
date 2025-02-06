@@ -13,8 +13,8 @@ VectorMember::VectorMember() = default;
 VectorMember::VectorMember(const VectorMember&) = default;
 VectorMember::~VectorMember() = default;
 
-bool operator==(const VectorMember& lhs, const VectorMember& rhs) {
-  return lhs.xs.size() == rhs.xs.size();  // since Incompletes are always equal.
+bool VectorMember::operator==(const VectorMember& other) const {
+  return xs.size() == other.xs.size();  // since Incompletes are always equal.
 }
 
 UniquePtrMember::UniquePtrMember() : x(new Incomplete()) {}
@@ -22,25 +22,25 @@ UniquePtrMember::UniquePtrMember(const UniquePtrMember& other)
     : x(new Incomplete(*other.x)) {}
 UniquePtrMember::~UniquePtrMember() = default;
 
-bool operator==(const UniquePtrMember& lhs, const UniquePtrMember& rhs) {
-  return *lhs.x == *rhs.x;
+bool UniquePtrMember::operator==(const UniquePtrMember& other) const {
+  return *x == *other.x;
 }
 
 WrapperMember::WrapperMember() = default;
 WrapperMember::WrapperMember(const WrapperMember& other) = default;
 WrapperMember::~WrapperMember() = default;
-bool operator==(const WrapperMember& lhs, const WrapperMember& rhs) = default;
+bool WrapperMember::operator==(const WrapperMember& other) const = default;
 
 ConstrainedWrapperMember::ConstrainedWrapperMember() = default;
 ConstrainedWrapperMember::ConstrainedWrapperMember(
     const ConstrainedWrapperMember& other) = default;
 ConstrainedWrapperMember::~ConstrainedWrapperMember() = default;
-bool operator==(const ConstrainedWrapperMember& lhs,
-                const ConstrainedWrapperMember& rhs) = default;
+bool ConstrainedWrapperMember::operator==(
+    const ConstrainedWrapperMember& other) const = default;
 
 VariantMember::VariantMember() = default;
 VariantMember::VariantMember(const VariantMember& other) = default;
 VariantMember::~VariantMember() = default;
-bool operator==(const VariantMember& lhs, const VariantMember& rhs) = default;
+bool VariantMember::operator==(const VariantMember& other) const = default;
 
 }  // namespace xyz::testing

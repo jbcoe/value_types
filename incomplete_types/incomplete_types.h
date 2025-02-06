@@ -17,7 +17,7 @@ struct VectorMember {
   VectorMember(const VectorMember&);
   ~VectorMember();
 
-  friend bool operator==(const VectorMember& lhs, const VectorMember& rhs);
+  bool operator==(const VectorMember& other) const;
 };
 
 struct UniquePtrMember {
@@ -27,8 +27,7 @@ struct UniquePtrMember {
   UniquePtrMember(const UniquePtrMember&);
   ~UniquePtrMember();
 
-  friend bool operator==(const UniquePtrMember& lhs,
-                         const UniquePtrMember& rhs);
+  bool operator==(const UniquePtrMember& other) const;
 };
 
 struct WrapperMember {
@@ -38,7 +37,7 @@ struct WrapperMember {
   WrapperMember(const WrapperMember&);
   ~WrapperMember();
 
-  friend bool operator==(const WrapperMember& lhs, const WrapperMember& rhs);
+  bool operator==(const WrapperMember& other) const;
 };
 
 struct ConstrainedWrapperMember {
@@ -48,8 +47,7 @@ struct ConstrainedWrapperMember {
   ConstrainedWrapperMember(const ConstrainedWrapperMember&);
   ~ConstrainedWrapperMember();
 
-  friend bool operator==(const ConstrainedWrapperMember& lhs,
-                         const ConstrainedWrapperMember& rhs);
+  bool operator==(const ConstrainedWrapperMember& other) const;
 };
 
 struct VariantMember {
@@ -58,7 +56,8 @@ struct VariantMember {
   VariantMember();
   VariantMember(const VariantMember&);
   ~VariantMember();
-  friend bool operator==(const VariantMember& lhs, const VariantMember& rhs);
+
+  bool operator==(const VariantMember& other) const;
 };
 
 }  // namespace xyz::testing
