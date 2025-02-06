@@ -109,8 +109,6 @@ jobs:
             }
     steps:
       - uses: actions/checkout@v3
-      - name: Set up environment
-        run: echo "CMAKE_TLS_VERIFY=0" >> $GITHUB_ENV
       - name: Add msbuild to PATH
         if: matrix.settings.os == 'windows-latest'
         uses: microsoft/setup-msbuild@v1.0.2
