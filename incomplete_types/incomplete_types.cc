@@ -38,4 +38,9 @@ ConstrainedWrapperMember::~ConstrainedWrapperMember() = default;
 bool operator==(const ConstrainedWrapperMember& lhs,
                 const ConstrainedWrapperMember& rhs) = default;
 
+VariantMember::VariantMember() = default;
+VariantMember::VariantMember(const VariantMember& other) = default;
+VariantMember::~VariantMember() = default;
+bool operator==(const VariantMember& lhs, const VariantMember& rhs) = default;
+
 }  // namespace xyz::testing

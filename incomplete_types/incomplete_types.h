@@ -1,6 +1,7 @@
 // Wrapper types with members templated on an incomplete type.
 
 #include <memory>
+#include <variant>
 #include <vector>
 
 #include "wrapper.h"
@@ -49,6 +50,15 @@ struct ConstrainedWrapperMember {
 
   friend bool operator==(const ConstrainedWrapperMember& lhs,
                          const ConstrainedWrapperMember& rhs);
+};
+
+struct VariantMember {
+  std::variant<int, xyz::wrapper<Incomplete>> x;
+
+  VariantMember();
+  VariantMember(const VariantMember&);
+  ~VariantMember();
+  friend bool operator==(const VariantMember& lhs, const VariantMember& rhs);
 };
 
 }  // namespace xyz::testing
