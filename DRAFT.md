@@ -1839,14 +1839,14 @@ For instance:
 
 ```c++
 template <typename T>
-class wrapper {
+class basic_wrapper {
   T t;
 
  public:
-  wrapper()
+  basic_wrapper()
   requires std::is_default_constructible_v<T>;
 
-  wrapper(const wrapper& other)
+  basic_wrapper(const basic_wrapper& other)
   requires std::is_copy_constructible_v<T>;
 };
 ```
@@ -1869,30 +1869,54 @@ For instance:
 
 ```c++
 template <typename T>
-class constrained_wrapper {
+class incomplete_wrapper {
   T* t; // Use a pointer for incomplete type support.
 
  public:
   template <typename TT=T>
-  constrained_wrapper()
+  incomplete_wrapper()
   requires std::is_default_constructible_v<TT>;
 
-  // Constraining the copy constructor is more involved
-  // but possible and omitted for brevity.
+  incomplete_wrapper(const incomplete_wrapper&) requires false;
+
+  template <typename TT=T>
+  incomplete_wrapper(const incomplete_wrapper&)
+  requires std::is_copy_constructible_v<TT>;
 };
 ```
 
 By making the default constructor into a function template, and placing the
 constraint on the inferred template type `TT`, evaluation of the constraint
-is deferred to function instantiation time, at which point the type `TT` will be
-deduced to be `T` and will need to be complete for the constraint to be evaluated.
+is deferred to function instantiation time. At function instantaion time the
+type `TT` will be deduced to be `T` and will need to be complete for the
+constraint to be evaluated. A similar trick is used for the copy constructor
+but since copy constructors cannot be function templates, we use concepts to
+disable the copy constructor and put a function template with a deferred
+constraint and the right signature into the overload set.
 
-TODO Add discussion of variant, vector and composites with wrapper and constrained wrapper members.
+Using deferred constraints for `indirect` and `polymorphic` composes badly with
+some implementations of standard library types such as `variant` when `T` is an
+incomplete type. The deferred constraint for `T` in `indirect<T>` being copy
+constructible was removed from `indirect`'s copy constructor as it was
+incompatible with libc++'s implementation of `variant`. In response, the authors
+opted to make `indirect` unconditionally copyable. Other implementations of `variant`
+are incompatible with other deferred constraints when `T` is an incomplete type.
 
-As proposed, `indirect` and `polymorphic` follow the design of `vector` and will sometimes
-falsely advertise copyability or default constructibility. If correct type-traits should be
-imposed upon standard library types that support incomplete types, this should be done
-consistently across types in a future revision of the standard.
+For a composite with a component type templated on `indirect<T>` or `polymorphic<T>`,
+where `T` is an incomplete type, the constraints on the composite's member functions will
+need to be written as deferred constraints so that they are not evaluated at class
+instantiation time. While this would be conformant, it is not currently required and
+the viral nature of this impostion on the authors and maintainers of future (and existing)
+vocabulary types is rather onerous. If constraints on the composite are not implemented
+as deferred constraints, then the composite cannot be templated on `indirect<T>` or
+`polymorphic<T>` when `T` is an incomplete type. This is regrettable as use of `indirect`
+where pointers are currently used to support incomplete types inside recursive data
+structures is an important use case.
+
+The authors have opted not to use deferred constraints to constrain the member functions of
+`indirect` and `polymorphic`. As proposed, `indirect` and `polymorphic` follow the design of `vector` and will sometimes falsely advertise copyability or default constructibility. If
+correct type-traits should be imposed upon standard library types that support incomplete
+types, this should be done consistently across types (perhaps requiring support for deferred constraint checks) in a future revision of the standard.
 
 ```c++
 struct Copyable {
