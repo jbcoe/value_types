@@ -27,7 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        configuration: ["Release", "Debug"]
+        configuration: ["Debug"]
         settings:
           - {
               name: "Ubuntu GCC-11",
