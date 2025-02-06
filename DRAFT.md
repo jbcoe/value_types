@@ -1887,39 +1887,7 @@ constraint on the inferred template type `TT`, evaluation of the constraint
 is deferred to function instantiation time, at which point the type `TT` will be
 deduced to be `T` and will need to be complete for the constraint to be evaluated.
 
-Support for indirect with constraints on a deferred deduced type differs across toolchains
-and inhibits usability. When indirect's member functions are constrained with a deferred deduced
-type, MSVC requires member functions to be explicitly declared so that they can later be defaulted
-when the type is complete. Such behaviour makes using a constrained `indirect` hard to teach and
-inconsistent with the design of current components (like vector) in the standard library.
-
-```c++
-struct Number {}; // Complete type.
-
-struct BinOp; // Incomplete type.
-
-struct Expression {
-  std::variant<Number, constrained_indirect<BinOp>> info;
-
-  Expression();
-  Expression(const Expression&);
-  Expression(Expression&&);
-  Expression& operator=(const Expression&);
-  Expression& operator=(Expression&&);
-};
-```
-
-Clang and GCC permit the far more succinct code below.
-
-```c++
-struct Number {}; // Complete type.
-
-struct BinOp; // Incomplete type.
-
-struct Expression {
-  std::variant<Number, constrained_indirect<BinOp>> info;
-};
-```
+TODO Add discussion of variant, vector and composites with wrapper and constrained wrapper members.
 
 As proposed, `indirect` and `polymorphic` follow the design of `vector` and will sometimes
 falsely advertise copyability or default constructibility. If correct type-traits should be

@@ -50,14 +50,32 @@ struct ConstrainedWrapperMember {
   bool operator==(const ConstrainedWrapperMember& other) const;
 };
 
-struct VariantMember {
-  std::variant<int, xyz::wrapper<Incomplete>> x;
+struct VariantWrapperMember {
+  std::variant<xyz::wrapper<Incomplete>, int> x;
 
-  VariantMember();
-  VariantMember(const VariantMember&);
-  ~VariantMember();
+  VariantWrapperMember();
+  VariantWrapperMember(const VariantWrapperMember&);
+  ~VariantWrapperMember();
 
-  bool operator==(const VariantMember& other) const;
+  bool operator==(const VariantWrapperMember& other) const;
+};
+struct VariantCWrapperMember {
+  std::variant<xyz::constrained_wrapper<Incomplete>, int> x;
+
+  VariantCWrapperMember();
+  VariantCWrapperMember(const VariantCWrapperMember&);
+  ~VariantCWrapperMember();
+
+  bool operator==(const VariantCWrapperMember& other) const;
 };
 
+struct VariantVectorMember {
+  std::variant<std::vector<Incomplete>, int> x;
+
+  VariantVectorMember();
+  VariantVectorMember(const VariantVectorMember&);
+  ~VariantVectorMember();
+
+  bool operator==(const VariantVectorMember& other) const;
+};
 }  // namespace xyz::testing

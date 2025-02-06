@@ -13,9 +13,7 @@ VectorMember::VectorMember() = default;
 VectorMember::VectorMember(const VectorMember&) = default;
 VectorMember::~VectorMember() = default;
 
-bool VectorMember::operator==(const VectorMember& other) const {
-  return xs.size() == other.xs.size();  // since Incompletes are always equal.
-}
+bool VectorMember::operator==(const VectorMember& other) const = default;
 
 UniquePtrMember::UniquePtrMember() : x(new Incomplete()) {}
 UniquePtrMember::UniquePtrMember(const UniquePtrMember& other)
@@ -38,9 +36,25 @@ ConstrainedWrapperMember::~ConstrainedWrapperMember() = default;
 bool ConstrainedWrapperMember::operator==(
     const ConstrainedWrapperMember& other) const = default;
 
-VariantMember::VariantMember() = default;
-VariantMember::VariantMember(const VariantMember& other) = default;
-VariantMember::~VariantMember() = default;
-bool VariantMember::operator==(const VariantMember& other) const = default;
+VariantWrapperMember::VariantWrapperMember() = default;
+VariantWrapperMember::VariantWrapperMember(const VariantWrapperMember& other) =
+    default;
+VariantWrapperMember::~VariantWrapperMember() = default;
+bool VariantWrapperMember::operator==(const VariantWrapperMember& other) const =
+    default;
+
+VariantCWrapperMember::VariantCWrapperMember() = default;
+VariantCWrapperMember::VariantCWrapperMember(
+    const VariantCWrapperMember& other) = default;
+VariantCWrapperMember::~VariantCWrapperMember() = default;
+bool VariantCWrapperMember::operator==(
+    const VariantCWrapperMember& other) const = default;
+
+VariantVectorMember::VariantVectorMember() = default;
+VariantVectorMember::VariantVectorMember(const VariantVectorMember& other) =
+    default;
+VariantVectorMember::~VariantVectorMember() = default;
+bool VariantVectorMember::operator==(const VariantVectorMember& other) const =
+    default;
 
 }  // namespace xyz::testing
