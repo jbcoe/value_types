@@ -56,6 +56,8 @@ should not be considered in isolation.
 
 * Remove needless introduction of `UU` in `indirect` constraints.
 
+* Update discussion of constraints and incomplete type support in appendix.
+
 ## Changes in R12
 
 * Fix `indirect` synopsis to include `explicit` on the default constructor.
@@ -68,7 +70,7 @@ should not be considered in isolation.
 
 * `T` in `indirect` needs to be copy-constructible only for the copy constructor(s).
 
-* Add discussion of constraints and incomplete type support.
+* Add discussion of constraints and incomplete type support in appendix.
 
 * Fix specification of `<=>` to use `synth-three-way-result`.
 
@@ -1832,104 +1834,18 @@ the standard if required.
 
 ## Constraints and incomplete type support
 
-Using either SFINAE or requires clauses (from C++20 onwards), member functions
-can be constrained so that they are available only when certain conditions are met.
+We decided not to conditionally enable the default constructor, copy constructor and
+comparison operators for `indirect`, and not to conditionally enable the default
+constructor for `polymorphic`.
 
-For instance:
-
-```c++
-template <typename T>
-class wrapper {
-  T t;
-
- public:
-  wrapper()
-  requires std::is_default_constructible_v<T>;
-
-  wrapper(const wrapper& other)
-  requires std::is_copy_constructible_v<T>;
-};
-```
-
-The wrapper type is default constructible only if the wrapped type `T` is
-default constructible and copy constructible only if the wrapped type `T`
-is copy constructible.
-
-Imposing constraints like this requires that the type `T` is complete at the
-time the class template is instantiated. Both `polymorphic` and `indirect` are
-designed to work with incomplete types so constraining member functions with
-requires clauses (or SFINAE), as shown above, is not an option.
-
-In revision 4 of this proposal, the authors were invited to use a deferred deduced
-type to allow constraints to be applied to member functions. This would allow the class
-to be instantiated with `T` as an incomplete type, as member function constraints
-would be checked at only member function instantiation time.
-
-For instance:
-
-```c++
-template <typename T>
-class constrained_wrapper {
-  T* t; // Use a pointer for incomplete type support.
-
- public:
-  template <typename TT=T>
-  constrained_wrapper()
-  requires std::is_default_constructible_v<TT>;
-
-  // Constraining the copy constructor is more involved
-  // but possible and omitted for brevity.
-};
-```
-
-By making the default constructor into a function template, and placing the
-constraint on the inferred template type `TT`, evaluation of the constraint
-is deferred to function instantiation time, at which point the type `TT` will be
-deduced to be `T` and will need to be complete for the constraint to be evaluated.
-
-Support for indirect with constraints on a deferred deduced type differs across toolchains
-and inhibits usability. When indirect's member functions are constrained with a deferred deduced
-type, MSVC requires member functions to be explicitly declared so that they can later be defaulted
-when the type is complete. Such behaviour makes using a constrained `indirect` hard to teach and
-inconsistent with the design of current components (like vector) in the standard library.
-
-```c++
-struct Number {}; // Complete type.
-
-struct BinOp; // Incomplete type.
-
-struct Expression {
-  std::variant<Number, constrained_indirect<BinOp>> info;
-
-  Expression();
-  Expression(const Expression&);
-  Expression(Expression&&);
-  Expression& operator=(const Expression&);
-  Expression& operator=(Expression&&);
-};
-```
-
-Clang and GCC permit the far more succinct code below.
-
-```c++
-struct Number {}; // Complete type.
-
-struct BinOp; // Incomplete type.
-
-struct Expression {
-  std::variant<Number, constrained_indirect<BinOp>> info;
-};
-```
-
-As proposed, `indirect` and `polymorphic` follow the design of `vector` and will sometimes
-falsely advertise copyability or default constructibility. If correct type-traits should be
-imposed upon standard library types that support incomplete types, this should be done
-consistently across types in a future revision of the standard.
+Both `indirect` and `polymorphic` must support incomplete types at class instantiation time.
+Similar to `vector`, they may falsely advertise support (through type traits or concepts) for
+functions that would make a program ill-formed if they were used.
 
 ```c++
 struct Copyable {
   Copyable() = default;
-  Copyable(const Copyable&) = delete;
+  Copyable(const Copyable&) = default;
 };
 
 struct NonCopyable {
@@ -1951,6 +1867,58 @@ static_assert(std::is_copy_constructible_v<polymorphic<Copyable>>); // Passes.
 static_assert(std::is_copy_constructible_v<polymorphic<NonCopyable>>); // Passes.
 static_assert(std::is_copy_constructible_v<polymorphic<Incomplete>>); // Passes.
 ```
+
+### Deferred constraints for incomplete types
+
+It is possible to avoid misleading type trait information by using _deferred
+constraints_: constraint evaluation can be deferred to function instantiation
+time by applying constraints to a deduced template argument.
+
+```c++
+template <typename T>
+class incomplete_wrapper {
+  T* t; // Use a pointer for incomplete type support.
+
+ public:
+  template <typename TT=T>
+  incomplete_wrapper()
+  requires std::is_default_constructible_v<TT>;
+
+  incomplete_wrapper(const incomplete_wrapper&) requires false;
+
+  template <typename TT=T>
+  incomplete_wrapper(const incomplete_wrapper&)
+  requires std::is_copy_constructible_v<TT>;
+};
+```
+
+Whilst appealing, this approach works badly in composition with other types.
+To illustrate, consider the following class template `TaggedType`:
+
+```cpp
+template<typename T>
+class TaggedType {
+  T t;
+
+ public:
+  TaggedType() requires std::is_default_constructible_v<T>;
+  TaggedType(const TaggedType&) requires std::is_copy_constructible_v<T>;
+};
+```
+
+We cannot instantiate the class `TaggedType<incomplete_wrapper<T>>` when `T` is an incomplete type
+as the constraints on `TaggedType` are evaluated at class instantiation time. This will force
+the evaluation of the constraints on `incomplete_wrapper<T>`, which cannot be evaluated as `T` is incomplete.
+
+To support `incomplete_wrapper` with an incomplete type, `TaggedType` must also use deferred constraints.
+Any type with constraints that might be templated on `TaggedType` must then also use deferred constraints,
+and so on. The viral nature of this requirement makes `incomplete_wrapper` unusable with other library
+components if it is intended to support incomplete types.
+
+We decided not to impose deferred constraints on `indirect` and `polymorphic`, as it would make the types
+unusable in composition with other types.
+
+### Mandates not constraints
 
 `indirect` and `polymorphic` use static assertions (mandates clauses) which are
 evaluated at function instantiation time to provide better compiler errors.
