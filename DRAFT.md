@@ -56,6 +56,8 @@ should not be considered in isolation.
 
 * Remove needless introduction of `UU` in `indirect` constraints.
 
+* Update discussion of constraints and incomplete type support in appendix.
+
 ## Changes in R12
 
 * Fix `indirect` synopsis to include `explicit` on the default constructor.
@@ -68,7 +70,7 @@ should not be considered in isolation.
 
 * `T` in `indirect` needs to be copy-constructible only for the copy constructor(s).
 
-* Add discussion of constraints and incomplete type support.
+* Add discussion of constraints and incomplete type support in appendix.
 
 * Fix specification of `<=>` to use `synth-three-way-result`.
 
