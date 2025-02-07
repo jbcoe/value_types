@@ -1835,8 +1835,8 @@ the standard if required.
 ## Constraints and incomplete type support
 
 We decided not to conditionally enable the default constructor, copy constructor and
-comparison operators for `indirect` nor to conditionally enable the default constructor
-for `polymorphic`.
+comparison operators for `indirect`, and not to conditionally enable the default
+constructor for `polymorphic`.
 
 Both `indirect` and `polymorphic` must support incomplete types at class instantiation time.
 Similar to `vector`, they may falsely advertise support (through type traits or concepts) for
@@ -1908,15 +1908,15 @@ class TaggedType {
 
 We cannot instantiate the class `TaggedType<incomplete_wrapper<T>>` when `T` is an incomplete type
 as the constraints on `TaggedType` are evaluated at class instantiation time. This will force
-the evaluation of the constraints on `incomplete_wrapper<T>` which cannot be evaluated as `T` is incomplete.
+the evaluation of the constraints on `incomplete_wrapper<T>`, which cannot be evaluated as `T` is incomplete.
 
 To support `incomplete_wrapper` with an incomplete type, `TaggedType` must also use deferred constraints.
-Any type with constraints that might be templated on `TaggedType` must also use deferred constraints and so on.
-The viral nature of this requirement makes `incomplete_wrapper` unusable with other library components if it
-is intended to support incomplete types.
+Any type with constraints that might be templated on `TaggedType` must then also use deferred constraints,
+and so on. The viral nature of this requirement makes `incomplete_wrapper` unusable with other library
+components if it is intended to support incomplete types.
 
-We considered but ruled out imposing deferred constraints on `indirect` and `polymorphic`
-as it would make the types unusable in composition with other types.
+We decided not to impose deferred constraints on `indirect` and `polymorphic`, as it would make the types
+unusable in composition with other types.
 
 ### Mandates not constraints
 
