@@ -1,3 +1,5 @@
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
+
 cc_library(
     name = "wrapper",
     hdrs = ["wrapper.h"]
@@ -17,4 +19,15 @@ cc_test(
         "incomplete_types",
         "@com_google_googletest//:gtest_main",
     ]
+)
+
+cc_library(
+    name = "traits_and_concepts",
+    srcs = ["traits_and_concepts.cc"],
+    visibility = ["//visibility:private"],
+)
+
+build_test(
+    name = "traits_and_concepts_build_test",
+    targets = ["traits_and_concepts"],
 )
