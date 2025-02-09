@@ -31,11 +31,11 @@ footer: https://github.com/jbcoe/value_types
 
 - [LWG] Consistently use `synth-three-way-result` for `indirect`.
 
-- [LEWG] Use mandates for constraints on comparison, in line with `optional`: https://eel.is/c++draft/optional#relops
+- [LEWG] Use _mandates_ for _constraints_ on comparison, in line with `optional`: https://eel.is/c++draft/optional#relops
 
-- [None] Punctuation and style consistency fixes.
+- [None] Fix punctuation and style inconsistency issues.
 
-- [LWG] Use "may be only X" instead of "may only be X".
+- [LWG] Use 'may be only X' instead of 'may only be X'.
 
 - [LEWG] Remove conditional `noexcept` on `indirect`'s three-way comparison.
 
@@ -53,7 +53,7 @@ footer: https://github.com/jbcoe/value_types
 
 ## Replacing _constraints_ with _mandates_
 
-Constraining a deduced template argument to avoid evaluation constraints at class
+Constraining a deduced template argument to avoid evaluating constraints at class
 instatiation time works but composes badly with other types that may have `indirect`
 and `polymorphic` members.
 
@@ -62,10 +62,10 @@ If these constraints are not implemented in terms of deduced template arguments 
 `indirect<T>` and `polymorphic<T>` will be unable to evaluate these constraints when
 `T` is incomplete.
 
-Replacing constraints (SFINAE/requirements) with mandates (static_assert) will make
-a program using unsupported functions ill-formed. type-traits will give potentially
-misleading results but this is consistent with existing types in the standard library
-(vector).
+Replacing constraints (SFINAE/requirements) with mandates (`static_assert`) will make
+a program using unsupported functions ill-formed. Type traits will give potentially
+misleading results but this is consistent with existing types in the standard library,
+such as `vector`.
 
 <https://github.com/jbcoe/value_types/compare/r11...r13>
 
@@ -78,17 +78,13 @@ We required `indirect` to be unconditionally copyable so that it would work with
 implementations of `variant` for which this change is not sufficient for a
 `variant` of `indirect` to work with an incomplete type.
 
-We revert to our original design where `T` in `indirect` can be non-copyable;
-that this is consistent with vector where:
+We revert to our original design where `T` in `indirect` can be non-copyable.
+This is consistent with `vector` where:
 `std::is_copy_constructible_v<std::vector<NonCopyable>` is `True`.
-
-Note: There's no motivating reason for `polymorphic` to be constructable for a
-non-copyable type as the expensive type-erasure is only used for correctly
-copying derived types.
 
 ---
 
-## Removal of mandates `T` is a complete type where this is implied by constraints
+## Removal of 'mandates `T` is a complete type' where this is implied by constraints
 
 Constraints using type traits already require that the constrained type is complete.
 
@@ -106,7 +102,8 @@ does not do anything meaningful.
 
 ## Consistently use `synth-three-way-result` for `indirect`
 
-We misused `compare_three_way_result_t` in the synopsis of `indirect`:
+We misused `compare_three_way_result_t` in the synopsis of `indirect`
+and have corrected this:
 
 ```diff
    template <class U, class AA>
@@ -126,9 +123,10 @@ We misused `compare_three_way_result_t` in the synopsis of `indirect`:
 
 ---
 
-## Add missing `explicit` to indirect synopsis
+## Add missing `explicit` to `indirect` synopsis
 
-We missed an `explicit` in the `indirect` synopsis:
+We missed an `explicit` in the `indirect` synopsis and
+have corrected this:
 
 ```diff
 class indirect {
@@ -145,31 +143,35 @@ class indirect {
 
 ## Sorting constraints consistently
 
+Assorted diffs best viewed in <https://github.com/jbcoe/value_types/compare/r11...r13>
+
+---
+
 ## Removing a redundant constraint that `U` is not `polymorphic` in `polymorphic`'s `in_place_type<U>` constructor
 
-Assorted diffs best viewed in <https://github.com/jbcoe/value_types/compare/r11...r13>
+Diff is messy due to sorting and best viewed in <https://github.com/jbcoe/value_types/compare/r11...r13>
 
 ---
 
 ## Proposed poll
 
-"Replace constraints on `T` in polymorphic's default constructor, indirect's default
-constructor and comparison operators with mandates. Allow indirect, like vector, to
+"Replace constraints on `T` in `polymorphic`'s default constructor, `indirect`'s default
+constructor and comparison operators with mandates. Allow `indirect`, like `vector`, to
 be used with non-copyable types."
 
-Note: This means that type-traits can report that `polymorphic` is default constructible,
+Note: This means that type traits can report that `polymorphic` is default constructible,
 `indirect` is default constructible, copy constructible or comparable when it is not.
-This is the same behaviour as `vector` which supports incomplete types and can give
+This is the same behaviour as `vector`, which supports incomplete types and can give
 misleading type-trait information.
 
 ---
 
 ## Conclusion
 
-Thanks for the many hours of input, interest and engagement we've seen from folk
-on `indirect` and `polymorphic`. These are, at heart, simple types but if designed
-well have the power to change how people use C++.
+Thank you for the many hours of input, interest and engagement we have seen from folk
+on `indirect` and `polymorphic`. These are, at heart, simple types but, if designed
+well, have the power to change how people use C++.
 
-I'd also like to thank my assorted collaborators on GitHub. I've never met (most)
-of you but you've made these types better and the open development of this proposal
-is something I would encourage and do again without hesitation.
+I would also like to thank my assorted collaborators on GitHub. I have never met (most)
+of you but you have made these types better and the open development of this proposal
+is something I would strongly encourage and do again without hesitation.
