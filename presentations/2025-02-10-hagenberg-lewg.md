@@ -51,10 +51,6 @@ footer: https://github.com/jbcoe/value_types
 
 ---
 
-<https://github.com/jbcoe/value_types/compare/r11...r13>
-
----
-
 ## Replacing _constraints_ with _mandates_
 
 Constraining a deduced template argument to avoid evaluation constraints at class
@@ -70,6 +66,8 @@ Replacing constraints (SFINAE/requirements) with mandates (static_assert) will m
 a program using unsupported functions ill-formed. type-traits will give potentially
 misleading results but this is consistent with existing types in the standard library
 (vector).
+
+<https://github.com/jbcoe/value_types/compare/r11...r13>
 
 ---
 
@@ -148,6 +146,8 @@ class indirect {
 ## Sorting constraints consistently
 
 ## Removing a redundant constraint that `U` is not `polymorphic` in `polymorphic`'s `in_place_type<U>` constructor
+
+Assorted diffs best viewed in <https://github.com/jbcoe/value_types/compare/r11...r13>
 
 ---
 
