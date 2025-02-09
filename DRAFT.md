@@ -1892,7 +1892,7 @@ class incomplete_wrapper {
 };
 ```
 
-Whilst appealing, this approach works badly in composition with other types.
+Whilst appealing, this approach is problematic when used in composition with other types.
 To illustrate, consider the following class template `TaggedType`:
 
 ```cpp
