@@ -1,57 +1,14 @@
----
-marp: true
-theme: default
-paginate: true
-size: 16:9
-footer: https://github.com/jbcoe/value_types
----
-
 # `indirect` and `polymorphic`: value types for composite class design
 
 ## ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-## Changes from P3019r11 (Accepted in Plenary in Wroclaw 2024)
+## Changes between P3019r11 (Accepted in Plenary in Wroclaw 2024) and P3019r13
 
 ## Hagenberg Austria 2025-02-10
 
 ---
 
-## List of git changes: `r11...r13`
-
-- [LWG] Add missing `explicit` to `indirect` synoposis.
-
-- [LEWG] Use _mandates_ not _constraints_ where the constraint is purely
-  on the (potentially incomplete) type `T`.
-
-- [LEWG] Remove _mandates_ that `T` is a complete type where it is implied by constraints.
-
-- [LEWG] Add _mandates_ that `T` is copy-construcible in `indirect`'s copy constructors and assignments.
-
-- [LEWG] Allow `indirect` to be used with non-copyable types.
-
-- [LWG] Consistently use `synth-three-way-result` for `indirect`.
-
-- [LEWG] Use _mandates_ for _constraints_ on comparison, in line with `optional`: https://eel.is/c++draft/optional#relops
-
-- [None] Fix punctuation and style inconsistency issues.
-
-- [LWG] Use 'may be only X' instead of 'may only be X'.
-
-- [LEWG] Remove conditional `noexcept` on `indirect`'s three-way comparison.
-
-- [None] Add additional example to clarify tagged constructor usage.
-
-- [LWG] Fix typo where `alloc` was used when it should have been `a`.
-
-- [LWG] Remove redundant constraint on `U` in `polymorphic`'s in-place constructors.
-
-- [LWG] Consistently sort constraints.
-
-- [None] Add detailed discussion of constraints and incomplete types.
-
----
-
-## Replacing _constraints_ with _mandates_
+## Replacing _constraints_ with _mandates_ [LEWG]
 
 Constraining a deduced template argument to avoid evaluating constraints at class
 instatiation time works but composes badly with other types that may have `indirect`
@@ -62,14 +19,14 @@ If these constraints are not implemented in terms of deduced template arguments 
 `indirect<T>` and `polymorphic<T>` will be unable to evaluate these constraints when
 `T` is incomplete.
 
-Replacing constraints (SFINAE/requirements) with mandates (`static_assert`) will make
+Replacing constraints (SFINAE/requirements) with mandates (`static_assert`) will leave
 a program using unsupported functions ill-formed. Type traits will give potentially
 misleading results but this is consistent with existing types in the standard library,
 such as `vector`.
 
 ---
 
-## Allowing indirect to be used with a non-copyable type
+## Allowing indirect to be used with a non-copyable type [LEWG]
 
 We required `indirect` to be unconditionally copyable so that it would work with
 `variant` when constraints were on a deduced template type. There are other
@@ -173,3 +130,38 @@ well, have the power to change how people use C++.
 I would also like to thank my assorted collaborators on GitHub. I have never met (most)
 of you but you have made these types better and the open development of this proposal
 is something I would strongly encourage and do again without hesitation.
+
+---
+
+## Appendix: List of git changes: `r11...r13`
+
+- [LWG] Add missing `explicit` to `indirect` synoposis.
+
+- [LEWG] Use _mandates_ not _constraints_ where the constraint is purely
+  on the (potentially incomplete) type `T`.
+
+- [LEWG] Remove _mandates_ that `T` is a complete type where it is implied by constraints.
+
+- [LEWG] Add _mandates_ that `T` is copy-construcible in `indirect`'s copy constructors and assignments.
+
+- [LEWG] Allow `indirect` to be used with non-copyable types.
+
+- [LWG] Consistently use `synth-three-way-result` for `indirect`.
+
+- [LEWG] Use _mandates_ for _constraints_ on comparison, in line with `optional`: https://eel.is/c++draft/optional#relops
+
+- [None] Fix punctuation and style inconsistency issues.
+
+- [LWG] Use 'may be only X' instead of 'may only be X'.
+
+- [LEWG] Remove conditional `noexcept` on `indirect`'s three-way comparison.
+
+- [None] Add additional example to clarify tagged constructor usage.
+
+- [LWG] Fix typo where `alloc` was used when it should have been `a`.
+
+- [LWG] Remove redundant constraint on `U` in `polymorphic`'s in-place constructors.
+
+- [LWG] Consistently sort constraints.
+
+- [None] Add detailed discussion of constraints and incomplete types.
