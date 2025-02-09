@@ -7,5 +7,17 @@ if (${XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT})
                 incomplete_types.cc
                 incomplete_types_test.cc
         )
+
+        add_library(traits_and_concepts OBJECT)
+        target_sources(traits_and_concepts
+            PRIVATE
+                traits_and_concepts.cc
+        )
+        set_target_properties(traits_and_concepts PROPERTIES
+            CXX_STANDARD 20
+            CXX_STANDARD_REQUIRED YES
+            CXX_EXTENSIONS NO
+        )
+
     endif()
 endif()
