@@ -16,7 +16,7 @@ footer: https://github.com/jbcoe/value_types
 
 ---
 
-## List of changes from 3019r11
+## List of git changes: `r11...r13`
 
 - [LWG] Add missing `explicit` to `indirect` synoposis.
 
@@ -66,8 +66,6 @@ Replacing constraints (SFINAE/requirements) with mandates (`static_assert`) will
 a program using unsupported functions ill-formed. Type traits will give potentially
 misleading results but this is consistent with existing types in the standard library,
 such as `vector`.
-
-<https://github.com/jbcoe/value_types/compare/r11...r13>
 
 ---
 
