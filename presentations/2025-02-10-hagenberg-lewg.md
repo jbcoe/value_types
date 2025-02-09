@@ -153,9 +153,9 @@ Assorted diffs best viewed in <https://github.com/jbcoe/value_types/compare/r11.
 
 ## Proposed poll
 
-"Replace constraints on `T` in `polymorphic`'s constructors, `indirect`'s constructors and
-`indirect`'s comparison operators with mandates. Allow `indirect`, like `vector`, to be used
-with non-copyable types."
+"Replace constraints on `T` in polymorphic's default constructor, indirect's default
+constructor and comparison operators with mandates. Allow indirect, like vector, to
+be used with non-copyable types."
 
 Note: This means that type-traits can report that `polymorphic` is default constructible,
 `indirect` is default constructible, copy constructible or comparable when it is not.
