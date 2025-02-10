@@ -7,9 +7,11 @@ cc_library(
 
 cc_library(
     name = "indirect",
+    srcs = ["indirect.cc"],
     hdrs = ["indirect.h"],
     copts = ["-Iexternal/value_types/"],
     visibility = ["//visibility:public"],
+    deps = ["feature_check"]
 )
 
 cc_library(
@@ -30,9 +32,7 @@ cc_library(
 cc_test(
     name = "indirect_test",
     size = "small",
-    srcs = [
-        "indirect_test.cc",
-    ],
+    srcs = ["indirect_test.cc"],
     deps = [
         "feature_check",
         "indirect",
@@ -45,21 +45,18 @@ cc_test(
 
 cc_library(
     name = "indirect_cxx14",
-    hdrs = [
-        "indirect.h",
-        "indirect_cxx14.h",
-    ],
+    srcs = ["indirect_cxx14.cc"],
+    hdrs = ["indirect_cxx14.h"],
     copts = ["-Iexternal/value_types/"],
     defines = ["XYZ_INDIRECT_CXX_14"],
     visibility = ["//visibility:public"],
+    deps = ["feature_check"]
 )
 
 cc_test(
     name = "indirect_cxx14_test",
     size = "small",
-    srcs = [
-        "indirect_test.cc",
-    ],
+    srcs = ["indirect_test.cc"],
     copts = ["-std=c++14"],
     deps = [
         "feature_check",
@@ -74,9 +71,7 @@ cc_test(
 cc_test(
     name = "indirect_cxx17_test",
     size = "small",
-    srcs = [
-        "indirect_test.cc",
-    ],
+    srcs = ["indirect_test.cc"],
     copts = ["-std=c++17"],
     deps = [
         "feature_check",
@@ -90,6 +85,7 @@ cc_test(
 
 cc_library(
     name = "polymorphic",
+    srcs = ["polymorphic.cc"],
     hdrs = ["polymorphic.h"],
     copts = ["-Iexternal/value_types/"],
     visibility = ["//visibility:public"],
@@ -98,9 +94,7 @@ cc_library(
 cc_test(
     name = "polymorphic_test",
     size = "small",
-    srcs = [
-        "polymorphic_test.cc",
-    ],
+    srcs = ["polymorphic_test.cc"],
     deps = [
         "feature_check",
         "polymorphic",
@@ -113,6 +107,7 @@ cc_test(
 
 cc_library(
     name = "polymorphic_cxx14",
+    srcs = ["polymorphic_cxx14.cc"],
     hdrs = ["polymorphic_cxx14.h"],
     copts = ["-Iexternal/value_types/"],
     defines = ["XYZ_POLYMORPHIC_CXX_14"],
@@ -122,9 +117,7 @@ cc_library(
 cc_test(
     name = "polymorphic_cxx14_test",
     size = "small",
-    srcs = [
-        "polymorphic_test.cc",
-    ],
+    srcs = ["polymorphic_test.cc"],
     copts = ["-std=c++14"],
     deps = [
         "feature_check",
@@ -139,9 +132,7 @@ cc_test(
 cc_test(
     name = "polymorphic_cxx17_test",
     size = "small",
-    srcs = [
-        "polymorphic_test.cc",
-    ],
+    srcs = ["polymorphic_test.cc"],
     copts = ["-std=c++17"],
     deps = [
         "feature_check",

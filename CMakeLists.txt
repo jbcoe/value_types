@@ -55,6 +55,8 @@ xyz_add_library(
 target_sources(indirect_cxx14
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect_cxx14.h>
+    PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect_cxx14.cc>
 )
 
 xyz_add_library(
@@ -66,6 +68,8 @@ xyz_add_library(
 target_sources(indirect_cxx17
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect_cxx14.h>
+    PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect_cxx14.cc>
 )
 
 xyz_add_library(
@@ -75,6 +79,7 @@ xyz_add_library(
 target_sources(polymorphic
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h>
+    PRIVATE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.cc>
 )
 
@@ -87,6 +92,8 @@ xyz_add_library(
 target_sources(polymorphic_cxx14
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic_cxx14.h>
+    PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic_cxx14.cc>
 )
 
 xyz_add_library(
@@ -98,6 +105,8 @@ xyz_add_library(
 target_sources(polymorphic_cxx17
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic_cxx14.h>
+    PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic_cxx14.cc>
 )
 
 if (${XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT})
