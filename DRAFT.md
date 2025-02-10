@@ -1143,14 +1143,12 @@ constexpr indirect& operator=(indirect&& other) noexcept(
     * `is_constructible_v<T, U>` is `true`, and
     * `is_assignable_v<T&, U>` is `true`.
 
-11. TODO: Renumber.
-
-12. _Effects_: If `*this` is valueless then constructs an owned object of type `T`
+11. _Effects_: If `*this` is valueless then constructs an owned object of type `T`
     with `std::forward<U>(u)` using the allocator `alloc`.
     Otherwise, equivalent to\
     `**this = std::forward<U>(u)`.
 
-13. _Returns_: A reference to `*this`.
+12. _Returns_: A reference to `*this`.
 
 ### X.Y.6 Observers [indirect.observers]
 
