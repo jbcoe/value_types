@@ -984,7 +984,7 @@ explicit constexpr indirect(U&& u);
 15. _Constraints_:
     * `is_same_v<remove_cvref_t<U>, indirect>` is `false`,
     * `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`,
-    * `is_constructible_v<T, U>` is `true` and
+    * `is_constructible_v<T, U>` is `true`, and
     * `is_default_constructible_v<Allocator>` is `true`.
 
 16. _Effects_: Constructs an owned object of type `T` with
@@ -997,7 +997,7 @@ explicit constexpr indirect(allocator_arg_t, const Allocator& a, U&& u);
 
 17. _Constraints_:
     * `is_same_v<remove_cvref_t<U>, indirect>` is `false`,
-    * `is_same_v<remove_cvref_t<U>, in_place_t>` is `false` and
+    * `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`, and
     * `is_constructible_v<T, U>` is `true`.
 
 18. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs
@@ -1010,7 +1010,7 @@ explicit constexpr indirect(in_place_t, Us&&... us);
 ```
 
 19. _Constraints_:
-    * `is_constructible_v<T, Us...>` is `true` and
+    * `is_constructible_v<T, Us...>` is `true`, and
     * `is_default_constructible_v<Allocator>` is `true`.
 
 20. _Effects_: Constructs an owned object of type `T` with
@@ -1074,7 +1074,7 @@ constexpr indirect& operator=(const indirect& other);
 ```
 
 1. _Mandates_:
-   * `is_copy_assignable_v<T>` is `true` and
+   * `is_copy_assignable_v<T>` is `true`, and
    * `is_copy_constructible_v<T>` is `true`.
 
 2. _Effects_: If `addressof(other) == this` is `true`, there are no effects.\
@@ -1143,10 +1143,10 @@ constexpr indirect& operator=(indirect&& other) noexcept(
     * `is_constructible_v<T, U>` is `true`, and
     * `is_assignable_v<T&, U>` is `true`.
 
-11. _Mandates_: `is_copy_constructible_t<T>` is `true`.
+11. TODO: Renumber.
 
-12. _Effects_: If `*this` is valueless then equivalent to\
-    `*this = indirect(allocator_arg, alloc, std::forward<U>(u));`.
+12. _Effects_: If `*this` is valueless then constructs an owned object of type `T`
+    with `std::forward<U>(u)` using the allocator `alloc`.
     Otherwise, equivalent to\
     `**this = std::forward<U>(u)`.
 
@@ -1264,7 +1264,7 @@ constexpr synth-three-way-result<T, U> operator<=>(const indirect& lhs,
                                                 const U& rhs);
 ```
 
-3. _Returns_: If `rhs` is valueless, `false < true`; otherwise `synth-three-way(*lhs, rhs)`.
+3. _Returns_: If `lhs` is valueless, `strong_ordering::less`; otherwise `synth-three-way(*lhs, rhs)`.
 
 ### X.Y.10 Hash support [indirect.hash]
 
@@ -1416,7 +1416,7 @@ explicit constexpr polymorphic();
 1. _Constraints_: `is_default_constructible_v<Allocator>` is `true`.
 
 2. _Mandates_:
-   * `is_default_constructible_v<T>` is `true` and
+   * `is_default_constructible_v<T>` is `true`, and
    * `is_copy_constructible_v<T>` is `true`.
 
 3. _Effects_: Constructs an owned object of type `T` with an empty argument list
@@ -1427,7 +1427,7 @@ explicit constexpr polymorphic(allocator_arg_t, const Allocator& a);
 ```
 
 4. _Mandates_:
-   * `is_default_constructible_v<T>` is `true` and
+   * `is_default_constructible_v<T>` is `true`, and
    * `is_copy_constructible_v<T>` is `true`.
 
 5. _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an
