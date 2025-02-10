@@ -4,11 +4,11 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-D3019R14
+P3019R14
 
 Working Group: Library Evolution, Library
 
-Date: 2025-02-09
+Date: 2025-02-10
 
 _Jonathan Coe \<<jonathanbcoe@gmail.com>\>_
 
@@ -42,6 +42,16 @@ The design of the two proposed class templates is sufficiently similar that they
 should not be considered in isolation.
 
 # History
+
+## Changes in R14
+
+* Remove mandates that `T` is copy-constructible from `indirect`'s `operator=(U&&)`.
+
+* Use `std::strong_ordering::less` instead of `false < true` in `operator <=>` for `indirect`.
+
+* Amend `rhs` to `lhs` in valueless check for `operator<=>` for `indirect`.
+
+* Add missing commas in wording.
 
 ## Changes in R13
 
