@@ -55,16 +55,14 @@ consteval bool polymorphic_default_construction() {
   return true;
 }
 
-static_assert(polymorphic_default_construction(),
-              "constexpr function call failed");
+static_assert(polymorphic_default_construction());
 
 consteval bool polymorphic_in_place_construction() {
   auto p = xyz::polymorphic<A>(std::in_place_type<A>, 42);
   return true;
 }
 
-static_assert(polymorphic_in_place_construction(),
-              "constexpr function call failed");
+static_assert(polymorphic_in_place_construction());
 
 consteval bool polymorphic_allocator_construction() {
   auto p = xyz::polymorphic<A>(std::allocator_arg, std::allocator<int>{},
@@ -72,8 +70,7 @@ consteval bool polymorphic_allocator_construction() {
   return true;
 }
 
-static_assert(polymorphic_allocator_construction(),
-              "constexpr function call failed");
+static_assert(polymorphic_allocator_construction());
 
 consteval bool polymorphic_copy_construction() {
   auto p = xyz::polymorphic<A>{};
@@ -81,8 +78,7 @@ consteval bool polymorphic_copy_construction() {
   return true;
 }
 
-static_assert(polymorphic_copy_construction(),
-              "constexpr function call failed");
+static_assert(polymorphic_copy_construction());
 
 consteval bool polymorphic_allocator_copy_construction() {
   auto p = xyz::polymorphic<A>{};
@@ -90,8 +86,7 @@ consteval bool polymorphic_allocator_copy_construction() {
   return true;
 }
 
-static_assert(polymorphic_allocator_copy_construction(),
-              "constexpr function call failed");
+static_assert(polymorphic_allocator_copy_construction());
 
 consteval bool polymorphic_move_construction() {
   auto p = xyz::polymorphic<A>{};
@@ -99,8 +94,7 @@ consteval bool polymorphic_move_construction() {
   return true;
 }
 
-static_assert(polymorphic_move_construction(),
-              "constexpr function call failed");
+static_assert(polymorphic_move_construction());
 
 consteval bool polymorphic_allocator_move_construction() {
   auto p = xyz::polymorphic<A>{};
@@ -109,8 +103,7 @@ consteval bool polymorphic_allocator_move_construction() {
   return true;
 }
 
-static_assert(polymorphic_allocator_move_construction(),
-              "constexpr function call failed");
+static_assert(polymorphic_allocator_move_construction());
 
 consteval bool polymorphic_copy_assignment() {
   auto p = xyz::polymorphic<A>{};
@@ -119,7 +112,7 @@ consteval bool polymorphic_copy_assignment() {
   return true;
 }
 
-static_assert(polymorphic_copy_assignment(), "constexpr function call failed");
+static_assert(polymorphic_copy_assignment());
 
 consteval bool polymorphic_move_assignment() {
   auto p = xyz::polymorphic<A>{};
@@ -128,37 +121,35 @@ consteval bool polymorphic_move_assignment() {
   return true;
 }
 
-static_assert(polymorphic_move_assignment(), "constexpr function call failed");
+static_assert(polymorphic_move_assignment());
 
 consteval bool polymorphic_object_access() {
   auto p = xyz::polymorphic<A>(std::in_place_type<A>, 42);
   return p->value() == 42;
 }
 
-static_assert(polymorphic_object_access(), "constexpr function call failed");
+static_assert(polymorphic_object_access());
 
 consteval bool polymorphic_const_object_access() {
   const auto p = xyz::polymorphic<A>(std::in_place_type<A>, 42);
   return p->value() == 42;
 }
 
-static_assert(polymorphic_const_object_access(),
-              "constexpr function call failed");
+static_assert(polymorphic_const_object_access());
 
 consteval bool polymorphic_operator_arrow() {
   auto p = xyz::polymorphic<A>(std::in_place_type<A>, 42);
   return p->value() == 42;
 }
 
-static_assert(polymorphic_operator_arrow(), "constexpr function call failed");
+static_assert(polymorphic_operator_arrow());
 
 consteval bool polymorphic_const_operator_arrow() {
   const auto p = xyz::polymorphic<A>(std::in_place_type<A>, 42);
   return p->value() == 42;
 }
 
-static_assert(polymorphic_const_operator_arrow(),
-              "constexpr function call failed");
+static_assert(polymorphic_const_operator_arrow());
 
 consteval bool polymorphic_swap() {
   auto p = xyz::polymorphic<A>(std::in_place_type<A>, 42);
@@ -168,7 +159,7 @@ consteval bool polymorphic_swap() {
   return p->value() == 101 && pp->value() == 42;
 }
 
-static_assert(polymorphic_swap(), "constexpr function call failed");
+static_assert(polymorphic_swap());
 
 consteval bool polymorphic_member_swap() {
   auto p = xyz::polymorphic<A>(std::in_place_type<A>, 42);
@@ -177,7 +168,7 @@ consteval bool polymorphic_member_swap() {
   return p->value() == 101 && pp->value() == 42;
 }
 
-static_assert(polymorphic_member_swap(), "constexpr function call failed");
+static_assert(polymorphic_member_swap());
 
 consteval bool polymorphic_valueless_after_move() {
   auto p = xyz::polymorphic<A>(std::in_place_type<A>, 42);
@@ -185,6 +176,5 @@ consteval bool polymorphic_valueless_after_move() {
   return p.valueless_after_move() && !pp.valueless_after_move();
 }
 
-static_assert(polymorphic_valueless_after_move(),
-              "constexpr function call failed");
+static_assert(polymorphic_valueless_after_move());
 }  // namespace xyz::testing
