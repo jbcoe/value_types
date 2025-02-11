@@ -1,7 +1,6 @@
 .idea/
 .venv/
 .vs/
-.vscode/
 _build
 _deps
 bazel-*
