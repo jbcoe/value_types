@@ -1,26 +1,26 @@
-load("@rules_cc//cc:cc_library.bzl", "cc_library")
-load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:defs.bzl", "cc_test")
 
 cc_library(
     name = "wrapper",
-    hdrs = ["wrapper.h"]
+    hdrs = ["wrapper.h"],
 )
 
 cc_library(
     name = "incomplete_types",
-    hdrs = ["incomplete_types.h"],
     srcs = ["incomplete_types.cc"],
-    deps = ["wrapper"]
+    hdrs = ["incomplete_types.h"],
+    deps = ["wrapper"],
 )
 
 cc_test(
     name = "incomplete_types_test",
     srcs = ["incomplete_types_test.cc"],
-    deps= [
+    deps = [
         "incomplete_types",
         "@com_google_googletest//:gtest_main",
-    ]
+    ],
 )
 
 cc_library(
