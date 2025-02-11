@@ -6,7 +6,7 @@ set -eux -o pipefail
 mkdir -p build
 
 # Generate build system specified in build directory with cmake
-cmake -Bbuild
+cmake -Bbuild -GNinja
 
 # Build the underlying build system via CMake
 cmake --build build
