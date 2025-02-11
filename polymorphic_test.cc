@@ -67,8 +67,11 @@ class Derived : public Base {
 
  public:
   Derived(int v) : value_(v) {}
+
   Derived() : Derived(0) {}
+
   int value() const override { return value_; }
+
   void set_value(int v) override { value_ = v; }
 };
 
@@ -336,7 +339,9 @@ TEST(PolymorphicTest, SwapFromValueless) {
 TEST(PolymorphicTest, ConstPropagation) {
   struct SomeType {
     enum class Constness { CONST, NON_CONST };
+
     Constness member() { return Constness::NON_CONST; }
+
     Constness member() const { return Constness::CONST; }
   };
 
@@ -612,6 +617,7 @@ struct ThrowsOnMoveConstruction {
 
   ThrowsOnMoveConstruction() = default;
   ThrowsOnMoveConstruction(const ThrowsOnMoveConstruction&) = default;
+
   ThrowsOnMoveConstruction(ThrowsOnMoveConstruction&&) { throw Exception(); }
 };
 
@@ -707,17 +713,20 @@ TEST(PolymorphicTest, InteractionWithSizedAllocators) {
 struct BaseA {
   int a_value = 3;
   virtual ~BaseA() = default;
+
   virtual int value() { return a_value; }
 };
 
 struct BaseB {
   int b_value = 4;
   virtual ~BaseB() = default;
+
   virtual int value() { return b_value; }
 };
 
 struct MultipleBases : BaseA, BaseB {
   int d_value = 5;
+
   virtual int value() { return d_value; }
 };
 

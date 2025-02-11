@@ -2,6 +2,7 @@
 #include <type_traits>
 
 #include "indirect.h"
+
 namespace xyz::testing {
 
 struct A;

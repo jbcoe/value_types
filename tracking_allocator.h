@@ -48,6 +48,7 @@ struct TrackingAllocator {
     std::allocator<T> default_allocator{};
     return default_allocator.allocate(n);
   }
+
   void deallocate(T* p, std::size_t n) {
     ++(*dealloc_counter_);
     std::allocator<T> default_allocator{};
