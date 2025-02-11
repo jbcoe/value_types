@@ -35,6 +35,7 @@ namespace xyz {
 
 #ifndef XYZ_UNREACHABLE_DEFINED
 #define XYZ_UNREACHABLE_DEFINED
+
 [[noreturn]] inline void unreachable() {  // LCOV_EXCL_LINE
 #if (__cpp_lib_unreachable >= 202202L)
   std::unreachable();  // LCOV_EXCL_LINE
@@ -63,7 +64,9 @@ template <class T, class U, class A>
 class direct_control_block final : public control_block<T, A> {
   union uninitialized_storage {
     U u_;
+
     constexpr uninitialized_storage() {}
+
     constexpr ~uninitialized_storage() {}
   } storage_;
 

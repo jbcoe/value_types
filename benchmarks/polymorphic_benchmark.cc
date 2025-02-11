@@ -60,8 +60,11 @@ class Derived : public Base {
 
  public:
   ~Derived() override = default;
+
   Derived(size_t v) : value_(v) {}
+
   size_t value() const override { return value_; }
+
   Base* clone() const override { return new Derived(*this); }
 };
 
@@ -71,8 +74,11 @@ class Derived2 : public Base {
 
  public:
   ~Derived2() override = default;
+
   Derived2(size_t v) : value_(v) {}
+
   size_t value() const override { return 2 * value_; }
+
   Base* clone() const override { return new Derived2(*this); }
 };
 
@@ -92,7 +98,9 @@ class PolyDerived : public PolyBase {
 
  public:
   PolyDerived(size_t v) : value_(v) {}
+
   PolyDerived(const PolyDerived&) = default;
+
   size_t value() const override { return value_; }
 };
 
@@ -102,7 +110,9 @@ class PolyDerived2 : public PolyBase {
 
  public:
   PolyDerived2(size_t v) : value_(v) {}
+
   PolyDerived2(const PolyDerived2&) = default;
+
   size_t value() const override { return 2 * value_; }
 };
 
@@ -237,6 +247,7 @@ static void Polymorphic_BM_ArrayCopy_UniquePointer(benchmark::State& state) {
     benchmark::DoNotOptimize(vv);
   }
 }
+
 static void Polymorphic_BM_VectorAccumulate_UniquePointer(
     benchmark::State& state) {
   std::vector<std::unique_ptr<Base>> v(LARGE_VECTOR_SIZE);

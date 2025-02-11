@@ -38,9 +38,13 @@ class A {
 
  public:
   ~A() = default;
+
   A(size_t v) : value_(v) {}
+
   A(const A&) = default;
+
   A* clone() const { return new A(*this); }
+
   size_t value() const { return value_; }
 };
 
@@ -154,6 +158,7 @@ static void Indirect_BM_ArrayCopy_UniquePointer(benchmark::State& state) {
     benchmark::DoNotOptimize(vv);
   }
 }
+
 static void Indirect_BM_VectorAccumulate_UniquePointer(
     benchmark::State& state) {
   std::vector<std::unique_ptr<A>> v(LARGE_VECTOR_SIZE);
