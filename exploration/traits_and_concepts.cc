@@ -40,3 +40,6 @@ class Incomplete {};
 // requirements. static_assert(CopyConstructible<Incomplete>);
 
 }  // namespace xyz::testing::traits_and_concepts
+
+int unused = 0;  // Suppress linker warning: "the table of contents is empty (no
+                 // object file members in the library define global symbols)"
