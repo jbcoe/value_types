@@ -14,7 +14,7 @@ cc_library(
     hdrs = ["indirect.h"],
     copts = ["-Iexternal/value_types/"],
     visibility = ["//visibility:public"],
-    deps = ["feature_check"]
+    deps = ["feature_check"],
 )
 
 cc_library(
@@ -53,7 +53,7 @@ cc_library(
     copts = ["-Iexternal/value_types/"],
     defines = ["XYZ_INDIRECT_CXX_14"],
     visibility = ["//visibility:public"],
-    deps = ["feature_check"]
+    deps = ["feature_check"],
 )
 
 cc_test(
