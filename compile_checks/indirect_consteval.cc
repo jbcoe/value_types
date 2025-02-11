@@ -26,6 +26,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace xyz::testing {
 struct ConstexprHashable {};
 }  // namespace xyz::testing
+
 template <>
 struct std::hash<xyz::testing::ConstexprHashable> {
   constexpr std::size_t operator()(
@@ -40,30 +41,32 @@ consteval bool indirect_default_construction() {
   auto i = xyz::indirect<int>{};
   return true;
 }
-static_assert(indirect_default_construction(),
-              "constexpr function call failed");
+
+static_assert(indirect_default_construction());
 
 consteval bool indirect_copy_construction() {
   auto i = xyz::indirect<int>{};
   auto ii = i;
   return true;
 }
-static_assert(indirect_copy_construction(), "constexpr function call failed");
+
+static_assert(indirect_copy_construction());
 
 consteval bool indirect_allocator_copy_construction() {
   auto i = xyz::indirect<int>{};
   auto ii = xyz::indirect<int>(std::allocator_arg, i.get_allocator(), i);
   return true;
 }
-static_assert(indirect_allocator_copy_construction(),
-              "constexpr function call failed");
+
+static_assert(indirect_allocator_copy_construction());
 
 consteval bool indirect_move_construction() {
   auto i = xyz::indirect<int>{};
   auto ii = std::move(i);
   return true;
 }
-static_assert(indirect_move_construction(), "constexpr function call failed");
+
+static_assert(indirect_move_construction());
 
 consteval bool indirect_allocator_move_construction() {
   auto i = xyz::indirect<int>{};
@@ -71,36 +74,37 @@ consteval bool indirect_allocator_move_construction() {
       xyz::indirect<int>(std::allocator_arg, i.get_allocator(), std::move(i));
   return true;
 }
-static_assert(indirect_allocator_move_construction(),
-              "constexpr function call failed");
+
+static_assert(indirect_allocator_move_construction());
 
 consteval bool indirect_construction() {
   auto i = xyz::indirect<int>(std::in_place, 42);
   return true;
 }
-static_assert(indirect_construction(), "constexpr function call failed");
+
+static_assert(indirect_construction());
 
 consteval bool indirect_allocator_construction() {
   auto i = xyz::indirect<int>(std::allocator_arg, std::allocator<int>{},
                               std::in_place, 42);
   return true;
 }
-static_assert(indirect_allocator_construction(),
-              "constexpr function call failed");
+
+static_assert(indirect_allocator_construction());
 
 consteval bool indirect_converting_construction() {
   auto i = xyz::indirect<int>(42);
   return true;
 }
-static_assert(indirect_converting_construction(),
-              "constexpr function call failed");
+
+static_assert(indirect_converting_construction());
 
 consteval bool indirect_allocator_converting_construction() {
   auto i = xyz::indirect<int>(std::allocator_arg, std::allocator<int>{}, 42);
   return true;
 }
-static_assert(indirect_allocator_converting_construction(),
-              "constexpr function call failed");
+
+static_assert(indirect_allocator_converting_construction());
 
 consteval bool indirect_copy_assignment() {
   auto i = xyz::indirect<int>{};
@@ -108,7 +112,8 @@ consteval bool indirect_copy_assignment() {
   i = ii;
   return true;
 }
-static_assert(indirect_copy_assignment(), "constexpr function call failed");
+
+static_assert(indirect_copy_assignment());
 
 consteval bool indirect_move_assignment() {
   auto i = xyz::indirect<int>{};
@@ -116,40 +121,44 @@ consteval bool indirect_move_assignment() {
   i = std::move(ii);
   return true;
 }
-static_assert(indirect_move_assignment(), "constexpr function call failed");
+
+static_assert(indirect_move_assignment());
 
 consteval bool indirect_converting_assignment() {
   auto i = xyz::indirect<int>{};
   i = 42;
   return true;
 }
-static_assert(indirect_converting_assignment(),
-              "constexpr function call failed");
+
+static_assert(indirect_converting_assignment());
 
 consteval bool indirect_object_access() {
   auto i = xyz::indirect<int>(std::in_place, 42);
   return *i == 42;
 }
-static_assert(indirect_object_access(), "constexpr function call failed");
+
+static_assert(indirect_object_access());
 
 consteval bool indirect_const_object_access() {
   const auto i = xyz::indirect<int>(std::in_place, 42);
   return *i == 42;
 }
-static_assert(indirect_const_object_access(), "constexpr function call failed");
+
+static_assert(indirect_const_object_access());
 
 consteval bool indirect_operator_arrow() {
   auto i = xyz::indirect<int>(std::in_place, 42);
   return *(i.operator->()) == 42;
 }
-static_assert(indirect_operator_arrow(), "constexpr function call failed");
+
+static_assert(indirect_operator_arrow());
 
 consteval bool indirect_const_operator_arrow() {
   const auto i = xyz::indirect<int>(std::in_place, 42);
   return *(i.operator->()) == 42;
 }
-static_assert(indirect_const_operator_arrow(),
-              "constexpr function call failed");
+
+static_assert(indirect_const_operator_arrow());
 
 consteval bool indirect_swap() {
   auto i = xyz::indirect<int>(std::in_place, 42);
@@ -158,7 +167,8 @@ consteval bool indirect_swap() {
   swap(i, ii);
   return *i == 101 && *ii == 42;
 }
-static_assert(indirect_swap(), "constexpr function call failed");
+
+static_assert(indirect_swap());
 
 consteval bool indirect_member_swap() {
   auto i = xyz::indirect<int>(std::in_place, 42);
@@ -166,52 +176,56 @@ consteval bool indirect_member_swap() {
   i.swap(ii);
   return *i == 101 && *ii == 42;
 }
-static_assert(indirect_member_swap(), "constexpr function call failed");
+
+static_assert(indirect_member_swap());
 
 consteval bool indirect_valueless_after_move() {
   auto i = xyz::indirect<int>(std::in_place, 42);
   auto ii = std::move(i);
   return i.valueless_after_move() && !ii.valueless_after_move();
 }
-static_assert(indirect_valueless_after_move(),
-              "constexpr function call failed");
+
+static_assert(indirect_valueless_after_move());
 
 consteval bool indirect_equality() {
   auto i = xyz::indirect<int>(std::in_place, 42);
   auto ii = xyz::indirect<int>(std::in_place, 42);
   return i == ii;
 }
-static_assert(indirect_equality(), "constexpr function call failed");
+
+static_assert(indirect_equality());
 
 consteval bool indirect_inequality() {
   auto i = xyz::indirect<int>(std::in_place, 42);
   auto ii = xyz::indirect<int>(std::in_place, 101);
   return i != ii;
 }
-static_assert(indirect_inequality(), "constexpr function call failed");
+
+static_assert(indirect_inequality());
 
 consteval bool indirect_three_way_comparison() {
   auto i = xyz::indirect<int>(std::in_place, 42);
   auto ii = xyz::indirect<int>(std::in_place, 101);
   return (i <=> ii) == (*i <=> *ii);
 }
-static_assert(indirect_three_way_comparison(),
-              "constexpr function call failed");
+
+static_assert(indirect_three_way_comparison());
 
 consteval bool indirect_and_value_equality() {
   auto i = xyz::indirect<int>(std::in_place, 42);
   int ii = 42;
   return (i == ii) && (ii == i);
 }
-static_assert(indirect_and_value_equality(), "constexpr function call failed");
+
+static_assert(indirect_and_value_equality());
 
 consteval bool indirect_and_value_inequality() {
   auto i = xyz::indirect<int>(std::in_place, 42);
   int ii = 101;
   return (i != ii) && (ii != i);
 }
-static_assert(indirect_and_value_inequality(),
-              "constexpr function call failed");
+
+static_assert(indirect_and_value_inequality());
 
 consteval bool indirect_and_value_three_way_comparison() {
   auto i = xyz::indirect<int>(std::in_place, 42);
@@ -219,14 +233,14 @@ consteval bool indirect_and_value_three_way_comparison() {
   return (i <=> ii) != (ii <=> i);
 }
 
-static_assert(indirect_and_value_three_way_comparison(),
-              "constexpr function call failed");
+static_assert(indirect_and_value_three_way_comparison());
 
 consteval bool indirect_hash() {
   auto i = xyz::indirect<ConstexprHashable>();
   std::hash<xyz::indirect<ConstexprHashable>> h;
   return h(i) == 0;
 }
-static_assert(indirect_hash(), "constexpr function call failed");
+
+static_assert(indirect_hash());
 
 }  // namespace xyz::testing

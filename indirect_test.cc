@@ -136,6 +136,7 @@ struct AllocatorAwareType {
       Allocator>::template rebind_alloc<AllocatorAwareType>;
 
   AllocatorAwareType() = default;
+
   AllocatorAwareType(std::allocator_arg_t, const allocator_type& alloc)
       : children(alloc) {}
 
@@ -354,9 +355,13 @@ TEST(IndirectTest, SwapFromValueless) {
 TEST(IndirectTest, ConstPropagation) {
   struct SomeType {
     enum class Constness { LV_CONST, LV_NON_CONST, RV_CONST, RV_NON_CONST };
+
     Constness member() & { return Constness::LV_NON_CONST; }
+
     Constness member() const& { return Constness::LV_CONST; }
+
     Constness member() && { return Constness::RV_NON_CONST; }
+
     Constness member() const&& { return Constness::RV_CONST; }
   };
 

@@ -8,6 +8,7 @@ class Impl {
 };
 
 Class::Class() : impl_(xyz::indirect<Impl>()) {}
+
 Class::~Class() = default;
 Class::Class(const Class&) = default;
 Class& Class::operator=(const Class&) = default;

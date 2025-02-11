@@ -2,6 +2,7 @@
 #include <type_traits>
 
 #include "polymorphic.h"
+
 namespace xyz::testing {
 
 struct A;

@@ -133,11 +133,6 @@ jobs:
         with:
           version: ${{ matrix.settings.compiler.version }}
           platform: x64
-      - name: Select Xcode 14.0
-        if: matrix.config.compiler.type == 'APPLE_CLANG' && matrix.config.compiler.version == '14.0'
-        shell: bash
-        run: |
-          sudo xcode-select -s "/Applications/Xcode_14.0.app"
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
