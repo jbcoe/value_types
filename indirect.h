@@ -44,6 +44,7 @@ namespace xyz {
 }
 #endif  // XYZ_UNREACHABLE_DEFINED
 
+namespace detail {
 template <class T, class U>
 concept three_way_comparable_with = requires(T& t, U& u) {
   { t <=> u } -> std::convertible_to<std::weak_ordering>;
@@ -68,6 +69,7 @@ constexpr auto synth_three_way(const T& t, const U& u)
 template <class T, class U = T>
 using synth_three_way_result =
     decltype(synth_three_way(std::declval<T&>(), std::declval<U&>()));
+}  // namespace detail
 
 template <class T, class A>
 class indirect;
@@ -387,11 +389,11 @@ class indirect {
   template <class U, class AA>
   [[nodiscard]] friend constexpr auto operator<=>(const indirect<T, A>& lhs,
                                                   const indirect<U, AA>& rhs)
-      -> synth_three_way_result<T, U> {
+      -> detail::synth_three_way_result<T, U> {
     if (lhs.valueless_after_move() || rhs.valueless_after_move()) {
       return !lhs.valueless_after_move() <=> !rhs.valueless_after_move();
     }
-    return synth_three_way(*lhs, *rhs);
+    return detail::synth_three_way(*lhs, *rhs);
   }
 
   template <class U>
@@ -408,13 +410,13 @@ class indirect {
   template <class U>
   [[nodiscard]] friend constexpr auto operator<=>(const indirect<T, A>& lhs,
                                                   const U& rhs)
-      -> synth_three_way_result<T, U>
+      -> detail::synth_three_way_result<T, U>
     requires(!is_indirect_v<U>)
   {
     if (lhs.valueless_after_move()) {
       return std::strong_ordering::less;
     }
-    return synth_three_way(*lhs, rhs);
+    return detail::synth_three_way(*lhs, rhs);
   }
 
  private:
