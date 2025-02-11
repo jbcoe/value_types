@@ -16,8 +16,10 @@ VectorMember::~VectorMember() = default;
 bool VectorMember::operator==(const VectorMember& other) const = default;
 
 UniquePtrMember::UniquePtrMember() : x(new Incomplete()) {}
+
 UniquePtrMember::UniquePtrMember(const UniquePtrMember& other)
     : x(new Incomplete(*other.x)) {}
+
 UniquePtrMember::~UniquePtrMember() = default;
 
 bool UniquePtrMember::operator==(const UniquePtrMember& other) const {

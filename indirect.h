@@ -33,6 +33,7 @@ namespace xyz {
 
 #ifndef XYZ_UNREACHABLE_DEFINED
 #define XYZ_UNREACHABLE_DEFINED
+
 [[noreturn]] inline void unreachable() {  // LCOV_EXCL_LINE
 #if (__cpp_lib_unreachable >= 202202L)
   std::unreachable();  // LCOV_EXCL_LINE
