@@ -66,6 +66,7 @@ constexpr auto synth_three_way(const T& t, const U& u)
     return std::weak_ordering::equivalent;
   }
 }
+
 template <class T, class U = T>
 using synth_three_way_result =
     decltype(synth_three_way(std::declval<T&>(), std::declval<U&>()));
