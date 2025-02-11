@@ -1,5 +1,5 @@
-load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
 cc_library(
     name = "indirect_in_variant",
