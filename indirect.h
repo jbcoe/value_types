@@ -44,6 +44,31 @@ namespace xyz {
 }
 #endif  // XYZ_UNREACHABLE_DEFINED
 
+template <class T, class U>
+concept three_way_comparable_with = requires(T& t, U& u) {
+  { t <=> u } -> std::convertible_to<std::weak_ordering>;
+};
+
+// See: https://eel.is/c++draft/expos.only.entity
+template <class T, class U>
+constexpr auto synth_three_way(const T& t, const U& u)
+  requires requires {
+    { t < u } -> std::convertible_to<bool>;
+    { u < t } -> std::convertible_to<bool>;
+  }
+{
+  if constexpr (three_way_comparable_with<T, U>) {
+    return t <=> u;
+  } else {
+    if (t < u) return std::weak_ordering::less;
+    if (u < t) return std::weak_ordering::greater;
+    return std::weak_ordering::equivalent;
+  }
+}
+template <class T, class U = T>
+using synth_three_way_result =
+    decltype(synth_three_way(std::declval<T&>(), std::declval<U&>()));
+
 template <class T, class A>
 class indirect;
 
@@ -52,7 +77,6 @@ inline constexpr bool is_indirect_v = false;
 
 template <class T, class A>
 inline constexpr bool is_indirect_v<indirect<T, A>> = true;
-
 template <class T, class A = std::allocator<T>>
 class indirect {
   using allocator_traits = std::allocator_traits<A>;
@@ -349,9 +373,8 @@ class indirect {
   //
 
   template <class U, class AA>
-  [[nodiscard]] friend constexpr bool operator==(
-      const indirect<T, A>& lhs,
-      const indirect<U, AA>& rhs) noexcept(noexcept(*lhs == *rhs)) {
+  [[nodiscard]] friend constexpr bool operator==(const indirect<T, A>& lhs,
+                                                 const indirect<U, AA>& rhs) {
     if (lhs.valueless_after_move()) {
       return rhs.valueless_after_move();
     }
@@ -362,19 +385,18 @@ class indirect {
   }
 
   template <class U, class AA>
-  [[nodiscard]] friend constexpr auto operator<=>(
-      const indirect<T, A>& lhs,
-      const indirect<U, AA>& rhs) noexcept(noexcept(*lhs <=> *rhs))
-      -> std::compare_three_way_result_t<T, U> {
+  [[nodiscard]] friend constexpr auto operator<=>(const indirect<T, A>& lhs,
+                                                  const indirect<U, AA>& rhs)
+      -> synth_three_way_result<T, U> {
     if (lhs.valueless_after_move() || rhs.valueless_after_move()) {
       return !lhs.valueless_after_move() <=> !rhs.valueless_after_move();
     }
-    return *lhs <=> *rhs;
+    return synth_three_way(*lhs, *rhs);
   }
 
   template <class U>
-  [[nodiscard]] friend constexpr bool operator==(
-      const indirect<T, A>& lhs, const U& rhs) noexcept(noexcept(*lhs == rhs))
+  [[nodiscard]] friend constexpr bool operator==(const indirect<T, A>& lhs,
+                                                 const U& rhs)
     requires(!is_indirect_v<U>)
   {
     if (lhs.valueless_after_move()) {
@@ -384,15 +406,15 @@ class indirect {
   }
 
   template <class U>
-  [[nodiscard]] friend constexpr auto operator<=>(
-      const indirect<T, A>& lhs, const U& rhs) noexcept(noexcept(*lhs <=> rhs))
-      -> std::compare_three_way_result_t<T, U>
+  [[nodiscard]] friend constexpr auto operator<=>(const indirect<T, A>& lhs,
+                                                  const U& rhs)
+      -> synth_three_way_result<T, U>
     requires(!is_indirect_v<U>)
   {
     if (lhs.valueless_after_move()) {
-      return false <=> true;
+      return std::strong_ordering::less;
     }
-    return *lhs <=> rhs;
+    return synth_three_way(*lhs, rhs);
   }
 
  private:

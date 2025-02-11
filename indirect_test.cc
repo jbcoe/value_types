@@ -1011,3 +1011,23 @@ TEST(IndirectTest, SupportNonCopyableType) {
 }
 
 }  // namespace
+
+struct NonThreeWayComparable {
+  int x_;
+  NonThreeWayComparable(int x) : x_(x) {}
+  bool operator==(const NonThreeWayComparable& other) const {
+    return x_ == other.x_;
+  }
+  bool operator<(const NonThreeWayComparable& other) const {
+    return x_ < other.x_;
+  }
+};
+
+TEST(IndirectTest, NonThreeWayComparable) {
+  xyz::indirect<NonThreeWayComparable> i(xyz::in_place_t{}, 0);
+  xyz::indirect<NonThreeWayComparable> ii(xyz::in_place_t{}, 1);
+
+  EXPECT_FALSE(i == ii);
+  EXPECT_TRUE(i < ii);
+  EXPECT_FALSE(ii < i);
+}
