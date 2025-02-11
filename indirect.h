@@ -47,7 +47,7 @@ namespace xyz {
 
 namespace detail {
 template <class T, class U>
-concept three_way_comparable_with = requires(T& t, U& u) {
+concept three_way_comparable = requires(T& t, U& u) {
   { t <=> u } -> std::convertible_to<std::weak_ordering>;
 };
 
@@ -59,7 +59,7 @@ constexpr auto synth_three_way(const T& t, const U& u)
     { u < t } -> std::convertible_to<bool>;
   }
 {
-  if constexpr (three_way_comparable_with<T, U>) {
+  if constexpr (three_way_comparable<T, U>) {
     return t <=> u;
   } else {
     if (t < u) return std::weak_ordering::less;
