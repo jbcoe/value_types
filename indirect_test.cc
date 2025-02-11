@@ -1019,10 +1019,13 @@ TEST(IndirectTest, SupportNonCopyableType) {
 
 struct NonThreeWayComparable {
   int x_;
+
   NonThreeWayComparable(int x) : x_(x) {}
+
   bool operator==(const NonThreeWayComparable& other) const {
     return x_ == other.x_;
   }
+
   bool operator<(const NonThreeWayComparable& other) const {
     return x_ < other.x_;
   }

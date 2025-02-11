@@ -81,6 +81,7 @@ inline constexpr bool is_indirect_v = false;
 
 template <class T, class A>
 inline constexpr bool is_indirect_v<indirect<T, A>> = true;
+
 template <class T, class A = std::allocator<T>>
 class indirect {
   using allocator_traits = std::allocator_traits<A>;
