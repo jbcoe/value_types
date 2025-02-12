@@ -46,10 +46,6 @@ namespace xyz {
 #endif  // XYZ_UNREACHABLE_DEFINED
 
 namespace detail {
-template <class T, class U>
-concept three_way_comparable = requires(T& t, U& u) {
-  { t <=> u } -> std::convertible_to<std::weak_ordering>;
-};
 
 // See: https://eel.is/c++draft/expos.only.entity
 template <class T, class U>
@@ -59,7 +55,7 @@ constexpr auto synth_three_way(const T& t, const U& u)
     { u < t } -> std::convertible_to<bool>;
   }
 {
-  if constexpr (three_way_comparable<T, U>) {
+  if constexpr (std::three_way_comparable_with<T, U>) {
     return t <=> u;
   } else {
     if (t < u) return std::weak_ordering::less;
@@ -69,8 +65,9 @@ constexpr auto synth_three_way(const T& t, const U& u)
 }
 
 template <class T, class U = T>
-using synth_three_way_result =
-    decltype(synth_three_way(std::declval<T&>(), std::declval<U&>()));
+using synth_three_way_result = decltype(synth_three_way(
+    std::declval<const T&>(), std::declval<const U&>()));
+
 }  // namespace detail
 
 template <class T, class A>
@@ -413,9 +410,8 @@ class indirect {
   template <class U>
   [[nodiscard]] friend constexpr auto operator<=>(const indirect<T, A>& lhs,
                                                   const U& rhs)
-      -> detail::synth_three_way_result<T, U>
-    requires(!is_indirect_v<U>)
-  {
+      -> detail::synth_three_way_result<
+          T, std::enable_if_t<!is_indirect_v<U>, U>> {
     if (lhs.valueless_after_move()) {
       return std::strong_ordering::less;
     }
