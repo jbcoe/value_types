@@ -5,20 +5,20 @@ on:
     - cron: "0 1 * * *"
   push:
     branches: [main]
-    paths: |
-      - .github/workflows/cmake.yml # This file
-      - **/*.cc
-      - **/*.h
-      - **/CMakelists.txt
-      - cmake/**
+    paths:
+      - ".github/workflows/cmake.yml" # This file
+      - "**/*.cc"
+      - "**/*.h"
+      - "**/CMakelists.txt"
+      - "cmake/**"
   pull_request:
     branches: [main]
-    paths: |
-      - .github/workflows/cmake.yml # This file
-      - **/*.cc
-      - **/*.h
-      - **/CMakelists.txt
-      - cmake/**
+    paths:
+      - ".github/workflows/cmake.yml" # This file
+      - "**/*.cc"
+      - "**/*.h"
+      - "**/CMakelists.txt"
+      - "cmake/**"
 
 jobs:
   build:
