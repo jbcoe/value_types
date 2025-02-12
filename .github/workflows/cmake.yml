@@ -9,7 +9,7 @@ on:
       - ".github/workflows/cmake.yml" # This file
       - "**/*.cc"
       - "**/*.h"
-      - "**/CMakelists.txt"
+      - "**/CMakeLists.txt"
       - "cmake/**"
   pull_request:
     branches: [main]
@@ -17,7 +17,7 @@ on:
       - ".github/workflows/cmake.yml" # This file
       - "**/*.cc"
       - "**/*.h"
-      - "**/CMakelists.txt"
+      - "**/CMakeLists.txt"
       - "cmake/**"
 
 jobs:
