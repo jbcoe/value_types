@@ -45,15 +45,6 @@ namespace xyz {
 }
 #endif  // XYZ_UNREACHABLE_DEFINED
 
-template <class T, class A>
-class indirect;
-
-template <class>
-inline constexpr bool is_indirect_v = false;
-
-template <class T, class A>
-inline constexpr bool is_indirect_v<indirect<T, A>> = true;
-
 namespace detail {
 
 // See: https://eel.is/c++draft/expos.only.entity
@@ -78,6 +69,15 @@ using synth_three_way_result = decltype(synth_three_way(
     std::declval<const T&>(), std::declval<const U&>()));
 
 }  // namespace detail
+
+template <class T, class A>
+class indirect;
+
+template <class>
+inline constexpr bool is_indirect_v = false;
+
+template <class T, class A>
+inline constexpr bool is_indirect_v<indirect<T, A>> = true;
 
 template <class T, class A = std::allocator<T>>
 class indirect {
