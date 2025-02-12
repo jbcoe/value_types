@@ -5,20 +5,20 @@ on:
     - cron: "0 1 * * *"
   push:
     branches: [main]
-    paths-ignore:
-      - CODEOWNERS
-      - requirements.txt
-      - LICENSE.txt
-      - .pre-commit-config.yaml
-      - '**/*.md'
+    paths: |
+      - **/*.cc
+      - **/*.h
+      - **/BUILD.bazel
+      - **/MODULE.bazel
+      - .bazelrc
   pull_request:
     branches: [main]
-    paths-ignore:
-      - CODEOWNERS
-      - requirements.txt
-      - LICENSE.txt
-      - .pre-commit-config.yaml
-      - '**/*.md'
+    paths: |
+      - **/*.cc
+      - **/*.h
+      - **/BUILD.bazel
+      - **/MODULE.bazel
+      - .bazelrc
 jobs:
   build:
     name: ${{ matrix.settings.name }}
