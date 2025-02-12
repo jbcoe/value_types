@@ -407,10 +407,11 @@ class indirect {
     return *lhs == rhs;
   }
 
-  template <class U, typename std::enable_if<!is_indirect_v<U>, int>::type = 0>
+  template <class U>
   [[nodiscard]] friend constexpr auto operator<=>(const indirect<T, A>& lhs,
                                                   const U& rhs)
-      -> detail::synth_three_way_result<T, U> {
+      -> detail::synth_three_way_result<
+          T, std::enable_if_t<!is_indirect_v<U>, U>> {
     if (lhs.valueless_after_move()) {
       return std::strong_ordering::less;
     }
