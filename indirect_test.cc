@@ -1033,9 +1033,20 @@ struct NonThreeWayComparable {
 
 TEST(IndirectTest, NonThreeWayComparable) {
   xyz::indirect<NonThreeWayComparable> i(xyz::in_place_t{}, 0);
+
+  EXPECT_TRUE(i == i);
+  EXPECT_TRUE(i >= i);
+  EXPECT_TRUE(i <= i);
+  EXPECT_FALSE(i < i);
+  EXPECT_FALSE(i > i);
+  EXPECT_FALSE(i != i);
+
   xyz::indirect<NonThreeWayComparable> ii(xyz::in_place_t{}, 1);
 
   EXPECT_FALSE(i == ii);
+  EXPECT_FALSE(i >= ii);
+  EXPECT_TRUE(i <= ii);
   EXPECT_TRUE(i < ii);
-  EXPECT_FALSE(ii < i);
+  EXPECT_FALSE(i > ii);
+  EXPECT_TRUE(i != ii);
 }
