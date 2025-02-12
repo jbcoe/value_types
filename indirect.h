@@ -45,6 +45,15 @@ namespace xyz {
 }
 #endif  // XYZ_UNREACHABLE_DEFINED
 
+template <class T, class A>
+class indirect;
+
+template <class>
+inline constexpr bool is_indirect_v = false;
+
+template <class T, class A>
+inline constexpr bool is_indirect_v<indirect<T, A>> = true;
+
 namespace detail {
 
 // See: https://eel.is/c++draft/expos.only.entity
@@ -55,7 +64,7 @@ constexpr auto synth_three_way(const T& t, const U& u)
     { u < t } -> std::convertible_to<bool>;
   }
 {
-  if constexpr (std::three_way_comparable<T, U>) {
+  if constexpr (std::three_way_comparable_with<T, U>) {
     return t <=> u;
   } else {
     if (t < u) return std::weak_ordering::less;
@@ -69,15 +78,6 @@ using synth_three_way_result = decltype(synth_three_way(
     std::declval<const T&>(), std::declval<const U&>()));
 
 }  // namespace detail
-
-template <class T, class A>
-class indirect;
-
-template <class>
-inline constexpr bool is_indirect_v = false;
-
-template <class T, class A>
-inline constexpr bool is_indirect_v<indirect<T, A>> = true;
 
 template <class T, class A = std::allocator<T>>
 class indirect {
@@ -407,12 +407,10 @@ class indirect {
     return *lhs == rhs;
   }
 
-  template <class U>
+  template <class U, typename std::enable_if<!is_indirect_v<U>, int>::type = 0>
   [[nodiscard]] friend constexpr auto operator<=>(const indirect<T, A>& lhs,
                                                   const U& rhs)
-      -> detail::synth_three_way_result<T, U>
-    requires(!is_indirect_v<U>)
-  {
+      -> detail::synth_three_way_result<T, U> {
     if (lhs.valueless_after_move()) {
       return std::strong_ordering::less;
     }
