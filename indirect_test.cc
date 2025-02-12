@@ -1031,6 +1031,7 @@ struct NonThreeWayComparable {
   }
 };
 
+#if XYZ_HAS_STD_THREE_WAY_COMPARISON
 TEST(IndirectTest, NonThreeWayComparable) {
   xyz::indirect<NonThreeWayComparable> i(xyz::in_place_t{}, 0);
 
@@ -1050,3 +1051,4 @@ TEST(IndirectTest, NonThreeWayComparable) {
   EXPECT_FALSE(i > ii);
   EXPECT_TRUE(i != ii);
 }
+#endif  // XYZ_HAS_STD_THREE_WAY_COMPARISON

@@ -80,4 +80,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #endif  //(__cplusplus >= 201703L) && __has_include(<memory_resource>)
 #endif  //__has_include
 
+//
+// XYZ_HAS_STD_THREE_WAY_COMPARISON
+// The macro is defined when the three-way comparison operator (<=>) is
+// available.
+//
+
+#ifdef XYZ_HAS_STD_THREE_WAY_COMPARISON
+#error "XYZ_HAS_STD_THREE_WAY_COMPARISON is already defined"
+#endif  // XYZ_HAS_STD_THREE_WAY_COMPARISON
+
+#if (__cplusplus >= 202002L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
+#define XYZ_HAS_STD_THREE_WAY_COMPARISON
+#endif  //(__cplusplus >= 202002L) || (defined(_MSVC_LANG) && _MSVC_LANG >=
+        // 202002L)
+
 #endif  // XYZ_FEATURE_CHECK_H
