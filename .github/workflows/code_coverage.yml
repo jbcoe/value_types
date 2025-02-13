@@ -10,6 +10,7 @@ on:
       - "**/*.cc"
       - "**/*.h"
       - "**/CMakeLists.txt"
+      - "CMakePresets.json"
       - "cmake/**"
   pull_request:
     branches: [main]
@@ -18,6 +19,7 @@ on:
       - "**/*.cc"
       - "**/*.h"
       - "**/CMakeLists.txt"
+      - "CMakePresets.json"
       - "cmake/**"
 
 env:
