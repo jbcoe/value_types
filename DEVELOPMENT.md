@@ -28,7 +28,7 @@ cmake --build --preset <preset> # Build the underlying build system via CMake
 ctest --preset <preset>         # Run the tests
 ```
 
-To install CMake see: https://cmake.org/download/.
+To install CMake see: <https://cmake.org/download/>.
 
 ### Building with Bazel
 
@@ -39,7 +39,7 @@ bazel build //...       # Build the project
 bazel test //...        # Run the tests
 ```
 
-To install Bazel see https://bazel.build/install.
+To install Bazel see <https://bazel.build/install>.
 
 ## Including value_types to your own project
 
