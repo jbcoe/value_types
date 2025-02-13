@@ -88,6 +88,9 @@ function(xyz_add_test)
         CXX_STANDARD ${XYZ_VERSION}
         CXX_STANDARD_REQUIRED YES
         CXX_EXTENSIONS NO
+        ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     )
 
     target_compile_options(${XYZ_NAME}
@@ -101,7 +104,7 @@ function(xyz_add_test)
 
         include(GoogleTest)
         gtest_discover_tests(${XYZ_NAME}
-            WORKING_DIRECTORY $<TARGET_FILE_DIR:${XYZ_NAME}>
+            WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         )
 
     endif()
