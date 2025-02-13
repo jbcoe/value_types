@@ -2,14 +2,13 @@
 
 set -eux -o pipefail
 
-# Make a build directory
-mkdir -p build
+PRESET="${1:-Release}"
 
 # Generate build system specified in build directory with cmake
-cmake -Bbuild -GNinja
+cmake --preset "$PRESET"
 
 # Build the underlying build system via CMake
-cmake --build build
+cmake --build --preset "$PRESET"
 
 # Run the tests
-ctest --test-dir build
+ctest --preset "$PRESET"
