@@ -70,4 +70,3 @@
         { "name": "msr", "displayName": "MinSizeRel", "configurePreset": "msr" }
     ]
 }
-
