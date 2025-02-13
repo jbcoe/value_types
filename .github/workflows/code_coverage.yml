@@ -50,6 +50,8 @@ jobs:
       - name: Install Missing Lcov Dependencies
         shell: bash
         run: |
+          sudo perl -MCPAN -e 'install Capture::Tiny'
+
           sudo apt-get install libdatetime-perl
 
       - name: Configure CMake
