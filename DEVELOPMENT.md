@@ -22,7 +22,7 @@ To build the repository with CMake use the following steps from the project root
 
 ```bash
 mkdir build                     # Make a build directory
-cmake --list-presets            # View the avialable presets
+cmake --list-presets            # View the available presets
 cmake --preset <preset>         # Generate build system specified in build directory with cmake
 cmake --build --preset <preset> # Build the underlying build system via CMake
 ctest --preset <preset>         # Run the tests
