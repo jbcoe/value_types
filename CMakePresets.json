@@ -1,0 +1,73 @@
+{
+    "version": 5,
+    "cmakeMinimumRequired": {
+      "major": 3,
+      "minor": 25,
+      "patch": 0
+    },
+    "configurePresets": [
+      {
+        "name": "ninja",
+        "hidden": true,
+        "generator": "Ninja Multi-Config",
+        "cacheVariables": {
+          "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+          "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo;MinSizeRel"
+        }
+      },
+      {
+        "name": "default",
+        "binaryDir": "${sourceDir}/build/${presetName}",
+        "cacheVariables": {
+          "CMAKE_INSTALL_PREFIX": "${sourceDir}/install/${presetName}",
+          "CMAKE_INTERPROCEDURAL_OPTIMIZATION": true
+        },
+        "inherits": [
+          "ninja"
+        ],
+        "hidden": true
+      },
+      {
+        "name": "debug",
+        "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "Debug",
+          "CMAKE_INTERPROCEDURAL_OPTIMIZATION": false
+        },
+        "inherits": [ "default" ]
+      },
+      {
+        "name": "release",
+        "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "Release"
+        },
+        "inherits": [ "default" ]
+      },
+      {
+        "name": "rwdi",
+        "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+        },
+        "inherits": [ "default" ]
+      },
+      {
+        "name": "msr",
+        "cacheVariables": {
+          "CMAKE_BUILD_TYPE": "MinSizeRel"
+        },
+        "inherits": [ "default" ]
+      }
+    ],
+    "buildPresets": [
+      { "name": "debug", "displayName": "Debug", "configurePreset": "debug", "configuration": "Debug" },
+      { "name": "release", "displayName": "Release", "configurePreset": "release", "configuration": "Release" },
+      { "name": "rwdi", "displayName": "RelWithDebInfo", "configurePreset": "rwdi", "configuration": "RelWithDebInfo" },
+      { "name": "msr", "displayName": "MinSizeRel", "configurePreset": "msr", "configuration": "MinSizeRel" }
+    ],
+    "testPresets": [
+        { "name": "debug", "displayName": "Debug", "configurePreset": "debug" },
+        { "name": "release", "displayName": "Release", "configurePreset": "release" },
+        { "name": "rwdi", "displayName": "RelWithDebInfo", "configurePreset": "rwdi" },
+        { "name": "msr", "displayName": "MinSizeRel", "configurePreset": "msr" }
+    ]
+}
+  
