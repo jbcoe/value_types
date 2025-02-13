@@ -101,7 +101,7 @@ function(xyz_add_test)
 
         include(GoogleTest)
         gtest_discover_tests(${XYZ_NAME}
-            WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+            WORKING_DIRECTORY $<TARGET_FILE_DIR:${XYZ_NAME}>
         )
 
     endif()
