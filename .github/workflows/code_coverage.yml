@@ -45,6 +45,13 @@ jobs:
           cd lcov-2.3
           sudo make install
 
+      # Lcov 2.0 is missing a number of dependencies (DateTime and Capture::Tiny) so manually install for now.
+      # When this is addressed in Lcov then this should be removed.
+      - name: Install Missing Lcov Dependencies
+        shell: bash
+        run: |
+          sudo apt-get install libdatetime-perl
+
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
