@@ -44,11 +44,11 @@
       }
     ],
     "buildPresets": [
-      { "name": "debug", "displayName": "Debug", "configurePreset": "debug", "configuration": "Debug" },
-      { "name": "release", "displayName": "Release", "configurePreset": "release", "configuration": "Release" }
+      { "name": "Debug", "displayName": "Debug", "configurePreset": "Debug", "configuration": "Debug" },
+      { "name": "Release", "displayName": "Release", "configurePreset": "Release", "configuration": "Release" }
     ],
     "testPresets": [
-        { "name": "debug", "displayName": "Debug", "configurePreset": "debug" },
-        { "name": "release", "displayName": "Release", "configurePreset": "release" }
+        { "name": "Debug", "displayName": "Debug", "configurePreset": "Debug" },
+        { "name": "Release", "displayName": "Release", "configurePreset": "Release" }
     ]
 }
