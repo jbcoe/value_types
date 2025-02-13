@@ -415,8 +415,8 @@ class indirect {
     // Define and call a lambda to allow requirements to be checked before
     // the return type is determined.
     // This avoids a recursive check inside __partially_ordered_with.
-    [](const auto& lhs,
-       const auto& rhs) -> detail::synth_three_way_result<T, U> {
+    return [](const auto& lhs,
+              const auto& rhs) -> detail::synth_three_way_result<T, U> {
       if (lhs.valueless_after_move()) {
         return std::strong_ordering::less;
       }
