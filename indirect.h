@@ -470,7 +470,7 @@ auto make_indirect(Us&&... us) -> indirect<T> {
 }
 
 template <typename T, typename A, typename... Us>
-auto allocate_indirect(A a, Us&&... us) -> indirect<T, A> {
+auto allocate_indirect(const A& a, Us&&... us) -> indirect<T, A> {
   return indirect<T, A>(std::allocator_arg, a, std::in_place,
                         std::forward<Us>(us)...);
 }

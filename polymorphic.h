@@ -412,7 +412,7 @@ auto make_polymorphic(Us&&... us) -> polymorphic<T> {
 }
 
 template <typename T, typename U = T, typename A, typename... Us>
-auto allocate_polymorphic(A a, Us&&... us) -> polymorphic<T, A> {
+auto allocate_polymorphic(const A& a, Us&&... us) -> polymorphic<T, A> {
   return polymorphic<T, A>(std::allocator_arg, a, std::in_place_type<U>,
                            std::forward<Us>(us)...);
 }
