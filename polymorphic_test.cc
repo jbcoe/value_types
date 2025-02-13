@@ -845,4 +845,61 @@ TEST(PolymorphicTest, TaggedAllocatorsNotEqualMoveConstructFromValueless) {
   EXPECT_TRUE(iii.valueless_after_move());
 }
 
+#ifdef XYZ_HAS_EXTENSION_MAKE_POLYMORPHIC
+TEST(PolymorphicTest, MakePolymorphicDerivedNoArgs) {
+  auto p = xyz::make_polymorphic<Derived>();
+  EXPECT_EQ(p->value(), 0);
+}
+
+TEST(PolymorphicTest, MakePolymorphicBaseDerivedNoArgs) {
+  auto p = xyz::make_polymorphic<Base, Derived>();
+  static_assert(std::is_same_v<decltype(p), xyz::polymorphic<Base>>);
+  EXPECT_EQ(p->value(), 0);
+}
+
+TEST(PolymorphicTest, MakePolymorphicDerived) {
+  auto p = xyz::make_polymorphic<Derived>(42);
+  EXPECT_EQ(p->value(), 42);
+}
+
+TEST(PolymorphicTest, MakePolymorphicBaseDerived) {
+  auto p = xyz::make_polymorphic<Base, Derived>(42);
+  static_assert(std::is_same_v<decltype(p), xyz::polymorphic<Base>>);
+  EXPECT_EQ(p->value(), 42);
+}
+
+TEST(PolymorphicTest, AllocatePolymorphicDerivedNoArgs) {
+  xyz::TaggedAllocator<Derived> a(1);
+  auto p = xyz::allocate_polymorphic<Derived>(a);
+  EXPECT_EQ(p->value(), 0);
+  EXPECT_EQ(p.get_allocator().tag, 1);
+}
+
+TEST(PolymorphicTest, AllocatePolymorphicBaseDerivedNoArgs) {
+  xyz::TaggedAllocator<Base> a(1);
+  auto p = xyz::allocate_polymorphic<Base, Derived>(a);
+  static_assert(
+      std::is_same_v<decltype(p),
+                     xyz::polymorphic<Base, xyz::TaggedAllocator<Base>>>);
+  EXPECT_EQ(p->value(), 0);
+  EXPECT_EQ(p.get_allocator().tag, 1);
+}
+
+TEST(PolymorphicTest, AllocatePolymorphicDerived) {
+  xyz::TaggedAllocator<Derived> a(1);
+  auto p = xyz::allocate_polymorphic<Derived>(a, 42);
+  EXPECT_EQ(p->value(), 42);
+  EXPECT_EQ(p.get_allocator().tag, 1);
+}
+
+TEST(PolymorphicTest, AllocatePolymorphicBaseDerived) {
+  xyz::TaggedAllocator<Derived> a(1);
+  auto p = xyz::allocate_polymorphic<Base, Derived>(a, 42);
+  static_assert(
+      std::is_same_v<decltype(p),
+                     xyz::polymorphic<Base, xyz::TaggedAllocator<Derived>>>);
+  EXPECT_EQ(p->value(), 42);
+  EXPECT_EQ(p.get_allocator().tag, 1);
+}
+#endif  // XYZ_HAS_EXTENSION_MAKE_POLYMORPHIC
 }  // namespace
