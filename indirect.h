@@ -386,16 +386,6 @@ class indirect {
     return *lhs == *rhs;
   }
 
-  template <class U, class AA>
-  [[nodiscard]] friend constexpr auto operator<=>(const indirect<T, A>& lhs,
-                                                  const indirect<U, AA>& rhs)
-      -> detail::synth_three_way_result<T, U> {
-    if (lhs.valueless_after_move() || rhs.valueless_after_move()) {
-      return !lhs.valueless_after_move() <=> !rhs.valueless_after_move();
-    }
-    return detail::synth_three_way(*lhs, *rhs);
-  }
-
   template <class U>
   [[nodiscard]] friend constexpr bool operator==(const indirect<T, A>& lhs,
                                                  const U& rhs)
@@ -407,15 +397,31 @@ class indirect {
     return *lhs == rhs;
   }
 
+  template <class U, class AA>
+  [[nodiscard]] friend constexpr auto operator<=>(const indirect<T, A>& lhs,
+                                                  const indirect<U, AA>& rhs)
+      -> detail::synth_three_way_result<T, U> {
+    if (lhs.valueless_after_move() || rhs.valueless_after_move()) {
+      return !lhs.valueless_after_move() <=> !rhs.valueless_after_move();
+    }
+    return detail::synth_three_way(*lhs, *rhs);
+  }
+
   template <class U>
   [[nodiscard]] friend constexpr auto operator<=>(const indirect<T, A>& lhs,
-                                                  const U& rhs)
-      -> detail::synth_three_way_result<
-          T, std::enable_if_t<!is_indirect_v<U>, U>> {
-    if (lhs.valueless_after_move()) {
-      return std::strong_ordering::less;
-    }
-    return detail::synth_three_way(*lhs, rhs);
+                                                  const U& rhs) -> auto
+    requires(!is_indirect_v<U>)
+  {
+    // Define and call a lambda to allow requirements to be checked before
+    // the return type is determined.
+    // This avoids a recursive check inside __partially_ordered_with.
+    [](const auto& lhs,
+       const auto& rhs) -> detail::synth_three_way_result<T, U> {
+      if (lhs.valueless_after_move()) {
+        return std::strong_ordering::less;
+      }
+      return detail::synth_three_way(*lhs, rhs);
+    }(lhs, rhs);
   }
 
  private:
