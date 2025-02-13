@@ -341,7 +341,7 @@ endfunction()
 set_property(GLOBAL PROPERTY global_coverage_test_targets)
 
 function(add_coverage TNAME)
-    message(WARNING "Adding coverage for target "${TNAME})
+    message(WARNING "Adding coverage for target" ${TNAME})
     get_property(tmp GLOBAL PROPERTY global_coverage_test_targets)
     set(tmp "${tmp};${TNAME}")
     set_property(GLOBAL PROPERTY global_coverage_test_targets "${tmp}")
