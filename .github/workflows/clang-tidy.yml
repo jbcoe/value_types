@@ -42,7 +42,7 @@ jobs:
       - name: clang-tidy
         run: |
             python scripts/reduce_compile_commands.py build/compile_commands.json > compile_commands.json
-            clang-tidy -p compile_commands.json \
+            clang-tidy -warnings-as-errors -p compile_commands.json \
                 indirect.cc \
                 indirect_test.cc \
                 polymorphic.cc \
