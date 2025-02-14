@@ -42,8 +42,8 @@ jobs:
       - name: clang-tidy
         run: |
             python scripts/reduce_compile_commands.py build/compile_commands.json > compile_commands.json
-            clang-tidy -warnings-as-errors="*" -p compile_commands.json \
-                indirect.cc \
-                indirect_test.cc \
-                polymorphic.cc \
-                polymorphic_test.cc
+            PROJECT_SOURCE_FILES="$(python scripts/reduce_compile_commands.py build/compile_commands.json \
+                --names-only \
+                --exclude_dirs build exploration compile_checks benchmarks)"
+            echo $PROJECT_SOURCE_FILES \
+              | xargs clang-tidy -warnings-as-errors="*" -p compile_commands.json
