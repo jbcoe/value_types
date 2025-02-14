@@ -1,0 +1,49 @@
+name: Clang Tidy
+
+on:
+  schedule:
+    - cron: "0 1 * * *"
+  push:
+    branches: [main]
+    paths-ignore:
+      - CODEOWNERS
+      - requirements.txt
+      - LICENSE.txt
+      - .pre-commit-config.yaml
+      - '**/*.md'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - CODEOWNERS
+      - requirements.txt
+      - LICENSE.txt
+      - .pre-commit-config.yaml
+      - '**/*.md'
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Debug
+
+jobs:
+  build:
+    # The CMake configure and build commands are platform agnostic and should work equally
+    # well on Windows or Mac.  You can convert this to a matrix build if you need
+    # cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: seanmiddleditch/gha-setup-ninja@master
+
+      - name: Configure CMake # We need `compile_commands.json` to be generated.
+        run: cmake --preset Release
+
+      - name: clang-tidy
+        run: |
+            python scripts/reduce_compile_commands.py build/compile_commands.json > compile_commands.json
+            clang-tidy -p compile_commands.json \
+                indirect.cc \
+                indirect_test.cc \
+                polymorphic.cc \
+                polymorphic_test.cc
