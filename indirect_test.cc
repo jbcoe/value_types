@@ -188,7 +188,8 @@ TEST(IndirectTest, MovePreservesIndirectObjectAddress) {
   auto address = &*a;
   auto aa = std::move(a);
 
-  EXPECT_TRUE(a.valueless_after_move());
+  EXPECT_TRUE(
+      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   EXPECT_EQ(address, &*aa);
 }
 
@@ -204,7 +205,8 @@ TEST(IndirectTest, AllocatorExtendedMove) {
   auto address = &*a;
   xyz::indirect<int> aa(std::allocator_arg, a.get_allocator(), std::move(a));
 
-  EXPECT_TRUE(a.valueless_after_move());
+  EXPECT_TRUE(
+      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   EXPECT_EQ(address, &*aa);
 }
 
@@ -231,7 +233,8 @@ TEST(IndirectTest, MoveAssignment) {
   EXPECT_EQ(*a, 42);
   a = std::move(b);
 
-  EXPECT_TRUE(b.valueless_after_move());
+  EXPECT_TRUE(
+      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   EXPECT_EQ(*a, 101);
 }
 
@@ -252,7 +255,8 @@ TEST(IndirectTest, ConvertingAssignmentValueless) {
   xyz::indirect<int> a;
   xyz::indirect<int> aa(std::move(a));
 
-  EXPECT_TRUE(a.valueless_after_move());
+  EXPECT_TRUE(
+      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   a = 42;
   EXPECT_EQ(*a, 42);
 }
@@ -286,70 +290,86 @@ TEST(IndirectTest, CopyFromValueless) {
   xyz::indirect<int> a;
   xyz::indirect<int> aa(std::move(a));
 
-  EXPECT_TRUE(a.valueless_after_move());
+  EXPECT_TRUE(
+      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   xyz::indirect<int> b(a);
-  EXPECT_TRUE(b.valueless_after_move());
+  EXPECT_TRUE(
+      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, MoveFromValueless) {
   xyz::indirect<int> a;
   xyz::indirect<int> aa(std::move(a));
 
-  EXPECT_TRUE(a.valueless_after_move());
+  EXPECT_TRUE(
+      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   xyz::indirect<int> b(std::move(a));
-  EXPECT_TRUE(b.valueless_after_move());
+  EXPECT_TRUE(
+      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, AllocatorExtendedCopyFromValueless) {
   xyz::indirect<int> a;
   xyz::indirect<int> aa(std::move(a));
 
-  EXPECT_TRUE(a.valueless_after_move());
+  EXPECT_TRUE(
+      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   xyz::indirect<int> b(std::allocator_arg, a.get_allocator(), a);
-  EXPECT_TRUE(b.valueless_after_move());
+  EXPECT_TRUE(
+      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, AllocatorExtendedMoveFromValueless) {
   xyz::indirect<int> a;
   xyz::indirect<int> aa(std::move(a));
 
-  EXPECT_TRUE(a.valueless_after_move());
+  EXPECT_TRUE(
+      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   xyz::indirect<int> b(std::allocator_arg, a.get_allocator(), std::move(a));
-  EXPECT_TRUE(b.valueless_after_move());
+  EXPECT_TRUE(
+      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, AssignFromValueless) {
   xyz::indirect<int> a;
   xyz::indirect<int> aa(std::move(a));
 
-  EXPECT_TRUE(a.valueless_after_move());
+  EXPECT_TRUE(
+      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   xyz::indirect<int> b;
   b = a;
-  EXPECT_TRUE(b.valueless_after_move());
+  EXPECT_TRUE(
+      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, MoveAssignFromValueless) {
   xyz::indirect<int> a;
   xyz::indirect<int> aa(std::move(a));
 
-  EXPECT_TRUE(a.valueless_after_move());
+  EXPECT_TRUE(
+      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   xyz::indirect<int> b;
   b = std::move(a);
-  EXPECT_TRUE(b.valueless_after_move());
+  EXPECT_TRUE(
+      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, SwapFromValueless) {
   xyz::indirect<int> a;
   xyz::indirect<int> aa(std::move(a));
 
-  EXPECT_TRUE(a.valueless_after_move());
+  EXPECT_TRUE(
+      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   xyz::indirect<int> b;
-  EXPECT_TRUE(!b.valueless_after_move());
+  EXPECT_TRUE(
+      !b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 
   using std::swap;
   swap(a, b);
-  EXPECT_TRUE(!a.valueless_after_move());
-  EXPECT_TRUE(b.valueless_after_move());
+  EXPECT_TRUE(
+      !a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+  EXPECT_TRUE(
+      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, ConstPropagation) {
@@ -390,7 +410,7 @@ TEST(IndirectTest, Hash) {
 auto make_valueless_indirect() {
   xyz::indirect<int> a;
   auto aa = std::move(a);
-  return a;
+  return a;  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, HashValueless) {
@@ -732,7 +752,8 @@ TEST(IndirectTest, CountAllocationsForAssignmentToMovedFromObject) {
         std::allocator_arg,
         xyz::TrackingAllocator<int>(&alloc_counter, &dealloc_counter),
         xyz::in_place_t{}, 404);
-    EXPECT_TRUE(a.valueless_after_move());
+    EXPECT_TRUE(
+        a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
     a = c;  // This will cause an allocation as a is valueless.
     EXPECT_EQ(alloc_counter, 4);
     EXPECT_EQ(dealloc_counter, 1);
@@ -961,7 +982,8 @@ TEST(IndirectTest, TaggedAllocatorsEqualMoveConstruct) {
   xyz::indirect<int, xyz::TaggedAllocator<int>> ii(std::allocator_arg, aa,
                                                    std::move(i));
 
-  EXPECT_TRUE(i.valueless_after_move());
+  EXPECT_TRUE(
+      i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   EXPECT_EQ(*ii, -1);
 }
 
@@ -985,7 +1007,8 @@ TEST(IndirectTest, TaggedAllocatorsNotEqualMoveConstruct) {
   xyz::indirect<int, xyz::TaggedAllocator<int>> ii(std::allocator_arg, aa,
                                                    std::move(i));
 
-  EXPECT_FALSE(i.valueless_after_move());
+  EXPECT_FALSE(
+      i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   EXPECT_EQ(*ii, -1);
 }
 
@@ -1001,18 +1024,21 @@ TEST(IndirectTest, TaggedAllocatorsNotEqualMoveConstructFromValueless) {
                                                   xyz::in_place_t{}, -1);
 
   xyz::indirect<int, xyz::TaggedAllocator<int>> ii(std::move(i));
-  EXPECT_TRUE(i.valueless_after_move());
+  EXPECT_TRUE(
+      i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 
   // Move construct from the now valueless i.
   xyz::indirect<int, xyz::TaggedAllocator<int>> iii(std::allocator_arg, aa,
                                                     std::move(i));
-  EXPECT_TRUE(iii.valueless_after_move());
+  EXPECT_TRUE(
+      iii.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, SupportNonCopyableType) {
   xyz::indirect<xyz::NonCopyable> a;
   auto aa = std::move(a);
-  EXPECT_TRUE(a.valueless_after_move());
+  EXPECT_TRUE(
+      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 }  // namespace
