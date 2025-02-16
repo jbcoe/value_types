@@ -846,6 +846,7 @@ TEST(PolymorphicTest, TaggedAllocatorsNotEqualMoveConstructFromValueless) {
 }
 
 #ifdef XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
+#ifdef XYZ_HAS_STD_TYPE_IDENTITY
 TEST(PolymorphicTest, TemplateArgumentDeduction) {
   xyz::polymorphic p(Derived(4));
 
@@ -869,7 +870,6 @@ TEST(PolymorphicTest, TemplateArgumentDeductionWithAllocator) {
   EXPECT_EQ(p.get_allocator().tag, 1);
 }
 
-#ifdef XYZ_HAS_STD_TYPE_IDENTITY
 TEST(PolymorphicTest, TemplateArgumentDeductionWithDeducedAllocatorAndCopy) {
   xyz::TaggedAllocator<int> a(1);
   xyz::polymorphic p(std::allocator_arg, a, Derived(4));
