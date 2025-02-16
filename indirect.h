@@ -182,7 +182,7 @@ class indirect {
     p_ = construct_from(alloc_, ilist, std::forward<Us>(us)...);
   }
 
-  constexpr indirect(std::allocator_arg_t, const A& alloc,
+  constexpr indirect(std::allocator_arg_t, const std::type_identity_t<A>& alloc,
                      const indirect& other)
       : alloc_(alloc) {
     static_assert(std::copy_constructible<T>);
@@ -195,7 +195,7 @@ class indirect {
   }
 
   constexpr indirect(
-      std::allocator_arg_t, const A& alloc,
+      std::allocator_arg_t, const std::type_identity_t<A>& alloc,
       indirect&& other) noexcept(allocator_traits::is_always_equal::value)
       : p_(nullptr), alloc_(alloc) {
     static_assert(std::move_constructible<T>);
@@ -465,9 +465,14 @@ concept is_hashable = requires(T t) { std::hash<T>{}(t); };
 template <typename Value>
 indirect(Value) -> indirect<Value>;
 
-template <typename Alloc, typename Value>
+template <typename Alloc, typename Value,
+          typename std::enable_if_t<!is_indirect_v<Value>, int> = 0>
 indirect(std::allocator_arg_t, Alloc, Value) -> indirect<
     Value, typename std::allocator_traits<Alloc>::template rebind_alloc<Value>>;
+
+template <typename Alloc, typename Value>
+indirect(std::allocator_arg_t, std::type_identity_t<Alloc>,
+         indirect<Value, Alloc>) -> indirect<Value, Alloc>;
 
 }  // namespace xyz
 

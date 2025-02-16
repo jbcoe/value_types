@@ -95,4 +95,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #endif  //(__cplusplus >= 202002L) || (defined(_MSVC_LANG) && _MSVC_LANG >=
         // 202002L)
 
+//
+// XYZ_HAS_STD_TYPE_IDENTITY
+// The macro is defined when std::type_identity_t<T> is available.
+//
+
+#ifdef XYZ_HAS_STD_TYPE_IDENTITY
+#error "XYZ_HAS_STD_TYPE_IDENTITY is already defined"
+#endif  // XYZ_HAS_STD_TYPE_IDENTITY
+
+#if (__cplusplus >= 202002L) || (defined(_MSVC_LANG) && _MSVC_LANG >= 202002L)
+#define XYZ_HAS_STD_TYPE_IDENTITY
+#endif  //(__cplusplus >= 202002L) || (defined(_MSVC_LANG) && _MSVC_LANG >=
+// 202002L)
+
 #endif  // XYZ_FEATURE_CHECK_H
