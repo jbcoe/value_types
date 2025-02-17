@@ -39,6 +39,7 @@ target_sources(xyz_value_types
 xyz_add_library(
     NAME indirect
     ALIAS xyz_value_types::indirect
+    DEFINITIONS XYZ_HAS_EXTENDED_CONSTRUCTOR_TEMPLATE_ARGUMENT_DEDUCTION
 )
 target_sources(indirect
     INTERFACE
@@ -75,6 +76,7 @@ target_sources(indirect_cxx17
 xyz_add_library(
     NAME polymorphic
     ALIAS xyz_value_types::polymorphic
+    DEFINITIONS XYZ_HAS_EXTENDED_CONSTRUCTOR_TEMPLATE_ARGUMENT_DEDUCTION
 )
 target_sources(polymorphic
     INTERFACE
