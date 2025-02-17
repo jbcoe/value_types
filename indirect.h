@@ -470,9 +470,11 @@ template <typename Alloc, typename Value,
 indirect(std::allocator_arg_t, Alloc, Value) -> indirect<
     Value, typename std::allocator_traits<Alloc>::template rebind_alloc<Value>>;
 
+#ifdef XYZ_HAS_EXTENDED_CONSTRUCTOR_TEMPLATE_ARGUMENT_DEDUCTION
 template <typename Alloc, typename Value>
 indirect(std::allocator_arg_t, std::type_identity_t<Alloc>,
          indirect<Value, Alloc>) -> indirect<Value, Alloc>;
+#endif  // XYZ_HAS_EXTENDED_CONSTRUCTOR_TEMPLATE_ARGUMENT_DEDUCTION
 
 }  // namespace xyz
 

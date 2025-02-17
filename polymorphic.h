@@ -414,7 +414,7 @@ class polymorphic {
     }
   }
 };
-
+#ifdef XYZ_HAS_EXTENDED_CONSTRUCTOR_TEMPLATE_ARGUMENT_DEDUCTION
 template <typename Value>
 polymorphic(Value) -> polymorphic<Value>;
 
@@ -426,7 +426,7 @@ polymorphic(std::allocator_arg_t, Alloc, Value) -> polymorphic<
 template <typename Alloc, typename Value>
 polymorphic(std::allocator_arg_t, std::type_identity_t<Alloc>,
             polymorphic<Value, Alloc>) -> polymorphic<Value, Alloc>;
-
+#endif  // XYZ_HAS_EXTENDED_CONSTRUCTOR_TEMPLATE_ARGUMENT_DEDUCTION
 }  // namespace xyz
 
 #endif  // XYZ_POLYMORPHIC_H_
