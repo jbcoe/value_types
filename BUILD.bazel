@@ -13,7 +13,7 @@ cc_library(
     srcs = ["indirect.cc"],
     hdrs = ["indirect.h"],
     copts = ["-Iexternal/value_types/"],
-    defines = ["XYZ_HAS_EXTENDED_CONSTRUCTOR_TEMPLATE_ARGUMENT_DEDUCTION"],
+    defines = [],
     visibility = ["//visibility:public"],
     deps = ["feature_check"],
 )
@@ -92,8 +92,9 @@ cc_library(
     srcs = ["polymorphic.cc"],
     hdrs = ["polymorphic.h"],
     copts = ["-Iexternal/value_types/"],
-    defines = ["XYZ_HAS_EXTENDED_CONSTRUCTOR_TEMPLATE_ARGUMENT_DEDUCTION"],
+    defines = [],
     visibility = ["//visibility:public"],
+    deps = ["feature_check"],
 )
 
 cc_test(
@@ -117,6 +118,7 @@ cc_library(
     copts = ["-Iexternal/value_types/"],
     defines = ["XYZ_POLYMORPHIC_CXX_14"],
     visibility = ["//visibility:public"],
+    deps = ["feature_check"],
 )
 
 cc_test(

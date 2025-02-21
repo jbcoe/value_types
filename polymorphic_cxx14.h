@@ -27,6 +27,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <type_traits>
 #include <utility>
 
+#include "feature_check.h"
+
 #ifndef XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS
 #define XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS 1
 #endif  // XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS
@@ -39,6 +41,22 @@ template <class T>
 struct in_place_type_t {};
 }  // namespace xyz
 #endif  // XYZ_IN_PLACE_TYPE_DEFINED
+
+#ifndef XYZ_TYPE_IDENTITY_DEFINED
+#define XYZ_TYPE_IDENTITY_DEFINED
+namespace xyz {
+#ifdef XYZ_HAS_STD_TYPE_IDENTITY
+using std::type_identity_t;
+#else
+template <class T>
+struct type_identity {
+  using type = T;
+};
+template <class T>
+using type_identity_t = typename type_identity<T>::type;
+#endif  // XYZ_HAS_STD_TYPE_IDENTITY
+}  // namespace xyz
+#endif  // XYZ_TYPE_IDENTITY_DEFINED
 
 #ifndef XYZ_UNREACHABLE_DEFINED
 #define XYZ_UNREACHABLE_DEFINED
@@ -319,7 +337,8 @@ class polymorphic : private detail::empty_base_optimization<A> {
                         typename std::remove_reference<U>::type>::type>{},
                     std::forward<U>(u)) {}
 
-  polymorphic(std::allocator_arg_t, const A& alloc, const polymorphic& other)
+  polymorphic(std::allocator_arg_t, const xyz::type_identity_t<A>& alloc,
+              const polymorphic& other)
       : alloc_base(alloc) {
     if (!other.valueless_after_move()) {
       cb_ = other.cb_->clone(alloc_base::get());
@@ -335,7 +354,7 @@ class polymorphic : private detail::empty_base_optimization<A> {
                     other) {}
 
   polymorphic(
-      std::allocator_arg_t, const A& alloc,
+      std::allocator_arg_t, const xyz::type_identity_t<A>& alloc,
       polymorphic&& other) noexcept(allocator_traits::is_always_equal::value)
       : alloc_base(alloc) {
     if (allocator_traits::propagate_on_container_copy_assignment::value) {
@@ -475,6 +494,18 @@ class polymorphic : private detail::empty_base_optimization<A> {
     }
   }
 };
+
+#ifdef XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
+template <typename Value>
+polymorphic(Value) -> polymorphic<Value>;
+
+template <typename Alloc, typename Value>
+polymorphic(std::allocator_arg_t, Alloc, Value) -> polymorphic<Value, Alloc>;
+
+template <typename Alloc, typename Alloc2, typename Value>
+polymorphic(std::allocator_arg_t, Alloc2, polymorphic<Value, Alloc>)
+    -> polymorphic<Value, Alloc>;
+#endif  // XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
 
 }  // namespace xyz
 

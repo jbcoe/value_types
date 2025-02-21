@@ -846,8 +846,6 @@ TEST(PolymorphicTest, TaggedAllocatorsNotEqualMoveConstructFromValueless) {
 }
 
 #ifdef XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
-#ifdef XYZ_HAS_STD_TYPE_IDENTITY
-#ifdef XYZ_HAS_EXTENDED_CONSTRUCTOR_TEMPLATE_ARGUMENT_DEDUCTION
 TEST(PolymorphicTest, TemplateArgumentDeduction) {
   xyz::polymorphic p(Derived(4));
 
@@ -864,7 +862,7 @@ TEST(PolymorphicTest, TemplateArgumentDeductionCopy) {
 }
 
 TEST(PolymorphicTest, TemplateArgumentDeductionWithAllocator) {
-  xyz::TaggedAllocator<int> a(1);
+  xyz::TaggedAllocator<Derived> a(1);
   xyz::polymorphic p(std::allocator_arg, a, Derived(4));
 
   EXPECT_EQ(p->value(), 4);
@@ -872,7 +870,7 @@ TEST(PolymorphicTest, TemplateArgumentDeductionWithAllocator) {
 }
 
 TEST(PolymorphicTest, TemplateArgumentDeductionWithDeducedAllocatorAndCopy) {
-  xyz::TaggedAllocator<int> a(1);
+  xyz::TaggedAllocator<Derived> a(1);
   xyz::polymorphic p(std::allocator_arg, a, Derived(4));
   xyz::polymorphic pp(std::allocator_arg, 2, p);
 
@@ -881,7 +879,7 @@ TEST(PolymorphicTest, TemplateArgumentDeductionWithDeducedAllocatorAndCopy) {
 }
 
 TEST(PolymorphicTest, TemplateArgumentDeductionWithDeducedAllocatorAndMove) {
-  xyz::TaggedAllocator<int> a(1);
+  xyz::TaggedAllocator<Derived> a(1);
   xyz::polymorphic p(std::allocator_arg, a, Derived(4));
   xyz::polymorphic pp(std::allocator_arg, 2, std::move(p));
 
@@ -889,8 +887,6 @@ TEST(PolymorphicTest, TemplateArgumentDeductionWithDeducedAllocatorAndMove) {
   EXPECT_EQ(pp.get_allocator().tag, 2);
 }
 
-#endif  // XYZ_HAS_EXTENDED_CONSTRUCTOR_TEMPLATE_ARGUMENT_DEDUCTION
-#endif  // XYZ_HAS_STD_TYPE_IDENTITY
 #endif  // XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
 
 }  // namespace

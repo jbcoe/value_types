@@ -36,6 +36,20 @@ namespace xyz {
 struct in_place_t {};
 #endif  // XYZ_IN_PLACE_DEFINED
 
+#ifndef XYZ_TYPE_IDENTITY_DEFINED
+#define XYZ_TYPE_IDENTITY_DEFINED
+#ifdef XYZ_HAS_STD_TYPE_IDENTITY
+using std::type_identity_t;
+#else
+template <class T>
+struct type_identity {
+  using type = T;
+};
+template <class T>
+using type_identity_t = typename type_identity<T>::type;
+#endif  // XYZ_HAS_STD_TYPE_IDENTITY
+#endif  // XYZ_TYPE_IDENTITY_DEFINED
+
 #ifndef XYZ_UNREACHABLE_DEFINED
 #define XYZ_UNREACHABLE_DEFINED
 
@@ -575,8 +589,11 @@ template <typename Value>
 indirect(Value) -> indirect<Value>;
 
 template <typename Alloc, typename Value>
-indirect(std::allocator_arg_t, Alloc, Value) -> indirect<
-    Value, typename std::allocator_traits<Alloc>::template rebind_alloc<Value>>;
+indirect(std::allocator_arg_t, Alloc, Value) -> indirect<Value, Alloc>;
+
+template <typename Alloc, typename Alloc2, typename Value>
+indirect(std::allocator_arg_t, Alloc2, indirect<Value, Alloc>)
+    -> indirect<Value, Alloc>;
 #endif  // XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
 
 }  // namespace xyz

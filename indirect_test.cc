@@ -133,15 +133,13 @@ TEST(IndirectTest, TemplateArgumentDeductionCopy) {
 }
 
 TEST(IndirectTest, TemplateArgumentDeductionWithAllocator) {
-  xyz::indirect i(std::allocator_arg, xyz::TaggedAllocator<void>(1), 42);
+  xyz::indirect i(std::allocator_arg, xyz::TaggedAllocator<int>(1), 42);
 
   static_assert(
       std::is_same_v<decltype(i.get_allocator()), xyz::TaggedAllocator<int>>);
   EXPECT_EQ(*i, 42);
 }
 
-#ifdef XYZ_HAS_STD_TYPE_IDENTITY
-#ifdef XYZ_HAS_EXTENDED_CONSTRUCTOR_TEMPLATE_ARGUMENT_DEDUCTION
 TEST(IndirectTest, TemplateArgumentDeductionWithDeducedAllocatorAndCopy) {
   xyz::indirect i(std::allocator_arg, xyz::TaggedAllocator<int>(1), 42);
   xyz::indirect ii(std::allocator_arg, 2, i);
@@ -158,8 +156,6 @@ TEST(IndirectTest, TemplateArgumentDeductionWithDeducedAllocatorAndMove) {
   EXPECT_EQ(*ii, 42);
   EXPECT_EQ(ii.get_allocator().tag, 2);
 }
-#endif  // XYZ_HAS_EXTENDED_CONSTRUCTOR_TEMPLATE_ARGUMENT_DEDUCTION
-#endif  // XYZ_HAS_STD_TYPE_IDENTITY
 #endif  // XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
 
 template <typename Allocator = std::allocator<void>>
