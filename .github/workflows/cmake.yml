@@ -1,24 +1,26 @@
-name: CMake
+name: CMake test
 
 on:
   schedule:
     - cron: "0 1 * * *"
   push:
     branches: [main]
-    paths-ignore:
-      - CODEOWNERS
-      - requirements.txt
-      - LICENSE.txt
-      - .pre-commit-config.yaml
-      - '**/*.md'
+    paths:
+      - ".github/workflows/cmake.yml" # This file
+      - "**/*.cc"
+      - "**/*.h"
+      - "**/CMakeLists.txt"
+      - "CMakePresets.json"
+      - "cmake/**"
   pull_request:
     branches: [main]
-    paths-ignore:
-      - CODEOWNERS
-      - requirements.txt
-      - LICENSE.txt
-      - .pre-commit-config.yaml
-      - '**/*.md'
+    paths:
+      - ".github/workflows/cmake.yml" # This file
+      - "**/*.cc"
+      - "**/*.h"
+      - "**/CMakeLists.txt"
+      - "CMakePresets.json"
+      - "cmake/**"
 
 jobs:
   build:

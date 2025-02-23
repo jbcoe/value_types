@@ -5,20 +5,22 @@ on:
     - cron: "0 1 * * *"
   push:
     branches: [main]
-    paths-ignore:
-      - CODEOWNERS
-      - requirements.txt
-      - LICENSE.txt
-      - .pre-commit-config.yaml
-      - '**/*.md'
+    paths:
+      - ".github/workflows/code_coverage.yml" # This file
+      - "**/*.cc"
+      - "**/*.h"
+      - "**/CMakeLists.txt"
+      - "CMakePresets.json"
+      - "cmake/**"
   pull_request:
     branches: [main]
-    paths-ignore:
-      - CODEOWNERS
-      - requirements.txt
-      - LICENSE.txt
-      - .pre-commit-config.yaml
-      - '**/*.md'
+    paths:
+      - ".github/workflows/code_coverage.yml" # This file
+      - "**/*.cc"
+      - "**/*.h"
+      - "**/CMakeLists.txt"
+      - "CMakePresets.json"
+      - "cmake/**"
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
