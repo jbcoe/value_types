@@ -43,7 +43,16 @@ xyz_add_library(
 target_sources(indirect
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect.h>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect.cc>
+)
+
+add_library(indirect_cc OBJECT)
+target_sources(indirect_cc
+    PRIVATE
+        indirect.cc
+)
+target_link_libraries(indirect_cc
+    PRIVATE
+        indirect
 )
 
 xyz_add_library(
@@ -77,7 +86,16 @@ xyz_add_library(
 target_sources(polymorphic
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.cc>
+)
+
+add_library(polymorphic_cc OBJECT)
+target_sources(polymorphic_cc
+    PRIVATE
+        polymorphic.cc
+)
+target_link_libraries(polymorphic_cc
+    PRIVATE
+        polymorphic
 )
 
 xyz_add_library(
