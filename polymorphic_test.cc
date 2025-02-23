@@ -156,7 +156,8 @@ TEST(PolymorphicTest, CopiesAreDistinct) {
 TEST(PolymorphicTest, MoveRendersSourceValueless) {
   xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
   auto aa = std::move(a);
-  EXPECT_TRUE(a.valueless_after_move());
+  EXPECT_TRUE(
+      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(PolymorphicTest, AllocatorExtendedCopy) {
@@ -171,7 +172,8 @@ TEST(PolymorphicTest, AllocatorExtendedMove) {
   xyz::polymorphic<Base> aa(std::allocator_arg, a.get_allocator(),
                             std::move(a));
   EXPECT_EQ(aa->value(), 42);
-  EXPECT_TRUE(a.valueless_after_move());
+  EXPECT_TRUE(
+      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(PolymorphicTest, Swap) {
@@ -230,7 +232,8 @@ TEST(PolymorphicTest, MoveAssignment) {
   EXPECT_EQ(a->value(), 42);
   a = std::move(b);
 
-  EXPECT_TRUE(b.valueless_after_move());
+  EXPECT_TRUE(
+      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   EXPECT_EQ(a->value(), 101);
 }
 
@@ -238,7 +241,8 @@ TEST(PolymorphicTest, MoveAssignmentSelf) {
   xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
   a = std::move(a);
 
-  EXPECT_FALSE(a.valueless_after_move());
+  EXPECT_FALSE(
+      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(PolymorphicTest, NonMemberSwap) {
@@ -270,70 +274,86 @@ TEST(PolymorphicTest, CopyFromValueless) {
   xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
   xyz::polymorphic<Base> aa(std::move(a));
 
-  EXPECT_TRUE(a.valueless_after_move());
+  EXPECT_TRUE(
+      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   xyz::polymorphic<Base> b(a);
-  EXPECT_TRUE(b.valueless_after_move());
+  EXPECT_TRUE(
+      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(PolymorphicTest, MoveFromValueless) {
   xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
   xyz::polymorphic<Base> aa(std::move(a));
 
-  EXPECT_TRUE(a.valueless_after_move());
+  EXPECT_TRUE(
+      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   xyz::polymorphic<Base> b(std::move(a));
-  EXPECT_TRUE(b.valueless_after_move());
+  EXPECT_TRUE(
+      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(PolymorphicTest, AllocatorExtendedCopyFromValueless) {
   xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
   xyz::polymorphic<Base> aa(std::move(a));
 
-  EXPECT_TRUE(a.valueless_after_move());
+  EXPECT_TRUE(
+      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   xyz::polymorphic<Base> b(std::allocator_arg, a.get_allocator(), a);
-  EXPECT_TRUE(b.valueless_after_move());
+  EXPECT_TRUE(
+      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(PolymorphicTest, AllocatorExtendedMoveFromValueless) {
   xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
   xyz::polymorphic<Base> aa(std::move(a));
 
-  EXPECT_TRUE(a.valueless_after_move());
+  EXPECT_TRUE(
+      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   xyz::polymorphic<Base> b(std::allocator_arg, a.get_allocator(), std::move(a));
-  EXPECT_TRUE(b.valueless_after_move());
+  EXPECT_TRUE(
+      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(PolymorphicTest, AssignFromValueless) {
   xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
   xyz::polymorphic<Base> aa(std::move(a));
 
-  EXPECT_TRUE(a.valueless_after_move());
+  EXPECT_TRUE(
+      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   xyz::polymorphic<Base> b(xyz::in_place_type_t<Derived>{}, 101);
   b = a;
-  EXPECT_TRUE(b.valueless_after_move());
+  EXPECT_TRUE(
+      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(PolymorphicTest, MoveAssignFromValueless) {
   xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
   xyz::polymorphic<Base> aa(std::move(a));
 
-  EXPECT_TRUE(a.valueless_after_move());
+  EXPECT_TRUE(
+      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   xyz::polymorphic<Base> b(xyz::in_place_type_t<Derived>{}, 101);
   b = std::move(a);
-  EXPECT_TRUE(b.valueless_after_move());
+  EXPECT_TRUE(
+      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(PolymorphicTest, SwapFromValueless) {
   xyz::polymorphic<Base> a(xyz::in_place_type_t<Derived>{}, 42);
   xyz::polymorphic<Base> aa(std::move(a));
 
-  EXPECT_TRUE(a.valueless_after_move());
+  EXPECT_TRUE(
+      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   xyz::polymorphic<Base> b(xyz::in_place_type_t<Derived>{}, 101);
-  EXPECT_TRUE(!b.valueless_after_move());
+  EXPECT_TRUE(
+      !b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 
   using std::swap;
   swap(a, b);
-  EXPECT_TRUE(!a.valueless_after_move());
-  EXPECT_TRUE(b.valueless_after_move());
+  EXPECT_TRUE(
+      !a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+  EXPECT_TRUE(
+      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(PolymorphicTest, ConstPropagation) {
@@ -783,7 +803,8 @@ TEST(PolymorphicTest, TaggedAllocatorsEqualMoveConstruct) {
   xyz::polymorphic<Derived, xyz::TaggedAllocator<Derived>> ii(
       std::allocator_arg, aa, std::move(i));
 
-  EXPECT_TRUE(i.valueless_after_move());
+  EXPECT_TRUE(
+      i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   EXPECT_EQ(ii->value(), -1);
 }
 
@@ -800,7 +821,8 @@ TEST(PolymorphicTest, TaggedAllocatorsNotEqualMoveConstruct) {
   xyz::polymorphic<Derived, xyz::TaggedAllocator<Derived>> ii(
       std::allocator_arg, aa, std::move(i));
 
-  EXPECT_FALSE(i.valueless_after_move());
+  EXPECT_FALSE(
+      i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   EXPECT_EQ(ii->value(), -1);
 }
 
@@ -837,12 +859,14 @@ TEST(PolymorphicTest, TaggedAllocatorsNotEqualMoveConstructFromValueless) {
       std::allocator_arg, a, xyz::in_place_type_t<Derived>{}, -1);
 
   xyz::polymorphic<Derived, xyz::TaggedAllocator<Derived>> ii(std::move(i));
-  EXPECT_TRUE(i.valueless_after_move());
+  EXPECT_TRUE(
+      i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 
   // Move construct from the now valueless i.
   xyz::polymorphic<Derived, xyz::TaggedAllocator<Derived>> iii(
       std::allocator_arg, aa, std::move(i));
-  EXPECT_TRUE(iii.valueless_after_move());
+  EXPECT_TRUE(
+      iii.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 }  // namespace
