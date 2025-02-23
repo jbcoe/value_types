@@ -403,7 +403,7 @@ class polymorphic {
       cb_ = nullptr;
     }
   }
-};  // namespace xyz
+};
 
 }  // namespace xyz
 
