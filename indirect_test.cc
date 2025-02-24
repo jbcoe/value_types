@@ -120,13 +120,41 @@ TEST(IndirectTest, AllocatorExtendedInitializerListConstructor) {
 
 #ifdef XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
 TEST(IndirectTest, TemplateArgumentDeduction) {
-  xyz::indirect a(42);
-  EXPECT_EQ(*a, 42);
+  xyz::indirect i(42);
+  EXPECT_EQ(*i, 42);
+}
+
+TEST(IndirectTest, TemplateArgumentDeductionCopy) {
+  xyz::indirect i(42);
+  xyz::indirect ii(i);
+
+  static_assert(std::is_same_v<decltype(i), decltype(ii)>);
+  EXPECT_EQ(*ii, 42);
 }
 
 TEST(IndirectTest, TemplateArgumentDeductionWithAllocator) {
-  xyz::indirect a(std::allocator_arg, std::allocator<int>{}, 42);
-  EXPECT_EQ(*a, 42);
+  xyz::indirect i(std::allocator_arg, xyz::TaggedAllocator<int>(1), 42);
+
+  static_assert(
+      std::is_same_v<decltype(i.get_allocator()), xyz::TaggedAllocator<int>>);
+  EXPECT_EQ(*i, 42);
+}
+
+TEST(IndirectTest, TemplateArgumentDeductionWithDeducedAllocatorAndCopy) {
+  xyz::indirect i(std::allocator_arg, xyz::TaggedAllocator<int>(1), 42);
+  xyz::indirect ii(std::allocator_arg, 2, i);
+
+  static_assert(std::is_same_v<decltype(i.get_allocator()),
+                               decltype(ii.get_allocator())>);
+  EXPECT_EQ(*ii, 42);
+  EXPECT_EQ(ii.get_allocator().tag, 2);
+}
+
+TEST(IndirectTest, TemplateArgumentDeductionWithDeducedAllocatorAndMove) {
+  xyz::indirect i(std::allocator_arg, xyz::TaggedAllocator<int>(1), 42);
+  xyz::indirect ii(std::allocator_arg, 2, std::move(i));
+  EXPECT_EQ(*ii, 42);
+  EXPECT_EQ(ii.get_allocator().tag, 2);
 }
 #endif  // XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
 

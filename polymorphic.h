@@ -33,6 +33,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace xyz {
 
+#ifndef XYZ_TYPE_IDENTITY_DEFINED
+#define XYZ_TYPE_IDENTITY_DEFINED
+#ifdef XYZ_HAS_STD_TYPE_IDENTITY
+using std::type_identity_t;
+#else
+template <class T>
+struct type_identity {
+  using type = T;
+};
+template <class T>
+using type_identity_t = typename type_identity<T>::type;
+#endif  // XYZ_HAS_STD_TYPE_IDENTITY
+#endif  // XYZ_TYPE_IDENTITY_DEFINED
+
 #ifndef XYZ_UNREACHABLE_DEFINED
 #define XYZ_UNREACHABLE_DEFINED
 
@@ -115,6 +129,9 @@ class direct_control_block final : public control_block<T, A> {
 };
 
 }  // namespace detail
+
+template <class T, class A>
+class polymorphic;
 
 template <class T, class A = std::allocator<T>>
 class polymorphic {
@@ -241,7 +258,8 @@ class polymorphic {
     cb_ = create_control_block<U>(ilist, std::forward<Ts>(ts)...);
   }
 
-  constexpr polymorphic(std::allocator_arg_t, const A& alloc,
+  constexpr polymorphic(std::allocator_arg_t,
+                        const xyz::type_identity_t<A>& alloc,
                         const polymorphic& other)
       : alloc_(alloc) {
     if (!other.valueless_after_move()) {
@@ -252,7 +270,7 @@ class polymorphic {
   }
 
   constexpr polymorphic(
-      std::allocator_arg_t, const A& alloc,
+      std::allocator_arg_t, const xyz::type_identity_t<A>& alloc,
       polymorphic&& other) noexcept(allocator_traits::is_always_equal::value)
       : alloc_(alloc) {
     if constexpr (allocator_traits::is_always_equal::value) {
@@ -404,6 +422,16 @@ class polymorphic {
     }
   }
 };
+
+template <typename Value>
+polymorphic(Value) -> polymorphic<Value>;
+
+template <typename Alloc, typename Value>
+polymorphic(std::allocator_arg_t, Alloc, Value) -> polymorphic<Value, Alloc>;
+
+template <typename Alloc, typename Alloc2, typename Value>
+polymorphic(std::allocator_arg_t, Alloc2, polymorphic<Value, Alloc>)
+    -> polymorphic<Value, Alloc>;
 
 }  // namespace xyz
 
