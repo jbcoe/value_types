@@ -121,6 +121,7 @@ static void Polymorphic_BM_Copy_RawPtr(benchmark::State& state) {
   for (auto _ : state) {
     auto pp = p->clone();
     benchmark::DoNotOptimize(pp);
+    delete pp;
   }
   delete p;
 }
