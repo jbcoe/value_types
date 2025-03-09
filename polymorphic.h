@@ -116,6 +116,15 @@ class direct_control_block final : public control_block<T, A> {
 
 }  // namespace detail
 
+template <class T, class A>
+class polymorphic;
+
+template <class>
+inline constexpr bool is_polymorphic_v = false;
+
+template <class T, class A>
+inline constexpr bool is_polymorphic_v<polymorphic<T, A>> = true;
+
 template <class T, class A = std::allocator<T>>
 class polymorphic {
   using cblock_t = detail::control_block<T, A>;
@@ -241,7 +250,8 @@ class polymorphic {
     cb_ = create_control_block<U>(ilist, std::forward<Ts>(ts)...);
   }
 
-  constexpr polymorphic(std::allocator_arg_t, const A& alloc,
+  constexpr polymorphic(std::allocator_arg_t,
+                        const std::type_identity_t<A>& alloc,
                         const polymorphic& other)
       : alloc_(alloc) {
     if (!other.valueless_after_move()) {
@@ -252,7 +262,7 @@ class polymorphic {
   }
 
   constexpr polymorphic(
-      std::allocator_arg_t, const A& alloc,
+      std::allocator_arg_t, const std::type_identity_t<A>& alloc,
       polymorphic&& other) noexcept(allocator_traits::is_always_equal::value)
       : alloc_(alloc) {
     if constexpr (allocator_traits::is_always_equal::value) {
@@ -404,7 +414,19 @@ class polymorphic {
     }
   }
 };
+#ifdef XYZ_HAS_EXTENDED_CONSTRUCTOR_TEMPLATE_ARGUMENT_DEDUCTION
+template <typename Value>
+polymorphic(Value) -> polymorphic<Value>;
 
+template <typename Alloc, typename Value,
+          typename std::enable_if_t<!is_polymorphic_v<Value>, int> = 0>
+polymorphic(std::allocator_arg_t, Alloc, Value) -> polymorphic<
+    Value, typename std::allocator_traits<Alloc>::template rebind_alloc<Value>>;
+
+template <typename Alloc, typename Value>
+polymorphic(std::allocator_arg_t, std::type_identity_t<Alloc>,
+            polymorphic<Value, Alloc>) -> polymorphic<Value, Alloc>;
+#endif  // XYZ_HAS_EXTENDED_CONSTRUCTOR_TEMPLATE_ARGUMENT_DEDUCTION
 }  // namespace xyz
 
 #endif  // XYZ_POLYMORPHIC_H_
