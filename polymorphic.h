@@ -115,7 +115,6 @@ class polymorphic {
     }
   };
 
-  // Update member variable type
   control_block* cb_;
 
 #if defined(_MSC_VER)
