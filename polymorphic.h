@@ -47,79 +47,74 @@ namespace xyz {
 }
 #endif  // XYZ_UNREACHABLE_DEFINED
 
-namespace detail {
-template <class T, class A>
-struct control_block {
-  using allocator_traits = std::allocator_traits<A>;
-
-  typename allocator_traits::pointer p_;
-
-  virtual constexpr ~control_block() = default;
-  virtual constexpr void destroy(A& alloc) = 0;
-  virtual constexpr control_block<T, A>* clone(const A& alloc) = 0;
-  virtual constexpr control_block<T, A>* move(const A& alloc) = 0;
-};
-
-template <class T, class U, class A>
-class direct_control_block final : public control_block<T, A> {
-  union uninitialized_storage {
-    U u_;
-
-    constexpr uninitialized_storage() {}
-
-    constexpr ~uninitialized_storage() {}
-  } storage_;
-
-  using cb_allocator = typename std::allocator_traits<A>::template rebind_alloc<
-      direct_control_block<T, U, A>>;
-  using cb_alloc_traits = std::allocator_traits<cb_allocator>;
-
- public:
-  template <class... Ts>
-  constexpr direct_control_block(const A& alloc, Ts&&... ts) {
-    cb_allocator cb_alloc(alloc);
-    cb_alloc_traits::construct(cb_alloc, std::addressof(storage_.u_),
-                               std::forward<Ts>(ts)...);
-    control_block<T, A>::p_ = std::addressof(storage_.u_);
-  }
-
-  constexpr control_block<T, A>* clone(const A& alloc) override {
-    cb_allocator cb_alloc(alloc);
-    auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
-    try {
-      cb_alloc_traits::construct(cb_alloc, mem, alloc, storage_.u_);
-      return mem;
-    } catch (...) {
-      cb_alloc_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
-  }
-
-  constexpr control_block<T, A>* move(const A& alloc) override {
-    cb_allocator cb_alloc(alloc);
-    auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
-    try {
-      cb_alloc_traits::construct(cb_alloc, mem, alloc, std::move(storage_.u_));
-      return mem;
-    } catch (...) {
-      cb_alloc_traits::deallocate(cb_alloc, mem, 1);
-      throw;
-    }
-  }
-
-  constexpr void destroy(A& alloc) override {
-    cb_allocator cb_alloc(alloc);
-    cb_alloc_traits::destroy(cb_alloc, std::addressof(storage_.u_));
-    cb_alloc_traits::deallocate(cb_alloc, this, 1);
-  }
-};
-
-}  // namespace detail
-
 template <class T, class A = std::allocator<T>>
 class polymorphic {
-  using cblock_t = detail::control_block<T, A>;
-  cblock_t* cb_;
+  struct control_block {
+    using allocator_traits = std::allocator_traits<A>;
+    typename allocator_traits::pointer p_;
+
+    virtual constexpr ~control_block() = default;
+    virtual constexpr void destroy(A& alloc) = 0;
+    virtual constexpr control_block* clone(const A& alloc) = 0;
+    virtual constexpr control_block* move(const A& alloc) = 0;
+  };
+
+  template <class U>
+  class direct_control_block final : public control_block {
+    union uninitialized_storage {
+      U u_;
+
+      constexpr uninitialized_storage() {}
+
+      constexpr ~uninitialized_storage() {}
+    } storage_;
+
+    using cb_allocator = typename std::allocator_traits<
+        A>::template rebind_alloc<direct_control_block<U>>;
+    using cb_alloc_traits = std::allocator_traits<cb_allocator>;
+
+   public:
+    template <class... Ts>
+    constexpr direct_control_block(const A& alloc, Ts&&... ts) {
+      cb_allocator cb_alloc(alloc);
+      cb_alloc_traits::construct(cb_alloc, std::addressof(storage_.u_),
+                                 std::forward<Ts>(ts)...);
+      control_block::p_ = std::addressof(storage_.u_);
+    }
+
+    constexpr control_block* clone(const A& alloc) override {
+      cb_allocator cb_alloc(alloc);
+      auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
+      try {
+        cb_alloc_traits::construct(cb_alloc, mem, alloc, storage_.u_);
+        return mem;
+      } catch (...) {
+        cb_alloc_traits::deallocate(cb_alloc, mem, 1);
+        throw;
+      }
+    }
+
+    constexpr control_block* move(const A& alloc) override {
+      cb_allocator cb_alloc(alloc);
+      auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
+      try {
+        cb_alloc_traits::construct(cb_alloc, mem, alloc,
+                                   std::move(storage_.u_));
+        return mem;
+      } catch (...) {
+        cb_alloc_traits::deallocate(cb_alloc, mem, 1);
+        throw;
+      }
+    }
+
+    constexpr void destroy(A& alloc) override {
+      cb_allocator cb_alloc(alloc);
+      cb_alloc_traits::destroy(cb_alloc, std::addressof(storage_.u_));
+      cb_alloc_traits::deallocate(cb_alloc, this, 1);
+    }
+  };
+
+  control_block* cb_;
 
 #if defined(_MSC_VER)
   // https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/#msvc-extensions-and-abi
@@ -131,9 +126,10 @@ class polymorphic {
   using allocator_traits = std::allocator_traits<A>;
 
   template <class U, class... Ts>
-  [[nodiscard]] constexpr cblock_t* create_control_block(Ts&&... ts) const {
+  [[nodiscard]] constexpr control_block* create_control_block(
+      Ts&&... ts) const {
     using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<detail::direct_control_block<T, U, A>>;
+        A>::template rebind_alloc<direct_control_block<U>>;
     cb_allocator cb_alloc(alloc_);
     using cb_alloc_traits = std::allocator_traits<cb_allocator>;
     auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
