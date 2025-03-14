@@ -59,7 +59,6 @@ class polymorphic {
     virtual constexpr control_block* move(const A& alloc) = 0;
   };
 
-  // Move direct_control_block as private inner class
   template <class U>
   class direct_control_block final : public control_block {
     union uninitialized_storage {
