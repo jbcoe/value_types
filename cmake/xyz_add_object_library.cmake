@@ -12,9 +12,11 @@ and allows configuration for common optional settings.
 .. code-block:: cmake
 
   xyz_add_object_library(
-      NAME <name>
-      FILES <source_files...>
-      LINK_LIBRARIES <libraries...>
+      [NAME <name>]
+      [FILES <source_files...>]
+      [LINK_LIBRARIES <libraries...>]
+      [VERSION <version>]
+      [DEFINITIONS <definitions...>]
   )
    -- Generates object library targets with default build settings.
 
@@ -27,33 +29,63 @@ and allows configuration for common optional settings.
   ``LINK_LIBRARIES``
     The ``LINK_LIBRARIES`` option is required to specify the libraries to link against.
 
+  ``VERSION``
+    The ``VERSION`` option specifies the supported C++ version.
+
+  ``DEFINITIONS``
+    The ``DEFINITIONS`` option provides a list of compile definitions.
+
 #]=======================================================================]
 function(xyz_add_object_library)
     set(options)
-    set(oneValueArgs NAME)
-    set(multiValueArgs FILES LINK_LIBRARIES)
+    set(oneValueArgs NAME VERSION)
+    set(multiValueArgs FILES LINK_LIBRARIES DEFINITIONS)
 
-    cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    cmake_parse_arguments(XYZ "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    if(NOT ARG_NAME)
-        message(FATAL_ERROR "xyz_add_object_library: NAME parameter is required")
+    if(NOT XYZ_NAME)
+        message(FATAL_ERROR "NAME parameter must be supplied")
     endif()
 
-    if(NOT ARG_FILES)
-        message(FATAL_ERROR "xyz_add_object_library: FILES parameter is required")
+    if(NOT XYZ_FILES)
+        message(FATAL_ERROR "FILES parameter must be supplied")
     endif()
 
-    add_library(${ARG_NAME} OBJECT)
+    if (NOT XYZ_VERSION)
+        set(XYZ_CXX_STANDARD cxx_std_20)
+    else()
+        set(VALID_TARGET_VERSIONS 11 14 17 20 23)
+        list(FIND VALID_TARGET_VERSIONS ${XYZ_VERSION} index)
+        if(index EQUAL -1)
+            message(FATAL_ERROR "TYPE must be one of <${VALID_TARGET_VERSIONS}>")
+        endif()
+        set(XYZ_CXX_STANDARD cxx_std_${XYZ_VERSION})
+    endif()
 
-    target_sources(${ARG_NAME}
+    add_library(${XYZ_NAME} OBJECT)
+
+    target_sources(${XYZ_NAME}
         PRIVATE
-            ${ARG_FILES}
+            ${XYZ_FILES}
     )
 
-    if(ARG_LINK_LIBRARIES)
-        target_link_libraries(${ARG_NAME}
+    target_compile_features(${XYZ_NAME}
+        PRIVATE
+            ${XYZ_CXX_STANDARD}
+    )
+
+    if(XYZ_LINK_LIBRARIES)
+        target_link_libraries(${XYZ_NAME}
             PRIVATE
-                ${ARG_LINK_LIBRARIES}
+                ${XYZ_LINK_LIBRARIES}
         )
     endif()
+
+    if (XYZ_DEFINITIONS)
+        target_compile_definitions(${XYZ_NAME}
+            PRIVATE
+                ${XYZ_DEFINITIONS}
+        )
+    endif (XYZ_DEFINITIONS)
+
 endfunction()

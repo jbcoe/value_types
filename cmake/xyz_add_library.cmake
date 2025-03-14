@@ -6,7 +6,6 @@ xyz_add_library
 
 Overview
 ^^^^^^^^
-
 Project wrapper around add library which groups commonly associates patterns
 and allows configuration for common optional settings
 
@@ -38,12 +37,15 @@ function(xyz_add_library)
     set(oneValueArgs NAME ALIAS VERSION)
     set(multiValueArgs DEFINITIONS)
     cmake_parse_arguments(XYZ "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
     if (NOT XYZ_NAME)
         message(FATAL_ERROR "NAME parameter must be supplied")
     endif()
+
     if (NOT XYZ_ALIAS)
         message(FATAL_ERROR "ALIAS parameter must be supplied")
     endif()
+
     if (NOT XYZ_VERSION)
         set(XYZ_CXX_STANDARD cxx_std_20)
     else()
@@ -66,6 +68,7 @@ function(xyz_add_library)
         INTERFACE
             ${XYZ_CXX_STANDARD}
     )
+
     if (XYZ_DEFINITIONS)
         target_compile_definitions(${XYZ_NAME}
             INTERFACE
