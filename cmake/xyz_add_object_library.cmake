@@ -43,22 +43,17 @@ function(xyz_add_object_library)
         message(FATAL_ERROR "xyz_add_object_library: FILES parameter is required")
     endif()
 
-    if(NOT ARG_LINK_LIBRARIES)
-        message(FATAL_ERROR "xyz_add_object_library: LINK_LIBRARIES parameter is required")
-    endif()
-
-    # Create the object library
     add_library(${ARG_NAME} OBJECT)
 
-    # Add the source files
     target_sources(${ARG_NAME}
         PRIVATE
             ${ARG_FILES}
     )
 
-    # Link against the base library
-    target_link_libraries(${ARG_NAME}
-        PRIVATE
-            ${ARG_LINK_LIBRARIES}
-    )
+    if(ARG_LINK_LIBRARIES)
+        target_link_libraries(${ARG_NAME}
+            PRIVATE
+                ${ARG_LINK_LIBRARIES}
+        )
+    endif()
 endfunction()
