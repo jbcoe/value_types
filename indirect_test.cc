@@ -120,13 +120,13 @@ TEST(IndirectTest, AllocatorExtendedInitializerListConstructor) {
 
 #ifdef XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
 TEST(IndirectTest, TemplateArgumentDeduction) {
-  xyz::indirect a(42);
-  EXPECT_EQ(*a, 42);
+  xyz::indirect i(42);
+  EXPECT_EQ(*i, 42);
 }
 
 TEST(IndirectTest, TemplateArgumentDeductionWithAllocator) {
-  xyz::indirect a(std::allocator_arg, std::allocator<int>{}, 42);
-  EXPECT_EQ(*a, 42);
+  xyz::indirect i(std::allocator_arg, std::allocator<int>{}, 42);
+  EXPECT_EQ(*i, 42);
 }
 #endif  // XYZ_HAS_TEMPLATE_ARGUMENT_DEDUCTION
 
@@ -137,8 +137,8 @@ struct AllocatorAwareType {
 
   AllocatorAwareType() = default;
 
-  AllocatorAwareType(std::allocator_arg_t, const allocator_type& alloc)
-      : children(alloc) {}
+  AllocatorAwareType(std::allocator_arg_t, const allocator_type& a)
+      : children(a) {}
 
   std::vector<AllocatorAwareType, allocator_type> children;
 };
@@ -163,211 +163,211 @@ TEST(IndirectTest, ConstructorDipatchesToAllocatorArgTOverload) {
   unsigned dealloc_counter = 0;
 
   AllocatorAwareType<DefaultConstructibleTrackingAllocator<void>>::
-      allocator_type alloc(&alloc_counter, &dealloc_counter);
+      allocator_type a(&alloc_counter, &dealloc_counter);
   using AllocatorAwareT =
       AllocatorAwareType<DefaultConstructibleTrackingAllocator<void>>;
   xyz::indirect<
       AllocatorAwareT,
       typename std::allocator_traits<DefaultConstructibleTrackingAllocator<
           void>>::template rebind_alloc<AllocatorAwareT>>
-      value(std::allocator_arg, alloc);
+      value(std::allocator_arg, a);
 
   EXPECT_EQ(alloc_counter, 1);
   EXPECT_EQ(dealloc_counter, 0);
 }
 
 TEST(IndirectTest, CopiesAreDistinct) {
-  xyz::indirect<int> a(xyz::in_place_t{}, 42);
-  auto aa = a;
-  EXPECT_EQ(*a, *aa);
-  EXPECT_NE(&*a, &*aa);
+  xyz::indirect<int> i(xyz::in_place_t{}, 42);
+  auto ii = i;
+  EXPECT_EQ(*i, *ii);
+  EXPECT_NE(&*i, &*ii);
 }
 
 TEST(IndirectTest, MovePreservesIndirectObjectAddress) {
-  xyz::indirect<int> a(xyz::in_place_t{}, 42);
-  auto address = &*a;
-  auto aa = std::move(a);
+  xyz::indirect<int> i(xyz::in_place_t{}, 42);
+  auto address = &*i;
+  auto ii = std::move(i);
 
   EXPECT_TRUE(
-      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
-  EXPECT_EQ(address, &*aa);
+      i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+  EXPECT_EQ(address, &*ii);
 }
 
 TEST(IndirectTest, AllocatorExtendedCopy) {
-  xyz::indirect<int> a(xyz::in_place_t{}, 42);
-  xyz::indirect<int> aa(std::allocator_arg, a.get_allocator(), a);
-  EXPECT_EQ(*a, *aa);
-  EXPECT_NE(&*a, &*aa);
+  xyz::indirect<int> i(xyz::in_place_t{}, 42);
+  xyz::indirect<int> ii(std::allocator_arg, i.get_allocator(), i);
+  EXPECT_EQ(*i, *ii);
+  EXPECT_NE(&*i, &*ii);
 }
 
 TEST(IndirectTest, AllocatorExtendedMove) {
-  xyz::indirect<int> a(xyz::in_place_t{}, 42);
-  auto address = &*a;
-  xyz::indirect<int> aa(std::allocator_arg, a.get_allocator(), std::move(a));
+  xyz::indirect<int> i(xyz::in_place_t{}, 42);
+  auto address = &*i;
+  xyz::indirect<int> ii(std::allocator_arg, i.get_allocator(), std::move(i));
 
   EXPECT_TRUE(
-      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
-  EXPECT_EQ(address, &*aa);
+      i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+  EXPECT_EQ(address, &*ii);
 }
 
 TEST(IndirectTest, CopyAssignment) {
-  xyz::indirect<int> a(xyz::in_place_t{}, 42);
+  xyz::indirect<int> i(xyz::in_place_t{}, 42);
   xyz::indirect<int> b(xyz::in_place_t{}, 101);
-  EXPECT_EQ(*a, 42);
-  a = b;
+  EXPECT_EQ(*i, 42);
+  i = b;
 
-  EXPECT_EQ(*a, 101);
-  EXPECT_NE(&*a, &*b);
+  EXPECT_EQ(*i, 101);
+  EXPECT_NE(&*i, &*b);
 }
 
 TEST(IndirectTest, CopyAssignmentSelf) {
-  xyz::indirect<int> a(xyz::in_place_t{}, 42);
-  a = a;
+  xyz::indirect<int> i(xyz::in_place_t{}, 42);
+  i = i;
 
-  EXPECT_FALSE(a.valueless_after_move());
+  EXPECT_FALSE(i.valueless_after_move());
 }
 
 TEST(IndirectTest, MoveAssignment) {
-  xyz::indirect<int> a(xyz::in_place_t{}, 42);
+  xyz::indirect<int> i(xyz::in_place_t{}, 42);
   xyz::indirect<int> b(xyz::in_place_t{}, 101);
-  EXPECT_EQ(*a, 42);
-  a = std::move(b);
+  EXPECT_EQ(*i, 42);
+  i = std::move(b);
 
   EXPECT_TRUE(
       b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
-  EXPECT_EQ(*a, 101);
+  EXPECT_EQ(*i, 101);
 }
 
 TEST(IndirectTest, MoveAssignmentSelf) {
-  xyz::indirect<int> a(xyz::in_place_t{}, 42);
-  a = std::move(a);
+  xyz::indirect<int> i(xyz::in_place_t{}, 42);
+  i = std::move(i);
 
-  EXPECT_FALSE(a.valueless_after_move());
+  EXPECT_FALSE(i.valueless_after_move());
 }
 
 TEST(IndirectTest, ConvertingAssignment) {
-  xyz::indirect<int> a;
-  a = 42;
-  EXPECT_EQ(*a, 42);
+  xyz::indirect<int> i;
+  i = 42;
+  EXPECT_EQ(*i, 42);
 }
 
 TEST(IndirectTest, ConvertingAssignmentValueless) {
-  xyz::indirect<int> a;
-  xyz::indirect<int> aa(std::move(a));
+  xyz::indirect<int> i;
+  xyz::indirect<int> ii(std::move(i));
 
   EXPECT_TRUE(
-      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
-  a = 42;
-  EXPECT_EQ(*a, 42);
+      i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+  i = 42;
+  EXPECT_EQ(*i, 42);
 }
 
 TEST(IndirectTest, NonMemberSwap) {
-  xyz::indirect<int> a(xyz::in_place_t{}, 42);
+  xyz::indirect<int> i(xyz::in_place_t{}, 42);
   xyz::indirect<int> b(xyz::in_place_t{}, 101);
   using std::swap;
-  swap(a, b);
-  EXPECT_EQ(*a, 101);
+  swap(i, b);
+  EXPECT_EQ(*i, 101);
   EXPECT_EQ(*b, 42);
 }
 
 TEST(IndirectTest, MemberSwap) {
-  xyz::indirect<int> a(xyz::in_place_t{}, 42);
+  xyz::indirect<int> i(xyz::in_place_t{}, 42);
   xyz::indirect<int> b(xyz::in_place_t{}, 101);
 
-  a.swap(b);
-  EXPECT_EQ(*a, 101);
+  i.swap(b);
+  EXPECT_EQ(*i, 101);
   EXPECT_EQ(*b, 42);
 }
 
 TEST(IndirectTest, MemberSwapWithSelf) {
-  xyz::indirect<int> a(xyz::in_place_t{}, 42);
+  xyz::indirect<int> i(xyz::in_place_t{}, 42);
 
-  a.swap(a);
-  EXPECT_FALSE(a.valueless_after_move());
+  i.swap(i);
+  EXPECT_FALSE(i.valueless_after_move());
 }
 
 TEST(IndirectTest, CopyFromValueless) {
-  xyz::indirect<int> a;
-  xyz::indirect<int> aa(std::move(a));
+  xyz::indirect<int> i;
+  xyz::indirect<int> ii(std::move(i));
 
   EXPECT_TRUE(
-      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
-  xyz::indirect<int> b(a);
+      i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+  xyz::indirect<int> b(i);
   EXPECT_TRUE(
       b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, MoveFromValueless) {
-  xyz::indirect<int> a;
-  xyz::indirect<int> aa(std::move(a));
+  xyz::indirect<int> i;
+  xyz::indirect<int> ii(std::move(i));
 
   EXPECT_TRUE(
-      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
-  xyz::indirect<int> b(std::move(a));
+      i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+  xyz::indirect<int> b(std::move(i));
   EXPECT_TRUE(
       b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, AllocatorExtendedCopyFromValueless) {
-  xyz::indirect<int> a;
-  xyz::indirect<int> aa(std::move(a));
+  xyz::indirect<int> i;
+  xyz::indirect<int> ii(std::move(i));
 
   EXPECT_TRUE(
-      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
-  xyz::indirect<int> b(std::allocator_arg, a.get_allocator(), a);
+      i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+  xyz::indirect<int> b(std::allocator_arg, i.get_allocator(), i);
   EXPECT_TRUE(
       b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, AllocatorExtendedMoveFromValueless) {
-  xyz::indirect<int> a;
-  xyz::indirect<int> aa(std::move(a));
+  xyz::indirect<int> i;
+  xyz::indirect<int> ii(std::move(i));
 
   EXPECT_TRUE(
-      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
-  xyz::indirect<int> b(std::allocator_arg, a.get_allocator(), std::move(a));
+      i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+  xyz::indirect<int> b(std::allocator_arg, i.get_allocator(), std::move(i));
   EXPECT_TRUE(
       b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, AssignFromValueless) {
-  xyz::indirect<int> a;
-  xyz::indirect<int> aa(std::move(a));
+  xyz::indirect<int> i;
+  xyz::indirect<int> ii(std::move(i));
 
   EXPECT_TRUE(
-      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
-  xyz::indirect<int> b;
-  b = a;
+      i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+  xyz::indirect<int> b(xyz::in_place_t{}, 101);
+  b = i;
   EXPECT_TRUE(
       b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, MoveAssignFromValueless) {
-  xyz::indirect<int> a;
-  xyz::indirect<int> aa(std::move(a));
+  xyz::indirect<int> i;
+  xyz::indirect<int> ii(std::move(i));
 
   EXPECT_TRUE(
-      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
-  xyz::indirect<int> b;
-  b = std::move(a);
+      i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+  xyz::indirect<int> b(xyz::in_place_t{}, 101);
+  b = std::move(i);
   EXPECT_TRUE(
       b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, SwapFromValueless) {
-  xyz::indirect<int> a;
-  xyz::indirect<int> aa(std::move(a));
+  xyz::indirect<int> i;
+  xyz::indirect<int> ii(std::move(i));
 
   EXPECT_TRUE(
-      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
-  xyz::indirect<int> b;
+      i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+  xyz::indirect<int> b(xyz::in_place_t{}, 101);
   EXPECT_TRUE(
       !b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 
   using std::swap;
-  swap(a, b);
+  swap(i, b);
   EXPECT_TRUE(
-      !a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+      !i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   EXPECT_TRUE(
       b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
@@ -385,15 +385,15 @@ TEST(IndirectTest, ConstPropagation) {
     Constness member() const&& { return Constness::RV_CONST; }
   };
 
-  xyz::indirect<SomeType> a;
-  EXPECT_EQ(a->member(), SomeType::Constness::LV_NON_CONST);
-  EXPECT_EQ((*a).member(), SomeType::Constness::LV_NON_CONST);
-  const auto& ca = a;
-  EXPECT_EQ(ca->member(), SomeType::Constness::LV_CONST);
-  EXPECT_EQ((*ca).member(), SomeType::Constness::LV_CONST);
+  xyz::indirect<SomeType> i;
+  EXPECT_EQ(i->member(), SomeType::Constness::LV_NON_CONST);
+  EXPECT_EQ((*i).member(), SomeType::Constness::LV_NON_CONST);
+  const auto& ci = i;
+  EXPECT_EQ(ci->member(), SomeType::Constness::LV_CONST);
+  EXPECT_EQ((*ci).member(), SomeType::Constness::LV_CONST);
 
   auto createConstRValueIndirect = [&]() -> xyz::indirect<SomeType> const&& {
-    return std::move(a);
+    return std::move(i);
   };
 
   EXPECT_EQ((*xyz::indirect<SomeType>{}).member(),
@@ -403,14 +403,14 @@ TEST(IndirectTest, ConstPropagation) {
 }
 
 TEST(IndirectTest, Hash) {
-  xyz::indirect<int> a(xyz::in_place_t{}, 42);
-  EXPECT_EQ(std::hash<xyz::indirect<int>>()(a), std::hash<int>()(*a));
+  xyz::indirect<int> i(xyz::in_place_t{}, 42);
+  EXPECT_EQ(std::hash<xyz::indirect<int>>()(i), std::hash<int>()(*i));
 }
 
 auto make_valueless_indirect() {
-  xyz::indirect<int> a;
-  auto aa = std::move(a);
-  return a;  // NOLINT(clang-analyzer-cplusplus.Move)
+  xyz::indirect<int> i;
+  auto ii = std::move(i);
+  return i;  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, HashValueless) {
@@ -421,11 +421,11 @@ TEST(IndirectTest, HashValueless) {
 
 #ifdef XYZ_HAS_STD_OPTIONAL
 TEST(IndirectTest, Optional) {
-  std::optional<xyz::indirect<int>> a;
-  EXPECT_FALSE(a.has_value());
-  a.emplace(xyz::in_place_t{}, 42);
-  EXPECT_TRUE(a.has_value());
-  EXPECT_EQ(**a, 42);
+  std::optional<xyz::indirect<int>> i;
+  EXPECT_FALSE(i.has_value());
+  i.emplace(xyz::in_place_t{}, 42);
+  EXPECT_TRUE(i.has_value());
+  EXPECT_EQ(**i, 42);
 }
 #endif  // XYZ_HAS_STD_OPTIONAL
 
@@ -589,14 +589,14 @@ TEST(IndirectTest, ComparisonWithIndirectU) {
 TEST(IndirectTest, GetAllocator) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
-  xyz::TrackingAllocator<int> allocator(&alloc_counter, &dealloc_counter);
+  xyz::TrackingAllocator<int> a(&alloc_counter, &dealloc_counter);
 
-  xyz::indirect<int, xyz::TrackingAllocator<int>> a(
-      std::allocator_arg, allocator, xyz::in_place_t{}, 42);
+  xyz::indirect<int, xyz::TrackingAllocator<int>> i(std::allocator_arg, a,
+                                                    xyz::in_place_t{}, 42);
   EXPECT_EQ(alloc_counter, 1);
   EXPECT_EQ(dealloc_counter, 0);
 
-  auto tracking_allocator = a.get_allocator();
+  auto tracking_allocator = i.get_allocator();
   EXPECT_EQ(alloc_counter, *tracking_allocator.alloc_counter_);
   EXPECT_EQ(dealloc_counter, *tracking_allocator.dealloc_counter_);
 }
@@ -605,7 +605,7 @@ TEST(IndirectTest, CountAllocationsForInPlaceConstruction) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::indirect<int, xyz::TrackingAllocator<int>> a(
+    xyz::indirect<int, xyz::TrackingAllocator<int>> i(
         std::allocator_arg,
         xyz::TrackingAllocator<int>(&alloc_counter, &dealloc_counter),
         xyz::in_place_t{}, 42);
@@ -620,13 +620,13 @@ TEST(IndirectTest, CountAllocationsForCopyConstruction) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::indirect<int, xyz::TrackingAllocator<int>> a(
+    xyz::indirect<int, xyz::TrackingAllocator<int>> i(
         std::allocator_arg,
         xyz::TrackingAllocator<int>(&alloc_counter, &dealloc_counter),
         xyz::in_place_t{}, 42);
     EXPECT_EQ(alloc_counter, 1);
     EXPECT_EQ(dealloc_counter, 0);
-    xyz::indirect<int, xyz::TrackingAllocator<int>> b(a);
+    xyz::indirect<int, xyz::TrackingAllocator<int>> ii(i);
   }
   EXPECT_EQ(alloc_counter, 2);
   EXPECT_EQ(dealloc_counter, 2);
@@ -636,17 +636,17 @@ TEST(IndirectTest, CountAllocationsForCopyAssignment) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::indirect<int, xyz::TrackingAllocator<int>> a(
+    xyz::indirect<int, xyz::TrackingAllocator<int>> i(
         std::allocator_arg,
         xyz::TrackingAllocator<int>(&alloc_counter, &dealloc_counter),
         xyz::in_place_t{}, 42);
-    xyz::indirect<int, xyz::TrackingAllocator<int>> b(
+    xyz::indirect<int, xyz::TrackingAllocator<int>> ii(
         std::allocator_arg,
         xyz::TrackingAllocator<int>(&alloc_counter, &dealloc_counter),
         xyz::in_place_t{}, 101);
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
-    b = a;  // Will not allocate as int is assignable.
+    ii = i;  // Will not allocate as int is assignable.
   }
   EXPECT_EQ(alloc_counter, 2);
   EXPECT_EQ(dealloc_counter, 2);
@@ -656,105 +656,45 @@ TEST(IndirectTest, CountAllocationsForMoveAssignment) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::indirect<int, xyz::TrackingAllocator<int>> a(
+    xyz::indirect<int, xyz::TrackingAllocator<int>> i(
         std::allocator_arg,
         xyz::TrackingAllocator<int>(&alloc_counter, &dealloc_counter),
         xyz::in_place_t{}, 42);
-    xyz::indirect<int, xyz::TrackingAllocator<int>> b(
+    xyz::indirect<int, xyz::TrackingAllocator<int>> ii(
         std::allocator_arg,
         xyz::TrackingAllocator<int>(&alloc_counter, &dealloc_counter),
         xyz::in_place_t{}, 101);
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
-    b = std::move(a);
+    ii = std::move(i);
   }
   EXPECT_EQ(alloc_counter, 2);
   EXPECT_EQ(dealloc_counter, 2);
-}
-
-template <typename T>
-struct NonEqualTrackingAllocator : xyz::TrackingAllocator<T> {
-  using xyz::TrackingAllocator<T>::TrackingAllocator;
-  using propagate_on_container_copy_assignment = std::true_type;
-  using propagate_on_container_move_assignment = std::true_type;
-
-  friend bool operator==(const NonEqualTrackingAllocator&,
-                         const NonEqualTrackingAllocator&) noexcept {
-    return false;
-  }
-
-  friend bool operator!=(const NonEqualTrackingAllocator&,
-                         const NonEqualTrackingAllocator&) noexcept {
-    return true;
-  }
-};
-
-TEST(IndirectTest,
-     CountAllocationsForCopyAssignmentWhenAllocatorsDontCompareEqual) {
-  unsigned alloc_counter = 0;
-  unsigned dealloc_counter = 0;
-
-  {
-    xyz::indirect<int, NonEqualTrackingAllocator<int>> a(
-        std::allocator_arg,
-        NonEqualTrackingAllocator<int>(&alloc_counter, &dealloc_counter),
-        xyz::in_place_t{}, 42);
-    xyz::indirect<int, NonEqualTrackingAllocator<int>> b(
-        std::allocator_arg,
-        NonEqualTrackingAllocator<int>(&alloc_counter, &dealloc_counter),
-        xyz::in_place_t{}, 101);
-    EXPECT_EQ(alloc_counter, 2);
-    EXPECT_EQ(dealloc_counter, 0);
-    b = a;
-  }
-  EXPECT_EQ(alloc_counter, 3);
-  EXPECT_EQ(dealloc_counter, 3);
-}
-
-TEST(IndirectTest,
-     CountAllocationsForMoveAssignmentWhenAllocatorsDontCompareEqual) {
-  unsigned alloc_counter = 0;
-  unsigned dealloc_counter = 0;
-  {
-    xyz::indirect<int, NonEqualTrackingAllocator<int>> a(
-        std::allocator_arg,
-        NonEqualTrackingAllocator<int>(&alloc_counter, &dealloc_counter),
-        xyz::in_place_t{}, 42);
-    xyz::indirect<int, NonEqualTrackingAllocator<int>> b(
-        std::allocator_arg,
-        NonEqualTrackingAllocator<int>(&alloc_counter, &dealloc_counter),
-        xyz::in_place_t{}, 101);
-    EXPECT_EQ(alloc_counter, 2);
-    EXPECT_EQ(dealloc_counter, 0);
-    b = std::move(a);  // This will copy as allocators don't compare equal.
-  }
-  EXPECT_EQ(alloc_counter, 3);
-  EXPECT_EQ(dealloc_counter, 3);
 }
 
 TEST(IndirectTest, CountAllocationsForAssignmentToMovedFromObject) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::indirect<int, xyz::TrackingAllocator<int>> a(
+    xyz::indirect<int, xyz::TrackingAllocator<int>> i(
         std::allocator_arg,
         xyz::TrackingAllocator<int>(&alloc_counter, &dealloc_counter),
         xyz::in_place_t{}, 42);
-    xyz::indirect<int, xyz::TrackingAllocator<int>> b(
+    xyz::indirect<int, xyz::TrackingAllocator<int>> ii(
         std::allocator_arg,
         xyz::TrackingAllocator<int>(&alloc_counter, &dealloc_counter),
         xyz::in_place_t{}, 101);
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
-    b = std::move(a);
-    EXPECT_EQ(dealloc_counter, 1);  // b's value is destroyed.
-    xyz::indirect<int, xyz::TrackingAllocator<int>> c(
+    ii = std::move(i);
+    EXPECT_EQ(dealloc_counter, 1);  // ii's value is destroyed.
+    xyz::indirect<int, xyz::TrackingAllocator<int>> iii(
         std::allocator_arg,
         xyz::TrackingAllocator<int>(&alloc_counter, &dealloc_counter),
         xyz::in_place_t{}, 404);
     EXPECT_TRUE(
-        a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
-    a = c;  // This will cause an allocation as a is valueless.
+        i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+    i = iii;  // This will cause an allocation as i is valueless.
     EXPECT_EQ(alloc_counter, 4);
     EXPECT_EQ(dealloc_counter, 1);
   }
@@ -766,13 +706,13 @@ TEST(IndirectTest, CountAllocationsForMoveConstruction) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::indirect<int, xyz::TrackingAllocator<int>> a(
+    xyz::indirect<int, xyz::TrackingAllocator<int>> i(
         std::allocator_arg,
         xyz::TrackingAllocator<int>(&alloc_counter, &dealloc_counter),
         xyz::in_place_t{}, 42);
     EXPECT_EQ(alloc_counter, 1);
     EXPECT_EQ(dealloc_counter, 0);
-    xyz::indirect<int, xyz::TrackingAllocator<int>> b(std::move(a));
+    xyz::indirect<int, xyz::TrackingAllocator<int>> ii(std::move(i));
   }
   EXPECT_EQ(alloc_counter, 1);
   EXPECT_EQ(dealloc_counter, 1);
@@ -788,19 +728,19 @@ TEST(IndirectTest, NonMemberSwapWhenAllocatorsDontCompareEqual) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::indirect<int, POCSTrackingAllocator<int>> a(
+    xyz::indirect<int, POCSTrackingAllocator<int>> i(
         std::allocator_arg,
         POCSTrackingAllocator<int>(&alloc_counter, &dealloc_counter),
         xyz::in_place_t{}, 42);
-    xyz::indirect<int, POCSTrackingAllocator<int>> b(
+    xyz::indirect<int, POCSTrackingAllocator<int>> ii(
         std::allocator_arg,
         POCSTrackingAllocator<int>(&alloc_counter, &dealloc_counter),
         xyz::in_place_t{}, 101);
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
-    swap(a, b);
-    EXPECT_EQ(*a, 101);
-    EXPECT_EQ(*b, 42);
+    swap(i, ii);
+    EXPECT_EQ(*i, 101);
+    EXPECT_EQ(*ii, 42);
   }
   EXPECT_EQ(alloc_counter, 2);
   EXPECT_EQ(dealloc_counter, 2);
@@ -810,19 +750,19 @@ TEST(IndirectTest, MemberSwapWhenAllocatorsDontCompareEqual) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
   {
-    xyz::indirect<int, POCSTrackingAllocator<int>> a(
+    xyz::indirect<int, POCSTrackingAllocator<int>> i(
         std::allocator_arg,
         POCSTrackingAllocator<int>(&alloc_counter, &dealloc_counter),
         xyz::in_place_t{}, 42);
-    xyz::indirect<int, POCSTrackingAllocator<int>> b(
+    xyz::indirect<int, POCSTrackingAllocator<int>> ii(
         std::allocator_arg,
         POCSTrackingAllocator<int>(&alloc_counter, &dealloc_counter),
         xyz::in_place_t{}, 101);
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
-    a.swap(b);
-    EXPECT_EQ(*a, 101);
-    EXPECT_EQ(*b, 42);
+    i.swap(ii);
+    EXPECT_EQ(*i, 101);
+    EXPECT_EQ(*ii, 42);
   }
   EXPECT_EQ(alloc_counter, 2);
   EXPECT_EQ(dealloc_counter, 2);
@@ -863,8 +803,8 @@ TEST(IndirectTest, ConstructorWithExceptions) {
 
 TEST(IndirectTest, CopyConstructorWithExceptions) {
   auto create_copy = []() {
-    auto a = xyz::indirect<ThrowsOnCopyConstruction>();
-    auto aa = a;
+    auto i = xyz::indirect<ThrowsOnCopyConstruction>();
+    auto ii = i;
   };
   EXPECT_THROW(create_copy(), ThrowsOnCopyConstruction::Exception);
 }
@@ -885,11 +825,11 @@ TEST(IndirectTest, ConstructorWithExceptionsTrackingAllocations) {
 
 #ifdef XYZ_HAS_STD_OPTIONAL
 TEST(IndirectTest, InteractionWithOptional) {
-  std::optional<xyz::indirect<int>> a;
-  EXPECT_FALSE(a.has_value());
-  a.emplace(xyz::in_place_t{}, 42);
-  EXPECT_TRUE(a.has_value());
-  EXPECT_EQ(**a, 42);
+  std::optional<xyz::indirect<int>> i;
+  EXPECT_FALSE(i.has_value());
+  i.emplace(xyz::in_place_t{}, 42);
+  EXPECT_TRUE(i.has_value());
+  EXPECT_EQ(**i, 42);
 }
 #endif  // XYZ_HAS_STD_OPTIONAL
 
@@ -936,10 +876,10 @@ TEST(IndirectTest, InteractionWithPMRAllocators) {
   std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
   std::pmr::polymorphic_allocator<int> pa{&mbr};
   using IndirectInt = xyz::indirect<int, std::pmr::polymorphic_allocator<int>>;
-  IndirectInt a(std::allocator_arg, pa, xyz::in_place_t{}, 42);
+  IndirectInt i(std::allocator_arg, pa, xyz::in_place_t{}, 42);
   std::pmr::vector<IndirectInt> values{pa};
-  values.push_back(a);
-  values.push_back(std::move(a));
+  values.push_back(i);
+  values.push_back(std::move(i));
   EXPECT_EQ(*values[0], 42);
 }
 
@@ -950,9 +890,9 @@ TEST(IndirectTest, InteractionWithPMRAllocatorsWhenCopyThrows) {
   using IndirectType =
       xyz::indirect<ThrowsOnCopyConstruction,
                     std::pmr::polymorphic_allocator<ThrowsOnCopyConstruction>>;
-  IndirectType a(std::allocator_arg, pa);
+  IndirectType i(std::allocator_arg, pa);
   std::pmr::vector<IndirectType> values{pa};
-  EXPECT_THROW(values.push_back(a), ThrowsOnCopyConstruction::Exception);
+  EXPECT_THROW(values.push_back(i), ThrowsOnCopyConstruction::Exception);
 }
 
 TEST(IndirectTest, HashCustomAllocator) {
@@ -960,85 +900,86 @@ TEST(IndirectTest, HashCustomAllocator) {
   std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
   std::pmr::polymorphic_allocator<int> pa{&mbr};
   using IndirectType = xyz::indirect<int, std::pmr::polymorphic_allocator<int>>;
-  IndirectType a(std::allocator_arg, pa, xyz::in_place_t{}, 42);
-  EXPECT_EQ(std::hash<IndirectType>()(a), std::hash<int>()(*a));
+  IndirectType i(std::allocator_arg, pa, xyz::in_place_t{}, 42);
+  EXPECT_EQ(std::hash<IndirectType>()(i), std::hash<int>()(*i));
 }
 #endif  // XYZ_HAS_STD_MEMORY_RESOURCE
 
 TEST(IndirectTest, TaggedAllocatorsEqualMoveConstruct) {
-  xyz::TaggedAllocator<int> a(42);
-  xyz::TaggedAllocator<int> aa(42);
+  xyz::TaggedAllocator<int> i(42);
+  xyz::TaggedAllocator<int> ii(42);
 
   static_assert(
       !std::allocator_traits<xyz::TaggedAllocator<int>>::is_always_equal::value,
       "");
 
-  EXPECT_EQ(a.tag, 42);
-  EXPECT_EQ(aa.tag, 42);
-  EXPECT_EQ(a, aa);
+  EXPECT_EQ(i.tag, 42);
+  EXPECT_EQ(ii.tag, 42);
+  EXPECT_EQ(i, ii);
 
-  xyz::indirect<int, xyz::TaggedAllocator<int>> i(std::allocator_arg, a,
-                                                  xyz::in_place_t{}, -1);
-  xyz::indirect<int, xyz::TaggedAllocator<int>> ii(std::allocator_arg, aa,
-                                                   std::move(i));
+  xyz::indirect<int, xyz::TaggedAllocator<int>> poly_i(std::allocator_arg, i,
+                                                       xyz::in_place_t{}, -1);
+  xyz::indirect<int, xyz::TaggedAllocator<int>> poly_ii(std::allocator_arg, ii,
+                                                        std::move(poly_i));
 
   EXPECT_TRUE(
-      i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
-  EXPECT_EQ(*ii, -1);
+      poly_i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+  EXPECT_EQ(*poly_ii, -1);
 }
 
 TEST(IndirectTest, TaggedAllocatorsNotEqualMoveConstruct) {
-  xyz::TaggedAllocator<int> a(42);
-  xyz::TaggedAllocator<int> aa(101);
+  xyz::TaggedAllocator<int> i(42);
+  xyz::TaggedAllocator<int> ii(101);
 
-  EXPECT_EQ(a.tag, 42);
-  EXPECT_EQ(aa.tag, 101);
+  EXPECT_EQ(i.tag, 42);
+  EXPECT_EQ(ii.tag, 101);
 
   static_assert(
       !std::allocator_traits<xyz::TaggedAllocator<int>>::is_always_equal::value,
       "");
 
-  EXPECT_EQ(a.tag, 42);
-  EXPECT_EQ(aa.tag, 101);
-  EXPECT_NE(a, aa);
+  EXPECT_EQ(i.tag, 42);
+  EXPECT_EQ(ii.tag, 101);
+  EXPECT_NE(i, ii);
 
-  xyz::indirect<int, xyz::TaggedAllocator<int>> i(std::allocator_arg, a,
-                                                  xyz::in_place_t{}, -1);
-  xyz::indirect<int, xyz::TaggedAllocator<int>> ii(std::allocator_arg, aa,
-                                                   std::move(i));
+  xyz::indirect<int, xyz::TaggedAllocator<int>> poly_i(std::allocator_arg, i,
+                                                       xyz::in_place_t{}, -1);
+  xyz::indirect<int, xyz::TaggedAllocator<int>> poly_ii(std::allocator_arg, ii,
+                                                        std::move(poly_i));
 
   EXPECT_FALSE(
-      i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
-  EXPECT_EQ(*ii, -1);
+      poly_i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+  EXPECT_EQ(*poly_ii, -1);
 }
 
 TEST(IndirectTest, TaggedAllocatorsNotEqualMoveConstructFromValueless) {
-  xyz::TaggedAllocator<int> a(42);
-  xyz::TaggedAllocator<int> aa(101);
+  xyz::TaggedAllocator<int> i(42);
+  xyz::TaggedAllocator<int> ii(101);
 
   static_assert(
       !std::allocator_traits<xyz::TaggedAllocator<int>>::is_always_equal::value,
       "");
 
-  xyz::indirect<int, xyz::TaggedAllocator<int>> i(std::allocator_arg, a,
-                                                  xyz::in_place_t{}, -1);
+  xyz::indirect<int, xyz::TaggedAllocator<int>> poly_i(std::allocator_arg, i,
+                                                       xyz::in_place_t{}, -1);
 
-  xyz::indirect<int, xyz::TaggedAllocator<int>> ii(std::move(i));
+  xyz::indirect<int, xyz::TaggedAllocator<int>> poly_ii(std::move(poly_i));
   EXPECT_TRUE(
-      i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+      poly_i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 
   // Move construct from the now valueless i.
-  xyz::indirect<int, xyz::TaggedAllocator<int>> iii(std::allocator_arg, aa,
-                                                    std::move(i));
+  xyz::indirect<int, xyz::TaggedAllocator<int>> poly_iii(std::allocator_arg, ii,
+                                                         std::move(poly_i));
   EXPECT_TRUE(
-      iii.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+      poly_iii
+          .valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, SupportNonCopyableType) {
-  xyz::indirect<xyz::NonCopyable> a;
-  auto aa = std::move(a);
+  xyz::indirect<xyz::NonCopyable> i;
+  auto ii = std::move(i);
   EXPECT_TRUE(
-      a.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+      i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 }  // namespace
