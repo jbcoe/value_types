@@ -672,6 +672,66 @@ TEST(IndirectTest, CountAllocationsForMoveAssignment) {
   EXPECT_EQ(dealloc_counter, 2);
 }
 
+template <typename T>
+struct NonEqualTrackingAllocator : xyz::TrackingAllocator<T> {
+  using xyz::TrackingAllocator<T>::TrackingAllocator;
+  using propagate_on_container_copy_assignment = std::true_type;
+  using propagate_on_container_move_assignment = std::true_type;
+
+  friend bool operator==(const NonEqualTrackingAllocator&,
+                         const NonEqualTrackingAllocator&) noexcept {
+    return false;
+  }
+
+  friend bool operator!=(const NonEqualTrackingAllocator&,
+                         const NonEqualTrackingAllocator&) noexcept {
+    return true;
+  }
+};
+
+TEST(IndirectTest,
+     CountAllocationsForCopyAssignmentWhenAllocatorsDontCompareEqual) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+
+  {
+    xyz::indirect<int, NonEqualTrackingAllocator<int>> i(
+        std::allocator_arg,
+        NonEqualTrackingAllocator<int>(&alloc_counter, &dealloc_counter),
+        xyz::in_place_t{}, 42);
+    xyz::indirect<int, NonEqualTrackingAllocator<int>> ii(
+        std::allocator_arg,
+        NonEqualTrackingAllocator<int>(&alloc_counter, &dealloc_counter),
+        xyz::in_place_t{}, 101);
+    EXPECT_EQ(alloc_counter, 2);
+    EXPECT_EQ(dealloc_counter, 0);
+    ii = i;
+  }
+  EXPECT_EQ(alloc_counter, 3);
+  EXPECT_EQ(dealloc_counter, 3);
+}
+
+TEST(IndirectTest,
+     CountAllocationsForMoveAssignmentWhenAllocatorsDontCompareEqual) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::indirect<int, NonEqualTrackingAllocator<int>> i(
+        std::allocator_arg,
+        NonEqualTrackingAllocator<int>(&alloc_counter, &dealloc_counter),
+        xyz::in_place_t{}, 42);
+    xyz::indirect<int, NonEqualTrackingAllocator<int>> ii(
+        std::allocator_arg,
+        NonEqualTrackingAllocator<int>(&alloc_counter, &dealloc_counter),
+        xyz::in_place_t{}, 101);
+    EXPECT_EQ(alloc_counter, 2);
+    EXPECT_EQ(dealloc_counter, 0);
+    ii = std::move(i);  // This will copy as allocators don't compare equal.
+  }
+  EXPECT_EQ(alloc_counter, 3);
+  EXPECT_EQ(dealloc_counter, 3);
+}
+
 TEST(IndirectTest, CountAllocationsForAssignmentToMovedFromObject) {
   unsigned alloc_counter = 0;
   unsigned dealloc_counter = 0;
