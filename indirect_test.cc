@@ -966,73 +966,68 @@ TEST(IndirectTest, HashCustomAllocator) {
 #endif  // XYZ_HAS_STD_MEMORY_RESOURCE
 
 TEST(IndirectTest, TaggedAllocatorsEqualMoveConstruct) {
-  xyz::TaggedAllocator<int> i(42);
-  xyz::TaggedAllocator<int> ii(42);
+  xyz::TaggedAllocator<int> a(42);
+  xyz::TaggedAllocator<int> aa(42);
 
   static_assert(
       !std::allocator_traits<xyz::TaggedAllocator<int>>::is_always_equal::value,
       "");
 
-  EXPECT_EQ(i.tag, 42);
-  EXPECT_EQ(ii.tag, 42);
-  EXPECT_EQ(i, ii);
+  EXPECT_EQ(a.tag, 42);
+  EXPECT_EQ(aa.tag, 42);
+  EXPECT_EQ(a, aa);
 
-  xyz::indirect<int, xyz::TaggedAllocator<int>> poly_i(std::allocator_arg, i,
-                                                       xyz::in_place_t{}, -1);
-  xyz::indirect<int, xyz::TaggedAllocator<int>> poly_ii(std::allocator_arg, ii,
-                                                        std::move(poly_i));
+  xyz::indirect<int, xyz::TaggedAllocator<int>> i(std::allocator_arg, a,
+                                                  xyz::in_place_t{}, -1);
+  xyz::indirect<int, xyz::TaggedAllocator<int>> ii(std::allocator_arg, aa,
+                                                   std::move(i));
 
-  EXPECT_TRUE(
-      poly_i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
-  EXPECT_EQ(*poly_ii, -1);
+  EXPECT_TRUE(i.valueless_after_move());
+  EXPECT_EQ(*ii, -1);
 }
 
 TEST(IndirectTest, TaggedAllocatorsNotEqualMoveConstruct) {
-  xyz::TaggedAllocator<int> i(42);
-  xyz::TaggedAllocator<int> ii(101);
-
-  EXPECT_EQ(i.tag, 42);
-  EXPECT_EQ(ii.tag, 101);
+  xyz::TaggedAllocator<int> a(42);
+  xyz::TaggedAllocator<int> aa(101);
 
   static_assert(
       !std::allocator_traits<xyz::TaggedAllocator<int>>::is_always_equal::value,
       "");
 
-  EXPECT_EQ(i.tag, 42);
-  EXPECT_EQ(ii.tag, 101);
-  EXPECT_NE(i, ii);
+  EXPECT_EQ(a.tag, 42);
+  EXPECT_EQ(aa.tag, 101);
+  EXPECT_NE(a, aa);
 
-  xyz::indirect<int, xyz::TaggedAllocator<int>> poly_i(std::allocator_arg, i,
-                                                       xyz::in_place_t{}, -1);
-  xyz::indirect<int, xyz::TaggedAllocator<int>> poly_ii(std::allocator_arg, ii,
-                                                        std::move(poly_i));
+  xyz::indirect<int, xyz::TaggedAllocator<int>> i(std::allocator_arg, a,
+                                                  xyz::in_place_t{}, -1);
+  xyz::indirect<int, xyz::TaggedAllocator<int>> ii(std::allocator_arg, aa,
+                                                   std::move(i));
 
-  EXPECT_FALSE(
-      poly_i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
-  EXPECT_EQ(*poly_ii, -1);
+  // NOLINT(clang-analyzer-cplusplus.Move)
+  EXPECT_FALSE(i.valueless_after_move());
+  EXPECT_EQ(*ii, -1);
 }
 
 TEST(IndirectTest, TaggedAllocatorsNotEqualMoveConstructFromValueless) {
-  xyz::TaggedAllocator<int> i(42);
-  xyz::TaggedAllocator<int> ii(101);
+  xyz::TaggedAllocator<int> a(42);
+  xyz::TaggedAllocator<int> aa(101);
 
   static_assert(
       !std::allocator_traits<xyz::TaggedAllocator<int>>::is_always_equal::value,
       "");
 
-  xyz::indirect<int, xyz::TaggedAllocator<int>> poly_i(std::allocator_arg, i,
-                                                       xyz::in_place_t{}, -1);
+  xyz::indirect<int, xyz::TaggedAllocator<int>> i(std::allocator_arg, a,
+                                                  xyz::in_place_t{}, -1);
 
-  xyz::indirect<int, xyz::TaggedAllocator<int>> poly_ii(std::move(poly_i));
+  xyz::indirect<int, xyz::TaggedAllocator<int>> ii(std::move(i));
   EXPECT_TRUE(
-      poly_i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+      i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 
   // Move construct from the now valueless i.
-  xyz::indirect<int, xyz::TaggedAllocator<int>> poly_iii(std::allocator_arg, ii,
-                                                         std::move(poly_i));
+  xyz::indirect<int, xyz::TaggedAllocator<int>> iii(std::allocator_arg, aa,
+                                                    std::move(i));
   EXPECT_TRUE(
-      poly_iii
-          .valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+      iii.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, SupportNonCopyableType) {
