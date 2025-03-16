@@ -212,12 +212,12 @@ TEST(IndirectTest, AllocatorExtendedMove) {
 
 TEST(IndirectTest, CopyAssignment) {
   xyz::indirect<int> i(xyz::in_place_t{}, 42);
-  xyz::indirect<int> b(xyz::in_place_t{}, 101);
+  xyz::indirect<int> ii(xyz::in_place_t{}, 101);
   EXPECT_EQ(*i, 42);
-  i = b;
+  i = ii;
 
   EXPECT_EQ(*i, 101);
-  EXPECT_NE(&*i, &*b);
+  EXPECT_NE(&*i, &*ii);
 }
 
 TEST(IndirectTest, CopyAssignmentSelf) {
@@ -229,12 +229,12 @@ TEST(IndirectTest, CopyAssignmentSelf) {
 
 TEST(IndirectTest, MoveAssignment) {
   xyz::indirect<int> i(xyz::in_place_t{}, 42);
-  xyz::indirect<int> b(xyz::in_place_t{}, 101);
+  xyz::indirect<int> ii(xyz::in_place_t{}, 101);
   EXPECT_EQ(*i, 42);
-  i = std::move(b);
+  i = std::move(ii);
 
   EXPECT_TRUE(
-      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+      ii.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   EXPECT_EQ(*i, 101);
 }
 
@@ -263,20 +263,20 @@ TEST(IndirectTest, ConvertingAssignmentValueless) {
 
 TEST(IndirectTest, NonMemberSwap) {
   xyz::indirect<int> i(xyz::in_place_t{}, 42);
-  xyz::indirect<int> b(xyz::in_place_t{}, 101);
+  xyz::indirect<int> ii(xyz::in_place_t{}, 101);
   using std::swap;
-  swap(i, b);
+  swap(i, ii);
   EXPECT_EQ(*i, 101);
-  EXPECT_EQ(*b, 42);
+  EXPECT_EQ(*ii, 42);
 }
 
 TEST(IndirectTest, MemberSwap) {
   xyz::indirect<int> i(xyz::in_place_t{}, 42);
-  xyz::indirect<int> b(xyz::in_place_t{}, 101);
+  xyz::indirect<int> ii(xyz::in_place_t{}, 101);
 
-  i.swap(b);
+  i.swap(ii);
   EXPECT_EQ(*i, 101);
-  EXPECT_EQ(*b, 42);
+  EXPECT_EQ(*ii, 42);
 }
 
 TEST(IndirectTest, MemberSwapWithSelf) {
@@ -292,9 +292,9 @@ TEST(IndirectTest, CopyFromValueless) {
 
   EXPECT_TRUE(
       i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
-  xyz::indirect<int> b(i);
+  xyz::indirect<int> iii(i);
   EXPECT_TRUE(
-      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+      iii.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, MoveFromValueless) {
@@ -303,9 +303,9 @@ TEST(IndirectTest, MoveFromValueless) {
 
   EXPECT_TRUE(
       i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
-  xyz::indirect<int> b(std::move(i));
+  xyz::indirect<int> iii(std::move(i));
   EXPECT_TRUE(
-      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+      iii.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, AllocatorExtendedCopyFromValueless) {
@@ -314,9 +314,9 @@ TEST(IndirectTest, AllocatorExtendedCopyFromValueless) {
 
   EXPECT_TRUE(
       i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
-  xyz::indirect<int> b(std::allocator_arg, i.get_allocator(), i);
+  xyz::indirect<int> iii(std::allocator_arg, i.get_allocator(), i);
   EXPECT_TRUE(
-      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+      iii.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, AllocatorExtendedMoveFromValueless) {
@@ -325,9 +325,9 @@ TEST(IndirectTest, AllocatorExtendedMoveFromValueless) {
 
   EXPECT_TRUE(
       i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
-  xyz::indirect<int> b(std::allocator_arg, i.get_allocator(), std::move(i));
+  xyz::indirect<int> iii(std::allocator_arg, i.get_allocator(), std::move(i));
   EXPECT_TRUE(
-      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+      iii.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, AssignFromValueless) {
@@ -336,10 +336,10 @@ TEST(IndirectTest, AssignFromValueless) {
 
   EXPECT_TRUE(
       i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
-  xyz::indirect<int> b(xyz::in_place_t{}, 101);
-  b = i;
+  xyz::indirect<int> iii(xyz::in_place_t{}, 101);
+  iii = i;
   EXPECT_TRUE(
-      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+      iii.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, MoveAssignFromValueless) {
@@ -348,10 +348,10 @@ TEST(IndirectTest, MoveAssignFromValueless) {
 
   EXPECT_TRUE(
       i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
-  xyz::indirect<int> b(xyz::in_place_t{}, 101);
-  b = std::move(i);
+  xyz::indirect<int> iii(xyz::in_place_t{}, 101);
+  iii = std::move(i);
   EXPECT_TRUE(
-      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+      iii.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, SwapFromValueless) {
@@ -360,16 +360,16 @@ TEST(IndirectTest, SwapFromValueless) {
 
   EXPECT_TRUE(
       i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
-  xyz::indirect<int> b(xyz::in_place_t{}, 101);
+  xyz::indirect<int> iii(xyz::in_place_t{}, 101);
   EXPECT_TRUE(
-      !b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+      !iii.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 
   using std::swap;
-  swap(i, b);
+  swap(i, iii);
   EXPECT_TRUE(
       !i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   EXPECT_TRUE(
-      b.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+      iii.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 TEST(IndirectTest, ConstPropagation) {
@@ -430,69 +430,69 @@ TEST(IndirectTest, Optional) {
 #endif  // XYZ_HAS_STD_OPTIONAL
 
 TEST(IndirectTest, Comparison) {
-  xyz::indirect<int> a(xyz::in_place_t{}, 42);
-  xyz::indirect<int> b(xyz::in_place_t{}, 42);
-  xyz::indirect<int> c(xyz::in_place_t{}, 101);
+  xyz::indirect<int> i(xyz::in_place_t{}, 42);
+  xyz::indirect<int> ii(xyz::in_place_t{}, 42);
+  xyz::indirect<int> iii(xyz::in_place_t{}, 101);
 
-  EXPECT_TRUE(a == a);
-  EXPECT_TRUE(a == b);
-  EXPECT_FALSE(a == c);
+  EXPECT_TRUE(i == i);
+  EXPECT_TRUE(i == ii);
+  EXPECT_FALSE(i == iii);
 
-  EXPECT_FALSE(a != a);
-  EXPECT_FALSE(a != b);
-  EXPECT_TRUE(a != c);
+  EXPECT_FALSE(i != i);
+  EXPECT_FALSE(i != ii);
+  EXPECT_TRUE(i != iii);
 
-  EXPECT_FALSE(a < a);
-  EXPECT_FALSE(a > a);
-  EXPECT_TRUE(a <= a);
-  EXPECT_TRUE(a >= a);
+  EXPECT_FALSE(i < i);
+  EXPECT_FALSE(i > i);
+  EXPECT_TRUE(i <= i);
+  EXPECT_TRUE(i >= i);
 
-  EXPECT_FALSE(a < b);
-  EXPECT_FALSE(a > b);
-  EXPECT_TRUE(a <= b);
-  EXPECT_TRUE(a >= b);
+  EXPECT_FALSE(i < ii);
+  EXPECT_FALSE(i > ii);
+  EXPECT_TRUE(i <= ii);
+  EXPECT_TRUE(i >= ii);
 
-  EXPECT_FALSE(b < a);
-  EXPECT_FALSE(b > a);
-  EXPECT_TRUE(b <= a);
-  EXPECT_TRUE(b >= a);
+  EXPECT_FALSE(ii < i);
+  EXPECT_FALSE(ii > i);
+  EXPECT_TRUE(ii <= i);
+  EXPECT_TRUE(ii >= i);
 
-  EXPECT_TRUE(a < c);
-  EXPECT_FALSE(a > c);
-  EXPECT_TRUE(a <= c);
-  EXPECT_FALSE(a >= c);
+  EXPECT_TRUE(i < iii);
+  EXPECT_FALSE(i > iii);
+  EXPECT_TRUE(i <= iii);
+  EXPECT_FALSE(i >= iii);
 
-  EXPECT_FALSE(c < a);
-  EXPECT_TRUE(c > a);
-  EXPECT_FALSE(c <= a);
-  EXPECT_TRUE(c >= a);
+  EXPECT_FALSE(iii < i);
+  EXPECT_TRUE(iii > i);
+  EXPECT_FALSE(iii <= i);
+  EXPECT_TRUE(iii >= i);
 }
 
 TEST(IndirectTest, ValuelessComparison) {
-  xyz::indirect<int> a(xyz::in_place_t{}, 42);
+  xyz::indirect<int> i(xyz::in_place_t{}, 42);
 
-  EXPECT_FALSE(a == make_valueless_indirect());
-  EXPECT_FALSE(make_valueless_indirect() == a);
+  EXPECT_FALSE(i == make_valueless_indirect());
+  EXPECT_FALSE(make_valueless_indirect() == i);
   EXPECT_TRUE(make_valueless_indirect() == make_valueless_indirect());
 
-  EXPECT_TRUE(a != make_valueless_indirect());
-  EXPECT_TRUE(make_valueless_indirect() != a);
+  EXPECT_TRUE(i != make_valueless_indirect());
+  EXPECT_TRUE(make_valueless_indirect() != i);
   EXPECT_FALSE(make_valueless_indirect() != make_valueless_indirect());
 
-  EXPECT_FALSE(a < make_valueless_indirect());
-  EXPECT_TRUE(make_valueless_indirect() < a);
+  EXPECT_FALSE(i < make_valueless_indirect());
+  EXPECT_TRUE(make_valueless_indirect() < i);
   EXPECT_FALSE(make_valueless_indirect() < make_valueless_indirect());
 
-  EXPECT_TRUE(a > make_valueless_indirect());
-  EXPECT_FALSE(make_valueless_indirect() > a);
+  EXPECT_TRUE(i > make_valueless_indirect());
+  EXPECT_FALSE(make_valueless_indirect() > i);
   EXPECT_FALSE(make_valueless_indirect() > make_valueless_indirect());
 
-  EXPECT_FALSE(a <= make_valueless_indirect());
-  EXPECT_TRUE(make_valueless_indirect() <= a);
+  EXPECT_FALSE(i <= make_valueless_indirect());
+  EXPECT_TRUE(make_valueless_indirect() <= i);
   EXPECT_TRUE(make_valueless_indirect() <= make_valueless_indirect());
 
-  EXPECT_TRUE(a >= make_valueless_indirect());
-  EXPECT_FALSE(make_valueless_indirect() >= a);
+  EXPECT_TRUE(i >= make_valueless_indirect());
+  EXPECT_FALSE(make_valueless_indirect() >= i);
   EXPECT_TRUE(make_valueless_indirect() >= make_valueless_indirect());
 }
 
