@@ -25,6 +25,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 include(coverage)
 include(xyz_add_library)
 include(xyz_add_test)
+include(xyz_add_object_library)
 
 xyz_add_library(
     NAME xyz_value_types
@@ -45,14 +46,10 @@ target_sources(indirect
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect.h>
 )
 
-add_library(indirect_cc OBJECT)
-target_sources(indirect_cc
-    PRIVATE
-        indirect.cc
-)
-target_link_libraries(indirect_cc
-    PRIVATE
-        indirect
+xyz_add_object_library(
+    NAME indirect_cc
+    FILES indirect.cc
+    LINK_LIBRARIES indirect
 )
 
 xyz_add_library(
@@ -64,7 +61,11 @@ xyz_add_library(
 target_sources(indirect_cxx14
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect_cxx14.h>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect_cxx14.cc>
+)
+xyz_add_object_library(
+    NAME indirect_cxx14_cc
+    FILES indirect_cxx14.cc
+    LINK_LIBRARIES indirect_cxx14
 )
 
 xyz_add_library(
@@ -76,7 +77,6 @@ xyz_add_library(
 target_sources(indirect_cxx17
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect_cxx14.h>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect_cxx14.cc>
 )
 
 xyz_add_library(
@@ -88,14 +88,10 @@ target_sources(polymorphic
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h>
 )
 
-add_library(polymorphic_cc OBJECT)
-target_sources(polymorphic_cc
-    PRIVATE
-        polymorphic.cc
-)
-target_link_libraries(polymorphic_cc
-    PRIVATE
-        polymorphic
+xyz_add_object_library(
+    NAME polymorphic_cc
+    FILES polymorphic.cc
+    LINK_LIBRARIES polymorphic
 )
 
 xyz_add_library(
@@ -108,6 +104,12 @@ target_sources(polymorphic_cxx14
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic_cxx14.h>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic_cxx14.cc>
+)
+
+xyz_add_object_library(
+    NAME polymorphic_cxx14_cc
+    FILES polymorphic_cxx14.cc
+    LINK_LIBRARIES polymorphic_cxx14
 )
 
 xyz_add_library(

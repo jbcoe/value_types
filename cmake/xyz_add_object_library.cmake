@@ -1,29 +1,33 @@
 include_guard(GLOBAL)
 
 #[=======================================================================[.rst:
-xyz_add_library
+xyz_add_object_library
 ------------------
 
 Overview
 ^^^^^^^^
-Project wrapper around add library which groups commonly associates patterns
-and allows configuration for common optional settings
+Project wrapper around add_library(OBJECT) which groups commonly associated patterns
+and allows configuration for common optional settings.
 
 .. code-block:: cmake
 
-  xyz_add_library(
+  xyz_add_object_library(
       [NAME <name>]
-      [ALIAS <alias>]
+      [FILES <source_files...>]
+      [LINK_LIBRARIES <libraries...>]
       [VERSION <version>]
       [DEFINITIONS <definitions...>]
   )
-   -- Generates library targets with default build directories and install options.
+   -- Generates object library targets with default build settings.
 
   ``NAME``
-    The ``NAME`` option is required to provide the internal name for the library.
+    The ``NAME`` option is required to provide the name for the object library.
 
-  ``ALIAS``
-    The ``ALIAS`` option is required to provide the external name for the library.
+  ``FILES``
+    The ``FILES`` option is required to specify the source files to be compiled.
+
+  ``LINK_LIBRARIES``
+    The ``LINK_LIBRARIES`` option is required to specify the libraries to link against.
 
   ``VERSION``
     The ``VERSION`` option specifies the supported C++ version.
@@ -32,18 +36,19 @@ and allows configuration for common optional settings
     The ``DEFINITIONS`` option provides a list of compile definitions.
 
 #]=======================================================================]
-function(xyz_add_library)
+function(xyz_add_object_library)
     set(options)
-    set(oneValueArgs NAME ALIAS VERSION)
-    set(multiValueArgs DEFINITIONS)
+    set(oneValueArgs NAME VERSION)
+    set(multiValueArgs FILES LINK_LIBRARIES DEFINITIONS)
+
     cmake_parse_arguments(XYZ "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    if (NOT XYZ_NAME)
+    if(NOT XYZ_NAME)
         message(FATAL_ERROR "NAME parameter must be supplied")
     endif()
 
-    if (NOT XYZ_ALIAS)
-        message(FATAL_ERROR "ALIAS parameter must be supplied")
+    if(NOT XYZ_FILES)
+        message(FATAL_ERROR "FILES parameter must be supplied")
     endif()
 
     if (NOT XYZ_VERSION)
@@ -57,21 +62,28 @@ function(xyz_add_library)
         set(XYZ_CXX_STANDARD cxx_std_${XYZ_VERSION})
     endif()
 
-    add_library(${XYZ_NAME} INTERFACE)
-    add_library(${XYZ_ALIAS} ALIAS ${XYZ_NAME})
-    target_include_directories(${XYZ_NAME}
-        INTERFACE
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    add_library(${XYZ_NAME} OBJECT)
+
+    target_sources(${XYZ_NAME}
+        PRIVATE
+            ${XYZ_FILES}
     )
+
     target_compile_features(${XYZ_NAME}
-        INTERFACE
+        PRIVATE
             ${XYZ_CXX_STANDARD}
     )
 
+    if(XYZ_LINK_LIBRARIES)
+        target_link_libraries(${XYZ_NAME}
+            PRIVATE
+                ${XYZ_LINK_LIBRARIES}
+        )
+    endif()
+
     if (XYZ_DEFINITIONS)
         target_compile_definitions(${XYZ_NAME}
-            INTERFACE
+            PRIVATE
                 ${XYZ_DEFINITIONS}
         )
     endif (XYZ_DEFINITIONS)
