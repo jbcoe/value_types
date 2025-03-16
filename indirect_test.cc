@@ -1003,8 +1003,8 @@ TEST(IndirectTest, TaggedAllocatorsNotEqualMoveConstruct) {
   xyz::indirect<int, xyz::TaggedAllocator<int>> ii(std::allocator_arg, aa,
                                                    std::move(i));
 
-  // NOLINT(clang-analyzer-cplusplus.Move)
-  EXPECT_FALSE(i.valueless_after_move());
+  EXPECT_FALSE(
+      i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   EXPECT_EQ(*ii, -1);
 }
 

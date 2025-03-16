@@ -822,8 +822,8 @@ TEST(PolymorphicTest, TaggedAllocatorsNotEqualMoveConstruct) {
   xyz::polymorphic<Derived, xyz::TaggedAllocator<Derived>> pp(
       std::allocator_arg, aa, std::move(p));
 
-  // NOLINT(clang-analyzer-cplusplus.Move)
-  EXPECT_FALSE(p.valueless_after_move());
+  EXPECT_FALSE(
+      p.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   EXPECT_EQ(pp->value(), -1);
 }
 
@@ -861,14 +861,15 @@ TEST(PolymorphicTest, TaggedAllocatorsNotEqualMoveConstructFromValueless) {
       std::allocator_arg, a, xyz::in_place_type_t<Derived>{}, -1);
 
   xyz::polymorphic<Derived, xyz::TaggedAllocator<Derived>> pp(std::move(p));
-  // NOLINT(clang-analyzer-cplusplus.Move)
-  EXPECT_TRUE(p.valueless_after_move());
+  EXPECT_TRUE(
+      p.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 
   // Move construct from the now valueless p.
   xyz::polymorphic<Derived, xyz::TaggedAllocator<Derived>> ppp(
       std::allocator_arg, aa, std::move(p));
-  // NOLINT(clang-analyzer-cplusplus.Move)
-  EXPECT_TRUE(ppp.valueless_after_move());
+
+  EXPECT_TRUE(
+      ppp.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
 }  // namespace
