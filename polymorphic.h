@@ -53,10 +53,18 @@ class polymorphic {
     using allocator_traits = std::allocator_traits<A>;
     typename allocator_traits::pointer p_;
 
-    virtual constexpr ~control_block() = default;
-    virtual constexpr void destroy(A& alloc) = 0;
-    virtual constexpr control_block* clone(const A& alloc) = 0;
-    virtual constexpr control_block* move(const A& alloc) = 0;
+    enum class Action { Destroy, Clone, Move };
+    control_block* (*h_)(Action, control_block* self, const A& alloc);
+
+    constexpr void destroy(const A& alloc) { h_(Action::Destroy, this, alloc); }
+
+    constexpr control_block* clone(const A& alloc) {
+      return h_(Action::Clone, this, alloc);
+    }
+
+    constexpr control_block* move(const A& alloc) {
+      return h_(Action::Move, this, alloc);
+    }
   };
 
   template <class U>
@@ -73,6 +81,32 @@ class polymorphic {
         A>::template rebind_alloc<direct_control_block<U>>;
     using cb_alloc_traits = std::allocator_traits<cb_allocator>;
 
+    using Action = control_block::Action;
+
+    static constexpr control_block* handler(Action action, control_block* self,
+                                            const A& alloc) {
+      direct_control_block* dis = static_cast<direct_control_block*>(self);
+      cb_allocator cb_alloc(alloc);
+      if (action == Action::Destroy) {
+        cb_alloc_traits::destroy(cb_alloc, std::addressof(dis->storage_.u_));
+        cb_alloc_traits::deallocate(cb_alloc, dis, 1);
+        return nullptr;
+      }
+      auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
+      try {
+        if (action == Action::Clone) {
+          cb_alloc_traits::construct(cb_alloc, mem, alloc, dis->storage_.u_);
+        } else {
+          cb_alloc_traits::construct(cb_alloc, mem, alloc,
+                                     std::move(dis->storage_.u_));
+        }
+      } catch (...) {
+        cb_alloc_traits::deallocate(cb_alloc, mem, 1);
+        throw;
+      }
+      return mem;
+    }
+
    public:
     template <class... Ts>
     constexpr direct_control_block(const A& alloc, Ts&&... ts) {
@@ -80,37 +114,7 @@ class polymorphic {
       cb_alloc_traits::construct(cb_alloc, std::addressof(storage_.u_),
                                  std::forward<Ts>(ts)...);
       control_block::p_ = std::addressof(storage_.u_);
-    }
-
-    constexpr control_block* clone(const A& alloc) override {
-      cb_allocator cb_alloc(alloc);
-      auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
-      try {
-        cb_alloc_traits::construct(cb_alloc, mem, alloc, storage_.u_);
-        return mem;
-      } catch (...) {
-        cb_alloc_traits::deallocate(cb_alloc, mem, 1);
-        throw;
-      }
-    }
-
-    constexpr control_block* move(const A& alloc) override {
-      cb_allocator cb_alloc(alloc);
-      auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
-      try {
-        cb_alloc_traits::construct(cb_alloc, mem, alloc,
-                                   std::move(storage_.u_));
-        return mem;
-      } catch (...) {
-        cb_alloc_traits::deallocate(cb_alloc, mem, 1);
-        throw;
-      }
-    }
-
-    constexpr void destroy(A& alloc) override {
-      cb_allocator cb_alloc(alloc);
-      cb_alloc_traits::destroy(cb_alloc, std::addressof(storage_.u_));
-      cb_alloc_traits::deallocate(cb_alloc, this, 1);
+      control_block::h_ = &handler;
     }
   };
 
