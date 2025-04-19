@@ -35,74 +35,112 @@ jobs:
               name: "Ubuntu GCC-11",
               os: ubuntu-24.04,
               compiler:
-                { type: GCC, version: 11, cc: "gcc-11", cxx: "g++-11", std: 20 },
+                {
+                  type: GCC,
+                  version: 11,
+                  cc: "gcc-11",
+                  cxx: "g++-11",
+                  std: 20,
+                },
               lib: "libstdc++11",
             }
           - {
               name: "Ubuntu GCC-12",
               os: ubuntu-24.04,
               compiler:
-                { type: GCC, version: 12, cc: "gcc-12", cxx: "g++-12", std: 20},
+                {
+                  type: GCC,
+                  version: 12,
+                  cc: "gcc-12",
+                  cxx: "g++-12",
+                  std: 20,
+                },
               lib: "libstdc++12",
             }
           - {
               name: "Ubuntu GCC-13",
               os: ubuntu-24.04,
               compiler:
-                { type: GCC, version: 13, cc: "gcc-13", cxx: "g++-13", std: 20},
+                {
+                  type: GCC,
+                  version: 13,
+                  cc: "gcc-13",
+                  cxx: "g++-13",
+                  std: 20,
+                },
               lib: "libstdc++13",
             }
           - {
               name: "Ubuntu GCC-14",
               os: ubuntu-24.04,
               compiler:
-                { type: GCC, version: 14, cc: "gcc-14", cxx: "g++-14", std: 20},
+                {
+                  type: GCC,
+                  version: 14,
+                  cc: "gcc-14",
+                  cxx: "g++-14",
+                  std: 20,
+                },
               lib: "libstdc++14",
             }
           - {
               name: "Ubuntu Clang-17 + libc++",
               os: ubuntu-24.04,
               compiler:
-                { type: CLANG, version: 17, cc: "clang-17", cxx: "clang++-17", std: 20},
+                {
+                  type: CLANG,
+                  version: 17,
+                  cc: "clang-17",
+                  cxx: "clang++-17",
+                  std: 20,
+                },
               lib: "libc++17",
             }
           - {
               name: "Ubuntu Clang-18 + libc++",
               os: ubuntu-24.04,
               compiler:
-                { type: CLANG, version: 18, cc: "clang-18", cxx: "clang++-18", std: 20},
+                {
+                  type: CLANG,
+                  version: 18,
+                  cc: "clang-18",
+                  cxx: "clang++-18",
+                  std: 20,
+                },
               lib: "libc++18",
             }
           - {
               name: "Ubuntu Clang-19 + libc++",
               os: ubuntu-24.04,
               compiler:
-                { type: CLANG, version: 19, cc: "clang-19", cxx: "clang++-19", std: 20},
+                {
+                  type: CLANG,
+                  version: 19,
+                  cc: "clang-19",
+                  cxx: "clang++-19",
+                  std: 20,
+                },
               lib: "libc++19",
             }
           - {
               name: "Visual Studio 2019",
               os: windows-latest,
-              compiler:
-                { type: VISUAL, version: 16, cc: "cl", cxx: "cl" },
+              compiler: { type: VISUAL, version: 16, cc: "cl", cxx: "cl" },
             }
           - {
               name: "Visual Studio 2022 v17",
               os: windows-latest,
-              compiler:
-                { type: VISUAL, version: 17, cc: "cl", cxx: "cl" },
+              compiler: { type: VISUAL, version: 17, cc: "cl", cxx: "cl" },
             }
           - {
               name: "Visual Studio 2022 v18",
               os: windows-latest,
-              compiler:
-                { type: VISUAL, version: 18, cc: "cl", cxx: "cl" },
+              compiler: { type: VISUAL, version: 18, cc: "cl", cxx: "cl" },
             }
           - {
               name: "Visual Studio 2022 v19",
               os: windows-latest,
-              compiler:
-                { type: VISUAL, version: 19, cc: "cl", cxx: "cl" },
+              compiler: { type: VISUAL, version: 19, cc: "cl", cxx: "cl" },
             }
           - {
               name: "MacOS Apple Clang 15",
@@ -117,7 +155,7 @@ jobs:
                 },
             }
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: seanmiddleditch/gha-setup-ninja@master
       - name: Add msbuild to PATH
         if: matrix.settings.os == 'windows-latest'
