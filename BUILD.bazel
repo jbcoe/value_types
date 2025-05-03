@@ -146,3 +146,26 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "polymorphic_no_vtable",
+    srcs = ["polymorphic_no_vtable.cc"],
+    hdrs = ["polymorphic_no_vtable.h"],
+    copts = ["-Iexternal/value_types/"],
+    defines = ["XYZ_POLYMORPHIC_NO_VTABLE"],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "polymorphic_no_vtable_test",
+    size = "small",
+    srcs = ["polymorphic_test.cc"],
+    deps = [
+        "feature_check",
+        "polymorphic_no_vtable",
+        "tagged_allocator",
+        "test_helpers",
+        "tracking_allocator",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
