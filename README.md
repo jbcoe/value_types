@@ -73,9 +73,9 @@ class CompositeWithPolymorphicMembers {
   xyz::polymorphic<Y> y_; // y_ owns an object of type Y or derived from Y
 public:
   template <typename Tx, typename Ty>
-  Composite(const Tx& x, const Ty& y) :
-    a_(std::in_place_type<Tx>, x),
-    b_(std::in_place_type<Ty>, y) {}
+  CompositeWithPolymorphicMembers(const Tx& x, const Ty& y) :
+    x_(std::in_place_type<Tx>, x),
+    y_(std::in_place_type<Ty>, y) {}
 
     // ...
 };

@@ -28,29 +28,17 @@ jobs:
     strategy:
       matrix:
         settings:
-          - {
-              name: "Bazel test: debug",
-              flags: "-c dbg",
-          }
-          - {
-              name: "Bazel test: optimized",
-              flags: "-c opt",
-          }
-          - {
-              name: "Bazel test: address sanitizer",
-              flags: "--config=asan",
-          }
+          - { name: "Bazel test: debug", flags: "-c dbg" }
+          - { name: "Bazel test: optimized", flags: "-c opt" }
+          - { name: "Bazel test: address sanitizer", flags: "--config=asan" }
           - {
               name: "Bazel test: undefined behaviour sanitizer",
               flags: "--config=ubsan",
-          }
-          - {
-              name: "Bazel test: thread sanitizer",
-              flags: "--config=tsan",
-          }
+            }
+          - { name: "Bazel test: thread sanitizer", flags: "--config=tsan" }
     steps:
-      - uses: actions/checkout@v3
-      - uses: bazelbuild/setup-bazelisk@v2
+      - uses: actions/checkout@v4
+      - uses: bazelbuild/setup-bazelisk@v3
       - name: Mount bazel cache # Optional
         uses: actions/cache@v3
         with:
