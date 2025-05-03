@@ -22,6 +22,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "polymorphic_cxx14.h"
 #endif  // XYZ_POLYMORPHIC_CXX_14
 
+#ifdef XYZ_POLYMORPHIC_NO_VTABLE
+#include "polymorphic_no_vtable.h"
+#endif  // XYZ_POLYMORPHIC_NO_VTABLE
+
 #ifndef XYZ_POLYMORPHIC_H_
 #include "polymorphic.h"
 #endif  // XYZ_POLYMORPHIC_H_
