@@ -124,6 +124,24 @@ target_sources(polymorphic_cxx17
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic_cxx14.cc>
 )
 
+xyz_add_library(
+    NAME polymorphic_no_vtable
+    ALIAS xyz_value_types::polymorphic_no_vtable
+    DEFINITIONS XYZ_POLYMORPHIC_NO_VTABLE
+    VERSION 14
+)
+target_sources(polymorphic_no_vtable
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic_no_vtable.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic_no_vtable.cc>
+)
+
+xyz_add_object_library(
+    NAME polymorphic_no_vtable_cc
+    FILES polymorphic_no_vtable.cc
+    LINK_LIBRARIES polymorphic_no_vtable
+)
+
 if (${XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT})
 
     add_subdirectory(benchmarks)
@@ -188,6 +206,12 @@ if (${XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT})
             LINK_LIBRARIES polymorphic_cxx17
             FILES polymorphic_test.cc
             VERSION 17
+        )
+
+        xyz_add_test(
+            NAME polymorphic_no_vtable_test
+            LINK_LIBRARIES polymorphic_no_vtable
+            FILES polymorphic_test.cc
         )
 
         if (ENABLE_CODE_COVERAGE)

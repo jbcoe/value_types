@@ -4,5 +4,8 @@
         ".venv": true,
         "bazel-*": true,
         "build": true,
+    },
+    "files.associations": {
+        "array": "cpp"
     }
 }
