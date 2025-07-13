@@ -30,4 +30,6 @@ COPY _generate_pdf.docker.sh /app/wg21/generate_pdf.sh
 
 RUN chmod +x /app/wg21/generate_pdf.sh
 
+RUN make TEST.pdf TEST.html
+
 ENTRYPOINT ["/app/wg21/generate_pdf.sh"]
