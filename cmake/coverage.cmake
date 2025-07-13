@@ -4,7 +4,6 @@ include(CheckCXXCompilerFlag)
 
 option(ENABLE_CODE_COVERAGE "Enable code coverage" OFF)
 
-
 set(COVERAGE_SUPPORTED_FLAGS
     # gcc 8 onwards
     "-fprofile-arcs -fprofile-abs-path -ftest-coverage"
@@ -15,8 +14,6 @@ set(COVERAGE_SUPPORTED_FLAGS
     # gcc and clang fallback
     "--coverage"
 )
-
-find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 #[=======================================================================[.rst:
 virtualenv_create
@@ -65,6 +62,8 @@ function(virtualenv_create)
     set(options)
     set(oneValueArgs DESTINATION REQUIREMENTS WORKING_DIRECTORY)
     set(multiValueArgs OUTPUT EXTRA_ARGS)
+
+    find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
     cmake_parse_arguments(PYTHON_VENV "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
 
