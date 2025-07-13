@@ -1,15 +1,17 @@
 # Value types for composite class design
 
-[![codecov](https://codecov.io/gh/jbcoe/value_types/graph/badge.svg?token=6QTvkalgDs)](https://codecov.io/gh/jbcoe/value_types)
+[![codecov][badge.codecov]][codecov]
 [![language][badge.language]][language]
 [![license][badge.license]][license] [![issues][badge.issues]][issues]
 [![pre-commit][badge.pre-commit]][pre-commit]
 
+[badge.codecov]: https://codecov.io/gh/jbcoe/value_types/graph/badge.svg?token=6QTvkalgDs
 [badge.language]: https://img.shields.io/badge/language-C%2B%2B14-yellow.svg
 [badge.license]: https://img.shields.io/badge/license-MIT-blue.svg
 [badge.issues]: https://img.shields.io/github/issues/jbcoe/value_types.svg
 [badge.pre-commit]: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit
 
+[codecov]: https://codecov.io/gh/jbcoe/value_types
 [language]: https://en.wikipedia.org/wiki/C%2B%2B14
 [license]: https://en.wikipedia.org/wiki/MIT_License
 [issues]: http://github.com/jbcoe/value_types/issues
