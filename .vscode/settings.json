@@ -7,5 +7,6 @@
     },
     "files.associations": {
         "array": "cpp"
-    }
+    },
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python"
 }

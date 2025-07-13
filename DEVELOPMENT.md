@@ -7,11 +7,12 @@ part of the commit process.  Use the following steps from the project root to
 install a virtual environment with pre-commmit set up, and then use precommit to
 install git hooks it to your local repository:
 
+Install the `uv` tool if you don't have it already: <https://docs.astral.sh/uv/getting-started/installation>.
+
+Install pre-commit as a pre-commit hook:
+
 ```bash
-python3 -m venv .venv           # Create a Python virtual env
-source ./.venv/bin/activate     # Activate the virtual env for bash by source.
-pip install -r requirements.txt # Install latest requirements including pre-commit
-pre-commit install              # Use pre-commit to install git hooks into the working repository.
+uv run pre-commit install       # Use pre-commit to install git hooks into the working repository.
 ```
 
 ## Building and testing
