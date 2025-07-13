@@ -99,7 +99,7 @@ wheels = [
 ]
 
 [[package]]
-name = "value-types"
+name = "value-types-dev-tools"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

@@ -34,16 +34,19 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
       - uses: seanmiddleditch/gha-setup-ninja@master
-
       - name: Configure CMake # We need `compile_commands.json` to be generated.
         run: cmake --preset Release
 
       - name: clang-tidy
         run: |
-          python scripts/reduce_compile_commands.py build/compile_commands.json > compile_commands.json
-          PROJECT_SOURCE_FILES="$(python scripts/reduce_compile_commands.py build/compile_commands.json \
-              --names-only \
-              --exclude_dirs build exploration compile_checks benchmarks)"
+          # Get source files to run clang-tidy on.
+          PROJECT_SOURCE_FILES="$(uv run scripts/reduce_compile_commands.py build/compile_commands.json \
+          --names-only \
+          --exclude_dirs build exploration compile_checks benchmarks)"
+          # Produce a reduced compile_commands.json file with only the files we care about.
+          uv run scripts/reduce_compile_commands.py build/compile_commands.json > compile_commands.json
+          # Run clang-tidy on the source files.
           echo $PROJECT_SOURCE_FILES \
             | xargs clang-tidy -warnings-as-errors="*" -p compile_commands.json
