@@ -1,0 +1,9 @@
+[project]
+name = "value-types"
+version = "0.1.0"
+description = "development support tools for value-types"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pre-commit>=4.2.0",
+]

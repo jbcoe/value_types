@@ -1,5 +1,5 @@
 #!/bin/sh
 
-set -eux -o pipefail
+set -eux
 
 bazel test //...
