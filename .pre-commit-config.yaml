@@ -37,6 +37,7 @@ repos:
   hooks:
   - id: dockerfilelint
     stages: [pre-commit]
+    exclude: ^markdown/
 - repo: https://github.com/keith/pre-commit-buildifier
   rev: 8.0.1
   hooks:
