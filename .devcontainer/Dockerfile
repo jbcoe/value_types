@@ -19,6 +19,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
 && rm -rf /var/lib/apt/lists/*
 
+# Install uv
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+
 # Install newer CMake from kitware.
 RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null \
 && apt-add-repository -y 'deb https://apt.kitware.com/ubuntu/ noble main' \
