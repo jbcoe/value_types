@@ -7,3 +7,4 @@ bazel-*
 build*/
 out/
 .cache
+*.pdf
