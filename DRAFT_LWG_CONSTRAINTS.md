@@ -41,7 +41,7 @@ constraints on `indirect` or `polymorphic` to be evaluated.
 _Constraints_ on `T` should be converted to _Mandates_ on `T` so that constraint
 evaluation does not require `T` to be a complete type.
 
-## Changes to `indirect`
+### Changes to `indirect`
 
 Modify `indirect` constructors `[indirect.ctor]` as indicated:
 
@@ -135,4 +135,106 @@ arguments `ilist`, `std::forward<Us>(us)...`, using the allocator `alloc`.
 
 Modify `polymorphic` constructors as indicated:
 
-<!-- POLYMORPHIC CHANGES -->
+```cpp
+template<class U = T>
+constexpr explicit polymorphic(U&& u);
+```
+
+_Constraints_: Where `UU` is `remove_cvref_t<U>`,
+
+* `is_same_v<UU, polymorphic>` is `false`,
+* <s style="background-color: pink;">`derived_from<UU, T>` is `true`</s>,
+* `is_constructible_v<UU, U>` is `true`,
+* `is_copy_constructible_v<UU>` is `true`,
+* `UU` is not a specialization of `in_place_type_t`, and
+* `is_default_constructible_v<Allocator>` is `true`.
+
+<u style="background-color: lightgreen;">_Mandates_: `derived_from<UU, T>` is `true`.</u>
+
+_Effects_: Constructs an owned object of type `UU` with `std::forward<U>(u)` using the allocator `alloc`.
+
+```cpp
+template<class U = T>
+constexpr explicit polymorphic(allocator_arg_t, const Allocator& a, U&& u);
+```
+
+_Constraints_: Where `UU` is `remove_cvref_t<U>`,
+
+* `is_same_v<UU, polymorphic>` is `false`,
+* <s style="background-color: pink;">`derived_from<UU, T>` is `true`</s>,
+* `is_constructible_v<UU, U>` is `true`,
+* `is_copy_constructible_v<UU>` is `true`, and
+* `UU` is not a specialization of `in_place_type_t`.
+
+<u style="background-color: lightgreen;">_Mandates_: `derived_from<UU, T>` is `true`.</u>
+
+_Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an owned object of type `UU` with
+`std::forward<U>(u)` using the allocator `alloc`.
+
+```cpp
+template<class U, class... Ts>
+constexpr explicit polymorphic(in_place_type_t<U>, Ts&&... ts);
+```
+
+_Constraints_:
+* `is_same_v<remove_cvref_t<U>, U>` is `true`,
+* <s style="background-color: pink;">`derived_from<U, T>` is `true`</s>,
+* `is_constructible_v<U, Ts...>` is `true`,
+* `is_copy_constructible_v<U>` is `true`, and
+* `is_default_constructible_v<Allocator>` is `true`.
+
+<u style="background-color: lightgreen;">_Mandates_: `derived_from<U, T>` is `true`.</u>
+
+_Effects_: Constructs an owned object of type `U` with `std::forward<Ts>(ts)...` using the allocator
+`alloc`.
+
+```cpp
+template<class U, class... Ts>
+constexpr explicit polymorphic(allocator_arg_t, const Allocator& a,
+                               in_place_type_t<U>, Ts&&... ts);
+```
+
+_Constraints_:
+* `is_same_v<remove_cvref_t<U>, U>` is `true`,
+* <s style="background-color: pink;">`derived_from<U, T>` is `true`</s>,
+* `is_constructible_v<U, Ts...>` is `true`, and
+* `is_copy_constructible_v<U>` is `true`.
+
+<u style="background-color: lightgreen;">_Mandates_: `derived_from<U, T>` is `true`.</u>
+
+_Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an owned object of type `U` with
+`std::forward<Ts>(ts)...` using the allocator `alloc`.
+
+```cpp
+template<class U, class I, class... Us>
+constexpr explicit polymorphic(in_place_type_t<U>, initializer_list<I> ilist, Us&&... us);
+```
+
+_Constraints_:
+* `is_same_v<remove_cvref_t<U>, U>` is `true`,
+* <s style="background-color: pink;">`derived_from<U, T>` is `true`</s>,
+* `is_constructible_v<U, initializer_list<I>&, Us...>` is `true`,
+* `is_copy_constructible_v<U>` is `true`, and
+* `is_default_constructible_v<Allocator>` is `true`.
+
+<u style="background-color: lightgreen;">_Mandates_: `derived_from<U, T>` is `true`.</u>
+
+_Effects_: Constructs an owned object of type `U` with the arguments `ilist`, `std::forward<Us>(us)...`
+using the allocator `alloc`.
+
+```cpp
+template<class U, class I, class... Us>
+constexpr explicit polymorphic(allocator_arg_t, const Allocator& a,
+                               in_place_type_t<U>, initializer_list<I> ilist, Us&&... us);
+```
+
+_Constraints_:
+* `is_same_v<remove_cvref_t<U>, U>` is `true`,
+* <s style="background-color: pink;">`derived_from<U, T>` is `true`</s>,
+* `is_constructible_v<U, initializer_list<I>&, Us...>` is `true`, and
+* `is_copy_constructible_v<U>` is `true`.
+
+<u style="background-color: lightgreen;">_Mandates_: `derived_from<U, T>` is `true`.</u>
+
+_Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an owned object of type `U` with the
+arguments `ilist`, `std::forward<Us>(us)...` using the allocator `alloc`.
