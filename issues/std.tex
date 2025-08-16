@@ -64,7 +64,6 @@
 \input{layout}
 \input{styles}
 \input{macros}
-\input{tables}
 
 \makeindex[name=generalindex,options=-s generalindex.ist,title=Index]
 \makeindex[name=grammarindex,title=Index of grammar productions]
@@ -110,22 +109,6 @@
 \setglobalstyles
 
 \include{memory}
-
-%%--------------------------------------------------
-%% appendices
-\appendix
-\chapterstyle{cppannex}
-
-% \include and \addtocontents don't mix; see
-% https://tex.stackexchange.com/questions/13914/toc-numbering-problem
-\makeatletter
-\immediate\write\@auxout{\noexpand\@writefile{toc}{\noexpand\let\noexpand\chapternumberlinebox\noexpand\annexnumberlinebox}}
-\makeatother
-
-\numberwithin{table}{chapter}
-
-% ... end grammar extraction.
-\immediate\closeout\gramout
 
 %%--------------------------------------------------
 %% End of document
