@@ -41,6 +41,98 @@ constraints on `indirect` or `polymorphic` to be evaluated.
 _Constraints_ on `T` should be converted to _Mandates_ on `T` so that constraint
 evaluation does not require `T` to be a complete type.
 
-Modify `indirect` constructors as indicated:
+## Changes to `indirect`
+
+Modify `indirect` constructors `[indirect.ctor]` as indicated:
+
+```cpp
+template<class U = T>
+constexpr explicit indirect(U&& u);
+```
+
+_Constraints_:
+
+* `is_same_v<remove_cvref_t<U>, indirect>` is `false`,
+* `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`,
+* <s style="background-color: pink;"> `is_constructible_v<T, U>` is `true`</s>, and
+* `is_default_constructible_v<Allocator>` is `true`.
+
+<u style="background-color: lightgreen;"> _Mandates_: `is_constructible_v<T, U>` is `true`.</u>
+
+_Effects_: Constructs an owned object of type `T` with `std::forward<U>(u)`, using the allocator `alloc`.
+
+
+```cpp
+template<class U = T>
+constexpr explicit indirect(allocator_arg_t, const Allocator& a, U&& u);
+```
+
+_Constraints_:
+* `is_same_v<remove_cvref_t<U>, indirect>` is `false`,
+* `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`, and
+* <s style="background-color: pink;"> `is_constructible_v<T, U>` is `true`.</s>
+
+<u style="background-color: lightgreen;"> _Mandates_: `is_constructible_v<T, U>` is `true`.</u>
+
+_Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an owned object of type `T` with
+`std::forward<U>(u)`, using the allocator `alloc`.
+
+```cpp
+template<class... Us>
+constexpr explicit indirect(in_place_t, Us&&... us);
+```
+
+_Constraints_:
+* <s style="background-color: pink;">`is_constructible_v<T, Us...>` is `true`, and </s>
+* `is_default_constructible_v<Allocator>` is `true`.
+
+<u style="background-color: lightgreen;">_Mandates_: `is_constructible_v<T, Us ... >` is `true`.</u>
+
+_Effects_: Constructs an owned object of type `T` with `std::forward<Us>(us)...`, using the allocator
+`alloc`.
+
+```cpp
+template<class... Us>
+constexpr explicit indirect(allocator_arg_t, const Allocator& a,
+in_place_t, Us&& ...us);
+```
+
+<s style="background-color: pink;">_Constraints_: `is_constructible_v<T, Us...>` is `true`.</s>
+
+<u style="background-color: lightgreen;">_Mandates_: `is_constructible_v<T, Us...>` is `true`.</u>
+
+_Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an owned object of type `T` with
+`std::forward<Us>(us)...`, using the allocator `alloc`.
+
+```cpp
+template<class I, class... Us>
+constexpr explicit indirect(in_place_t, initializer_list<I> ilist, Us&&... us);
+```
+
+_Constraints_:
+* <s style="background-color: pink;"> `is_constructible_v<T, initializer_list<I>&, Us...>` is `true`, and</s>
+* `is_default_constructible_v<Allocator>` is `true`.
+
+<u style="background-color: lightgreen;">_Mandates_: `is_constructible_v<T, initializer_list<I>&, Us...>` is `true`.</u>
+
+_Effects_: Constructs an owned object of type `T` with the arguments `ilist`, `std::forward<Us>(us)...`,
+using the allocator `alloc`.
+
+```cpp
+template<class I, class... Us>
+constexpr explicit indirect(allocator_arg_t, const Allocator& a,
+in_place_t, initializer_list<I> ilist, Us&&... us);
+```
+
+<s style="background-color: pink;">_Constraints_: `is_constructible_v<T, initializer_list<I>&, Us...>` is `true`.</s>
+
+<u style="background-color: lightgreen;">_Mandates_: `is_constructible_v<T, initializer_list<I>&, Us...>` is `true`.</u>
+
+_Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an owned object of type `T` with the
+arguments `ilist`, `std::forward<Us>(us)...`, using the allocator `alloc`.
+
+### Changes to `polymorphic`
 
 Modify `polymorphic` constructors as indicated:
+
+<!-- POLYMORPHIC CHANGES -->
