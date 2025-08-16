@@ -1,0 +1,1022 @@
+%!TEX root = std.tex
+\normannex{depr}{Compatibility features}
+
+\rSec1[depr.general]{General}
+
+\pnum
+This Annex describes features of this document
+that are specified for compatibility with existing implementations.
+
+\pnum
+These are deprecated features, where
+\term{deprecated}
+is defined as:
+Normative for the current revision of \Cpp{},
+but having been identified as a candidate for removal from future revisions.
+An implementation may declare library names and entities described in this Clause with the
+\tcode{deprecated} attribute\iref{dcl.attr.deprecated}.
+
+\rSec1[depr.local]{Non-local use of TU-local entities}
+
+\pnum
+A declaration of a non-TU-local entity that is an exposure\iref{basic.link}
+is deprecated.
+\begin{note}
+Such a declaration in an importable module unit is ill-formed.
+\end{note}
+\begin{example}
+\begin{codeblock}
+namespace {
+  struct A {
+    void f() {}
+  };
+}
+A h();                          // deprecated: not internal linkage
+inline void g() {A().f();}      // deprecated: inline and not internal linkage
+\end{codeblock}
+\end{example}
+
+\rSec1[depr.capture.this]{Implicit capture of \tcode{*this} by reference}
+
+\pnum
+For compatibility with prior revisions of \Cpp{},
+a \grammarterm{lambda-expression} with \grammarterm{capture-default}
+\tcode{=}\iref{expr.prim.lambda.capture} may implicitly capture
+\tcode{*this} by reference.
+\begin{example}
+\begin{codeblock}
+struct X {
+  int x;
+  void foo(int n) {
+    auto f = [=]() { x = n; };          // deprecated: \tcode{x} means \tcode{this->x}, not a copy thereof
+    auto g = [=, this]() { x = n; };    // recommended replacement
+  }
+};
+\end{codeblock}
+\end{example}
+
+\rSec1[depr.volatile.type]{Deprecated \tcode{volatile} types}
+
+\pnum
+Postfix \tcode{++} and \tcode{--} expressions\iref{expr.post.incr} and
+prefix \tcode{++} and \tcode{--} expressions\iref{expr.pre.incr}
+of volatile-qualified arithmetic and pointer types are deprecated.
+
+\begin{example}
+\begin{codeblock}
+volatile int velociraptor;
+++velociraptor;                     // deprecated
+\end{codeblock}
+\end{example}
+
+
+\pnum
+Certain assignments
+where the left operand is a volatile-qualified non-class type
+are deprecated; see~\ref{expr.assign}.
+
+\begin{example}
+\begin{codeblock}
+int neck, tail;
+volatile int brachiosaur;
+brachiosaur = neck;                 // OK
+tail = brachiosaur;                 // OK
+tail = brachiosaur = neck;          // deprecated
+brachiosaur += neck;                // OK
+\end{codeblock}
+\end{example}
+
+
+\pnum
+A function type\iref{dcl.fct}
+with a parameter with volatile-qualified type or
+with a volatile-qualified return type is deprecated.
+
+\begin{example}
+\begin{codeblock}
+volatile struct amber jurassic();                               // deprecated
+void trex(volatile short left_arm, volatile short right_arm);   // deprecated
+void fly(volatile struct pterosaur* pteranodon);                // OK
+\end{codeblock}
+\end{example}
+
+
+\pnum
+A structured binding\iref{dcl.struct.bind} of a volatile-qualified type
+is deprecated.
+
+\begin{example}
+\begin{codeblock}
+struct linhenykus { short forelimb; };
+void park(linhenykus alvarezsauroid) {
+  volatile auto [what_is_this] = alvarezsauroid;                // deprecated
+  // ...
+}
+\end{codeblock}
+\end{example}
+
+\rSec1[depr.ellipsis.comma]{Non-comma-separated ellipsis parameters}
+
+A \grammarterm{parameter-declaration-clause}
+of the form
+\grammarterm{parameter-declaration-list} \tcode{...}
+is deprecated\iref{dcl.fct}.
+\begin{example}
+\begin{codeblock}
+void f(int...);         // deprecated
+void g(auto...);        // OK, declares a function parameter pack
+void h(auto......);     // deprecated
+\end{codeblock}
+\end{example}
+
+\rSec1[depr.impldec]{Implicit declaration of copy functions}
+
+\pnum
+The implicit definition of a copy constructor\iref{class.copy.ctor}
+as defaulted is deprecated if the class has
+a user-declared copy assignment operator or
+a user-declared destructor\iref{class.dtor}.
+The implicit definition of a copy assignment operator\iref{class.copy.assign}
+as defaulted is deprecated if the class has
+a user-declared copy constructor or
+a user-declared destructor.
+It is possible that future versions of \Cpp{} will specify
+that these implicit definitions are deleted\iref{dcl.fct.def.delete}.
+
+\rSec1[depr.static.constexpr]{Redeclaration of \tcode{static constexpr} data members}
+
+\pnum
+For compatibility with prior revisions of \Cpp{}, a \keyword{constexpr}
+static data member may be redundantly redeclared outside the class with no
+initializer\iref{basic.def,class.static.data}.
+This usage is deprecated.
+\begin{example}
+\begin{codeblock}
+struct A {
+  static constexpr int n = 5;   // definition (declaration in \CppXIV{})
+};
+
+constexpr int A::n;             // redundant declaration (definition in \CppXIV{})
+\end{codeblock}
+\end{example}
+
+\rSec1[depr.lit]{Literal operator function declarations using an identifier}
+
+\pnum
+A \grammarterm{literal-operator-id}\iref{over.literal} of the form
+\begin{codeblock}
+operator @\grammarterm{unevaluated-string}@ @\grammarterm{identifier}@
+\end{codeblock}
+is deprecated.
+
+\rSec1[depr.template.template]{\tcode{template} keyword before qualified names}
+
+\pnum
+The use of the keyword \keyword{template}
+before the qualified name of a class or alias template
+without a template argument list is deprecated\iref{temp.names}.
+
+\rSec1[depr.numeric.limits.has.denorm]{\tcode{has_denorm} members in \tcode{numeric_limits}}
+
+\pnum
+The following type is defined
+in addition to those specified in \libheaderref{limits}:
+\begin{codeblock}
+namespace std {
+  enum @\libglobal{float_denorm_style}@ {
+    @\libmember{denorm_indeterminate}{float_denorm_style}@ = -1,
+    @\libmember{denorm_absent}{float_denorm_style}@ = 0,
+    @\libmember{denorm_present}{float_denorm_style}@ = 1
+  };
+}
+\end{codeblock}
+
+\pnum
+\indextext{denormalized value|see{number, subnormal}}%
+\indextext{value!denormalized|see{number, subnormal}}%
+\indextext{subnormal number|see{number, subnormal}}%
+\indextext{number!subnormal}%
+The following members are defined
+in addition to those specified in \ref{numeric.limits.general}:
+\begin{codeblock}
+static constexpr float_denorm_style has_denorm = denorm_absent;
+static constexpr bool has_denorm_loss = false;
+\end{codeblock}
+
+\pnum
+The values of \tcode{has_denorm} and \tcode{has_denorm_loss} of
+specializations of \tcode{numeric_limits} are unspecified.
+
+\pnum
+The following members of the specialization \tcode{numeric_limits<bool>} are defined
+in addition to those specified in \ref{numeric.special}:
+\indexlibrarymember{float_denorm_style}{numeric_limits}%
+\indexlibrarymember{has_denorm_loss}{numeric_limits}%
+\begin{codeblock}
+static constexpr float_denorm_style has_denorm = denorm_absent;
+static constexpr bool has_denorm_loss = false;
+\end{codeblock}
+
+\rSec1[depr.c.macros]{Deprecated C macros}
+
+\pnum
+The header \libheaderref{cfloat} has the following macros:
+\begin{codeblock}
+#define @\libmacro{FLT_HAS_SUBNORM}@ @\seebelow@
+#define @\libmacro{DBL_HAS_SUBNORM}@ @\seebelow@
+#define @\libmacro{LDBL_HAS_SUBNORM}@ @\seebelow@
+#define @\libmacro{DECIMAL_DIG}@ @\seebelow@
+\end{codeblock}
+The header defines these macros the same as
+the C standard library header \libheader{float.h}.
+
+\xrefc{5.2.4.2.2, 7.33.5}
+
+\pnum
+In addition to being available via inclusion of the \libheader{cfloat} header,
+the macros \tcode{INFINITY} and \tcode{NAN} are
+available when \libheaderref{cmath} is included.
+
+\xrefc{7.12}
+
+\pnum
+The header \libheaderref{stdbool.h} has the following macro:
+\begin{codeblock}
+#define @\libxmacro{bool_true_false_are_defined}@ 1
+\end{codeblock}
+
+\xrefc{7.19}
+
+\rSec1[depr.cerrno]{Deprecated error numbers}
+
+\pnum
+The header \libheaderref{cerrno} has the following additional macros:
+
+\begin{codeblock}
+#define @\libmacro{ENODATA}@ @\seebelow@
+#define @\libmacro{ENOSR}@ @\seebelow@
+#define @\libmacro{ENOSTR}@ @\seebelow@
+#define @\libmacro{ETIME}@ @\seebelow@
+\end{codeblock}
+
+\pnum
+The meaning of these macros is defined by the POSIX standard.
+
+\pnum
+The following \tcode{enum errc} enumerators are defined
+in addition to those specified in \ref{system.error.syn}:
+
+\begin{codeblock}
+@\libmember{no_message_available}{errc}@,               // \tcode{ENODATA}
+@\libmember{no_stream_resources}{errc}@,                // \tcode{ENOSR}
+@\libmember{not_a_stream}{errc}@,                       // \tcode{ENOSTR}
+@\libmember{stream_timeout}{errc}@,                     // \tcode{ETIME}
+\end{codeblock}
+
+\pnum
+The value of each \tcode{enum errc} enumerator above
+is the same as the value of the \libheader{cerrno} macro
+shown in the above synopsis.
+
+\rSec1[depr.meta.types]{Deprecated type traits}
+
+\pnum
+The header \libheaderrefx{type_traits}{meta.type.synop}
+has the following addition:
+
+\begin{codeblock}
+namespace std {
+  template<class T> struct is_trivial;
+  template<class T> constexpr bool is_trivial_v = is_trivial<T>::value;
+  template<class T> struct is_pod;
+  template<class T> constexpr bool is_pod_v = is_pod<T>::value;
+  template<size_t Len, size_t Align = @\exposid{default-alignment}@> // \seebelow
+    struct aligned_storage;
+  template<size_t Len, size_t Align = @\exposid{default-alignment}@> // \seebelow
+    using @\libglobal{aligned_storage_t}@ = typename aligned_storage<Len, Align>::type;
+  template<size_t Len, class... Types>
+    struct aligned_union;
+  template<size_t Len, class... Types>
+    using @\libglobal{aligned_union_t}@ = typename aligned_union<Len, Types...>::type;
+}
+\end{codeblock}
+
+\pnum
+The behavior of a program that adds specializations for
+any of the templates defined in this subclause is undefined,
+unless explicitly permitted by the specification of the corresponding template.
+
+\pnum
+\label{term.trivial.type}%
+A \defnadj{trivial}{class} is a class that is trivially copyable and
+has one or more eligible default constructors, all of which are trivial.
+\begin{note}
+In particular,
+a trivial class does not have virtual functions or virtual base classes.
+\end{note}
+A \defnadj{trivial}{type} is a scalar type, a trivial class,
+an array of such a type, or a cv-qualified version of one of these types.
+
+\pnum
+\indextext{POD}%
+A \term{POD class} is a class that is both a trivial class and a
+standard-layout class, and has no non-static data members of type non-POD class
+(or array thereof). A \term{POD type} is a scalar type, a POD class, an array
+of such a type, or a cv-qualified version of one of these types.
+
+\indexlibraryglobal{is_trivial}%
+\begin{itemdecl}
+template<class T> struct is_trivial;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\expects
+\tcode{remove_all_extents_t<T>} shall be a complete type or \cv{} \keyword{void}.
+
+\pnum
+\remarks
+\tcode{is_trivial<T>} is a \oldconcept{UnaryTypeTrait}\iref{meta.rqmts}
+with a base characteristic of \tcode{true_type}
+if \tcode{T} is a trivial type,
+and \tcode{false_type} otherwise.
+
+\pnum
+\begin{note}
+It is unspecified
+whether a closure type\iref{expr.prim.lambda.closure} is a trivial type.
+\end{note}
+\end{itemdescr}
+
+\indexlibraryglobal{is_pod}%
+\begin{itemdecl}
+template<class T> struct is_pod;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\expects
+\tcode{remove_all_extents_t<T>} shall be a complete type or \cv{} \keyword{void}.
+
+\pnum
+\remarks
+\tcode{is_pod<T>} is a \oldconcept{UnaryTypeTrait}\iref{meta.rqmts}
+with a base characteristic of \tcode{true_type}
+if \tcode{T} is a POD type,
+and \tcode{false_type} otherwise.
+
+\pnum
+\begin{note}
+It is unspecified whether a closure type\iref{expr.prim.lambda.closure} is a POD type.
+\end{note}
+\end{itemdescr}
+
+\indexlibraryglobal{aligned_storage}%
+\begin{itemdecl}
+template<size_t Len, size_t Align = @\exposid{default-alignment}@>
+  struct aligned_storage;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+The value of \exposid{default-alignment} is the most
+stringent alignment requirement for any object type whose size
+is no greater than \tcode{Len}\iref{basic.types}.
+
+\pnum
+\mandates
+\tcode{Len} is not zero.
+\tcode{Align} is equal to \tcode{alignof(T)} for some type \tcode{T} or
+to \exposid{default-alignment}.
+
+\pnum
+The member typedef \tcode{type} denotes a trivial standard-layout type
+suitable for use as uninitialized storage for any object
+whose size is at most \tcode{Len} and
+whose alignment is a divisor of \tcode{Align}.
+
+\pnum
+\begin{note}
+Uses of \tcode{aligned_storage<Len, Align>::type} can be replaced
+by an array \tcode{std::byte[Len]} declared with \tcode{alignas(Align)}.
+\end{note}
+
+\pnum
+\begin{note}
+A typical implementation would define \tcode{aligned_storage} as:
+\begin{codeblock}
+template<size_t Len, size_t Alignment>
+struct aligned_storage {
+  typedef struct {
+    alignas(Alignment) unsigned char __data[Len];
+  } type;
+};
+\end{codeblock}
+\end{note}
+
+\end{itemdescr}
+
+\indexlibraryglobal{aligned_union}%
+\begin{itemdecl}
+template<size_t Len, class... Types>
+  struct aligned_union;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\mandates
+At least one type is provided.
+Each type in the template parameter pack \tcode{Types}
+is a complete object type.
+
+\pnum
+The member typedef \tcode{type} denotes a trivial standard-layout type
+suitable for use as uninitialized storage for any object
+whose type is listed in \tcode{Types};
+its size shall be at least \tcode{Len}.
+The static member \tcode{alignment_value}
+is an integral constant of type \tcode{size_t}
+whose value is the strictest alignment of all types listed in \tcode{Types}.
+\end{itemdescr}
+
+\rSec1[depr.relops]{Relational operators}%
+\indexlibraryglobal{rel_ops}%
+
+\pnum
+The header \libheaderref{utility} has the following additions:
+
+\begin{codeblock}
+namespace std::rel_ops {
+  template<class T> bool operator!=(const T&, const T&);
+  template<class T> bool operator> (const T&, const T&);
+  template<class T> bool operator<=(const T&, const T&);
+  template<class T> bool operator>=(const T&, const T&);
+}
+\end{codeblock}
+
+\pnum
+To avoid redundant definitions of \tcode{operator!=} out of \tcode{operator==}
+and operators \tcode{>}, \tcode{<=}, and \tcode{>=} out of \tcode{operator<},
+the library provides the following:
+
+\indexlibrary{\idxcode{operator"!=}}%
+\begin{itemdecl}
+template<class T> bool operator!=(const T& x, const T& y);
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\expects
+\tcode{T} meets the \oldconcept{EqualityComparable} requirements (\tref{cpp17.equalitycomparable}).
+
+\pnum
+\returns
+\tcode{!(x == y)}.
+\end{itemdescr}
+
+\indexlibraryglobal{operator>}%
+\begin{itemdecl}
+template<class T> bool operator>(const T& x, const T& y);
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\expects
+\tcode{T} meets the \oldconcept{LessThanComparable} requirements (\tref{cpp17.lessthancomparable}).
+
+\pnum
+\returns
+\tcode{y < x}.
+\end{itemdescr}
+
+\indexlibrary{\idxcode{operator<=}}%
+\begin{itemdecl}
+template<class T> bool operator<=(const T& x, const T& y);
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\expects
+\tcode{T} meets the \oldconcept{LessThanComparable} requirements (\tref{cpp17.lessthancomparable}).
+
+\pnum
+\returns
+\tcode{!(y < x)}.
+\end{itemdescr}
+
+\indexlibrary{\idxcode{operator>=}}%
+\begin{itemdecl}
+template<class T> bool operator>=(const T& x, const T& y);
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\expects
+\tcode{T} meets the \oldconcept{LessThanComparable} requirements (\tref{cpp17.lessthancomparable}).
+
+\pnum
+\returns
+\tcode{!(x < y)}.
+\end{itemdescr}
+
+\rSec1[depr.tuple]{Tuple}
+
+\pnum
+The header \libheaderref{tuple} has the following additions:
+
+\begin{codeblock}
+namespace std {
+  template<class T> struct tuple_size<volatile T>;
+  template<class T> struct tuple_size<const volatile T>;
+
+  template<size_t I, class T> struct tuple_element<I, volatile T>;
+  template<size_t I, class T> struct tuple_element<I, const volatile T>;
+}
+\end{codeblock}
+
+\begin{itemdecl}
+template<class T> struct tuple_size<volatile T>;
+template<class T> struct tuple_size<const volatile T>;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+Let \tcode{TS} denote \tcode{tuple_size<T>} of the cv-unqualified type \tcode{T}.
+If the expression \tcode{TS::value} is well-formed
+when treated as an unevaluated operand\iref{term.unevaluated.operand},
+then specializations of each of the two templates meet
+the \oldconcept{TransformationTrait} requirements with a base characteristic of
+\tcode{integral_constant<size_t, TS::value>}.
+Otherwise, they have no member \tcode{value}.
+
+\pnum
+Access checking is performed as if
+in a context unrelated to \tcode{TS} and \tcode{T}.
+Only the validity of the immediate context of the expression is considered.
+
+\pnum
+In addition to being available via inclusion of the \libheaderref{tuple} header,
+the two templates are available when any of the headers
+\libheaderref{array},
+\libheaderref{ranges}, or
+\libheaderref{utility}
+are included.
+\end{itemdescr}
+
+\begin{itemdecl}
+template<size_t I, class T> struct tuple_element<I, volatile T>;
+template<size_t I, class T> struct tuple_element<I, const volatile T>;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+Let \tcode{TE} denote \tcode{tuple_element_t<I, T>}
+of the cv-unqualified type \tcode{T}.
+Then specializations of each of the two templates meet
+the \oldconcept{TransformationTrait} requirements
+with a member typedef \tcode{type} that names the following type:
+\begin{itemize}
+\item for the first specialization, \tcode{add_volatile_t<TE>}, and
+\item for the second specialization, \tcode{add_cv_t<TE>}.
+\end{itemize}
+
+\pnum
+In addition to being available via inclusion of the \libheaderref{tuple} header,
+the two templates are available when any of the headers
+\libheaderref{array},
+\libheaderref{ranges}, or
+\libheaderref{utility}
+are included.
+\end{itemdescr}
+
+\rSec1[depr.variant]{Variant}
+
+\pnum
+The header \libheaderref{variant} has the following additions:
+
+\begin{codeblock}
+namespace std {
+  template<class T> struct variant_size<volatile T>;
+  template<class T> struct variant_size<const volatile T>;
+
+  template<size_t I, class T> struct variant_alternative<I, volatile T>;
+  template<size_t I, class T> struct variant_alternative<I, const volatile T>;
+}
+\end{codeblock}
+
+\begin{itemdecl}
+template<class T> struct variant_size<volatile T>;
+template<class T> struct variant_size<const volatile T>;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+Let \tcode{VS} denote \tcode{variant_size<T>}
+of the cv-unqualified type \tcode{T}.
+Then specializations of each of the two templates meet
+the \oldconcept{UnaryTypeTrait} requirements
+with a base characteristic of \tcode{integral_constant<size_t, VS::value>}.
+\end{itemdescr}
+
+\begin{itemdecl}
+template<size_t I, class T> struct variant_alternative<I, volatile T>;
+template<size_t I, class T> struct variant_alternative<I, const volatile T>;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+Let \tcode{VA} denote \tcode{variant_alternative<I, T>}
+of the cv-unqualified type \tcode{T}.
+Then specializations of each of the two templates meet
+the \oldconcept{TransformationTrait} requirements
+with a member typedef \tcode{type} that names the following type:
+\begin{itemize}
+\item for the first specialization, \tcode{add_volatile_t<VA::type>}, and
+\item for the second specialization, \tcode{add_cv_t<VA::type>}.
+\end{itemize}
+\end{itemdescr}
+
+\rSec1[depr.iterator]{Deprecated \tcode{iterator} class template}
+
+\pnum
+The header \libheaderrefx{iterator}{iterator.synopsis} has the following addition:
+
+\indexlibraryglobal{iterator}%
+\begin{codeblock}
+namespace std {
+  template<class Category, class T, class Distance = ptrdiff_t,
+           class Pointer = T*, class Reference = T&>
+  struct iterator {
+    using iterator_category = Category;
+    using value_type        = T;
+    using difference_type   = Distance;
+    using pointer           = Pointer;
+    using reference         = Reference;
+  };
+}
+\end{codeblock}
+
+\pnum
+The
+\tcode{iterator}
+template may be used as a base class to ease the definition of required types
+for new iterators.
+
+\pnum
+\begin{note}
+If the new iterator type is a class template, then these aliases
+will not be visible from within the iterator class's template definition, but
+only to callers of that class.
+\end{note}
+
+\pnum
+\begin{example}
+If a \Cpp{} program wants to define a bidirectional iterator for some data
+structure containing \tcode{double} and such that it works on a large memory
+model of the implementation, it can do so with:
+
+\begin{codeblock}
+class MyIterator :
+  public iterator<bidirectional_iterator_tag, double, long, T*, T&> {
+  // code implementing \tcode{++}, etc.
+};
+\end{codeblock}
+\end{example}
+
+\rSec1[depr.move.iter.elem]{Deprecated \tcode{move_iterator} access}
+
+\pnum
+The following member is declared in addition to those members
+specified in \ref{move.iter.elem}:
+
+\begin{codeblock}
+namespace std {
+  template<class Iterator>
+  class move_iterator {
+  public:
+    constexpr pointer operator->() const;
+  };
+}
+\end{codeblock}
+
+\indexlibrarymember{operator->}{move_iterator}%
+\begin{itemdecl}
+constexpr pointer operator->() const;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\returns
+\tcode{current}.
+\end{itemdescr}
+
+\rSec1[depr.locale.category]{Deprecated locale category facets}
+
+\pnum
+The \tcode{ctype} locale category includes the following facets
+as if they were specified
+in \tref{locale.category.facets} of \ref{locale.category}.
+
+\begin{codeblock}
+codecvt<char16_t, char, mbstate_t>
+codecvt<char32_t, char, mbstate_t>
+codecvt<char16_t, char8_t, mbstate_t>
+codecvt<char32_t, char8_t, mbstate_t>
+\end{codeblock}
+
+\pnum
+The \tcode{ctype} locale category includes the following facets
+as if they were specified
+in \tref{locale.spec} of \ref{locale.category}.
+
+\begin{codeblock}
+codecvt_byname<char16_t, char, mbstate_t>
+codecvt_byname<char32_t, char, mbstate_t>
+codecvt_byname<char16_t, char8_t, mbstate_t>
+codecvt_byname<char32_t, char8_t, mbstate_t>
+\end{codeblock}
+
+\pnum
+The following class template specializations are required
+in addition to those specified in~\ref{locale.codecvt}.
+\indextext{UTF-8}%
+\indextext{UTF-16}%
+The specializations \tcode{codecvt<char16_t, char, mbstate_t>} and
+\tcode{codecvt<char16_t, char8_t, mbstate_t>}
+convert between the UTF-16 and UTF-8 encoding forms, and
+\indextext{UTF-32}%
+the specializations \tcode{codecvt<char32_t, char, mbstate_t>} and
+\tcode{codecvt<char32_t, char8_t, mbstate_t>}
+convert between the UTF-32 and UTF-8 encoding forms.
+
+\rSec1[depr.format]{Deprecated formatting}
+
+\rSec2[depr.format.syn]{Header \tcode{<format>} synopsis}
+
+\pnum
+The header \libheaderref{format} has the following additions:
+
+\begin{codeblock}
+namespace std {
+  template<class Visitor, class Context>
+    decltype(auto) visit_format_arg(Visitor&& vis, basic_format_arg<Context> arg);
+}
+\end{codeblock}
+
+\rSec2[depr.format.arg]{Formatting arguments}
+
+\indexlibraryglobal{visit_format_arg}%
+\begin{itemdecl}
+template<class Visitor, class Context>
+  decltype(auto) visit_format_arg(Visitor&& vis, basic_format_arg<Context> arg);
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\effects
+Equivalent to: \tcode{return visit(std::forward<Visitor>(vis), arg.value);}
+\end{itemdescr}
+
+\rSec1[depr.ctime]{Deprecated time formatting}
+
+\pnum
+The header \libheaderref{ctime} has the following additions:
+\begin{codeblock}
+char* asctime(const tm* timeptr);
+char* ctime(const time_t* timer);
+\end{codeblock}
+
+\pnum
+The functions \tcode{asctime} and \tcode{ctime}
+are not required to avoid data races\iref{res.on.data.races}.
+
+\xrefc{7.29}
+
+\rSec1[depr.filesystems]{Deprecated file systems}
+
+\rSec2[depr.fs.path.factory]{Deprecated filesystem path factory functions}
+
+\pnum
+The header \libheaderrefx{filesystem}{fs.filesystem.syn} has the following additions:
+
+\indexlibraryglobal{u8path}%
+\begin{itemdecl}
+template<class Source>
+  path u8path(const Source& source);
+template<class InputIterator>
+  path u8path(InputIterator first, InputIterator last);
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\mandates
+The value type of \tcode{Source} and \tcode{InputIterator} is
+\tcode{char} or \keyword{char8_t}.
+
+\pnum
+\expects
+The \tcode{source} and \range{first}{last} sequences are UTF-8 encoded.
+\tcode{Source} meets the requirements specified in \ref{fs.path.req}.
+
+\pnum
+\returns
+\begin{itemize}
+\item If \tcode{path::value_type} is \tcode{char} and the current native
+      narrow encoding\iref{fs.path.type.cvt} is UTF-8,
+      return \tcode{path(source)} or \tcode{path(first, last)};
+      otherwise,
+\item if \tcode{path::value_type} is \keyword{wchar_t} and the
+      native wide encoding is UTF-16, or
+      if \tcode{path::value_type} is \keyword{char16_t} or \keyword{char32_t},
+      convert \tcode{source} or \range{first}{last}
+      to a temporary, \tcode{tmp}, of type \tcode{path::string_type} and
+      return \tcode{path(tmp)};
+      otherwise,
+\item convert \tcode{source} or \range{first}{last}
+      to a temporary, \tcode{tmp}, of type \tcode{u32string} and
+      return \tcode{path(tmp)}.
+\end{itemize}
+
+\pnum
+\remarks
+Argument format conversion\iref{fs.path.fmt.cvt} applies to the
+  arguments for these functions. How Unicode encoding conversions are performed is
+  unspecified.
+
+\pnum
+\begin{example}
+A string is to be read from a database that is encoded in UTF-8, and used
+    to create a directory using the native encoding for filenames:
+\begin{codeblock}
+namespace fs = std::filesystem;
+std::string utf8_string = read_utf8_data();
+fs::create_directory(fs::u8path(utf8_string));
+\end{codeblock}
+
+For POSIX-based operating systems with the native narrow encoding set
+    to UTF-8, no encoding or type conversion occurs.
+
+For POSIX-based operating systems with the native narrow encoding not
+    set to UTF-8, a conversion to UTF-32 occurs, followed by a conversion to the
+    current native narrow encoding. Some Unicode characters may have no native character
+    set representation.
+
+For Windows-based operating systems a conversion from UTF-8 to
+    UTF-16 occurs.
+\end{example}
+\begin{note}
+The example above is representative of
+a historical use of \tcode{filesystem::u8path}.
+To indicate a UTF-8 encoding,
+passing a \tcode{std::u8string} to \tcode{path}'s constructor is preferred
+as it is consistent with \tcode{path}'s handling of other encodings.
+\end{note}
+\end{itemdescr}
+
+\rSec2[depr.fs.path.obs]{Deprecated filesystem path format observers}
+
+\indexlibraryglobal{path}%
+\pnum
+The following members are declared in addition to those members
+specified in \ref{fs.path.member}:
+
+\begin{codeblock}
+namespace std::filesystem {
+  class path {
+  public:
+    std::string string() const;
+    std::string generic_string() const;
+  };
+}
+\end{codeblock}
+
+\indexlibrarymember{string}{path}%
+\begin{itemdecl}
+std::string string() const;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\returns
+\tcode{system_encoded_string()}.
+\end{itemdescr}
+
+\indexlibrarymember{generic_string}{path}%
+\begin{itemdecl}
+std::string generic_string() const;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\returns
+\tcode{generic_system_encoded_string()}.
+\end{itemdescr}
+
+\rSec1[depr.atomics]{Deprecated atomic operations}
+
+\rSec2[depr.atomics.general]{General}
+
+\pnum
+The header \libheaderrefx{atomic}{atomics.syn} has the following additions.
+
+\begin{codeblock}
+namespace std {
+  template<class T>
+    void atomic_init(volatile atomic<T>*, typename atomic<T>::value_type) noexcept;
+  template<class T>
+    void atomic_init(atomic<T>*, typename atomic<T>::value_type) noexcept;
+  template<class T>
+    constexpr T kill_dependency(T y) noexcept;                                  // freestanding
+  inline constexpr memory_order memory_order_consume = memory_order::consume;   // freestanding
+
+  #define @\libmacro{ATOMIC_VAR_INIT}@(value) @\seebelow@
+}
+\end{codeblock}
+
+\rSec2[depr.atomics.volatile]{Volatile access}
+
+\pnum
+If an \tcode{atomic}\iref{atomics.types.generic} specialization has one of the following overloads,
+then that overload participates in overload resolution
+even if \tcode{atomic<T>::is_always_lock_free} is \tcode{false}:
+\begin{codeblock}
+void store(T desired, memory_order order = memory_order::seq_cst) volatile noexcept;
+T operator=(T desired) volatile noexcept;
+T load(memory_order order = memory_order::seq_cst) const volatile noexcept;
+operator T() const volatile noexcept;
+T exchange(T desired, memory_order order = memory_order::seq_cst) volatile noexcept;
+bool compare_exchange_weak(T& expected, T desired,
+                           memory_order success, memory_order failure) volatile noexcept;
+bool compare_exchange_strong(T& expected, T desired,
+                             memory_order success, memory_order failure) volatile noexcept;
+bool compare_exchange_weak(T& expected, T desired,
+                           memory_order order = memory_order::seq_cst) volatile noexcept;
+bool compare_exchange_strong(T& expected, T desired,
+                             memory_order order = memory_order::seq_cst) volatile noexcept;
+T fetch_@\placeholdernc{key}@(T operand, memory_order order = memory_order::seq_cst) volatile noexcept;
+T operator @\placeholdernc{op}@=(T operand) volatile noexcept;
+T* fetch_@\placeholdernc{key}@(ptrdiff_t operand, memory_order order = memory_order::seq_cst) volatile noexcept;
+\end{codeblock}
+
+\rSec2[depr.atomics.nonmembers]{Non-member functions}
+
+\indexlibraryglobal{atomic_init}%
+\begin{itemdecl}
+template<class T>
+  void atomic_init(volatile atomic<T>* object, typename atomic<T>::value_type desired) noexcept;
+template<class T>
+  void atomic_init(atomic<T>* object, typename atomic<T>::value_type desired) noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\effects
+Equivalent to: \tcode{atomic_store_explicit(object, desired, memory_order::relaxed);}
+\end{itemdescr}
+
+\rSec2[depr.atomics.types.operations]{Operations on atomic types}
+
+\indexlibraryglobal{ATOMIC_VAR_INIT}%
+\begin{itemdecl}
+#define @\libmacro{ATOMIC_VAR_INIT}@(value) @\seebelow@
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+The macro expands to a token sequence suitable for constant initialization of
+an atomic variable with static storage duration of a type that
+is initialization-compatible with \tcode{value}.
+\begin{note}
+This operation possibly needs to initialize locks.
+\end{note}
+Concurrent access to the variable being initialized,
+even via an atomic operation,
+constitutes a data race.
+\begin{example}
+\begin{codeblock}
+atomic<int> v = ATOMIC_VAR_INIT(5);
+\end{codeblock}
+\end{example}
+\end{itemdescr}
+
+\rSec2[depr.atomics.order]{\tcode{memory_order::consume}}
+
+\indexlibraryglobal{memory_order}%
+\indexlibrarymember{consume}{memory_order}%
+\pnum
+The \tcode{memory_order} enumeration contains an additional enumerator:
+\begin{codeblock}
+consume = 1
+\end{codeblock}
+The \tcode{memory_order::consume} enumerator is allowed wherever
+\tcode{memory_order::acquire} is allowed, and it has the same meaning.
+
+\begin{itemdecl}
+template<class T> constexpr T kill_dependency(T y) noexcept;
+\end{itemdecl}
+
+\begin{itemdescr}
+\pnum
+\returns
+\tcode{y}.
+\end{itemdescr}
