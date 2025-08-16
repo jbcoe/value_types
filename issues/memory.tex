@@ -1,8 +1,11 @@
 %!TEX root = std.tex
 
-\definecolor{coegreen}{RGB}{76,187,23}
-\definecolor{coedarkgreen}{RGB}{80,170,15}
-\definecolor{coered}{RGB}{222,49,99}
+\section*{Changes to \tcode{indirect} constructors}
+
+\setcounter{chapter}{20}
+\setcounter{section}{4}
+\setcounter{subsection}{1}
+\setcounter{subsubsection}{2}
 
 \rSec3[indirect.ctor]{Constructors}
 
@@ -145,6 +148,7 @@ template<class U = T>
   constexpr explicit indirect(U&& u);
 \end{itemdecl}
 
+%===== DIFF START
 \begin{itemdescr}
 \pnum
 \constraints
@@ -159,13 +163,11 @@ template<class U = T>
 \tcode{is_default_constructible_v<Allocator>} is \tcode{true}.
 \end{itemize}
 
-\textcolor{coedarkgreen}{
 \pnum
+\textcolor{coedarkgreen}{
 \mandates
-\begin{itemize}
-\item
-\tcode{is_constructible_v<T, U>} is \tcode{true}.
-\end{itemize}}
+\tcode{is_constructible_v<T, U>} is \tcode{true}.}
+%===== DIFF END
 
 \pnum
 \effects
@@ -179,6 +181,7 @@ template<class U = T>
   constexpr explicit indirect(allocator_arg_t, const Allocator& a, U&& u);
 \end{itemdecl}
 
+%===== DIFF START
 \begin{itemdescr}
 \pnum
 \constraints
@@ -188,8 +191,14 @@ template<class U = T>
 \item
 \tcode{is_same_v<remove_cvref_t<U>, in_place_t>} is \tcode{false}, and
 \item
-\tcode{is_constructible_v<T, U>} is \tcode{true}.
+\textcolor{coered}{\tcode{is_constructible_v<T, U>} is \tcode{true}.}
 \end{itemize}
+
+\pnum
+\textcolor{coedarkgreen}{
+\mandates
+\tcode{is_constructible_v<T, U>} is \tcode{true}.}
+%===== DIFF END
 
 \pnum
 \effects
@@ -205,15 +214,22 @@ template<class... Us>
   constexpr explicit indirect(in_place_t, Us&&... us);
 \end{itemdecl}
 
+%==== DIFF START
 \begin{itemdescr}
 \pnum
 \constraints
 \begin{itemize}
 \item
-\tcode{is_constructible_v<T, Us...>} is \tcode{true}, and
+\textcolor{coered}{\tcode{is_constructible_v<T, Us...>} is \tcode{true}, and}
 \item
 \tcode{is_default_constructible_v<Allocator>} is \tcode{true}.
 \end{itemize}
+
+\pnum
+\textcolor{coedarkgreen}{
+\mandates
+\tcode{is_constructible_v<T, Us ... >} is \tcode{true}.}
+%==== DIFF END
 
 \pnum
 \effects
@@ -229,10 +245,18 @@ template<class... Us>
                               in_place_t, Us&& ...us);
 \end{itemdecl}
 
+%===== DIFF START
 \begin{itemdescr}
 \pnum
+\textcolor{coered}{
 \constraints
-\tcode{is_constructible_v<T, Us...>} is \tcode{true}.
+\tcode{is_constructible_v<T, Us...>} is \tcode{true}.}
+
+\pnum
+\textcolor{coedarkgreen}{
+\mandates
+\tcode{is_constructible_v<T, Us...>} is \tcode{true}.}
+%===== DIFF END
 
 \pnum
 \effects
@@ -248,15 +272,22 @@ template<class I, class... Us>
   constexpr explicit indirect(in_place_t, initializer_list<I> ilist, Us&&... us);
 \end{itemdecl}
 
+%===== DIFF START
 \begin{itemdescr}
 \pnum
 \constraints
 \begin{itemize}
 \item
-\tcode{is_constructible_v<T, initializer_list<I>\&, Us...>} is \tcode{true}, and
+\textcolor{coered}{\tcode{is_constructible_v<T, initializer_list<I>\&, Us...>} is \tcode{true}, and}
 \item
 \tcode{is_default_constructible_v<Allocator>} is \tcode{true}.
 \end{itemize}
+
+\pnum
+\textcolor{coedarkgreen}{
+\mandates
+\tcode{is_constructible_v<T, initializer_list<I>\&, Us...>} is \tcode{true}.}
+%===== DIFF END
 
 \pnum
 \effects
@@ -272,10 +303,17 @@ template<class I, class... Us>
                               in_place_t, initializer_list<I> ilist, Us&&... us);
 \end{itemdecl}
 
+%==== DIFF START
 \begin{itemdescr}
 \pnum
-\constraints
-\tcode{is_constructible_v<T, initializer_list<I>\&, Us...>} is \tcode{true}.
+\textcolor{coered}{\constraints
+\tcode{is_constructible_v<T, initializer_list<I>\&, Us...>} is \tcode{true}.}
+
+\pnum
+\textcolor{coedarkgreen}{
+\mandates
+\tcode{is_constructible_v<T, initializer_list<I>\&, Us...>} is \tcode{true}.}
+%===== DIFF END
 
 \pnum
 \effects
@@ -285,7 +323,12 @@ Constructs an owned object of type \tcode{T} with the arguments
 using the allocator \exposid{alloc}.
 \end{itemdescr}
 
+\section*{Changes to \tcode{polymorphic} constructors}
 
+\setcounter{chapter}{20}
+\setcounter{section}{4}
+\setcounter{subsection}{2}
+\setcounter{subsubsection}{2}
 \rSec3[polymorphic.ctor]{Constructors}
 
 \pnum
@@ -432,6 +475,7 @@ template<class U = T>
   constexpr explicit polymorphic(U&& u);
 \end{itemdecl}
 
+% ===== DIFF START
 \begin{itemdescr}
 \pnum
 \constraints
@@ -440,7 +484,7 @@ Where \tcode{UU} is \tcode{remove_cvref_t<U>},
 \item
 \tcode{is_same_v<UU, polymorphic>} is \tcode{false},
 \item
-\tcode{derived_from<UU, T>} is \tcode{true},
+\textcolor{coered}{\tcode{derived_from<UU, T>} is \tcode{true},}
 \item
 \tcode{is_constructible_v<UU, U>} is \tcode{true},
 \item
@@ -450,6 +494,12 @@ Where \tcode{UU} is \tcode{remove_cvref_t<U>},
 \item
 \tcode{is_default_constructible_v<Allocator>} is \tcode{true}.
 \end{itemize}
+
+\pnum
+\textcolor{coedarkgreen}{
+\mandates
+\tcode{derived_from<UU, T>} is \tcode{true}.}
+% ===== DIFF END
 
 \pnum
 \effects
@@ -463,6 +513,7 @@ template<class U = T>
   constexpr explicit polymorphic(allocator_arg_t, const Allocator& a, U&& u);
 \end{itemdecl}
 
+%===== DIFF START
 \begin{itemdescr}
 \pnum
 \constraints
@@ -471,7 +522,7 @@ Where \tcode{UU} is \tcode{remove_cvref_t<U>},
 \item
 \tcode{is_same_v<UU, polymorphic>} is \tcode{false},
 \item
-\tcode{derived_from<UU, T>} is \tcode{true},
+\textcolor{coered}{\tcode{derived_from<UU, T>} is \tcode{true},}
 \item
 \tcode{is_constructible_v<UU, U>} is \tcode{true},
 \item
@@ -479,6 +530,12 @@ Where \tcode{UU} is \tcode{remove_cvref_t<U>},
 \item
 \tcode{UU} is not a specialization of \tcode{in_place_type_t}.
 \end{itemize}
+
+\pnum
+\textcolor{coedarkgreen}{
+\mandates
+\tcode{derived_from<UU, T>} is \tcode{true}.}
+%===== DIFF END
 
 \pnum
 \effects
@@ -493,6 +550,7 @@ template<class U, class... Ts>
   constexpr explicit polymorphic(in_place_type_t<U>, Ts&&... ts);
 \end{itemdecl}
 
+%===== DIFF START
 \begin{itemdescr}
 \pnum
 \constraints
@@ -500,7 +558,7 @@ template<class U, class... Ts>
 \item
 \tcode{is_same_v<remove_cvref_t<U>, U>} is \tcode{true},
 \item
-\tcode{derived_from<U, T>} is \tcode{true},
+\textcolor{coered}{\tcode{derived_from<U, T>} is \tcode{true},}
 \item
 \tcode{is_constructible_v<U, Ts...>} is \tcode{true},
 \item
@@ -508,6 +566,12 @@ template<class U, class... Ts>
 \item
 \tcode{is_default_constructible_v<Allocator>} is \tcode{true}.
 \end{itemize}
+
+\pnum
+\textcolor{coedarkgreen}{
+\mandates
+\tcode{derived_from<U, T>} is \tcode{true}.}
+%===== DIFF END
 
 \pnum
 \effects
@@ -523,6 +587,7 @@ template<class U, class... Ts>
                                  in_place_type_t<U>, Ts&&... ts);
 \end{itemdecl}
 
+%===== DIFF START
 \begin{itemdescr}
 \pnum
 \constraints
@@ -530,12 +595,18 @@ template<class U, class... Ts>
 \item
 \tcode{is_same_v<remove_cvref_t<U>, U>} is \tcode{true},
 \item
-\tcode{derived_from<U, T>} is \tcode{true},
+\textcolor{coered}{\tcode{derived_from<U, T>} is \tcode{true},}
 \item
 \tcode{is_constructible_v<U, Ts...>} is \tcode{true}, and
 \item
 \tcode{is_copy_constructible_v<U>} is \tcode{true}.
 \end{itemize}
+
+\pnum
+\textcolor{coedarkgreen}{
+\mandates
+\tcode{derived_from<U, T>} is \tcode{true}.}
+%===== DIFF END
 
 \pnum
 \effects
@@ -551,6 +622,7 @@ template<class U, class I, class... Us>
   constexpr explicit polymorphic(in_place_type_t<U>, initializer_list<I> ilist, Us&&... us);
 \end{itemdecl}
 
+%===== DIFF START
 \begin{itemdescr}
 \pnum
 \constraints
@@ -558,7 +630,7 @@ template<class U, class I, class... Us>
 \item
 \tcode{is_same_v<remove_cvref_t<U>, U>} is \tcode{true},
 \item
-\tcode{derived_from<U, T>} is \tcode{true},
+\textcolor{coered}{\tcode{derived_from<U, T>} is \tcode{true},}
 \item
 \tcode{is_constructible_v<U, initializer_list<I>\&, Us...>} is \tcode{true},
 \item
@@ -566,6 +638,12 @@ template<class U, class I, class... Us>
 \item
 \tcode{is_default_constructible_v<Allocator>} is \tcode{true}.
 \end{itemize}
+
+\pnum
+\textcolor{coedarkgreen}{
+\mandates
+\tcode{derived_from<U, T>} is \tcode{true}.}
+%===== DIFF END
 
 \pnum
 \effects
@@ -581,20 +659,26 @@ template<class U, class I, class... Us>
                                  in_place_type_t<U>, initializer_list<I> ilist, Us&&... us);
 \end{itemdecl}
 
+%===== DIFF START
 \begin{itemdescr}
 \pnum
 \constraints
-
 \begin{itemize}
 \item
 \tcode{is_same_v<remove_cvref_t<U>, U>} is \tcode{true},
 \item
-\tcode{derived_from<U, T>} is \tcode{true},
+\textcolor{coered}{\tcode{derived_from<U, T>} is \tcode{true},}
 \item
 \tcode{is_constructible_v<U, initializer_list<I>\&, Us...>} is \tcode{true}, and
 \item
 \tcode{is_copy_constructible_v<U>} is \tcode{true}.
 \end{itemize}
+
+\pnum
+\textcolor{coedarkgreen}{
+\mandates
+\tcode{derived_from<U, T>} is \tcode{true}.}
+%===== DIFF END
 
 \pnum
 \effects
