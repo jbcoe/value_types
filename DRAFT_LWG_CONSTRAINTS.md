@@ -2,7 +2,9 @@
 
 **Section:** 20.4 `[mem.composite.types]`
 
-**Submitter:** jonathanbcoe@gmail.com
+**Submitter:** Jonathan B. Coe <jonathanbcoe@gmail.com>
+
+**Coauthors:** Antony Peacock <ant.peacock@gmail.com>
 
 **Opened:** 2025-08-16
 
@@ -45,6 +47,8 @@ evaluation does not require `T` to be a complete type.
 
 Modify `indirect` constructors `[indirect.ctor]` as indicated:
 
+<div style="border-width:1px; border-style:solid; border-color:#636363; padding: 1em;">
+
 ```cpp
 template<class U = T>
 constexpr explicit indirect(U&& u);
@@ -68,14 +72,15 @@ constexpr explicit indirect(allocator_arg_t, const Allocator& a, U&& u);
 ```
 
 _Constraints_:
+
 * `is_same_v<remove_cvref_t<U>, indirect>` is `false`,
 * `is_same_v<remove_cvref_t<U>, in_place_t>` is `false`, and
 * <s style="background-color: pink;"> `is_constructible_v<T, U>` is `true`.</s>
 
 <u style="background-color: lightgreen;"> _Mandates_: `is_constructible_v<T, U>` is `true`.</u>
 
-_Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an owned object of type `T` with
-`std::forward<U>(u)`, using the allocator `alloc`.
+_Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an owned object of type `T` with `std::forward<U>(u)`, using the allocator `alloc`.
+
 
 ```cpp
 template<class... Us>
@@ -83,6 +88,7 @@ constexpr explicit indirect(in_place_t, Us&&... us);
 ```
 
 _Constraints_:
+
 * <s style="background-color: pink;">`is_constructible_v<T, Us...>` is `true`, and </s>
 * `is_default_constructible_v<Allocator>` is `true`.
 
@@ -90,6 +96,7 @@ _Constraints_:
 
 _Effects_: Constructs an owned object of type `T` with `std::forward<Us>(us)...`, using the allocator
 `alloc`.
+
 
 ```cpp
 template<class... Us>
@@ -104,12 +111,14 @@ in_place_t, Us&& ...us);
 _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an owned object of type `T` with
 `std::forward<Us>(us)...`, using the allocator `alloc`.
 
+
 ```cpp
 template<class I, class... Us>
 constexpr explicit indirect(in_place_t, initializer_list<I> ilist, Us&&... us);
 ```
 
 _Constraints_:
+
 * <s style="background-color: pink;"> `is_constructible_v<T, initializer_list<I>&, Us...>` is `true`, and</s>
 * `is_default_constructible_v<Allocator>` is `true`.
 
@@ -117,6 +126,7 @@ _Constraints_:
 
 _Effects_: Constructs an owned object of type `T` with the arguments `ilist`, `std::forward<Us>(us)...`,
 using the allocator `alloc`.
+
 
 ```cpp
 template<class I, class... Us>
@@ -131,9 +141,13 @@ in_place_t, initializer_list<I> ilist, Us&&... us);
 _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an owned object of type `T` with the
 arguments `ilist`, `std::forward<Us>(us)...`, using the allocator `alloc`.
 
+</div>
+
 ### Changes to `polymorphic`
 
 Modify `polymorphic` constructors as indicated:
+
+<div style="border-width:1px; border-style:solid; border-color:#636363; padding: 1em;">
 
 ```cpp
 template<class U = T>
@@ -153,6 +167,7 @@ _Constraints_: Where `UU` is `remove_cvref_t<U>`,
 
 _Effects_: Constructs an owned object of type `UU` with `std::forward<U>(u)` using the allocator `alloc`.
 
+
 ```cpp
 template<class U = T>
 constexpr explicit polymorphic(allocator_arg_t, const Allocator& a, U&& u);
@@ -171,12 +186,14 @@ _Constraints_: Where `UU` is `remove_cvref_t<U>`,
 _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an owned object of type `UU` with
 `std::forward<U>(u)` using the allocator `alloc`.
 
+
 ```cpp
 template<class U, class... Ts>
 constexpr explicit polymorphic(in_place_type_t<U>, Ts&&... ts);
 ```
 
 _Constraints_:
+
 * `is_same_v<remove_cvref_t<U>, U>` is `true`,
 * <s style="background-color: pink;">`derived_from<U, T>` is `true`</s>,
 * `is_constructible_v<U, Ts...>` is `true`,
@@ -188,6 +205,7 @@ _Constraints_:
 _Effects_: Constructs an owned object of type `U` with `std::forward<Ts>(ts)...` using the allocator
 `alloc`.
 
+
 ```cpp
 template<class U, class... Ts>
 constexpr explicit polymorphic(allocator_arg_t, const Allocator& a,
@@ -195,6 +213,7 @@ constexpr explicit polymorphic(allocator_arg_t, const Allocator& a,
 ```
 
 _Constraints_:
+
 * `is_same_v<remove_cvref_t<U>, U>` is `true`,
 * <s style="background-color: pink;">`derived_from<U, T>` is `true`</s>,
 * `is_constructible_v<U, Ts...>` is `true`, and
@@ -211,6 +230,7 @@ constexpr explicit polymorphic(in_place_type_t<U>, initializer_list<I> ilist, Us
 ```
 
 _Constraints_:
+
 * `is_same_v<remove_cvref_t<U>, U>` is `true`,
 * <s style="background-color: pink;">`derived_from<U, T>` is `true`</s>,
 * `is_constructible_v<U, initializer_list<I>&, Us...>` is `true`,
@@ -222,6 +242,7 @@ _Constraints_:
 _Effects_: Constructs an owned object of type `U` with the arguments `ilist`, `std::forward<Us>(us)...`
 using the allocator `alloc`.
 
+
 ```cpp
 template<class U, class I, class... Us>
 constexpr explicit polymorphic(allocator_arg_t, const Allocator& a,
@@ -229,6 +250,7 @@ constexpr explicit polymorphic(allocator_arg_t, const Allocator& a,
 ```
 
 _Constraints_:
+
 * `is_same_v<remove_cvref_t<U>, U>` is `true`,
 * <s style="background-color: pink;">`derived_from<U, T>` is `true`</s>,
 * `is_constructible_v<U, initializer_list<I>&, Us...>` is `true`, and
@@ -238,3 +260,9 @@ _Constraints_:
 
 _Effects_: `alloc` is direct-non-list-initialized with `a`. Constructs an owned object of type `U` with the
 arguments `ilist`, `std::forward<Us>(us)...` using the allocator `alloc`.
+
+</div>
+
+## Acknowledgments
+
+The authors would like to thank Neelofer Banglawala and Thomas Koeppe for suggestions and useful discussion.
