@@ -34,7 +34,7 @@ of writing and maintaining error-prone boilerplate code.
 
 **Update:** `std::indirect` and `std::polymorphic` have been **accepted** into the C++ standard and will be available in **C++26**! 
 
-The final proposal [P3019r11](DRAFT.md) was accepted in Plenary in Wrocław 2024.
+[P3019r11](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p3019r11.pdf) was initially accepted in Plenary in Wrocław 2024, before the final proposal [P3019r14](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3019r14.pdf) was again accepted in Plenary in Hagenburg 2025.
 
 ### Standard Library Documentation
 
