@@ -56,7 +56,7 @@ and `polymorphic_value` can be found at:
 * [indirect_value: A Free-Store-Allocated Value Type For
   C++](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1950r2.html)
 
-Design of these two types is so deeply coupled that future work proceeded in
+Design of these two types was so deeply coupled that subsequent work proceeded in
 [the final unified paper](DRAFT.md).
 
 ## Use
