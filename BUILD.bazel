@@ -169,3 +169,26 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "polymorphic_sbo",
+    srcs = ["polymorphic_sbo.cc"],
+    hdrs = ["polymorphic_sbo.h"],
+    copts = ["-Iexternal/value_types/"],
+    defines = ["XYZ_POLYMORPHIC_SBO"],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "polymorphic_sbo_test",
+    size = "small",
+    srcs = ["polymorphic_test.cc"],
+    deps = [
+        "feature_check",
+        "polymorphic_sbo",
+        "tagged_allocator",
+        "test_helpers",
+        "tracking_allocator",
+        "@com_google_googletest//:gtest_main",
+    ],
+)

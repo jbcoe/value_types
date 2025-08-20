@@ -142,6 +142,24 @@ xyz_add_object_library(
     LINK_LIBRARIES polymorphic_no_vtable
 )
 
+xyz_add_library(
+    NAME polymorphic_sbo
+    ALIAS xyz_value_types::polymorphic_sbo
+    DEFINITIONS XYZ_POLYMORPHIC_SBO
+    VERSION 14
+)
+target_sources(polymorphic_sbo
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic_sbo.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic_sbo.cc>
+)
+
+xyz_add_object_library(
+    NAME polymorphic_sbo_cc
+    FILES polymorphic_sbo.cc
+    LINK_LIBRARIES polymorphic_sbo
+)
+
 if (${XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT})
 
     add_subdirectory(benchmarks)
@@ -211,6 +229,12 @@ if (${XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT})
         xyz_add_test(
             NAME polymorphic_no_vtable_test
             LINK_LIBRARIES polymorphic_no_vtable
+            FILES polymorphic_test.cc
+        )
+
+        xyz_add_test(
+            NAME polymorphic_sbo_test
+            LINK_LIBRARIES polymorphic_sbo
             FILES polymorphic_test.cc
         )
 
