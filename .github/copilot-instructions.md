@@ -182,11 +182,6 @@ TEST(ClassNameTest, DescriptiveFunctionality) {
 - Verify exception safety with throwing operations
 - Use static_assert for compile-time validation
 
-### Performance Testing
-- Compare against standard library alternatives
-- Measure allocation patterns and copy/move operations
-- Profile with realistic usage scenarios
-
 ## Review and Quality Assurance
 
 ### Before Submitting Changes
