@@ -448,6 +448,11 @@ class polymorphic {
 
   constexpr allocator_type get_allocator() const noexcept { return alloc_; }
 
+  // Testing method to check if this instance is using SBO
+  constexpr bool uses_sbo() const noexcept {
+    return is_using_sbo();
+  }
+
   //
   // Modifiers.
   //
