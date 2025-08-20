@@ -127,10 +127,68 @@ class polymorphic {
     }
   };
 
+  // SBO control block - lightweight control block for objects in SBO buffer
+  template <class U>
+  class sbo_control_block final : public control_block {
+    using cb_allocator = typename std::allocator_traits<
+        A>::template rebind_alloc<direct_control_block<U>>;
+    using cb_alloc_traits = std::allocator_traits<cb_allocator>;
+
+    using Action = control_block::Action;
+
+    static constexpr control_block* handler(Action action, control_block* self,
+                                            const A& alloc) {
+      sbo_control_block* sbo_cb = static_cast<sbo_control_block*>(self);
+      U* obj_ptr = static_cast<U*>(sbo_cb->control_block::p_);
+      
+      if (action == Action::Destroy) {
+        // Just destroy the object in SBO buffer, no deallocation needed
+        std::destroy_at(obj_ptr);
+        return nullptr;
+      }
+      
+      // For clone and move, create a heap-allocated control block
+      cb_allocator cb_alloc(alloc);
+      auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
+      try {
+        if (action == Action::Clone) {
+          cb_alloc_traits::construct(cb_alloc, mem, alloc, *obj_ptr);
+        } else {
+          cb_alloc_traits::construct(cb_alloc, mem, alloc, std::move(*obj_ptr));
+        }
+        std::destroy_at(obj_ptr);
+        return mem;
+      } catch (...) {
+        cb_alloc_traits::deallocate(cb_alloc, mem, 1);
+        throw;
+      }
+    }
+
+   public:
+    constexpr sbo_control_block(U* obj_ptr) {
+      control_block::p_ = obj_ptr;
+      control_block::h_ = &handler;
+    }
+  };
+
   control_block* cb_;
 
   // Small buffer for SBO
   alignas(std::max_align_t) char sbo_buffer_[XYZ_POLYMORPHIC_SBO_SIZE];
+
+  // SBO control block storage - used when using SBO  
+  union sbo_cb_storage {
+    constexpr sbo_cb_storage() {} 
+    constexpr ~sbo_cb_storage() {}
+    
+    template<class U>
+    sbo_control_block<U>& get() {
+      return reinterpret_cast<sbo_control_block<U>&>(storage);
+    }
+    
+    private:
+      alignas(std::max_align_t) char storage[64]; // Enough for any sbo_control_block
+  } sbo_cb_storage_;
 
 #if defined(_MSC_VER)
   // https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/#msvc-extensions-and-abi
@@ -144,18 +202,28 @@ class polymorphic {
   template <class U, class... Ts>
   [[nodiscard]] constexpr control_block* create_control_block(
       Ts&&... ts) const {
-    using cb_allocator = typename std::allocator_traits<
-        A>::template rebind_alloc<direct_control_block<U>>;
-    cb_allocator cb_alloc(alloc_);
-    using cb_alloc_traits = std::allocator_traits<cb_allocator>;
-    auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
-    try {
-      cb_alloc_traits::construct(cb_alloc, mem, alloc_,
-                                 std::forward<Ts>(ts)...);
-      return mem;
-    } catch (...) {
-      cb_alloc_traits::deallocate(cb_alloc, mem, 1);
-      throw;
+    if constexpr (can_use_sbo_v<U>) {
+      // Use SBO: construct object directly in the SBO buffer
+      U* obj_ptr = new (const_cast<char*>(sbo_buffer_)) U(std::forward<Ts>(ts)...);
+      
+      // Create SBO control block in the dedicated storage
+      auto* sbo_cb = new (&const_cast<polymorphic*>(this)->sbo_cb_storage_.template get<U>()) sbo_control_block<U>(obj_ptr);
+      return sbo_cb;
+    } else {
+      // Use heap allocation for larger objects
+      using cb_allocator = typename std::allocator_traits<
+          A>::template rebind_alloc<direct_control_block<U>>;
+      cb_allocator cb_alloc(alloc_);
+      using cb_alloc_traits = std::allocator_traits<cb_allocator>;
+      auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
+      try {
+        cb_alloc_traits::construct(cb_alloc, mem, alloc_,
+                                   std::forward<Ts>(ts)...);
+        return mem;
+      } catch (...) {
+        cb_alloc_traits::deallocate(cb_alloc, mem, 1);
+        throw;
+      }
     }
   }
 
