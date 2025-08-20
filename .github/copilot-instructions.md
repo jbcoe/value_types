@@ -13,6 +13,9 @@ This library is being developed for potential inclusion in the C++ standard libr
 
 ## Development Environment
 
+### Development Container
+This repository includes a `.devcontainer` configuration that can and should be used for development work. The Docker container it defines sets up the build environment for both CMake and Bazel, ensuring consistent development across different systems.
+
 ### Language and Standards
 - **Primary Language**: C++
 - **Minimum Standard**: C++14
@@ -34,7 +37,6 @@ This project supports **dual build systems** - both must be maintained:
    bazel build //...
    bazel test //...
    ```
-   Note: Bazel may not be available in all development environments. CMake is the primary build system.
 
 ### Testing Framework
 - **Primary**: Google Test (gtest/gmock)
@@ -63,7 +65,7 @@ This project supports **dual build systems** - both must be maintained:
 ## Coding Conventions
 
 ### Header Guards and Includes
-- Use `#pragma once` for header guards
+- Use traditional `#ifndef`/`#define` header guards following existing patterns (e.g., `#ifndef XYZ_INDIRECT_H`)
 - Include system headers first, then project headers
 - Use forward declarations when possible
 
@@ -104,7 +106,6 @@ This project supports **dual build systems** - both must be maintained:
 - Maintain deep copy semantics for owned objects
 - Ensure const-correctness throughout
 - Support comparison operators (`==`, `!=`, `<`, etc.)
-- Provide `std::hash` specializations
 
 ## Testing Patterns
 
@@ -182,7 +183,6 @@ TEST(ClassNameTest, DescriptiveFunctionality) {
 - Use static_assert for compile-time validation
 
 ### Performance Testing
-- Benchmarks are available in `benchmarks/` directory
 - Compare against standard library alternatives
 - Measure allocation patterns and copy/move operations
 - Profile with realistic usage scenarios
