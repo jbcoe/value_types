@@ -32,9 +32,19 @@ of writing and maintaining error-prone boilerplate code.
 
 ## Standardization
 
-We'd like to see `indirect` and `polymorphic` included in a future version of
-the C++ standard. Prior work on standardizing similar types, `indirect_value`
-and `polymorphic_value` can be found at
+`std::indirect` and `std::polymorphic` have been accepted into the C++ draft standard and should be available in C++26.
+
+[P3019r11](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p3019r11.pdf) was initially accepted in Plenary in Wrocław 2024, before the final proposal [P3019r14](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3019r14.pdf) was again accepted in Plenary in Hagenburg 2025.
+
+### Standard Library Documentation
+
+* [`std::indirect`](https://en.cppreference.com/w/cpp/memory/indirect) - cppreference documentation
+* [`std::polymorphic`](https://en.cppreference.com/w/cpp/memory/polymorphic) - cppreference documentation
+
+### Prior Work
+
+Prior work on standardizing similar types, `indirect_value`
+and `polymorphic_value` can be found at:
 
 * [A polymorphic value-type for
   C++](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0201r5.html)
@@ -42,8 +52,8 @@ and `polymorphic_value` can be found at
 * [indirect_value: A Free-Store-Allocated Value Type For
   C++](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1950r2.html)
 
-Design of these two types is so deeply coupled that future work will proceed in
-[an updated paper](DRAFT.md).
+Design of these two types was so deeply coupled that subsequent work proceeded in
+[the final unified paper](DRAFT.md).
 
 ## Use
 
