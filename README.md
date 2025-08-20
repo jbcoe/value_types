@@ -32,7 +32,7 @@ of writing and maintaining error-prone boilerplate code.
 
 ## Standardization
 
-`std::indirect` and `std::polymorphic` have been **accepted** into the C++ standard and will be available in C++26.
+`std::indirect` and `std::polymorphic` have been accepted into the C++ draft standard and should be available in C++26.
 
 [P3019r11](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p3019r11.pdf) was initially accepted in Plenary in Wrocław 2024, before the final proposal [P3019r14](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3019r14.pdf) was again accepted in Plenary in Hagenburg 2025.
 
@@ -40,10 +40,6 @@ of writing and maintaining error-prone boilerplate code.
 
 * [`std::indirect`](https://en.cppreference.com/w/cpp/memory/indirect) - cppreference documentation
 * [`std::polymorphic`](https://en.cppreference.com/w/cpp/memory/polymorphic) - cppreference documentation
-
-### Implementation Status
-
-Both types are being implemented in major standard library implementations including GCC's libstdc++.
 
 ### Prior Work
 
