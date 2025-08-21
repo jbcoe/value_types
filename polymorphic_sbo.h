@@ -22,10 +22,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define XYZ_POLYMORPHIC_SBO_H_
 
 #include <cassert>
-#include <concepts>
 #include <cstddef>
 #include <initializer_list>
 #include <memory>
+#include <type_traits>
 #include <utility>
 
 #ifndef XYZ_POLYMORPHIC_HAS_EXTENDED_CONSTRUCTORS
@@ -35,6 +35,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef XYZ_POLYMORPHIC_SBO_SIZE
 #define XYZ_POLYMORPHIC_SBO_SIZE 32
 #endif  // XYZ_POLYMORPHIC_SBO_SIZE
+
+#ifndef XYZ_IN_PLACE_TYPE_DEFINED
+#define XYZ_IN_PLACE_TYPE_DEFINED
+
+namespace xyz {
+template <class T>
+struct in_place_type_t {};
+}  // namespace xyz
+#endif  // XYZ_IN_PLACE_TYPE_DEFINED
 
 namespace xyz {
 
@@ -86,14 +95,14 @@ class polymorphic {
 
       constexpr uninitialized_storage() {}
 
-      constexpr ~uninitialized_storage() {}
+      ~uninitialized_storage() {}
     } storage_;
 
     using cb_allocator = typename std::allocator_traits<
         A>::template rebind_alloc<direct_control_block<U>>;
     using cb_alloc_traits = std::allocator_traits<cb_allocator>;
 
-    using Action = control_block::Action;
+    using Action = typename control_block::Action;
 
     static constexpr control_block* handler(Action action, control_block* self,
                                             const A& alloc) {
@@ -133,7 +142,7 @@ class polymorphic {
   // SBO control block - lightweight control block for SBO objects
   template <class U>
   class sbo_control_block final : public control_block {
-    using Action = control_block::Action;
+    using Action = typename control_block::Action;
 
     static constexpr control_block* handler(Action action, control_block* self,
                                             const A& alloc) {
@@ -141,7 +150,7 @@ class polymorphic {
       U* obj_ptr = static_cast<U*>(sbo_cb->control_block::p_);
       
       if (action == Action::Destroy) {
-        std::destroy_at(obj_ptr);
+        obj_ptr->~U();
         return nullptr;
       }
       
@@ -176,13 +185,13 @@ class polymorphic {
   control_block* cb_;
 
   // Small buffer optimization storage for the actual object
-  alignas(std::max_align_t) std::byte sbo_buffer_[XYZ_POLYMORPHIC_SBO_SIZE];
+  alignas(std::max_align_t) char sbo_buffer_[XYZ_POLYMORPHIC_SBO_SIZE];
   
   // Stack-allocated control block for SBO objects
   union sbo_control_storage {
-    std::byte storage_[64]; // Should be enough for any sbo_control_block
+    char storage_[64]; // Should be enough for any sbo_control_block
     constexpr sbo_control_storage() {}
-    constexpr ~sbo_control_storage() {}
+    ~sbo_control_storage() {}
   } sbo_cb_storage_;
 
 #if defined(_MSC_VER)
@@ -195,34 +204,44 @@ class polymorphic {
   using allocator_traits = std::allocator_traits<A>;
 
   template <class U, class... Ts>
+  [[nodiscard]] constexpr control_block* create_control_block_sbo(
+      std::true_type, Ts&&... ts) {
+    // Use small buffer optimization
+    // Construct the object in the SBO buffer
+    U* obj_ptr = reinterpret_cast<U*>(sbo_buffer_);
+    new (obj_ptr) U(std::forward<Ts>(ts)...);
+    
+    // Construct the control block in the SBO control block storage
+    auto* sbo_cb = reinterpret_cast<sbo_control_block<U>*>(sbo_cb_storage_.storage_);
+    new (sbo_cb) sbo_control_block<U>(obj_ptr);
+    return sbo_cb;
+  }
+
+  template <class U, class... Ts>
+  [[nodiscard]] constexpr control_block* create_control_block_sbo(
+      std::false_type, Ts&&... ts) {
+    // Use heap allocation for large objects
+    using cb_allocator = typename std::allocator_traits<
+        A>::template rebind_alloc<direct_control_block<U>>;
+    cb_allocator cb_alloc(alloc_);
+    using cb_alloc_traits = std::allocator_traits<cb_allocator>;
+    auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
+    try {
+      cb_alloc_traits::construct(cb_alloc, mem, alloc_,
+                                 std::forward<Ts>(ts)...);
+      return mem;
+    } catch (...) {
+      cb_alloc_traits::deallocate(cb_alloc, mem, 1);
+      throw;
+    }
+  }
+
+  template <class U, class... Ts>
   [[nodiscard]] constexpr control_block* create_control_block(
       Ts&&... ts) {
-    if constexpr (can_use_sbo_v<U>) {
-      // Use small buffer optimization
-      // Construct the object in the SBO buffer
-      U* obj_ptr = reinterpret_cast<U*>(sbo_buffer_);
-      std::construct_at(obj_ptr, std::forward<Ts>(ts)...);
-      
-      // Construct the control block in the SBO control block storage
-      auto* sbo_cb = reinterpret_cast<sbo_control_block<U>*>(sbo_cb_storage_.storage_);
-      std::construct_at(sbo_cb, obj_ptr);
-      return sbo_cb;
-    } else {
-      // Use heap allocation for large objects
-      using cb_allocator = typename std::allocator_traits<
-          A>::template rebind_alloc<direct_control_block<U>>;
-      cb_allocator cb_alloc(alloc_);
-      using cb_alloc_traits = std::allocator_traits<cb_allocator>;
-      auto mem = cb_alloc_traits::allocate(cb_alloc, 1);
-      try {
-        cb_alloc_traits::construct(cb_alloc, mem, alloc_,
-                                   std::forward<Ts>(ts)...);
-        return mem;
-      } catch (...) {
-        cb_alloc_traits::deallocate(cb_alloc, mem, 1);
-        throw;
-      }
-    }
+    return create_control_block_sbo<U>(
+        std::integral_constant<bool, can_use_sbo_v<U>>{}, 
+        std::forward<Ts>(ts)...);
   }
 
  public:
@@ -235,37 +254,58 @@ class polymorphic {
   // Constructors.
   //
 
+  template <typename TT = T,
+            typename std::enable_if<std::is_default_constructible<TT>::value,
+                                    int>::type = 0,
+            typename AA = A,
+            typename std::enable_if<std::is_default_constructible<AA>::value,
+                                    int>::type = 0>
   explicit constexpr polymorphic()
-    requires std::default_initializable<A>
       : polymorphic(std::allocator_arg_t{}, A{}) {
-    static_assert(std::default_initializable<T> && std::copy_constructible<T>);
+    static_assert(std::is_default_constructible<T>::value && std::is_copy_constructible<T>::value, 
+                  "T must be default constructible and copy constructible");
   }
 
-  template <class U>
+  template <class U,
+            typename std::enable_if<!std::is_same<polymorphic, typename std::decay<U>::type>::value, 
+                                    int>::type = 0,
+            typename std::enable_if<std::is_copy_constructible<typename std::decay<U>::type>::value, 
+                                    int>::type = 0,
+            typename std::enable_if<std::is_base_of<T, typename std::decay<U>::type>::value, 
+                                    int>::type = 0,
+            typename AA = A,
+            typename std::enable_if<std::is_default_constructible<AA>::value,
+                                    int>::type = 0>
   constexpr explicit polymorphic(U&& u)
-    requires(!std::same_as<polymorphic, std::remove_cvref_t<U>>) &&
-            std::copy_constructible<std::remove_cvref_t<U>> &&
-            std::derived_from<std::remove_cvref_t<U>, T> &&
-            std::default_initializable<A>
       : polymorphic(std::allocator_arg_t{}, A{}, std::forward<U>(u)) {}
 
-  template <class U, class... Ts>
-  explicit constexpr polymorphic(std::in_place_type_t<U>, Ts&&... ts)
-    requires std::same_as<std::remove_cvref_t<U>, U> &&
-             std::constructible_from<U, Ts&&...> &&
-             std::copy_constructible<U> && std::derived_from<U, T> &&
-             std::default_initializable<A>
-      : polymorphic(std::allocator_arg_t{}, A{}, std::in_place_type<U>,
+  template <class U, class... Ts,
+            typename std::enable_if<std::is_constructible<U, Ts&&...>::value, 
+                                    int>::type = 0,
+            typename std::enable_if<std::is_copy_constructible<U>::value, 
+                                    int>::type = 0,
+            typename std::enable_if<std::is_base_of<T, U>::value, 
+                                    int>::type = 0,
+            typename AA = A,
+            typename std::enable_if<std::is_default_constructible<AA>::value,
+                                    int>::type = 0>
+  explicit constexpr polymorphic(in_place_type_t<U>, Ts&&... ts)
+      : polymorphic(std::allocator_arg_t{}, A{}, in_place_type_t<U>{},
                     std::forward<Ts>(ts)...) {}
 
-  template <class U, class I, class... Ts>
-  explicit constexpr polymorphic(std::in_place_type_t<U>,
+  template <class U, class I, class... Ts,
+            typename std::enable_if<std::is_constructible<U, std::initializer_list<I>, Ts&&...>::value, 
+                                    int>::type = 0,
+            typename std::enable_if<std::is_copy_constructible<U>::value, 
+                                    int>::type = 0,
+            typename std::enable_if<std::is_base_of<T, U>::value, 
+                                    int>::type = 0,
+            typename AA = A,
+            typename std::enable_if<std::is_default_constructible<AA>::value,
+                                    int>::type = 0>
+  explicit constexpr polymorphic(in_place_type_t<U>,
                                  std::initializer_list<I> ilist, Ts&&... ts)
-    requires std::same_as<std::remove_cvref_t<U>, U> &&
-             std::constructible_from<U, std::initializer_list<I>, Ts&&...> &&
-             std::copy_constructible<U> && std::derived_from<U, T> &&
-             std::default_initializable<A>
-      : polymorphic(std::allocator_arg_t{}, A{}, std::in_place_type<U>, ilist,
+      : polymorphic(std::allocator_arg_t{}, A{}, in_place_type_t<U>{}, ilist,
                     std::forward<Ts>(ts)...) {}
 
   constexpr polymorphic(const polymorphic& other)
@@ -284,37 +324,47 @@ class polymorphic {
 
   explicit constexpr polymorphic(std::allocator_arg_t, const A& alloc)
       : alloc_(alloc) {
-    static_assert(std::default_initializable<T> && std::copy_constructible<T>);
+    static_assert(std::is_default_constructible<T>::value && std::is_copy_constructible<T>::value,
+                  "T must be default constructible and copy constructible");
 
     cb_ = create_control_block<T>();
   }
 
-  template <class U>
+  template <class U,
+            typename std::enable_if<!std::is_same<polymorphic, typename std::decay<U>::type>::value, 
+                                    int>::type = 0,
+            typename std::enable_if<std::is_copy_constructible<typename std::decay<U>::type>::value, 
+                                    int>::type = 0,
+            typename std::enable_if<std::is_base_of<T, typename std::decay<U>::type>::value, 
+                                    int>::type = 0>
   constexpr explicit polymorphic(std::allocator_arg_t, const A& alloc, U&& u)
-    requires(not std::same_as<polymorphic, std::remove_cvref_t<U>>) &&
-            std::copy_constructible<std::remove_cvref_t<U>> &&
-            std::derived_from<std::remove_cvref_t<U>, T>
       : alloc_(alloc) {
-    cb_ = create_control_block<std::remove_cvref_t<U>>(std::forward<U>(u));
+    cb_ = create_control_block<typename std::decay<U>::type>(std::forward<U>(u));
   }
 
-  template <class U, class... Ts>
+  template <class U, class... Ts,
+            typename std::enable_if<std::is_constructible<U, Ts&&...>::value, 
+                                    int>::type = 0,
+            typename std::enable_if<std::is_copy_constructible<U>::value, 
+                                    int>::type = 0,
+            typename std::enable_if<std::is_base_of<T, U>::value, 
+                                    int>::type = 0>
   explicit constexpr polymorphic(std::allocator_arg_t, const A& alloc,
-                                 std::in_place_type_t<U>, Ts&&... ts)
-    requires std::same_as<std::remove_cvref_t<U>, U> &&
-             std::constructible_from<U, Ts&&...> &&
-             std::copy_constructible<U> && std::derived_from<U, T>
+                                 in_place_type_t<U>, Ts&&... ts)
       : alloc_(alloc) {
     cb_ = create_control_block<U>(std::forward<Ts>(ts)...);
   }
 
-  template <class U, class I, class... Ts>
+  template <class U, class I, class... Ts,
+            typename std::enable_if<std::is_constructible<U, std::initializer_list<I>, Ts&&...>::value, 
+                                    int>::type = 0,
+            typename std::enable_if<std::is_copy_constructible<U>::value, 
+                                    int>::type = 0,
+            typename std::enable_if<std::is_base_of<T, U>::value, 
+                                    int>::type = 0>
   explicit constexpr polymorphic(std::allocator_arg_t, const A& alloc,
-                                 std::in_place_type_t<U>,
+                                 in_place_type_t<U>,
                                  std::initializer_list<I> ilist, Ts&&... ts)
-    requires std::same_as<std::remove_cvref_t<U>, U> &&
-             std::constructible_from<U, std::initializer_list<I>, Ts&&...> &&
-             std::copy_constructible<U> && std::derived_from<U, T>
       : alloc_(alloc) {
     cb_ = create_control_block<U>(ilist, std::forward<Ts>(ts)...);
   }
@@ -333,7 +383,7 @@ class polymorphic {
       std::allocator_arg_t, const A& alloc,
       polymorphic&& other) noexcept(allocator_traits::is_always_equal::value)
       : alloc_(alloc) {
-    if constexpr (allocator_traits::is_always_equal::value) {
+    if (allocator_traits::is_always_equal::value) {
       cb_ = std::exchange(other.cb_, nullptr);
     } else {
       if (alloc_ == other.alloc_) {
@@ -352,7 +402,7 @@ class polymorphic {
   // Destructor.
   //
 
-  constexpr ~polymorphic() { reset(); }
+  ~polymorphic() { reset(); }
 
   //
   // Assignment operators.
@@ -460,7 +510,7 @@ class polymorphic {
   constexpr void swap(polymorphic& other) noexcept(
       std::allocator_traits<A>::propagate_on_container_swap::value ||
       std::allocator_traits<A>::is_always_equal::value) {
-    if constexpr (allocator_traits::propagate_on_container_swap::value) {
+    if (allocator_traits::propagate_on_container_swap::value) {
       // If allocators move with their allocated objects, we can swap both.
       std::swap(alloc_, other.alloc_);
       std::swap(cb_, other.cb_);
