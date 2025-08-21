@@ -238,6 +238,13 @@ if (${XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT})
             FILES polymorphic_test.cc
         )
 
+        xyz_add_test(
+            NAME polymorphic_sbo_allocation_test
+            LINK_LIBRARIES polymorphic_sbo
+            FILES polymorphic_sbo_allocation_test.cc
+            VERSION 20
+        )
+
         if (ENABLE_CODE_COVERAGE)
             enable_code_coverage()
         endif()
