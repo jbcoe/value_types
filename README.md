@@ -34,9 +34,9 @@ of writing and maintaining error-prone boilerplate code.
 
 `std::indirect` and `std::polymorphic` have been accepted into the C++ draft standard and should be available in C++26.
 
-[P3019r11](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2024/p3019r11.pdf) was initially accepted in Plenary in Wrocław 2024, before the final proposal [P3019r14](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3019r14.pdf) was again accepted in Plenary in Hagenburg 2025.
+[P3019r14](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3019r14.pdf) was accepted in the Hagenburg meeting in 2025.
 
-### Standard Library Documentation
+### Documentation
 
 * [`std::indirect`](https://en.cppreference.com/w/cpp/memory/indirect) - cppreference documentation
 * [`std::polymorphic`](https://en.cppreference.com/w/cpp/memory/polymorphic) - cppreference documentation
@@ -153,7 +153,7 @@ the dependencies required to build and test the project.
 * [indirect_value: A Free-Store-Allocated Value Type For C++]
   (https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1950r2.html)
 
-* [GitHub codepsaces]
+* [GitHub codespaces]
   (https://docs.github.com/en/codespaces/getting-started/deep-dive)
 
 * [ISO C++ Standard - Draft]
