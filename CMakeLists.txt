@@ -146,7 +146,7 @@ xyz_add_library(
     NAME polymorphic_sbo
     ALIAS xyz_value_types::polymorphic_sbo
     DEFINITIONS XYZ_POLYMORPHIC_SBO
-    VERSION 14
+    VERSION 20
 )
 target_sources(polymorphic_sbo
     INTERFACE

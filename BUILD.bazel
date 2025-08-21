@@ -174,7 +174,7 @@ cc_library(
     name = "polymorphic_sbo",
     srcs = ["polymorphic_sbo.cc"],
     hdrs = ["polymorphic_sbo.h"],
-    copts = ["-Iexternal/value_types/"],
+    copts = ["-Iexternal/value_types/", "-std=c++20"],
     defines = ["XYZ_POLYMORPHIC_SBO"],
     visibility = ["//visibility:public"],
 )
@@ -183,6 +183,7 @@ cc_test(
     name = "polymorphic_sbo_test",
     size = "small",
     srcs = ["polymorphic_test.cc"],
+    copts = ["-std=c++20"],
     deps = [
         "feature_check",
         "polymorphic_sbo",
