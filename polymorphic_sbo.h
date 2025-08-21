@@ -74,7 +74,8 @@ class polymorphic {
   template <class U>
   static constexpr bool can_use_sbo_v = 
     sizeof(U) <= XYZ_POLYMORPHIC_SBO_SIZE && 
-    alignof(U) <= alignof(std::max_align_t);
+    alignof(U) <= alignof(std::max_align_t) &&
+    std::is_nothrow_move_constructible_v<U>;
 
   struct control_block {
     using allocator_traits = std::allocator_traits<A>;
