@@ -116,6 +116,53 @@ TEST(PolymorphicSBOAllocationTest, CopyConstructionPreservesSBO) {
   EXPECT_EQ(p2->value(), 42);
 }
 
+// Test multiple copy levels preserve SBO
+TEST(PolymorphicSBOAllocationTest, MultipleCopiesPreserveSBO) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  
+  xyz::polymorphic<SmallDerived, xyz::TrackingAllocator<SmallDerived>> p1(
+      std::allocator_arg,
+      xyz::TrackingAllocator<SmallDerived>(&alloc_counter, &dealloc_counter),
+      xyz::in_place_type_t<SmallDerived>{}, 100);
+  
+  // Chain of copies - all should preserve SBO
+  auto p2 = p1;
+  auto p3 = p2;
+  auto p4 = p3;
+  
+  EXPECT_EQ(alloc_counter, 0) << "Multiple copies should all use SBO";
+  EXPECT_TRUE(p1.uses_sbo());
+  EXPECT_TRUE(p2.uses_sbo());
+  EXPECT_TRUE(p3.uses_sbo());
+  EXPECT_TRUE(p4.uses_sbo());
+  
+  EXPECT_EQ(p1->value(), 100);
+  EXPECT_EQ(p2->value(), 100);
+  EXPECT_EQ(p3->value(), 100);
+  EXPECT_EQ(p4->value(), 100);
+}
+
+// Test that large objects still properly use heap allocation when copied
+TEST(PolymorphicSBOAllocationTest, CopyLargeObjectStillUsesHeap) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  
+  xyz::polymorphic<LargeDerived, xyz::TrackingAllocator<LargeDerived>> p1(
+      std::allocator_arg,
+      xyz::TrackingAllocator<LargeDerived>(&alloc_counter, &dealloc_counter),
+      xyz::in_place_type_t<LargeDerived>{}, 42);
+  
+  EXPECT_EQ(alloc_counter, 1);
+  EXPECT_FALSE(p1.uses_sbo());
+  
+  // Copy of large object should also use heap
+  auto p2 = p1;
+  EXPECT_EQ(alloc_counter, 2) << "Copying large object should allocate another heap block";
+  EXPECT_FALSE(p2.uses_sbo());
+  EXPECT_EQ(p2->value(), 42);
+}
+
 // Test that SBO threshold is working correctly around the boundary
 TEST(PolymorphicSBOAllocationTest, SBOThresholdBehavior) {
   // Verify the SBO size constant

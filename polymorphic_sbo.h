@@ -81,16 +81,16 @@ class polymorphic {
     typename allocator_traits::pointer p_;
 
     enum class Action { Destroy, Clone, Move };
-    control_block* (*h_)(Action, control_block* self, const A& alloc);
+    control_block* (*h_)(Action, control_block* self, const A& alloc, polymorphic* target);
 
-    constexpr void destroy(const A& alloc) { h_(Action::Destroy, this, alloc); }
+    constexpr void destroy(const A& alloc) { h_(Action::Destroy, this, alloc, nullptr); }
 
-    constexpr control_block* clone(const A& alloc) {
-      return h_(Action::Clone, this, alloc);
+    constexpr control_block* clone(const A& alloc, polymorphic* target = nullptr) {
+      return h_(Action::Clone, this, alloc, target);
     }
 
     constexpr control_block* move(const A& alloc) {
-      return h_(Action::Move, this, alloc);
+      return h_(Action::Move, this, alloc, nullptr);
     }
   };
 
@@ -112,7 +112,7 @@ class polymorphic {
     using Action = typename control_block::Action;
 
     static constexpr control_block* handler(Action action, control_block* self,
-                                            const A& alloc) {
+                                            const A& alloc, polymorphic* target) {
       direct_control_block* dis = static_cast<direct_control_block*>(self);
       cb_allocator cb_alloc(alloc);
       if (action == Action::Destroy) {
@@ -152,7 +152,7 @@ class polymorphic {
     using Action = typename control_block::Action;
 
     static constexpr control_block* handler(Action action, control_block* self,
-                                            const A& alloc) {
+                                            const A& alloc, polymorphic* target) {
       sbo_control_block* sbo_cb = static_cast<sbo_control_block*>(self);
       U* obj_ptr = static_cast<U*>(sbo_cb->control_block::p_);
       
@@ -161,7 +161,22 @@ class polymorphic {
         return nullptr;
       }
       
-      // For clone/move, we need to allocate a new control block
+      // For clone, check if target can use SBO and preserve it
+      if (action == Action::Clone && target != nullptr) {
+        constexpr bool can_use_sbo = can_use_sbo_v<U>;
+        if constexpr (can_use_sbo) {
+          // Target can use SBO - construct directly in target's SBO buffer
+          U* target_obj_ptr = reinterpret_cast<U*>(target->sbo_buffer_);
+          std::construct_at(target_obj_ptr, *obj_ptr);
+          
+          // Construct the control block in the target's SBO control block storage  
+          auto* target_sbo_cb = reinterpret_cast<sbo_control_block<U>*>(target->sbo_cb_storage_.storage_);
+          std::construct_at(target_sbo_cb, target_obj_ptr);
+          return target_sbo_cb;
+        }
+      }
+      
+      // Fall back to heap allocation for move or when SBO can't be used
       using cb_allocator = typename std::allocator_traits<
           A>::template rebind_alloc<direct_control_block<U>>;
       cb_allocator cb_alloc(alloc);
@@ -362,7 +377,7 @@ class polymorphic {
                         const polymorphic& other)
       : alloc_(alloc) {
     if (!other.valueless_after_move()) {
-      cb_ = other.cb_->clone(alloc_);
+      cb_ = other.cb_->clone(alloc_, this);
     } else {
       cb_ = nullptr;
     }
@@ -413,7 +428,7 @@ class polymorphic {
       // resetting or updating allocators until this is done.
 
       // Inlining the allocator into the construct_from call confuses LCOV.
-      auto tmp = other.cb_->clone(update_alloc ? other.alloc_ : alloc_);
+      auto tmp = other.cb_->clone(update_alloc ? other.alloc_ : alloc_, nullptr);
       reset();
       cb_ = tmp;
     }
