@@ -328,7 +328,8 @@ template&lt;class U, class I, class... Us&gt;
 </blockquote>
 <pre>
 template&lt;class U, class I, class... Us&gt;
-  constexpr explicit polymorphic(in_place_type_t&lt;U&gt;, initializer_list&lt;I&gt; ilist, Us&amp;&amp;... us);
+  constexpr explicit polymorphic(allocator_arg_t, const Allocator&amp; a,
+                                 in_place_type_t&lt;U&gt;, initializer_list&lt;I&gt; ilist, Us&amp;&amp;... us);
 </pre>
 <blockquote>
 <p>
