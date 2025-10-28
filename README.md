@@ -53,7 +53,7 @@ and `polymorphic_value` can be found at:
   C++](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1950r2.html)
 
 Design of these two types was so deeply coupled that subsequent work proceeded in
-[the final unified paper](DRAFT.md).
+[the final unified paper](proposals/DRAFT.md).
 
 ## Use
 
