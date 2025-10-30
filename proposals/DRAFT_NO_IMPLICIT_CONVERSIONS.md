@@ -85,5 +85,5 @@ Many thanks to Neelofer Banglawala for useful input, review and discussion.
 ## References
 
 [1] p3019r1: _Vocabulary Types for Composite Class Design_, \
-J. B. Coe, A. Peacock, and S. Parent, 2024 \
+J. B. Coe, A. Peacock, and S. Parent, 2023 \
 <https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p3019r1.pdf>
