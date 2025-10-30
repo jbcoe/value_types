@@ -69,7 +69,7 @@ The authors are opposed to the addition of implicit conversions to reference (an
 as these conversions would have the precondition that `this` is not in a valueless state.
 
 Having striven to modify the design of indirect to avoid non-valueless preconditions, the authors are reluctant to
-see opportuntities for undefined behaviour introduced at such a late stage without motivating implementation experience or a paper.
+see opportunities for undefined behaviour introduced at such a late stage without motivating implementation experience or a paper.
 
 ## Future direction
 
