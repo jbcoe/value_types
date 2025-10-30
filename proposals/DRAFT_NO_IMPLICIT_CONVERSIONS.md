@@ -73,7 +73,7 @@ see opportunities for undefined behaviour introduced at such a late stage withou
 
 ## Future direction
 
-With compelling implemention experience, it would be possible to introduce implicit reference conversions
+With compelling implementation experience, it would be possible to introduce implicit reference conversions
 for `indirect` in a later version of the C++ Standard.
 
 There is nothing about the current design of `indirect` that blocks later introduction of implicit conversions.
