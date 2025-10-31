@@ -18,11 +18,11 @@ _Sean Parent \<<sparent@adobe.com>\>_
 
 ## Abstract
 
-The national body comment US 77-140 says:
+The National Body Comment US 77-140 says:
 
 _indirect should convert to T& to simplify the use cases (e.g., returning the object from a function with a return type T&) where indirect appears as a drop-in replacement for T when T may be an incomplete type conditionally. With the proposed change, indirect is closer to reference_wrapper, but carries storage._
 
-The authors of indirect are opposed to this change without significant implementation experience.
+The authors of indirect are opposed to this change in the absence of significant implementation experience.
 
 ## Discussion
 
