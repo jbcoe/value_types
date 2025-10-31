@@ -42,7 +42,7 @@ the moved-from instance becomes valueless: the member pointer is `nullptr`.
 
 Early drafts of `indirect<T>` [1] had preconditions on all member functions, apart
 from destruction and assignment, that `this` was not in a valueless state.
-Equality and comparison required that neither the left-hand-side or right-hand-side operand
+Equality and comparison also had a precondition that neither the left-hand-side or right-hand-side operand
 was valueless. While the standard requires only that moved-from objects are in a _valid but unspecified state_, there was strong feeling from implementers that adding preconditions
 so liberally left the undefined behaviour surface of `indirect` too large. In particular,
 people were concerned that generic code may copy, move from and compare objects in a
