@@ -18,11 +18,11 @@ _Sean Parent \<<sparent@adobe.com>\>_
 
 ## Abstract
 
-The national body comment US 77-140 says:
+The National Body Comment US 77-140 says:
 
 _indirect should convert to T& to simplify the use cases (e.g., returning the object from a function with a return type T&) where indirect appears as a drop-in replacement for T when T may be an incomplete type conditionally. With the proposed change, indirect is closer to reference_wrapper, but carries storage._
 
-The authors of indirect are opposed to this change without significant implementation experience.
+The authors of indirect are opposed to this change in the absence of significant implementation experience.
 
 ## Discussion
 
@@ -34,7 +34,7 @@ Copying the `indirect` will copy the object `T`. When an `indirect<T>` is
 accessed through a const access path, constness will propagate to the owned
 object.
 
-`indirect<T>` can be implemented, like `reference_wrapper` as a class with a
+`indirect<T>` can be implemented, like `reference_wrapper`, as a class with a
 pointer member.
 
 When an instance of `indirect<T>` is used in move construction or move assignment,
@@ -63,11 +63,11 @@ constexpr operator const T&&() const && noexcept;
 constexpr operator T&&() && noexcept;
 ```
 
-### Author's stance
+### Authors' stance
 
 The authors are opposed to the addition of implicit conversions to reference (and rvalue-reference).
 
-US 77-140 says that "With the proposed change, indirect is closer to reference_wrapper".
+National Body Comment US 77-140 states that "With the proposed change, indirect is closer to reference_wrapper".
 It is not clear why this is desirable. `reference_wrapper` is non-owning and has no
 null or valueless state. The current API for `indirect` is most similar to `optional` and
 `unique_ptr`, which have `operator*` returning `T&` rather than an implicit conversion.
@@ -90,11 +90,11 @@ The implicit conversions to reference would have the precondition that `this` is
 With compelling implementation experience, it would be possible to introduce implicit reference conversions
 for `indirect` in a later version of the C++ Standard.
 
-There is nothing about the current design of `indirect` that blocks later introduction of implicit conversions.
+The current design of `indirect` does not block later introduction of implicit conversions.
 
 ## Acknowledgements
 
-Many thanks to Neelofer Banglawala for useful input, review and discussion.
+Many thanks to Neelofer Banglawala and Jonathan Wakely for useful input, review and discussion.
 
 ## References
 
