@@ -83,7 +83,7 @@ null or valueless state. The current API for `indirect` is most similar to `opti
 |`indirect`|Yes|Yes|`operator->`|`T*`|
 |`indirect`|Yes|Yes|`operator*`|`T&`|
 
-The implicit conversions to reference would have the precondition that `this` is not in a valueless state. Having modified the design of indirect to reduce the number of non-valueless preconditions, the authors are reluctant to see opportunities for undefined behaviour introduced at a late stage in design.
+The implicit conversions to reference would have the precondition that `this` is not in a valueless state. Having modified the design of indirect to reduce the number of non-valueless preconditions, the authors are reluctant to see opportunities for undefined behaviour introduced at this late stage in the standardization process.
 
 ## Future direction
 
