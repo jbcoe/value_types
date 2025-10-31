@@ -65,11 +65,25 @@ constexpr operator T&&() && noexcept;
 
 ### Author's stance
 
-The authors are opposed to the addition of implicit conversions to reference (and rvalue-reference)
-as these conversions would have the precondition that `this` is not in a valueless state.
+The authors are opposed to the addition of implicit conversions to reference (and rvalue-reference).
 
-Having striven to modify the design of indirect to avoid non-valueless preconditions, the authors are reluctant to
-see opportunities for undefined behaviour introduced at such a late stage without motivating implementation experience or a paper.
+US 77-140 says that "With the proposed change, indirect is closer to reference_wrapper".
+It is not clear why this is desirable. `reference_wrapper` is non-owning and has no
+null or valueless state. The current API for `indirect` is most similar to `optional` and
+`unique_ptr`, which have `operator*` returning `T&` rather than an implicit conversion.
+
+|Type|Owning|Null/Valueless state|Member Function|Return Type|
+|--- |---|---|---|---|
+|`unique_ptr`|Yes|Yes|`operator->`|`T*`|
+|`unique_ptr`|Yes|Yes|`operator*`|`T&`|
+|`optional`|Yes|Yes|`operator->`|`T*`|
+|`optional`|Yes|Yes|`operator*`|`T&`|
+|`reference_wrapper`|No|No|`get()`|`T&`|
+|`reference_wrapper`|No|No|`operator T&`|`T&`|
+|`indirect`|Yes|Yes|`operator->`|`T*`|
+|`indirect`|Yes|Yes|`operator*`|`T&`|
+
+The implicit conversions to reference would have the precondition that `this` is not in a valueless state. Having modified the design of indirect to reduce the number of non-valueless preconditions, the authors are reluctant to see opportunities for undefined behaviour introduced at this late stage in the standardization process.
 
 ## Future direction
 
