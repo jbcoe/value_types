@@ -67,10 +67,10 @@ constexpr operator T&&() && noexcept;
 
 The authors are opposed to the addition of implicit conversions to reference (and rvalue-reference).
 
-The comment says that "With the proposed change, indirect is closer to reference_wrapper".
-It is not clear why this is a desirable state. `reference_wrapper` is non-owning and has no
+US 77-140 says that "With the proposed change, indirect is closer to reference_wrapper".
+It is not clear why this is desirable. `reference_wrapper` is non-owning and has no
 null or valueless state. The current API for `indirect` is most similar to `optional` and
-`unique_ptr` which have `operator*` returning `T&` rather than an implicit conversion.
+`unique_ptr`, which have `operator*` returning `T&` rather than an implicit conversion.
 
 |Type|Owning|Null/Valueless state|Member Function|Return Type|
 |--- |---|---|---|---|
