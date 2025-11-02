@@ -49,8 +49,9 @@ people were concerned that generic code may copy, move from and compare objects 
 potentially valueless state.
 
 In the current working draft of the C++ standard, the precondition that `indirect<T>` must not be in a
-valueless state is present only for `operator->` and `operator*` (including const and reference-qualified overloads).
-This is consistent with other types with a potential null state like `unique_ptr` and `optional`.
+valueless state is present only for `operator->` and `operator*` (including const-qualified and
+reference-qualified overloads). This is consistent with other standard library types with a null state
+such as `unique_ptr` and `optional`.
 
 ### Requested changes
 
