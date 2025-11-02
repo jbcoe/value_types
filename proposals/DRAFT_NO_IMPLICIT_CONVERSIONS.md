@@ -46,7 +46,7 @@ Equality and comparison also had a precondition that neither the left-hand-side 
 was valueless. While the standard requires only that moved-from objects are in a _valid but unspecified state_, there was strong feeling from implementers that adding preconditions
 so liberally left the undefined behaviour surface of `indirect` too large. In particular,
 people were concerned that generic code may copy, move from and compare objects in a
-potentially valueless state.
+potentially valueless state in standard library algorithms.
 
 In the current working draft of the C++ standard, the precondition that `indirect<T>` must not be in a
 valueless state is present only for `operator->` and `operator*` (including const-qualified and
