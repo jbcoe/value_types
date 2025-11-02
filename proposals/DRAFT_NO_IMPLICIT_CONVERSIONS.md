@@ -4,7 +4,7 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-D3902R0
+D3902R1
 
 Working Group: Library Evolution
 
@@ -22,7 +22,7 @@ The National Body Comment US 77-140 says:
 
 _indirect should convert to T& to simplify the use cases (e.g., returning the object from a function with a return type T&) where indirect appears as a drop-in replacement for T when T may be an incomplete type conditionally. With the proposed change, indirect is closer to reference_wrapper, but carries storage._
 
-The authors of indirect are opposed to this change in the absence of significant implementation experience.
+The authors of indirect are opposed to this change in the absence of significant usage and implementation experience.
 
 ## Discussion
 
@@ -48,9 +48,9 @@ so liberally left the undefined behaviour surface of `indirect` too large. In pa
 people were concerned that generic code may copy, move from and compare objects in a
 potentially valueless state.
 
-In the current working draft of the C++ standard, `indirect<T>` must not be in a valueless state
-for `operator->` and `operator*` (const and non-const overloads). This is consistent with other
-types with a potential null state like `unique_ptr` and `optional`.
+In the current working draft of the C++ standard, the precondition that `indirect<T>` must not be in a
+valueless state is present only for `operator->` and `operator*` (including const and reference-qualified overloads).
+This is consistent with other types with a potential null state like `unique_ptr` and `optional`.
 
 ### Requested changes
 
@@ -87,7 +87,7 @@ The implicit conversions to reference would have the precondition that `this` is
 
 ## Future direction
 
-With compelling implementation experience, it would be possible to introduce implicit reference conversions
+With compelling usage and implementation experience, it would be possible to introduce implicit reference conversions
 for `indirect` in a later version of the C++ Standard.
 
 The current design of `indirect` does not block later introduction of implicit conversions.
