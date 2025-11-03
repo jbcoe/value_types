@@ -70,7 +70,8 @@ TEST(IndirectExploration, ReferenceWrapperAndMove) {
   // The moved-from indirect is valueless.
   EXPECT_TRUE(b.valueless_after_move());
   // b-ref refers to the value it referred to before the move.
-  EXPECT_EQ(br, 4);  // Perhaps this is surprising??
+  EXPECT_EQ(br, 4);  // observing the lvalue via operator int&().
+                     // Perhaps this is surprising??
 
   // The `a` indirect and `a` reference-wrapper now refer to the moved-from
   // value.
