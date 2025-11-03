@@ -28,7 +28,7 @@ The authors of indirect are opposed to this change in the absence of significant
 
 ### Changes in R1
 
-* Add clarification that `operator->` and `operator*` and (including const-qualified and
+* Add clarification that `operator->` and `operator*` (including const-qualified and
 reference-qualified overloads) are the only functions with preconditions for which the
 associated `indirect` instance(s) must not be in a valueless state.
 
