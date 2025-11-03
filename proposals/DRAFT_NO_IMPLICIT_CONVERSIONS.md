@@ -24,17 +24,6 @@ _indirect should convert to T& to simplify the use cases (e.g., returning the ob
 
 The authors of indirect are opposed to this change in the absence of significant usage and implementation experience.
 
-## History
-
-### Changes in R1
-
-* Add clarification that `operator->` and `operator*` (including const-qualified and
-reference-qualified overloads) are the only functions with preconditions for which the
-associated `indirect` instance(s) must not be in a valueless state.
-
-* Add clarification that the authors would like to see implementation and **usage**
-experience to motivate the introduction of a `reference_wrapper`-like API.
-
 ## Discussion
 
 ### Background
@@ -113,3 +102,14 @@ Many thanks to Neelofer Banglawala and Jonathan Wakely for useful input, review 
 [1] p3019r1: _Vocabulary Types for Composite Class Design_, \
 J. B. Coe, A. Peacock, and S. Parent, 2023 \
 <https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p3019r1.pdf>
+
+## History
+
+### Changes in R1
+
+* Add clarification that `operator->` and `operator*` (including const-qualified and
+reference-qualified overloads) are the only functions with preconditions for which the
+associated `indirect` instance(s) must not be in a valueless state.
+
+* Add clarification that the authors would like to see implementation and **usage**
+experience to motivate the introduction of a `reference_wrapper`-like API.
