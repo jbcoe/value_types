@@ -59,13 +59,18 @@ TEST(IndirectExploration, ReferenceWrapperAndMove) {
   EXPECT_EQ(br.get(), 4);
 
   // When we move values and references.
-  a = std::move(b);    // this renders `b` valueless.
+  a = std::move(b);  // this renders `b` valueless.
+
+  // Note: At this point ar is a reference to a value which no longer exists.
+  // EXPECT_EQ(ar, 3); - This would lead to heap-use-after-free when run under
+  // ASAN.
+
   ar = std::move(br);  // this does nothing to `br`.
 
   // The moved-from indirect is valueless.
   EXPECT_TRUE(b.valueless_after_move());
   // b-ref refers to the value it referred to before the move.
-  EXPECT_EQ(br, 4);
+  EXPECT_EQ(br, 4);  // Perhaps this is surprising??
 
   // The `a` indirect and `a` reference-wrapper now refer to the moved-from
   // value.
