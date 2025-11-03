@@ -35,7 +35,6 @@ associated `indirect` instance(s) must not be in a valueless state.
 * Add clarification that the authors would like to see implementation and **usage**
 experience to motivate the introduction of a `reference_wrapper`-like API.
 
-
 ## Discussion
 
 ### Background
