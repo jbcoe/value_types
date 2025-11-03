@@ -33,3 +33,12 @@ build_test(
     name = "traits_and_concepts_build_test",
     targets = ["traits_and_concepts"],
 )
+
+cc_test(
+    name = "reference_wrappers_test",
+    srcs = ["reference_wrappers_test.cc"],
+    deps = [
+        "//:indirect",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
