@@ -4,7 +4,7 @@
 
 ISO/IEC JTC1 SC22 WG21 Programming Language C++
 
-D3902R1
+P3902R1
 
 Working Group: Library Evolution
 
@@ -23,6 +23,18 @@ The National Body Comment US 77-140 says:
 _indirect should convert to T& to simplify the use cases (e.g., returning the object from a function with a return type T&) where indirect appears as a drop-in replacement for T when T may be an incomplete type conditionally. With the proposed change, indirect is closer to reference_wrapper, but carries storage._
 
 The authors of indirect are opposed to this change in the absence of significant usage and implementation experience.
+
+## History
+
+### Changes in R1
+
+* Add clarification that `operator->` and `operator*` and (including const-qualified and
+reference-qualified overloads) are the only functions with preconditions for which the
+associated `indirect` instance(s) must not be in a valueless state.
+
+* Add clarification that the authors would like to see implementation and **usage**
+experience to motivate the introduction of a `reference_wrapper`-like API.
+
 
 ## Discussion
 
