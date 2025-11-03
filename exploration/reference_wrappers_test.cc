@@ -29,7 +29,7 @@ TEST(IndirectExploration, ReferenceWrapperAndSwap) {
   EXPECT_EQ(*a, 4);
   EXPECT_EQ(*b, 3);
 
-  // But the reference value refer to the original values.
+  // But the reference values refer to the original values.
   EXPECT_EQ(ar, 3);
   EXPECT_EQ(br, 4);
 
@@ -75,7 +75,7 @@ TEST(IndirectExploration, ReferenceWrapperAndMove) {
   // The `a` indirect and `a` reference-wrapper now refer to the moved-from
   // value.
   EXPECT_EQ(*a, 4);
-  EXPECT_EQ(ar, 4);
+  EXPECT_EQ(ar, 4);  // observing the lvalue via operator int&()
 }
 
 }  // namespace
