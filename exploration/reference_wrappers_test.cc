@@ -20,8 +20,8 @@ TEST(IndirectExploration, ReferenceWrapperAndSwap) {
   auto br = std::ref(*b);
 
   // Values accessed through the references are as expected.
-  EXPECT_EQ(ar.get(), 3);
-  EXPECT_EQ(br.get(), 4);
+  EXPECT_EQ(ar, 3);
+  EXPECT_EQ(br, 4);
 
   // When we swap the two indirect values.
   swap(a, b);
@@ -30,15 +30,15 @@ TEST(IndirectExploration, ReferenceWrapperAndSwap) {
   EXPECT_EQ(*b, 3);
 
   // But the reference value refer to the original values.
-  EXPECT_EQ(ar.get(), 3);
-  EXPECT_EQ(br.get(), 4);
+  EXPECT_EQ(ar, 3);
+  EXPECT_EQ(br, 4);
 
   // When we swap the two reference wrappers.
   swap(ar, br);
 
   // Then the values accessed through references have been swapped.
-  EXPECT_EQ(ar.get(), 4);
-  EXPECT_EQ(br.get(), 3);
+  EXPECT_EQ(ar, 4);
+  EXPECT_EQ(br, 3);
 }
 
 TEST(IndirectExploration, ReferenceWrapperAndMove) {
@@ -55,8 +55,8 @@ TEST(IndirectExploration, ReferenceWrapperAndMove) {
   auto br = std::ref(*b);
 
   // Values accessed through the references are as expected.
-  EXPECT_EQ(ar.get(), 3);
-  EXPECT_EQ(br.get(), 4);
+  EXPECT_EQ(ar, 3);
+  EXPECT_EQ(br, 4);
 
   // When we move values and references.
   a = std::move(b);  // this renders `b` valueless.
