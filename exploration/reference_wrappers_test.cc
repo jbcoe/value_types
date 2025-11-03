@@ -59,8 +59,8 @@ TEST(IndirectExploration, ReferenceWrapperAndMove) {
   EXPECT_EQ(br.get(), 4);
 
   // When we move values and references.
-  a = std::move(b);
-  ar = std::move(br);
+  a = std::move(b);    // this renders `b` valueless.
+  ar = std::move(br);  // this does nothing to `br`.
 
   // The moved-from indirect is valueless.
   EXPECT_TRUE(b.valueless_after_move());
