@@ -136,52 +136,51 @@ using disable_capturing =
                      int>;
 
 template <typename T>
-struct indirection
-{
-public:
-	indirection() : p_(new T{}) {}
+struct indirection {
+ public:
+  indirection() : p_(new T{}) {}
 
-	indirection(indirection&& other) noexcept : p_(other.p_) {
-		other.p_ = nullptr;
-	}
+  indirection(indirection&& other) noexcept : p_(other.p_) {
+    other.p_ = nullptr;
+  }
 
-	indirection& operator=(indirection&& other) noexcept {
-		this->~indirection();
-		return *::new ((void*)this) indirection{ std::move(other) };
-	}
+  indirection& operator=(indirection&& other) noexcept {
+    this->~indirection();
+    return *::new ((void*)this) indirection{std::move(other)};
+  }
 
-	indirection(indirection const& other) : indirection(other.get()) {}
+  indirection(indirection const& other) : indirection(other.get()) {}
 
-	indirection& operator=(indirection const& other) {
-		if (p_) {
-			get() = other.get();
-        } else {
-			indirection tmp{ other };
-			swap(*this, tmp);
-		}
+  indirection& operator=(indirection const& other) {
+    if (p_) {
+      get() = other.get();
+    } else {
+      indirection tmp{other};
+      swap(*this, tmp);
+    }
 
-		return *this;
-	}
+    return *this;
+  }
 
-	template <typename A, typename... As,
-	          disable_capturing<indirection, A> = 0>
-	explicit indirection(A&& a, As&&... as)
-	    : p_(new T(std::forward<A>(a), std::forward<As>(as)...)) {
-	}
+  template <typename A, typename... As, disable_capturing<indirection, A> = 0>
+  explicit indirection(A&& a, As&&... as)
+      : p_(new T(std::forward<A>(a), std::forward<As>(as)...)) {}
 
-	~indirection() { delete p_; }
+  ~indirection() { delete p_; }
 
-	friend void swap(indirection& x, indirection& y) noexcept {
-		std::swap(x.p_, y.p_);
-	}
+  friend void swap(indirection& x, indirection& y) noexcept {
+    std::swap(x.p_, y.p_);
+  }
 
-	operator T&() { return this->get(); }
-	operator T const&() const { return this->get(); }
+  operator T&() { return this->get(); }
 
-	T& get() { return *p_; }
-	T const& get() const { return *p_; }
+  operator T const&() const { return this->get(); }
 
-private:
-	T* p_;
+  T& get() { return *p_; }
+
+  T const& get() const { return *p_; }
+
+ private:
+  T* p_;
 };
 ```
