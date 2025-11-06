@@ -13,6 +13,7 @@ cc_library(
     srcs = ["indirect.cc"],
     hdrs = ["indirect.h"],
     copts = ["-Iexternal/value_types/"],
+    defines = ["XYZ_HAS_EXTENSION_MAKE_INDIRECT"],
     visibility = ["//visibility:public"],
     deps = ["feature_check"],
 )
@@ -91,6 +92,7 @@ cc_library(
     srcs = ["polymorphic.cc"],
     hdrs = ["polymorphic.h"],
     copts = ["-Iexternal/value_types/"],
+    defines = ["XYZ_HAS_EXTENSION_MAKE_POLYMORPHIC"],
     visibility = ["//visibility:public"],
 )
 
