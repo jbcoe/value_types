@@ -113,3 +113,75 @@ associated `indirect` instance(s) must not be in a valueless state.
 
 * Add clarification that the authors would like to see implementation and **usage**
 experience to motivate the introduction of a `reference_wrapper`-like API.
+
+## Appendix
+
+Taken from the National Body Comment author's variant library (OneOf) there is a type `indirection`,
+similar to `indirect` and reproduced below.
+
+`indirection` has a reference-wrapper-like API but has much more scope for undefined behaviour than
+`indirect` as accepted into the C++26 working draft.
+
+Copy construction, move construction, assignment and move assignment of `indirection` all require that
+`other` has not been moved-from. `operator T&` and `get` (const and non-const qualified) all require that
+`this` has not been moved from. As designed, `indirection` gives a user no way to check that an instance
+of `indirection` has not been moved from.
+
+<https://github.com/lichray/oneof/blob/master/include/stdex/oneof.h>
+
+```
+template <typename T, typename U>
+using disable_capturing =
+    std::enable_if_t<!std::is_base_of<T, std::remove_reference_t<U>>::value,
+                     int>;
+
+template <typename T>
+struct indirection
+{
+public:
+	indirection() : p_(new T{}) {}
+
+	indirection(indirection&& other) noexcept : p_(other.p_) {
+		other.p_ = nullptr;
+	}
+
+	indirection& operator=(indirection&& other) noexcept {
+		this->~indirection();
+		return *::new ((void*)this) indirection{ std::move(other) };
+	}
+
+	indirection(indirection const& other) : indirection(other.get()) {}
+
+	indirection& operator=(indirection const& other) {
+		if (p_) {
+			get() = other.get();
+        } else {
+			indirection tmp{ other };
+			swap(*this, tmp);
+		}
+
+		return *this;
+	}
+
+	template <typename A, typename... As,
+	          disable_capturing<indirection, A> = 0>
+	explicit indirection(A&& a, As&&... as)
+	    : p_(new T(std::forward<A>(a), std::forward<As>(as)...)) {
+	}
+
+	~indirection() { delete p_; }
+
+	friend void swap(indirection& x, indirection& y) noexcept {
+		std::swap(x.p_, y.p_);
+	}
+
+	operator T&() { return this->get(); }
+	operator T const&() const { return this->get(); }
+
+	T& get() { return *p_; }
+	T const& get() const { return *p_; }
+
+private:
+	T* p_;
+};
+```
