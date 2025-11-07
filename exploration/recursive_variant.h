@@ -13,6 +13,9 @@ struct overload : Ts... {
   overload(Ts&&... ts) : Ts(std::forward<Ts>(ts))... {}
 };
 
+template <class... Ts>
+overload(Ts...) -> overload<Ts...>;
+
 template <typename T>
 struct deref {
   T t_;
@@ -23,9 +26,6 @@ struct deref {
 
   operator const U&() const { return *t_; }
 };
-
-template <class... Ts>
-overload(Ts...) -> overload<Ts...>;
 
 struct ASTNode;
 using ASTNodeRecursiveStorage = deref<xyz::indirect<ASTNode>>;
