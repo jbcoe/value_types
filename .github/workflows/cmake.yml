@@ -83,19 +83,19 @@ jobs:
                 },
               lib: "libstdc++14",
             }
-          # - {
-          #     name: "Ubuntu GCC-15",
-          #     os: ubuntu-24.04,
-          #     compiler:
-          #       {
-          #         type: GCC,
-          #         version: 15,
-          #         cc: "gcc-15",
-          #         cxx: "g++-15",
-          #         std: 20,
-          #       },
-          #     lib: "libstdc++15",
-          #   }
+          - {
+              name: "Ubuntu GCC-15",
+              os: ubuntu-24.04,
+              compiler:
+                {
+                  type: GCC,
+                  version: 15,
+                  cc: "gcc-15",
+                  cxx: "g++-15",
+                  std: 20,
+                },
+              lib: "libstdc++15",
+            }
           - {
               name: "Ubuntu Clang-17 + libc++",
               os: ubuntu-24.04,
