@@ -5,6 +5,9 @@ build --cxxopt='-Wno-delete-non-abstract-non-virtual-dtor'
 build --cxxopt='-Wno-self-assign-overloaded'
 build --cxxopt='-Wno-self-move'
 
+# ADD --spawn_strategy=local to get debug symbols on Mac for filenames and line numbers in ASAN output.
+# https://www.smileykeith.com/2025/09/21/understanding-apple-debug-info/
+
 build:asan --strip=never
 build:asan --copt -fsanitize=address
 build:asan --copt -DADDRESS_SANITIZER
