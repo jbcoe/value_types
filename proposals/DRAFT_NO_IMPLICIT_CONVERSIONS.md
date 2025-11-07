@@ -184,3 +184,86 @@ struct indirection {
   T* p_;
 };
 ```
+
+The variant in OneOf uses `indirection` to implement recursive variants.
+
+A recursive variant can be implemented with `indirect` but `indirect`'s absence
+of an implicit conversion to a reference type means that a pointer-like interface is
+exposed to users.
+
+Improvements to the usability of recursive variants could be made by introducing another type to automatically dereference indirect storage. We illustrate the use of a helper type below.
+
+Any design to better support recursive variants would be best addressed with a concrete proposal
+and the authors of indirect invite the author of the National Body Comment to put forward a paper
+for the C++2029 standard.
+
+```
+template <typename T>
+struct deref {
+  T t_;
+
+  using U = decltype(*std::declval<T>());
+
+  operator U&() { return *t_; }
+
+  operator const U&() const { return *t_; }
+};
+
+struct ASTNode;
+using ASTNodeRecursiveStorage = deref<xyz::indirect<ASTNode>>;
+using ASTNodeData = std::variant<int, std::string, ASTNodeRecursiveStorage>;
+
+struct ASTNode {
+  ASTNodeData data_;
+};
+
+/// Access tests.
+
+template <class... Ts>
+struct overload : Ts... {
+  using Ts::operator()...;
+
+  overload(Ts&&... ts) : Ts(std::forward<Ts>(ts))... {}
+};
+
+template <class... Ts>
+overload(Ts...) -> overload<Ts...>;
+
+TEST(RecursiveVariant, ExplicitAccess) {
+  ASTNode node;
+
+  // This is a pain to write and exposes implementation details.
+  int result =
+      std::visit(overload([](const int&) { return 0; },          //
+                          [](const std::string&) { return 1; },  //
+                          [](const ASTNodeRecursiveStorage&) { return 2; }),
+                 node.data_);
+
+  EXPECT_EQ(result, 0);
+}
+
+TEST(RecursiveVariant, DerefAccess) {
+  ASTNode node;
+
+  // This is nicer to write.
+  int result = std::visit(overload([](const int&) { return 0; },          //
+                                   [](const std::string&) { return 1; },  //
+                                   [](const ASTNode&) { return 2; }),
+                          node.data_);
+
+  EXPECT_EQ(result, 0);
+}
+
+TEST(RecursiveVariant, LazyAccess) {
+  ASTNode node;
+
+  // This is lazy.
+  int result = std::visit(overload([](const int&) { return 0; },          //
+                                   [](const std::string&) { return 1; },  //
+                                   [](const auto&) { return 2; }),
+                          node.data_);
+
+  EXPECT_EQ(result, 0);
+}
+
+```
