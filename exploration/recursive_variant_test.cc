@@ -5,6 +5,7 @@
 namespace {
 
 using xyz::testing::ASTNode;
+using xyz::testing::ASTNodeRecursiveStorage;
 using xyz::testing::deref;
 using xyz::testing::overload;
 

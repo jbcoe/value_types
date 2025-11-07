@@ -13,9 +13,6 @@ struct overload : Ts... {
   overload(Ts&&... ts) : Ts(std::forward<Ts>(ts))... {}
 };
 
-template <class... Ts>
-overload(Ts...) -> overload<Ts...>;
-
 template <typename T>
 struct deref {
   T t_;
