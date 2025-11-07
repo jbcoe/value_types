@@ -7,7 +7,13 @@ namespace {
 using xyz::testing::ASTNode;
 using xyz::testing::ASTNodeRecursiveStorage;
 using xyz::testing::deref;
-using xyz::testing::overload;
+
+template <class... Ts>
+struct overload : Ts... {
+  using Ts::operator()...;
+
+  overload(Ts&&... ts) : Ts(std::forward<Ts>(ts))... {}
+};
 
 TEST(RecursiveVariant, ExplicitAccess) {
   ASTNode node;

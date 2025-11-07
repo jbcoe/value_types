@@ -6,13 +6,6 @@
 
 namespace xyz::testing {
 
-template <class... Ts>
-struct overload : Ts... {
-  using Ts::operator()...;
-
-  overload(Ts&&... ts) : Ts(std::forward<Ts>(ts))... {}
-};
-
 template <typename T>
 struct deref {
   T t_;
