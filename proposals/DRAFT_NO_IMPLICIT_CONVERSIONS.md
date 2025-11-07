@@ -105,6 +105,10 @@ J. B. Coe, A. Peacock, and S. Parent, 2023 \
 
 ## History
 
+### Changes in R2
+
+Add Appendix discussing recursive variants.
+
 ### Changes in R1
 
 * Add clarification that `operator->` and `operator*` (including const-qualified and
@@ -114,7 +118,7 @@ associated `indirect` instance(s) must not be in a valueless state.
 * Add clarification that the authors would like to see implementation and **usage**
 experience to motivate the introduction of a `reference_wrapper`-like API.
 
-## Appendix
+## Appendix: Recursive variants and `OneOf`
 
 Taken from the National Body Comment author's variant library (OneOf) there is a type `indirection`,
 similar to `indirect` and reproduced below.
