@@ -33,3 +33,20 @@ build_test(
     name = "traits_and_concepts_build_test",
     targets = ["traits_and_concepts"],
 )
+
+cc_library(
+    name = "recursive_variant",
+    srcs = ["recursive_variant.cc"],
+    hdrs = ["recursive_variant.h"],
+    visibility = ["//visibility:private"],
+    deps = ["//:indirect"],
+)
+
+cc_test(
+    name = "recursive_variant_test",
+    srcs = ["recursive_variant_test.cc"],
+    deps = [
+        "recursive_variant",
+        "@com_google_googletest//:gtest_main",
+    ],
+)

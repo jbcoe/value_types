@@ -8,6 +8,15 @@ if (${XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT})
                 incomplete_types_test.cc
         )
 
+        xyz_add_test(
+            NAME recursive_variant_test
+            LINK_LIBRARIES indirect
+            FILES
+                recursive_variant.h
+                recursive_variant.cc
+                recursive_variant_test.cc
+        )
+
         add_library(traits_and_concepts OBJECT)
         target_sources(traits_and_concepts
             PRIVATE

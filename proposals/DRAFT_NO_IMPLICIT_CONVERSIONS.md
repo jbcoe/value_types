@@ -8,7 +8,7 @@ D3902R2
 
 Working Group: Library Evolution
 
-Date: 2025-11-3
+Date: 2025-11-6
 
 _Jonathan Coe \<<jonathanbcoe@gmail.com>\>_
 
@@ -105,6 +105,10 @@ J. B. Coe, A. Peacock, and S. Parent, 2023 \
 
 ## History
 
+### Changes in R2
+
+Add Appendix discussing recursive variants.
+
 ### Changes in R1
 
 * Add clarification that `operator->` and `operator*` (including const-qualified and
@@ -113,3 +117,154 @@ associated `indirect` instance(s) must not be in a valueless state.
 
 * Add clarification that the authors would like to see implementation and **usage**
 experience to motivate the introduction of a `reference_wrapper`-like API.
+
+## Appendix: Recursive variants and `OneOf`
+
+Taken from the National Body Comment author's variant library (OneOf) there is a type `indirection`,
+similar to `indirect` and reproduced below.
+
+`indirection` has a reference-wrapper-like API but has much more scope for undefined behaviour than
+`indirect` as accepted into the C++26 working draft.
+
+Copy construction, move construction, assignment and move assignment of `indirection` all require that
+`other` has not been moved-from. `operator T&` and `get` (const and non-const qualified) all require that
+`this` has not been moved from. As designed, `indirection` gives a user no way to check that an instance
+of `indirection` has not been moved from.
+
+<https://github.com/lichray/oneof/blob/master/include/stdex/oneof.h>
+
+```
+template <typename T, typename U>
+using disable_capturing =
+    std::enable_if_t<!std::is_base_of<T, std::remove_reference_t<U>>::value,
+                     int>;
+
+template <typename T>
+struct indirection {
+ public:
+  indirection() : p_(new T{}) {}
+
+  indirection(indirection&& other) noexcept : p_(other.p_) {
+    other.p_ = nullptr;
+  }
+
+  indirection& operator=(indirection&& other) noexcept {
+    this->~indirection();
+    return *::new ((void*)this) indirection{std::move(other)};
+  }
+
+  indirection(indirection const& other) : indirection(other.get()) {}
+
+  indirection& operator=(indirection const& other) {
+    if (p_) {
+      get() = other.get();
+    } else {
+      indirection tmp{other};
+      swap(*this, tmp);
+    }
+
+    return *this;
+  }
+
+  template <typename A, typename... As, disable_capturing<indirection, A> = 0>
+  explicit indirection(A&& a, As&&... as)
+      : p_(new T(std::forward<A>(a), std::forward<As>(as)...)) {}
+
+  ~indirection() { delete p_; }
+
+  friend void swap(indirection& x, indirection& y) noexcept {
+    std::swap(x.p_, y.p_);
+  }
+
+  operator T&() { return this->get(); }
+
+  operator T const&() const { return this->get(); }
+
+  T& get() { return *p_; }
+
+  T const& get() const { return *p_; }
+
+ private:
+  T* p_;
+};
+```
+
+The variant in OneOf uses `indirection` to implement recursive variants.
+
+A recursive variant can be implemented with `indirect` but `indirect`'s absence
+of an implicit conversion to a reference type means that a pointer-like interface is
+exposed to users.
+
+Improvements to the usability of recursive variants could be made by introducing another type to automatically dereference indirect storage. We illustrate the use of a helper type below.
+
+Any design to better support recursive variants would be best addressed with a concrete proposal
+and the authors of indirect invite the author of the National Body Comment to put forward a paper
+for the C++29 standard.
+
+```
+template <typename T>
+struct deref {
+  T t_;
+
+  using U = decltype(*std::declval<T>());
+
+  operator U&() { return *t_; }
+
+  operator const U&() const { return *t_; }
+};
+
+struct ASTNode;
+using ASTNodeRecursiveStorage = deref<xyz::indirect<ASTNode>>;
+using ASTNodeData = std::variant<int, std::string, ASTNodeRecursiveStorage>;
+
+struct ASTNode {
+  ASTNodeData data_;
+};
+
+/// Access tests.
+
+template <class... Ts>
+struct overload : Ts... {
+  using Ts::operator()...;
+
+  overload(Ts&&... ts) : Ts(std::forward<Ts>(ts))... {}
+};
+
+TEST(RecursiveVariant, ExplicitAccess) {
+  ASTNode node;
+
+  // This is a pain to write and exposes implementation details.
+  int result =
+      std::visit(overload([](const int&) { return 0; },          //
+                          [](const std::string&) { return 1; },  //
+                          [](const ASTNodeRecursiveStorage&) { return 2; }),
+                 node.data_);
+
+  EXPECT_EQ(result, 0);
+}
+
+TEST(RecursiveVariant, DerefAccess) {
+  ASTNode node;
+
+  // This is nicer to write.
+  int result = std::visit(overload([](const int&) { return 0; },          //
+                                   [](const std::string&) { return 1; },  //
+                                   [](const ASTNode&) { return 2; }),
+                          node.data_);
+
+  EXPECT_EQ(result, 0);
+}
+
+TEST(RecursiveVariant, LazyAccess) {
+  ASTNode node;
+
+  // This is lazy.
+  int result = std::visit(overload([](const int&) { return 0; },          //
+                                   [](const std::string&) { return 1; },  //
+                                   [](const auto&) { return 2; }),
+                          node.data_);
+
+  EXPECT_EQ(result, 0);
+}
+
+```
