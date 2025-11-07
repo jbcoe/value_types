@@ -8,7 +8,7 @@ D3902R2
 
 Working Group: Library Evolution
 
-Date: 2025-11-3
+Date: 2025-11-6
 
 _Jonathan Coe \<<jonathanbcoe@gmail.com>\>_
 
