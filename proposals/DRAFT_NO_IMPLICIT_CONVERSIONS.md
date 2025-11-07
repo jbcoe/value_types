@@ -199,7 +199,7 @@ Improvements to the usability of recursive variants could be made by introducing
 
 Any design to better support recursive variants would be best addressed with a concrete proposal
 and the authors of indirect invite the author of the National Body Comment to put forward a paper
-for the C++2029 standard.
+for the C++29 standard.
 
 ```
 template <typename T>
