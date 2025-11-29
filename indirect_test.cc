@@ -1037,8 +1037,6 @@ TEST(IndirectTest, SupportNonCopyableType) {
       i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
 }
 
-}  // namespace
-
 struct NonThreeWayComparable {
   int x_;
 
@@ -1074,3 +1072,30 @@ TEST(IndirectTest, NonThreeWayComparable) {
   EXPECT_TRUE(i != ii);
 }
 #endif  // XYZ_HAS_STD_THREE_WAY_COMPARISON
+
+#ifdef XYZ_HAS_EXTENSION_MAKE_INDIRECT
+TEST(IndirectTest, MakeIndirectNoArgs) {
+  auto i = xyz::make_indirect<int>();
+  EXPECT_EQ(*i, 0);
+}
+
+TEST(IndirectTest, MakeIndirect) {
+  auto i = xyz::make_indirect<int>(42);
+  EXPECT_EQ(*i, 42);
+}
+
+TEST(IndirectTest, AllocateIndirectNoArgs) {
+  auto a = xyz::TaggedAllocator<int>(1);
+  auto i = xyz::allocate_indirect<int>(a);
+  EXPECT_EQ(*i, 0);
+  EXPECT_EQ(i.get_allocator().tag, 1);
+}
+
+TEST(IndirectTest, AllocateIndirect) {
+  auto a = xyz::TaggedAllocator<int>(1);
+  auto i = xyz::allocate_indirect<int>(a, 42);
+  EXPECT_EQ(*i, 42);
+  EXPECT_EQ(i.get_allocator().tag, 1);
+}
+#endif  // XYZ_HAS_EXTENSION_MAKE_INDIRECT
+}  // namespace

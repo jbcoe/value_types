@@ -401,6 +401,18 @@ class polymorphic {
   }
 };
 
+#ifdef XYZ_HAS_EXTENSION_MAKE_POLYMORPHIC
+template <typename T, typename U = T, typename... Us>
+auto make_polymorphic(Us&&... us) -> polymorphic<T> {
+  return polymorphic<T>(std::in_place_type<U>, std::forward<Us>(us)...);
+}
+
+template <typename T, typename U = T, typename A, typename... Us>
+auto allocate_polymorphic(const A& a, Us&&... us) -> polymorphic<T, A> {
+  return polymorphic<T, A>(std::allocator_arg, a, std::in_place_type<U>,
+                           std::forward<Us>(us)...);
+}
+#endif  // XYZ_HAS_EXTENSION_MAKE_POLYMORPHIC
 }  // namespace xyz
 
 #endif  // XYZ_POLYMORPHIC_H_

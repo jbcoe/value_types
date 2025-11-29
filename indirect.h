@@ -469,6 +469,18 @@ template <typename Alloc, typename Value>
 indirect(std::allocator_arg_t, Alloc, Value) -> indirect<
     Value, typename std::allocator_traits<Alloc>::template rebind_alloc<Value>>;
 
+#ifdef XYZ_HAS_EXTENSION_MAKE_INDIRECT
+template <typename T, typename... Us>
+auto make_indirect(Us&&... us) -> indirect<T> {
+  return indirect<T>(std::in_place, std::forward<Us>(us)...);
+}
+
+template <typename T, typename A, typename... Us>
+auto allocate_indirect(const A& a, Us&&... us) -> indirect<T, A> {
+  return indirect<T, A>(std::allocator_arg, a, std::in_place,
+                        std::forward<Us>(us)...);
+}
+#endif  // XYZ_HAS_EXTENSION_MAKE_INDIRECT
 }  // namespace xyz
 
 template <class T, class Alloc>
