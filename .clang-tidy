@@ -6,6 +6,7 @@ Checks: |
   clang-analyzer-*
   cppcoreguidelines-*
   -cppcoreguidelines-avoid-magic-numbers
+  -cppcoreguidelines-missing-std-forward
   -cppcoreguidelines-noexcept-move-operations
   -cppcoreguidelines-special-member-functions
   misc-*
