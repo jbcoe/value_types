@@ -3,7 +3,7 @@ module(
     version = "head",
 )
 
-bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "bazel_skylib", version = "1.8.2")
 
 bazel_dep(
     name = "google_benchmark",
@@ -14,11 +14,19 @@ bazel_dep(
 
 bazel_dep(
     name = "googletest",
-    version = "1.15.2",
+    version = "1.17.0",
     repo_name = "com_google_googletest",
 )
+
+# Use a git override as the latest stable version of googletest does not support bazel 9.0.
+git_override(
+    module_name = "googletest",
+    branch = "main",
+    remote = "https://github.com/google/googletest.git",
+)
+
 bazel_dep(
     name = "rules_cc",
-    version = "0.1.1",
+    version = "0.2.14",
     repo_name = "rules_cc",
 )
