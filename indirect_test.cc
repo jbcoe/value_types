@@ -31,6 +31,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <array>
 #include <cstddef>
 #include <exception>
+#include <functional>
 #include <map>
 #include <memory>
 #include <stdexcept>
