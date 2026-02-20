@@ -189,7 +189,7 @@ TEST(IndirectTest, CopiesAreDistinct) {
 
 TEST(IndirectTest, MovePreservesIndirectObjectAddress) {
   xyz::indirect<int> i(xyz::in_place_t{}, 42);
-  auto address = &*i;
+  auto* address = &*i;
   auto ii = std::move(i);
 
   EXPECT_TRUE(
@@ -206,7 +206,7 @@ TEST(IndirectTest, AllocatorExtendedCopy) {
 
 TEST(IndirectTest, AllocatorExtendedMove) {
   xyz::indirect<int> i(xyz::in_place_t{}, 42);
-  auto address = &*i;
+  auto* address = &*i;
   xyz::indirect<int> ii(std::allocator_arg, i.get_allocator(), std::move(i));
 
   EXPECT_TRUE(
