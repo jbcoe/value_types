@@ -375,8 +375,9 @@ class indirect {
   //
 
   template <class U, class AA>
-  [[nodiscard]] friend constexpr bool operator==(const indirect<T, A>& lhs,
-                                                 const indirect<U, AA>& rhs) {
+  [[nodiscard]] friend constexpr bool operator==(
+      const indirect<T, A>& lhs,
+      const indirect<U, AA>& rhs) noexcept(noexcept(*lhs == *rhs)) {
     if (lhs.valueless_after_move()) {
       return rhs.valueless_after_move();
     }
@@ -387,8 +388,8 @@ class indirect {
   }
 
   template <class U>
-  [[nodiscard]] friend constexpr bool operator==(const indirect<T, A>& lhs,
-                                                 const U& rhs)
+  [[nodiscard]] friend constexpr bool operator==(
+      const indirect<T, A>& lhs, const U& rhs) noexcept(noexcept(*lhs == rhs))
     requires(!is_indirect_v<U>)
   {
     if (lhs.valueless_after_move()) {
