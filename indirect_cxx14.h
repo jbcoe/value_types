@@ -373,8 +373,9 @@ class indirect : private detail::empty_base_optimization<A> {
   }
 
   template <class U, class AA>
-  [[nodiscard]] friend bool operator==(const indirect<T, A>& lhs,
-                                       const indirect<U, AA>& rhs) {
+  [[nodiscard]] friend bool operator==(
+      const indirect<T, A>& lhs,
+      const indirect<U, AA>& rhs) noexcept(noexcept(*lhs == *rhs)) {
     if (lhs.valueless_after_move() || rhs.valueless_after_move()) {
       return lhs.valueless_after_move() && rhs.valueless_after_move();
     }
@@ -382,8 +383,9 @@ class indirect : private detail::empty_base_optimization<A> {
   }
 
   template <class U, class AA>
-  [[nodiscard]] friend bool operator!=(const indirect<T, A>& lhs,
-                                       const indirect<U, AA>& rhs) {
+  [[nodiscard]] friend bool operator!=(
+      const indirect<T, A>& lhs,
+      const indirect<U, AA>& rhs) noexcept(noexcept(*lhs != *rhs)) {
     if (lhs.valueless_after_move() || rhs.valueless_after_move()) {
       return !(lhs.valueless_after_move() && rhs.valueless_after_move());
     }
@@ -391,8 +393,9 @@ class indirect : private detail::empty_base_optimization<A> {
   }
 
   template <class U, class AA>
-  [[nodiscard]] friend bool operator<(const indirect<T, A>& lhs,
-                                      const indirect<U, AA>& rhs) {
+  [[nodiscard]] friend bool operator<(
+      const indirect<T, A>& lhs,
+      const indirect<U, AA>& rhs) noexcept(noexcept(*lhs < *rhs)) {
     if (lhs.valueless_after_move()) {
       return !rhs.valueless_after_move();
     }
@@ -400,8 +403,9 @@ class indirect : private detail::empty_base_optimization<A> {
   }
 
   template <class U, class AA>
-  [[nodiscard]] friend bool operator>(const indirect<T, A>& lhs,
-                                      const indirect<U, AA>& rhs) {
+  [[nodiscard]] friend bool operator>(
+      const indirect<T, A>& lhs,
+      const indirect<U, AA>& rhs) noexcept(noexcept(*lhs > *rhs)) {
     if (rhs.valueless_after_move()) {
       return !lhs.valueless_after_move();
     }
@@ -409,8 +413,9 @@ class indirect : private detail::empty_base_optimization<A> {
   }
 
   template <class U, class AA>
-  [[nodiscard]] friend bool operator<=(const indirect<T, A>& lhs,
-                                       const indirect<U, AA>& rhs) {
+  [[nodiscard]] friend bool operator<=(
+      const indirect<T, A>& lhs,
+      const indirect<U, AA>& rhs) noexcept(noexcept(*lhs <= *rhs)) {
     if (lhs.valueless_after_move()) {
       return true;
     }
@@ -418,8 +423,9 @@ class indirect : private detail::empty_base_optimization<A> {
   }
 
   template <class U, class AA>
-  [[nodiscard]] friend bool operator>=(const indirect<T, A>& lhs,
-                                       const indirect<U, AA>& rhs) {
+  [[nodiscard]] friend bool operator>=(
+      const indirect<T, A>& lhs,
+      const indirect<U, AA>& rhs) noexcept(noexcept(*lhs >= *rhs)) {
     if (rhs.valueless_after_move()) {
       return true;
     }
@@ -430,7 +436,8 @@ class indirect : private detail::empty_base_optimization<A> {
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
   [[nodiscard]] friend bool operator==(const indirect<T, A>& lhs,
-                                       const U& rhs) {
+                                       const U& rhs) noexcept(noexcept(*lhs ==
+                                                                       rhs)) {
     if (lhs.valueless_after_move()) {
       return false;
     }
@@ -439,8 +446,8 @@ class indirect : private detail::empty_base_optimization<A> {
 
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
-  [[nodiscard]] friend bool operator==(const U& lhs,
-                                       const indirect<T, A>& rhs) {
+  [[nodiscard]] friend bool operator==(
+      const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs == *rhs)) {
     if (rhs.valueless_after_move()) {
       return false;
     }
@@ -450,7 +457,8 @@ class indirect : private detail::empty_base_optimization<A> {
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
   [[nodiscard]] friend bool operator!=(const indirect<T, A>& lhs,
-                                       const U& rhs) {
+                                       const U& rhs) noexcept(noexcept(*lhs !=
+                                                                       rhs)) {
     if (lhs.valueless_after_move()) {
       return true;
     }
@@ -459,8 +467,8 @@ class indirect : private detail::empty_base_optimization<A> {
 
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
-  [[nodiscard]] friend bool operator!=(const U& lhs,
-                                       const indirect<T, A>& rhs) {
+  [[nodiscard]] friend bool operator!=(
+      const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs != *rhs)) {
     if (rhs.valueless_after_move()) {
       return true;
     }
@@ -469,7 +477,9 @@ class indirect : private detail::empty_base_optimization<A> {
 
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
-  [[nodiscard]] friend bool operator<(const indirect<T, A>& lhs, const U& rhs) {
+  [[nodiscard]] friend bool operator<(const indirect<T, A>& lhs,
+                                      const U& rhs) noexcept(noexcept(*lhs <
+                                                                      rhs)) {
     if (lhs.valueless_after_move()) {
       return true;
     }
@@ -478,7 +488,8 @@ class indirect : private detail::empty_base_optimization<A> {
 
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
-  [[nodiscard]] friend bool operator<(const U& lhs, const indirect<T, A>& rhs) {
+  [[nodiscard]] friend bool operator<(
+      const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs < *rhs)) {
     if (rhs.valueless_after_move()) {
       return false;
     }
@@ -487,7 +498,9 @@ class indirect : private detail::empty_base_optimization<A> {
 
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
-  [[nodiscard]] friend bool operator>(const indirect<T, A>& lhs, const U& rhs) {
+  [[nodiscard]] friend bool operator>(const indirect<T, A>& lhs,
+                                      const U& rhs) noexcept(noexcept(*lhs >
+                                                                      rhs)) {
     if (lhs.valueless_after_move()) {
       return false;
     }
@@ -496,7 +509,8 @@ class indirect : private detail::empty_base_optimization<A> {
 
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
-  [[nodiscard]] friend bool operator>(const U& lhs, const indirect<T, A>& rhs) {
+  [[nodiscard]] friend bool operator>(
+      const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs > *rhs)) {
     if (rhs.valueless_after_move()) {
       return true;
     }
@@ -506,7 +520,8 @@ class indirect : private detail::empty_base_optimization<A> {
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
   [[nodiscard]] friend bool operator<=(const indirect<T, A>& lhs,
-                                       const U& rhs) {
+                                       const U& rhs) noexcept(noexcept(*lhs <=
+                                                                       rhs)) {
     if (lhs.valueless_after_move()) {
       return true;
     }
@@ -515,8 +530,8 @@ class indirect : private detail::empty_base_optimization<A> {
 
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
-  [[nodiscard]] friend bool operator<=(const U& lhs,
-                                       const indirect<T, A>& rhs) {
+  [[nodiscard]] friend bool operator<=(
+      const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs <= *rhs)) {
     if (rhs.valueless_after_move()) {
       return false;
     }
@@ -526,7 +541,8 @@ class indirect : private detail::empty_base_optimization<A> {
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
   [[nodiscard]] friend bool operator>=(const indirect<T, A>& lhs,
-                                       const U& rhs) {
+                                       const U& rhs) noexcept(noexcept(*lhs >=
+                                                                       rhs)) {
     if (lhs.valueless_after_move()) {
       return false;
     }
@@ -535,8 +551,8 @@ class indirect : private detail::empty_base_optimization<A> {
 
   template <class U,
             typename std::enable_if<!is_indirect<U>::value, int>::type = 0>
-  [[nodiscard]] friend bool operator>=(const U& lhs,
-                                       const indirect<T, A>& rhs) {
+  [[nodiscard]] friend bool operator>=(
+      const U& lhs, const indirect<T, A>& rhs) noexcept(noexcept(lhs >= *rhs)) {
     if (rhs.valueless_after_move()) {
       return true;
     }
