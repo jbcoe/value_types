@@ -727,6 +727,8 @@ TEST(IndirectTest,
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
     ii = std::move(i);  // This will copy as allocators don't compare equal.
+    EXPECT_TRUE(
+        i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   }
   EXPECT_EQ(alloc_counter, 3);
   EXPECT_EQ(dealloc_counter, 3);

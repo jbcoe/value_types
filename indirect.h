@@ -283,6 +283,7 @@ class indirect {
         auto tmp = construct_from(update_alloc ? other.alloc_ : alloc_,
                                   std::move(*other.p_));
         reset();
+        other.reset();
         p_ = tmp;
       }
     }
