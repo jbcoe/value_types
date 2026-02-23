@@ -223,6 +223,7 @@ class indirect : private detail::empty_base_optimization<A> {
       } else {
         if (!other.valueless_after_move()) {
           p_ = construct_from(alloc_base::get(), std::move(*other));
+          other.reset();
         } else {
           p_ = nullptr;
         }
@@ -291,6 +292,7 @@ class indirect : private detail::empty_base_optimization<A> {
             update_alloc ? other.alloc_base::get() : alloc_base::get(),
             std::move(*other.p_));
         reset();
+        other.reset();
         p_ = tmp;
       }
     }
