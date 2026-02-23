@@ -208,6 +208,7 @@ class indirect {
       } else {
         if (!other.valueless_after_move()) {
           p_ = construct_from(alloc_, std::move(*other));
+          other.reset();
         } else {
           p_ = nullptr;
         }
