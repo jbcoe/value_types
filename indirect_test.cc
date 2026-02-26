@@ -29,7 +29,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <gtest/gtest.h>
 
 #include <array>
+#include <cstddef>
+#include <exception>
+#include <functional>
 #include <map>
+#include <memory>
+#include <stdexcept>
+#include <type_traits>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include "feature_check.h"
 #include "tagged_allocator.h"
@@ -41,10 +50,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifdef XYZ_HAS_STD_OPTIONAL
 #include <optional>
 #endif  // XYZ_HAS_STD_OPTIONAL
-#include <tuple>
-#include <unordered_map>
-#include <utility>
-#include <vector>
 
 #if defined(XYZ_HAS_STD_IN_PLACE_T) && !defined(XYZ_INDIRECT_CXX_14)
 namespace xyz {
@@ -185,7 +190,7 @@ TEST(IndirectTest, CopiesAreDistinct) {
 
 TEST(IndirectTest, MovePreservesIndirectObjectAddress) {
   xyz::indirect<int> i(xyz::in_place_t{}, 42);
-  auto address = &*i;
+  auto* address = &*i;
   auto ii = std::move(i);
 
   EXPECT_TRUE(
@@ -202,7 +207,7 @@ TEST(IndirectTest, AllocatorExtendedCopy) {
 
 TEST(IndirectTest, AllocatorExtendedMove) {
   xyz::indirect<int> i(xyz::in_place_t{}, 42);
-  auto address = &*i;
+  auto* address = &*i;
   xyz::indirect<int> ii(std::allocator_arg, i.get_allocator(), std::move(i));
 
   EXPECT_TRUE(
@@ -953,7 +958,7 @@ TEST(IndirectTest, InteractionWithSizedAllocators) {
 
 #ifdef XYZ_HAS_STD_MEMORY_RESOURCE
 TEST(IndirectTest, InteractionWithPMRAllocators) {
-  std::array<std::byte, 1024> buffer;
+  std::array<std::byte, 1024> buffer{};
   std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
   std::pmr::polymorphic_allocator<int> pa{&mbr};
   using IndirectInt = xyz::indirect<int, std::pmr::polymorphic_allocator<int>>;
@@ -965,7 +970,7 @@ TEST(IndirectTest, InteractionWithPMRAllocators) {
 }
 
 TEST(IndirectTest, InteractionWithPMRAllocatorsWhenCopyThrows) {
-  std::array<std::byte, 1024> buffer;
+  std::array<std::byte, 1024> buffer{};
   std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
   std::pmr::polymorphic_allocator<ThrowsOnCopyConstruction> pa{&mbr};
   using IndirectType =
@@ -977,7 +982,7 @@ TEST(IndirectTest, InteractionWithPMRAllocatorsWhenCopyThrows) {
 }
 
 TEST(IndirectTest, HashCustomAllocator) {
-  std::array<std::byte, 1024> buffer;
+  std::array<std::byte, 1024> buffer{};
   std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
   std::pmr::polymorphic_allocator<int> pa{&mbr};
   using IndirectType = xyz::indirect<int, std::pmr::polymorphic_allocator<int>>;
