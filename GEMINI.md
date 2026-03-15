@@ -18,16 +18,16 @@ also C++14 (`indirect_cxx14.h` and `polymorphic_cxx14.h`).
 
 ## Building and Testing
 
+Tests can be built and run using either CMake or Bazel. Both build systems are
+kept in sync manually, so any new targets or files must be added to both
+`CMakeLists.txt` and `BUILD.bazel`.
+
 ### Using CMake
 
-To build and test using CMake, you can utilize the provided presets:
+To build and test using CMake:
 
 ```bash
-mkdir build                     # Make a build directory
-cmake --list-presets            # View the available presets
-cmake --preset <preset>         # Generate build system specified in build directory with cmake
-cmake --build --preset <preset> # Build the underlying build system via CMake
-ctest --preset <preset>         # Run the tests
+./scripts/cmake.sh
 ```
 
 ### Using Bazel
@@ -35,14 +35,20 @@ ctest --preset <preset>         # Run the tests
 To build and test using Bazel:
 
 ```bash
-bazel build //...       # Build the project
-bazel test //...        # Run the tests
+./scripts/bazel.sh
 ```
 
 ## Development Conventions
 
 - **Ambiguity**: If any instructions are unclear or ambiguous, then you must ask
   the user to clarify before executing any actions.
+
+- **Git Usage**: Never commit code or add files using git unless very explicitly
+  asked to do so by the user.
+
+- **Consistency and Minimization**: Unless otherwise instructed, all changes
+  should be consistent with the existing code style and architectural patterns.
+  Minimize changes to only what is necessary to fulfill the request.
 
 - **Build Systems Synchronization**: Both CMake and Bazel are used as primary
   build systems. Whenever adding new targets or files, they must be manually
@@ -59,5 +65,6 @@ bazel test //...        # Run the tests
   enforced by GitHub actions and `pre-commit` hooks.
 
 - **Testing**: All changes must have test coverage, ensured by GitHub actions.
-  Ensure that any code changes are accompanied by corresponding tests. Tests and
-  pre-commit checks must pass after any change.
+  Ensure that any code changes are accompanied by corresponding tests. Both
+  CMake and Bazel builds and tests must pass after any change. Pre-commit checks
+  must also pass.
