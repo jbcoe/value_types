@@ -12,7 +12,7 @@ if [ -z "$GEMINI_API_KEY" ]; then
 fi
 
 IMAGE_NAME="value-types-sandbox"
-DOCKERFILE="agents/Dockerfile"
+DOCKERFILE="docker/Dockerfile"
 
 # Build the image
 echo "--- Building Docker Sandbox: $IMAGE_NAME ---"
