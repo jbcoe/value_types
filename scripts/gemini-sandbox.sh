@@ -25,5 +25,7 @@ echo "Note: Your current directory $(pwd) is mounted to /workspace"
 docker run -it --rm \
     -v "$(pwd):/workspace" \
     -e GEMINI_API_KEY="$GEMINI_API_KEY" \
+    -e TERM=$TERM \
+    -e COLORTERM=$COLORTERM \
     "$IMAGE_NAME" \
     gemini
