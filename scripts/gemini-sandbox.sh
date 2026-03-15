@@ -27,5 +27,3 @@ docker run -it --rm \
     -e GEMINI_API_KEY="$GEMINI_API_KEY" \
     "$IMAGE_NAME" \
     gemini
-    # -e TERM=xterm-256color \
-    # -e COLORTERM=truecolor \
