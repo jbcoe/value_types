@@ -208,6 +208,7 @@ class indirect {
       } else {
         if (!other.valueless_after_move()) {
           p_ = construct_from(alloc_, std::move(*other));
+          other.reset();
         } else {
           p_ = nullptr;
         }
@@ -282,6 +283,7 @@ class indirect {
         auto tmp = construct_from(update_alloc ? other.alloc_ : alloc_,
                                   std::move(*other.p_));
         reset();
+        other.reset();
         p_ = tmp;
       }
     }
@@ -375,8 +377,9 @@ class indirect {
   //
 
   template <class U, class AA>
-  [[nodiscard]] friend constexpr bool operator==(const indirect<T, A>& lhs,
-                                                 const indirect<U, AA>& rhs) {
+  [[nodiscard]] friend constexpr bool operator==(
+      const indirect<T, A>& lhs,
+      const indirect<U, AA>& rhs) noexcept(noexcept(*lhs == *rhs)) {
     if (lhs.valueless_after_move()) {
       return rhs.valueless_after_move();
     }
@@ -387,8 +390,8 @@ class indirect {
   }
 
   template <class U>
-  [[nodiscard]] friend constexpr bool operator==(const indirect<T, A>& lhs,
-                                                 const U& rhs)
+  [[nodiscard]] friend constexpr bool operator==(
+      const indirect<T, A>& lhs, const U& rhs) noexcept(noexcept(*lhs == rhs))
     requires(!is_indirect_v<U>)
   {
     if (lhs.valueless_after_move()) {

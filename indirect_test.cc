@@ -727,6 +727,8 @@ TEST(IndirectTest,
     EXPECT_EQ(alloc_counter, 2);
     EXPECT_EQ(dealloc_counter, 0);
     ii = std::move(i);  // This will copy as allocators don't compare equal.
+    EXPECT_TRUE(
+        i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   }
   EXPECT_EQ(alloc_counter, 3);
   EXPECT_EQ(dealloc_counter, 3);
@@ -776,6 +778,25 @@ TEST(IndirectTest, CountAllocationsForMoveConstruction) {
   }
   EXPECT_EQ(alloc_counter, 1);
   EXPECT_EQ(dealloc_counter, 1);
+}
+
+TEST(IndirectTest,
+     CountAllocationsForMoveConstructionWhenAllocatorsDontCompareEqual) {
+  unsigned alloc_counter = 0;
+  unsigned dealloc_counter = 0;
+  {
+    xyz::indirect<int, NonEqualTrackingAllocator<int>> i(
+        std::allocator_arg,
+        NonEqualTrackingAllocator<int>(&alloc_counter, &dealloc_counter),
+        xyz::in_place_t{}, 42);
+    EXPECT_EQ(alloc_counter, 1);
+    EXPECT_EQ(dealloc_counter, 0);
+    xyz::indirect<int, NonEqualTrackingAllocator<int>> ii(std::move(i));
+    EXPECT_TRUE(
+        i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
+  }
+  EXPECT_EQ(alloc_counter, 2);
+  EXPECT_EQ(dealloc_counter, 2);
 }
 
 template <typename T>
@@ -1003,7 +1024,7 @@ TEST(IndirectTest, TaggedAllocatorsNotEqualMoveConstruct) {
   xyz::indirect<int, xyz::TaggedAllocator<int>> ii(std::allocator_arg, aa,
                                                    std::move(i));
 
-  EXPECT_FALSE(
+  EXPECT_TRUE(
       i.valueless_after_move());  // NOLINT(clang-analyzer-cplusplus.Move)
   EXPECT_EQ(*ii, -1);
 }

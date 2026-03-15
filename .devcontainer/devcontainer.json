@@ -1,9 +1,10 @@
 {
 	"name": "xyz.value-types",
 	"build": {
-		"dockerfile": "Dockerfile"
+		"dockerfile": "../docker/Dockerfile"
 	},
+	"remoteUser": "vscode",
 	"mounts": [
-		"type=bind,source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/root/.ssh,readonly"
-	  ]
+		"type=bind,source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/vscode/.ssh,readonly"
+	]
 }
