@@ -48,6 +48,8 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 # Set up environment variables
 ENV PATH="/home/vscode/.local/bin:/usr/local/bin:${PATH}"
 ENV UV_PROJECT_ENVIRONMENT="/home/vscode/.venv"
+ENV TERM=xterm-256color
+ENV COLORTERM=truecolor
 
 # Pre-configure Gemini CLI
 RUN mkdir -p /home/vscode/.gemini \
