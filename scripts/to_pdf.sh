@@ -1,2 +1,2 @@
-#!/bin/sh
+#!/bin/bash
 pandoc -V geometry:margin=0.75in DRAFT.md -o DRAFT.pdf
