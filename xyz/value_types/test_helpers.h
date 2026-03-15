@@ -18,8 +18,8 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==============================================================================*/
 
-#ifndef XYZ_TEST_HELPERS_H
-#define XYZ_TEST_HELPERS_H
+#ifndef XYZ_VALUE_TYPES_TEST_HELPERS_H
+#define XYZ_VALUE_TYPES_TEST_HELPERS_H
 
 namespace xyz {
 
@@ -39,4 +39,4 @@ struct NonCopyable {
 
 }  // namespace xyz
 
-#endif  // XYZ_TEST_HELPERS_H
+#endif  // XYZ_VALUE_TYPES_TEST_HELPERS_H

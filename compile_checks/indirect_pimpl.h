@@ -1,4 +1,7 @@
-#include "indirect.h"
+#ifndef XYZ_VALUE_TYPES_INDIRECT_PIMPL_H
+#define XYZ_VALUE_TYPES_INDIRECT_PIMPL_H
+
+#include "xyz/value_types/indirect.h"
 
 namespace xyz::testing {
 class Class {
@@ -15,3 +18,5 @@ class Class {
   void do_something();
 };
 }  // namespace xyz::testing
+
+#endif  // XYZ_VALUE_TYPES_INDIRECT_PIMPL_H

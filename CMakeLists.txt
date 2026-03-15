@@ -33,8 +33,8 @@ xyz_add_library(
 )
 target_sources(xyz_value_types
     INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect.h>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/xyz/value_types/indirect.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/xyz/value_types/polymorphic.h>
 )
 
 xyz_add_library(
@@ -43,12 +43,12 @@ xyz_add_library(
 )
 target_sources(indirect
     INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/xyz/value_types/indirect.h>
 )
 
 xyz_add_object_library(
     NAME indirect_cc
-    FILES indirect.cc
+    FILES xyz/value_types/indirect.cc
     LINK_LIBRARIES indirect
 )
 
@@ -60,11 +60,11 @@ xyz_add_library(
 )
 target_sources(indirect_cxx14
     INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect_cxx14.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/xyz/value_types/indirect_cxx14.h>
 )
 xyz_add_object_library(
     NAME indirect_cxx14_cc
-    FILES indirect_cxx14.cc
+    FILES xyz/value_types/indirect_cxx14.cc
     LINK_LIBRARIES indirect_cxx14
 )
 
@@ -76,7 +76,7 @@ xyz_add_library(
 )
 target_sources(indirect_cxx17
     INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/indirect_cxx14.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/xyz/value_types/indirect_cxx14.h>
 )
 
 xyz_add_library(
@@ -85,12 +85,12 @@ xyz_add_library(
 )
 target_sources(polymorphic
     INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/xyz/value_types/polymorphic.h>
 )
 
 xyz_add_object_library(
     NAME polymorphic_cc
-    FILES polymorphic.cc
+    FILES xyz/value_types/polymorphic.cc
     LINK_LIBRARIES polymorphic
 )
 
@@ -102,13 +102,13 @@ xyz_add_library(
 )
 target_sources(polymorphic_cxx14
     INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic_cxx14.h>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic_cxx14.cc>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/xyz/value_types/polymorphic_cxx14.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/xyz/value_types/polymorphic_cxx14.cc>
 )
 
 xyz_add_object_library(
     NAME polymorphic_cxx14_cc
-    FILES polymorphic_cxx14.cc
+    FILES xyz/value_types/polymorphic_cxx14.cc
     LINK_LIBRARIES polymorphic_cxx14
 )
 
@@ -120,8 +120,8 @@ xyz_add_library(
 )
 target_sources(polymorphic_cxx17
     INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic_cxx14.h>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic_cxx14.cc>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/xyz/value_types/polymorphic_cxx14.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/xyz/value_types/polymorphic_cxx14.cc>
 )
 
 xyz_add_library(
@@ -132,13 +132,13 @@ xyz_add_library(
 )
 target_sources(polymorphic_no_vtable
     INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic_no_vtable.h>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/polymorphic_no_vtable.cc>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/xyz/value_types/polymorphic_no_vtable.h>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/xyz/value_types/polymorphic_no_vtable.cc>
 )
 
 xyz_add_object_library(
     NAME polymorphic_no_vtable_cc
-    FILES polymorphic_no_vtable.cc
+    FILES xyz/value_types/polymorphic_no_vtable.cc
     LINK_LIBRARIES polymorphic_no_vtable
 )
 
@@ -171,47 +171,47 @@ if (${XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT})
         xyz_add_test(
             NAME indirect_test
             LINK_LIBRARIES indirect
-            FILES indirect_test.cc
+            FILES xyz/value_types/indirect_test.cc
         )
 
         xyz_add_test(
             NAME indirect_cxx14_test
             LINK_LIBRARIES indirect_cxx14
-            FILES indirect_test.cc
+            FILES xyz/value_types/indirect_test.cc
             VERSION 14
         )
 
         xyz_add_test(
             NAME indirect_cxx17_test
             LINK_LIBRARIES indirect_cxx17
-            FILES indirect_test.cc
+            FILES xyz/value_types/indirect_test.cc
             VERSION 17
         )
 
         xyz_add_test(
             NAME polymorphic_test
             LINK_LIBRARIES polymorphic
-            FILES polymorphic_test.cc
+            FILES xyz/value_types/polymorphic_test.cc
         )
 
         xyz_add_test(
             NAME polymorphic_cxx14_test
             LINK_LIBRARIES polymorphic_cxx14
-            FILES polymorphic_test.cc
+            FILES xyz/value_types/polymorphic_test.cc
             VERSION 14
         )
 
         xyz_add_test(
             NAME polymorphic_cxx17_test
             LINK_LIBRARIES polymorphic_cxx17
-            FILES polymorphic_test.cc
+            FILES xyz/value_types/polymorphic_test.cc
             VERSION 17
         )
 
         xyz_add_test(
             NAME polymorphic_no_vtable_test
             LINK_LIBRARIES polymorphic_no_vtable
-            FILES polymorphic_test.cc
+            FILES xyz/value_types/polymorphic_test.cc
         )
 
         if (ENABLE_CODE_COVERAGE)
@@ -222,10 +222,10 @@ if (${XYZ_VALUE_TYPES_IS_NOT_SUBPROJECT})
 
     install(
         FILES
-            "${CMAKE_CURRENT_SOURCE_DIR}/indirect.h"
-            "${CMAKE_CURRENT_SOURCE_DIR}/polymorphic.h"
+            "${CMAKE_CURRENT_SOURCE_DIR}/xyz/value_types/indirect.h"
+            "${CMAKE_CURRENT_SOURCE_DIR}/xyz/value_types/polymorphic.h"
         DESTINATION
-            ${CMAKE_INSTALL_INCLUDEDIR}
+            ${CMAKE_INSTALL_INCLUDEDIR}/xyz/value_types
     )
 
     install(

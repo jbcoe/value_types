@@ -3,39 +3,37 @@ load("@rules_cc//cc:cc_test.bzl", "cc_test")
 
 cc_library(
     name = "feature_check",
-    hdrs = ["feature_check.h"],
-    copts = ["-Iexternal/value_types/"],
+    hdrs = ["xyz/value_types/feature_check.h"],
     visibility = ["//visibility:public"],
 )
 
 cc_library(
     name = "indirect",
-    srcs = ["indirect.cc"],
-    hdrs = ["indirect.h"],
-    copts = ["-Iexternal/value_types/"],
+    srcs = ["xyz/value_types/indirect.cc"],
+    hdrs = ["xyz/value_types/indirect.h"],
     visibility = ["//visibility:public"],
     deps = ["feature_check"],
 )
 
 cc_library(
     name = "tagged_allocator",
-    hdrs = ["tagged_allocator.h"],
+    hdrs = ["xyz/value_types/tagged_allocator.h"],
 )
 
 cc_library(
     name = "tracking_allocator",
-    hdrs = ["tracking_allocator.h"],
+    hdrs = ["xyz/value_types/tracking_allocator.h"],
 )
 
 cc_library(
     name = "test_helpers",
-    hdrs = ["test_helpers.h"],
+    hdrs = ["xyz/value_types/test_helpers.h"],
 )
 
 cc_test(
     name = "indirect_test",
     size = "small",
-    srcs = ["indirect_test.cc"],
+    srcs = ["xyz/value_types/indirect_test.cc"],
     deps = [
         "feature_check",
         "indirect",
@@ -48,9 +46,8 @@ cc_test(
 
 cc_library(
     name = "indirect_cxx14",
-    srcs = ["indirect_cxx14.cc"],
-    hdrs = ["indirect_cxx14.h"],
-    copts = ["-Iexternal/value_types/"],
+    srcs = ["xyz/value_types/indirect_cxx14.cc"],
+    hdrs = ["xyz/value_types/indirect_cxx14.h"],
     defines = ["XYZ_INDIRECT_CXX_14"],
     visibility = ["//visibility:public"],
     deps = ["feature_check"],
@@ -59,7 +56,7 @@ cc_library(
 cc_test(
     name = "indirect_cxx17_test",
     size = "small",
-    srcs = ["indirect_test.cc"],
+    srcs = ["xyz/value_types/indirect_test.cc"],
     copts = ["-std=c++17"],
     deps = [
         "feature_check",
@@ -73,16 +70,15 @@ cc_test(
 
 cc_library(
     name = "polymorphic",
-    srcs = ["polymorphic.cc"],
-    hdrs = ["polymorphic.h"],
-    copts = ["-Iexternal/value_types/"],
+    srcs = ["xyz/value_types/polymorphic.cc"],
+    hdrs = ["xyz/value_types/polymorphic.h"],
     visibility = ["//visibility:public"],
 )
 
 cc_test(
     name = "polymorphic_test",
     size = "small",
-    srcs = ["polymorphic_test.cc"],
+    srcs = ["xyz/value_types/polymorphic_test.cc"],
     deps = [
         "feature_check",
         "polymorphic",
@@ -95,9 +91,8 @@ cc_test(
 
 cc_library(
     name = "polymorphic_cxx14",
-    srcs = ["polymorphic_cxx14.cc"],
-    hdrs = ["polymorphic_cxx14.h"],
-    copts = ["-Iexternal/value_types/"],
+    srcs = ["xyz/value_types/polymorphic_cxx14.cc"],
+    hdrs = ["xyz/value_types/polymorphic_cxx14.h"],
     defines = ["XYZ_POLYMORPHIC_CXX_14"],
     visibility = ["//visibility:public"],
 )
@@ -105,7 +100,7 @@ cc_library(
 cc_test(
     name = "polymorphic_cxx17_test",
     size = "small",
-    srcs = ["polymorphic_test.cc"],
+    srcs = ["xyz/value_types/polymorphic_test.cc"],
     copts = ["-std=c++17"],
     deps = [
         "feature_check",
@@ -119,9 +114,8 @@ cc_test(
 
 cc_library(
     name = "polymorphic_no_vtable",
-    srcs = ["polymorphic_no_vtable.cc"],
-    hdrs = ["polymorphic_no_vtable.h"],
-    copts = ["-Iexternal/value_types/"],
+    srcs = ["xyz/value_types/polymorphic_no_vtable.cc"],
+    hdrs = ["xyz/value_types/polymorphic_no_vtable.h"],
     defines = ["XYZ_POLYMORPHIC_NO_VTABLE"],
     visibility = ["//visibility:public"],
 )
@@ -129,7 +123,7 @@ cc_library(
 cc_test(
     name = "polymorphic_no_vtable_test",
     size = "small",
-    srcs = ["polymorphic_test.cc"],
+    srcs = ["xyz/value_types/polymorphic_test.cc"],
     deps = [
         "feature_check",
         "polymorphic_no_vtable",

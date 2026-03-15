@@ -18,8 +18,8 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==============================================================================*/
 
-#ifndef XYZ_POLYMORPHIC_H_
-#define XYZ_POLYMORPHIC_H_
+#ifndef XYZ_VALUE_TYPES_POLYMORPHIC_H
+#define XYZ_VALUE_TYPES_POLYMORPHIC_H
 
 #include <cassert>
 #include <concepts>
@@ -403,4 +403,4 @@ class polymorphic {
 
 }  // namespace xyz
 
-#endif  // XYZ_POLYMORPHIC_H_
+#endif  // XYZ_VALUE_TYPES_POLYMORPHIC_H

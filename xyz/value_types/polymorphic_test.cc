@@ -19,16 +19,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==============================================================================*/
 
 #ifdef XYZ_POLYMORPHIC_CXX_14
-#include "polymorphic_cxx14.h"
+#include "xyz/value_types/polymorphic_cxx14.h"
 #endif  // XYZ_POLYMORPHIC_CXX_14
 
 #ifdef XYZ_POLYMORPHIC_NO_VTABLE
-#include "polymorphic_no_vtable.h"
+#include "xyz/value_types/polymorphic_no_vtable.h"
 #endif  // XYZ_POLYMORPHIC_NO_VTABLE
 
-#ifndef XYZ_POLYMORPHIC_H_
-#include "polymorphic.h"
-#endif  // XYZ_POLYMORPHIC_H_
+#ifndef XYZ_VALUE_TYPES_POLYMORPHIC_H
+#include "xyz/value_types/polymorphic.h"
+#endif  // XYZ_VALUE_TYPES_POLYMORPHIC_H
 
 #include <gtest/gtest.h>
 
@@ -36,10 +36,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <map>
 #include <utility>
 
-#include "feature_check.h"
-#include "tagged_allocator.h"
-#include "test_helpers.h"
-#include "tracking_allocator.h"
+#include "xyz/value_types/feature_check.h"
+#include "xyz/value_types/tagged_allocator.h"
+#include "xyz/value_types/test_helpers.h"
+#include "xyz/value_types/tracking_allocator.h"
 #if defined(XYZ_HAS_STD_IN_PLACE_TYPE_T) && !defined(XYZ_POLYMORPHIC_CXX_14)
 namespace xyz {
 using std::in_place_type_t;

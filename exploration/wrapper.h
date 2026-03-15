@@ -1,3 +1,6 @@
+#ifndef XYZ_VALUE_TYPES_WRAPPER_H
+#define XYZ_VALUE_TYPES_WRAPPER_H
+
 #include <concepts>
 
 namespace xyz {
@@ -50,3 +53,5 @@ class constrained_wrapper {
 };
 
 }  // namespace xyz
+
+#endif  // XYZ_VALUE_TYPES_WRAPPER_H

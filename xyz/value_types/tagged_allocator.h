@@ -18,55 +18,59 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==============================================================================*/
 
-#ifndef XYZ_TRACKING_ALLOCATOR_H_
-#define XYZ_TRACKING_ALLOCATOR_H_
+// Based on boilerplate from:
+// https://howardhinnant.github.io/allocator_boilerplate.html
+
+#ifndef XYZ_VALUE_TYPES_TAGGED_ALLOCATOR_H
+#define XYZ_VALUE_TYPES_TAGGED_ALLOCATOR_H
 
 namespace xyz {
 
 template <typename T>
-struct TrackingAllocator {
-  unsigned* alloc_counter_;
-  unsigned* dealloc_counter_;
+struct TaggedAllocator {
+  using value_type = T;
 
-  TrackingAllocator(unsigned* alloc_counter, unsigned* dealloc_counter)
-      : alloc_counter_(alloc_counter), dealloc_counter_(dealloc_counter) {}
+  size_t tag;
+
+  TaggedAllocator(size_t tag) : tag(tag) {}
 
   template <typename U>
-  TrackingAllocator(const TrackingAllocator<U>& other)
-      : alloc_counter_(other.alloc_counter_),
-        dealloc_counter_(other.dealloc_counter_) {}
-
-  using value_type = T;
+  TaggedAllocator(const TaggedAllocator<U>& other) : tag(other.tag) {}
 
   template <typename Other>
   struct rebind {
-    using other = TrackingAllocator<Other>;
+    using other = TaggedAllocator<Other>;
   };
 
+  // clang 17 and 18 seem to need the `construct` function to be explicitly
+  // defined rather than having a default picked up from allocator traits. It
+  // does nothing special.
+  template <class U, class... Args>
+  void construct(U* p, Args&&... args) {
+    ::new (p) U(std::forward<Args>(args)...);
+  }
+
   T* allocate(std::size_t n) {
-    ++(*alloc_counter_);
     std::allocator<T> default_allocator{};
     return default_allocator.allocate(n);
   }
 
   void deallocate(T* p, std::size_t n) {
-    ++(*dealloc_counter_);
     std::allocator<T> default_allocator{};
     default_allocator.deallocate(p, n);
   }
 
-  friend bool operator==(const TrackingAllocator& lhs,
-                         const TrackingAllocator& rhs) noexcept {
-    return lhs.alloc_counter_ == rhs.alloc_counter_ &&
-           lhs.dealloc_counter_ == rhs.dealloc_counter_;
+  friend bool operator==(const TaggedAllocator& lhs,
+                         const TaggedAllocator& rhs) noexcept {
+    return lhs.tag == rhs.tag;
   }
 
-  friend bool operator!=(const TrackingAllocator& lhs,
-                         const TrackingAllocator& rhs) noexcept {
+  friend bool operator!=(const TaggedAllocator& lhs,
+                         const TaggedAllocator& rhs) noexcept {
     return !(lhs == rhs);
   }
 };
 
 }  // namespace xyz
 
-#endif  // XYZ_TRACKING_ALLOCATOR_H_
+#endif  // XYZ_TAGGED_ALLOCATOR_H_

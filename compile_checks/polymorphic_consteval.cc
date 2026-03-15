@@ -22,7 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // evaluated at compile time.
 
 #ifdef XYZ_POLYMORPHIC_CXX_14
-#include "polymorphic_cxx14.h"
+#include "xyz/value_types/polymorphic_cxx14.h"
 #endif  // XYZ_POLYMORPHIC_CXX_14
 
 #ifdef XYZ_POLYMORPHIC_USES_EXPERIMENTAL_INLINE_VTABLE
@@ -33,9 +33,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "experimental/polymorphic_sbo.h"
 #endif  // XYZ_POLYMORPHIC_USES_EXPERIMENTAL_SMALL_BUFFER_OPTIMIZATION
 
-#ifndef XYZ_POLYMORPHIC_H_
-#include "polymorphic.h"
-#endif  // XYZ_POLYMORPHIC_H_
+#ifndef XYZ_VALUE_TYPES_POLYMORPHIC_H
+#include "xyz/value_types/polymorphic.h"
+#endif  // XYZ_VALUE_TYPES_POLYMORPHIC_H
 
 namespace xyz::testing {
 

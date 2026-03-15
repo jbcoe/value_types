@@ -71,7 +71,7 @@ This project supports **dual build systems** - both must be maintained:
 ## Coding Conventions
 
 ### Header Guards and Includes
-- Use traditional `#ifndef`/`#define` header guards following existing patterns (e.g., `#ifndef XYZ_INDIRECT_H`)
+- Use traditional `#ifndef`/`#define` header guards following existing patterns (e.g., `#ifndef XYZ_VALUE_TYPES_INDIRECT_H`)
 - Include system headers first, then project headers
 - Use forward declarations when possible
 

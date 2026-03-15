@@ -19,22 +19,22 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==============================================================================*/
 
 #ifdef XYZ_INDIRECT_CXX_14
-#include "indirect_cxx14.h"
+#include "xyz/value_types/indirect_cxx14.h"
 #endif  // XYZ_INDIRECT_CXX_14
 
-#ifndef XYZ_INDIRECT_H
-#include "indirect.h"
-#endif  // XYZ_INDIRECT_H
+#ifndef XYZ_VALUE_TYPES_INDIRECT_H
+#include "xyz/value_types/indirect.h"
+#endif  // XYZ_VALUE_TYPES_INDIRECT_H
 
 #include <gtest/gtest.h>
 
 #include <array>
 #include <map>
 
-#include "feature_check.h"
-#include "tagged_allocator.h"
-#include "test_helpers.h"
-#include "tracking_allocator.h"
+#include "xyz/value_types/feature_check.h"
+#include "xyz/value_types/tagged_allocator.h"
+#include "xyz/value_types/test_helpers.h"
+#include "xyz/value_types/tracking_allocator.h"
 #ifdef XYZ_HAS_STD_MEMORY_RESOURCE
 #include <memory_resource>
 #endif  // XYZ_HAS_STD_MEMORY_RESOURCE

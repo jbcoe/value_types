@@ -18,8 +18,8 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==============================================================================*/
 
-#ifndef XYZ_FEATURE_CHECK_H
-#define XYZ_FEATURE_CHECK_H
+#ifndef XYZ_VALUE_TYPES_FEATURE_CHECK_H
+#define XYZ_VALUE_TYPES_FEATURE_CHECK_H
 
 // The purpose of this header is to provide macros checking whether certain C++
 // features (like std::optional) are available.
@@ -95,4 +95,4 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #endif  //(__cplusplus >= 202002L) || (defined(_MSVC_LANG) && _MSVC_LANG >=
         // 202002L)
 
-#endif  // XYZ_FEATURE_CHECK_H
+#endif  // XYZ_VALUE_TYPES_FEATURE_CHECK_H
