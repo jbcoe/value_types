@@ -131,9 +131,9 @@ There are some significant design changes since this talk was given (after feedb
 and discussion at a C++ London meetup). We've pared down the number of constructors
 and made the null state unobservable.
 
-## Developer Guide
+## Contributing
 
-For building and working with the project, please see the [developer guide](DEVELOPMENT.md).
+For building and working with the project, please see the [contributing guide](CONTRIBUTING.md).
 
 ## GitHub codespaces
 
