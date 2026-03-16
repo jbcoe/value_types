@@ -26,7 +26,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <optional>
 #include <vector>
 
-#include "indirect.h"
+#include "xyz/value_types/indirect.h"
 
 namespace {
 

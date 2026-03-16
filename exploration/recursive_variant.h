@@ -1,12 +1,12 @@
 // An investigation of recursive variants and an associated helper type.
 
-#ifndef XYZ_EXPLORATION_RECURSIVE_VARIANT_H_
-#define XYZ_EXPLORATION_RECURSIVE_VARIANT_H_
+#ifndef XYZ_VALUE_TYPES_RECURSIVE_VARIANT_H
+#define XYZ_VALUE_TYPES_RECURSIVE_VARIANT_H
 
 #include <string>
 #include <variant>
 
-#include "indirect.h"
+#include "xyz/value_types/indirect.h"
 
 namespace xyz::testing {
 
@@ -31,4 +31,4 @@ struct ASTNode {
 
 }  // namespace xyz::testing
 
-#endif  // XYZ_EXPLORATION_RECURSIVE_VARIANT_H_
+#endif  // XYZ_VALUE_TYPES_RECURSIVE_VARIANT_H

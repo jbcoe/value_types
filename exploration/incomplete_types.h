@@ -1,7 +1,7 @@
 // Wrapper types with members templated on an incomplete type.
 
-#ifndef XYZ_EXPLORATION_INCOMPLETE_TYPES_H_
-#define XYZ_EXPLORATION_INCOMPLETE_TYPES_H_
+#ifndef XYZ_VALUE_TYPES_INCOMPLETE_TYPES_H
+#define XYZ_VALUE_TYPES_INCOMPLETE_TYPES_H
 
 #include <memory>
 #include <variant>
@@ -74,4 +74,4 @@ struct VariantVectorMember {
 };
 }  // namespace xyz::testing
 
-#endif  // XYZ_EXPLORATION_INCOMPLETE_TYPES_H_
+#endif  // XYZ_VALUE_TYPES_INCOMPLETE_TYPES_H

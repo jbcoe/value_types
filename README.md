@@ -58,10 +58,10 @@ Design of these two types was so deeply coupled that subsequent work proceeded i
 ## Use
 
 The `indirect` and `polymorphic` class templates are header-only. To use them,
-include the headers `indirect.h` and `polymorphic.h` in your project.
+include the headers `<xyz/value_types/indirect.h>` and `<xyz/value_types/polymorphic.h>` in your project.
 
 ```cpp
-#include "indirect.h"
+#include <xyz/value_types/indirect.h>
 
 class Composite {
   xyz::indirect<A> a_; // a_ owns an object of type A
@@ -76,7 +76,7 @@ public:
 ```
 
 ```cpp
-#include "polymorphic.h"
+#include <xyz/value_types/polymorphic.h>
 
 class CompositeWithPolymorphicMembers {
   xyz::polymorphic<X> x_; // x_ owns an object of type X or derived from X
@@ -97,23 +97,23 @@ You can try out `indirect` and `polymorphic` in [Compiler Explorer](https://godb
 by adding the includes:
 
 ```cpp
-#include <https://raw.githubusercontent.com/jbcoe/value_types/main/indirect.h>
-#include <https://raw.githubusercontent.com/jbcoe/value_types/main/polymorphic.h>
+#include <https://raw.githubusercontent.com/jbcoe/value_types/main/xyz/value_types/indirect.h>
+#include <https://raw.githubusercontent.com/jbcoe/value_types/main/xyz/value_types/polymorphic.h>
 ```
 
 ### Compatibility
 
 We have C++14 implementations of `indirect` and `polymorphic` available as
-`indirect_cxx14.h` and `polymorphic_cxx14.h`.
+`<xyz/value_types/indirect_cxx14.h>` and `<xyz/value_types/polymorphic_cxx14.h>`.
 
 C++14 implementations can be tried out in Compiler Explorer by using the includes:
 
 ```cpp
-#include <https://raw.githubusercontent.com/jbcoe/value_types/main/indirect_cxx14.h>
-#include <https://raw.githubusercontent.com/jbcoe/value_types/main/polymorphic_cxx14.h>
+#include <https://raw.githubusercontent.com/jbcoe/value_types/main/xyz/value_types/indirect_cxx14.h>
+#include <https://raw.githubusercontent.com/jbcoe/value_types/main/xyz/value_types/polymorphic_cxx14.h>
 ```
 
-or by including headers `indirect_cxx14.h` and `polymorphic_cxx14.h` into your project.
+or by including headers `"xyz/value_types/indirect_cxx14.h"` and `"xyz/value_types/polymorphic_cxx14.h"` into your project.
 
 We duplicate some code between the C++20 and C++14 implementations so that
 single-file includes work.

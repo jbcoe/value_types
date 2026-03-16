@@ -1,4 +1,7 @@
-#include "polymorphic.h"
+#ifndef XYZ_VALUE_TYPES_POLYMORPHIC_PIMPL_H
+#define XYZ_VALUE_TYPES_POLYMORPHIC_PIMPL_H
+
+#include "xyz/value_types/polymorphic.h"
 
 namespace xyz::testing {
 class ClassWithPolymorphicPimpl {
@@ -15,3 +18,5 @@ class ClassWithPolymorphicPimpl {
   void do_something();
 };
 }  // namespace xyz::testing
+
+#endif  // XYZ_VALUE_TYPES_POLYMORPHIC_PIMPL_H

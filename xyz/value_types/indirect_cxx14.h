@@ -18,8 +18,8 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==============================================================================*/
 
-#ifndef XYZ_INDIRECT_H
-#define XYZ_INDIRECT_H
+#ifndef XYZ_VALUE_TYPES_INDIRECT_H
+#define XYZ_VALUE_TYPES_INDIRECT_H
 
 #include <cassert>
 #include <initializer_list>
@@ -27,7 +27,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <type_traits>
 #include <utility>
 
-#include "feature_check.h"
+#include "xyz/value_types/feature_check.h"
 
 namespace xyz {
 #ifndef XYZ_IN_PLACE_DEFINED
@@ -609,4 +609,4 @@ struct std::hash<xyz::indirect<T, Alloc>> {
   }
 };
 
-#endif  // XYZ_INDIRECT_H
+#endif  // XYZ_VALUE_TYPES_INDIRECT_H
