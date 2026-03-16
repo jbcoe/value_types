@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # A script to allow edits to files to be ignored without them being part of .gitignore.
 # Useful for maintaining local-only config such as vscode settings.
 
