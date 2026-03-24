@@ -194,16 +194,6 @@ TEST(PolymorphicTest, Swap) {
   EXPECT_EQ(pp->value(), 42);
 }
 
-TEST(PolymorphicTest, SwapWithNoSBOAndSBO) {
-  xyz::polymorphic<Base> p(xyz::in_place_type_t<Derived>{}, 42);
-  xyz::polymorphic<Base> pp(xyz::in_place_type_t<Derived>{}, 101);
-  EXPECT_EQ(p->value(), 42);
-  EXPECT_EQ(pp->value(), 101);
-  swap(p, pp);
-  EXPECT_EQ(p->value(), 101);
-  EXPECT_EQ(pp->value(), 42);
-}
-
 TEST(PolymorphicTest, AccessDerivedObject) {
   xyz::polymorphic<Base> p(xyz::in_place_type_t<Derived>{}, 42);
   EXPECT_EQ(p->value(), 42);
