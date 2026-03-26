@@ -84,6 +84,19 @@ jobs:
               lib: "libstdc++14",
             }
           - {
+              name: "Ubuntu GCC-15",
+              os: ubuntu-24.04,
+              compiler:
+                {
+                  type: GCC,
+                  version: 15,
+                  cc: "gcc-15",
+                  cxx: "g++-15",
+                  std: 20,
+                },
+              lib: "libstdc++15",
+            }
+          - {
               name: "Ubuntu Clang-17 + libc++",
               os: ubuntu-24.04,
               compiler:
@@ -123,6 +136,19 @@ jobs:
               lib: "libc++19",
             }
           - {
+              name: "Ubuntu Clang-20 + libc++",
+              os: ubuntu-24.04,
+              compiler:
+                {
+                  type: CLANG,
+                  version: 20,
+                  cc: "clang-20",
+                  cxx: "clang++-20",
+                  std: 20,
+                },
+              lib: "libc++20",
+            }
+          - {
               name: "Visual Studio 2019",
               os: windows-latest,
               compiler: { type: VISUAL, version: 16, cc: "cl", cxx: "cl" },
@@ -143,12 +169,29 @@ jobs:
               compiler: { type: VISUAL, version: 19, cc: "cl", cxx: "cl" },
             }
           - {
+              name: "Visual Studio 2022 v20",
+              os: windows-latest,
+              compiler: { type: VISUAL, version: 20, cc: "cl", cxx: "cl", std: 20 },
+            }
+          - {
               name: "MacOS Apple Clang 15",
               os: macos-14,
               compiler:
                 {
                   type: APPLE_CLANG,
                   version: "15.0",
+                  cc: "clang",
+                  cxx: "clang++",
+                  std: 20,
+                },
+            }
+          - {
+              name: "MacOS Apple Clang 16",
+              os: macos-14,
+              compiler:
+                {
+                  type: APPLE_CLANG,
+                  version: "16.0",
                   cc: "clang",
                   cxx: "clang++",
                   std: 20,
