@@ -38,7 +38,7 @@ RUN useradd -m -s /bin/bash vscode \
     && mkdir -p /workspace \
     && chown vscode:vscode /workspace
 
-# Install Node.js (required for Gemini CLI and Claude Code)
+# Install Node.js (required for Claude Code)
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
@@ -52,9 +52,8 @@ ENV NPM_CONFIG_PREFIX=/home/vscode/.npm-global
 ENV PATH="/home/vscode/.npm-global/bin:/home/vscode/.local/bin:/usr/local/bin:${PATH}"
 RUN mkdir -p /home/vscode/.npm-global
 
-# Install AI agent CLIs for compatibility with existing tooling that
-# may invoke `gemini` or `claude`.
-RUN npm install -g @google/gemini-cli @anthropic-ai/claude-code
+# Install Claude Code CLI.
+RUN npm install -g @anthropic-ai/claude-code
 
 # Install Antigravity CLI (installs binary as `agy` into ~/.local/bin).
 RUN curl -fsSL https://antigravity.google/cli/install.sh | bash
