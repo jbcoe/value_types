@@ -1,9 +1,9 @@
 # Dockerfile for Ubuntu 24.04 with C++ development tools.
 FROM ubuntu:24.04
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install gcc, clang and some supporting tools for downloading/installing later tools.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    cmake \
     curl \
     g++ \
     gdb \
@@ -21,6 +21,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
 && rm -rf /var/lib/apt/lists/*
 
+# Install newer CMake from kitware.
+RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null \
+&& apt-add-repository -y 'deb https://apt.kitware.com/ubuntu/ noble main' \
+&& apt-get update && apt-get install -y --no-install-recommends cmake \
+&& rm -rf /var/lib/apt/lists/*
+
 # Install bazelisk.
 RUN ARCH=$(dpkg --print-architecture) && \
     wget https://github.com/bazelbuild/bazelisk/releases/download/v1.25.0/bazelisk-linux-${ARCH} -O /usr/local/bin/bazelisk \
@@ -32,26 +38,26 @@ RUN useradd -m -s /bin/bash vscode \
     && mkdir -p /workspace \
     && chown vscode:vscode /workspace
 
-# Install Node.js (required for Gemini CLI)
+# Install Node.js (required for Claude Code)
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
-
-# Install Gemini CLI globally
-RUN npm install -g @google/gemini-cli
 
 # Switch to non-root user
 USER vscode
 WORKDIR /workspace
 
+# Configure npm for user-local global installs.
+ENV NPM_CONFIG_PREFIX=/home/vscode/.npm-global
+ENV PATH="/home/vscode/.npm-global/bin:/home/vscode/.local/bin:/usr/local/bin:${PATH}"
+RUN mkdir -p /home/vscode/.npm-global
+
+# Install Claude Code CLI.
+RUN npm install -g @anthropic-ai/claude-code
+
+# Install Antigravity CLI (installs binary as `agy` into ~/.local/bin).
+RUN curl -fsSL https://antigravity.google/cli/install.sh | bash
+
 # Set up uv and Python environment
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Set up environment variables
-ENV PATH="/home/vscode/.local/bin:/usr/local/bin:${PATH}"
 ENV UV_PROJECT_ENVIRONMENT="/home/vscode/.venv"
-
-# Pre-configure Gemini CLI
-RUN mkdir -p /home/vscode/.gemini \
-    && echo '{"/workspace": "TRUST_FOLDER"}' > /home/vscode/.gemini/trustedFolders.json \
-    && echo '{"security": {"auth": {"selectedType": "gemini-api-key"}}}' > /home/vscode/.gemini/settings.json
