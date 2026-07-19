@@ -1,6 +1,4 @@
 name: CMake test
-env:
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
 on:
   schedule:
     - cron: "0 1 * * *"
@@ -27,6 +25,8 @@ jobs:
   build:
     name: ${{ matrix.settings.name }} ${{ matrix.configuration }}
     runs-on: ${{ matrix.settings.os }}
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
     strategy:
       fail-fast: false
       matrix:
