@@ -160,10 +160,7 @@ def main() -> None:
 
     run_args.extend([image_name, "bash", "-c", container_cmd])
 
-    try:
-        subprocess.run(run_args, check=True)
-    except subprocess.CalledProcessError as e:
-        sys.exit(e.returncode)
+    subprocess.run(run_args, check=True)
 
 
 if __name__ == "__main__":
