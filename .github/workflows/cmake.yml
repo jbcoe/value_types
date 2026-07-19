@@ -181,9 +181,6 @@ jobs:
         run: cmake --build --preset ${{ matrix.configuration }}
 
       - name: Test
-        env:
-          MSBUILDDISABLENODEREUSE: '1'
-          CMAKE_NO_VERBOSE: '1'
         # Execute tests defined by the CMake configuration.
         # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
         run: ctest --preset ${{ matrix.configuration }}
