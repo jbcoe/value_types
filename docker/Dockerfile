@@ -1,8 +1,8 @@
 FROM ubuntu:24.04
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Install base tools and C++ development tools.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    cmake \
     curl \
     g++ \
     gdb \
