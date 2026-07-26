@@ -33,8 +33,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <gtest/gtest.h>
 
 #include <array>
+#include <cstddef>
+#include <exception>
 #include <map>
+#include <memory>
+#include <stdexcept>
+#include <type_traits>
+#include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "feature_check.h"
 #include "tagged_allocator.h"
@@ -52,9 +59,6 @@ using std::in_place_type_t;
 #ifdef XYZ_HAS_STD_OPTIONAL
 #include <optional>
 #endif  // XYZ_HAS_STD_OPTIONAL
-#include <unordered_map>
-#include <utility>
-#include <vector>
 
 namespace {
 
@@ -181,16 +185,6 @@ TEST(PolymorphicTest, AllocatorExtendedMove) {
 }
 
 TEST(PolymorphicTest, Swap) {
-  xyz::polymorphic<Base> p(xyz::in_place_type_t<Derived>{}, 42);
-  xyz::polymorphic<Base> pp(xyz::in_place_type_t<Derived>{}, 101);
-  EXPECT_EQ(p->value(), 42);
-  EXPECT_EQ(pp->value(), 101);
-  swap(p, pp);
-  EXPECT_EQ(p->value(), 101);
-  EXPECT_EQ(pp->value(), 42);
-}
-
-TEST(PolymorphicTest, SwapWithNoSBOAndSBO) {
   xyz::polymorphic<Base> p(xyz::in_place_type_t<Derived>{}, 42);
   xyz::polymorphic<Base> pp(xyz::in_place_type_t<Derived>{}, 101);
   EXPECT_EQ(p->value(), 42);
@@ -752,7 +746,7 @@ struct BaseB {
 struct MultipleBases : BaseA, BaseB {
   int d_value = 5;
 
-  virtual int value() { return d_value; }
+  int value() override { return d_value; }
 };
 
 TEST(PolymorphicTest, MultipleBases) {
@@ -768,7 +762,7 @@ TEST(PolymorphicTest, MultipleBases) {
 
 #ifdef XYZ_HAS_STD_MEMORY_RESOURCE
 TEST(PolymorphicTest, InteractionWithPMRAllocators) {
-  std::array<std::byte, 1024> buffer;
+  std::array<std::byte, 1024> buffer{};
   std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
   std::pmr::polymorphic_allocator<Base> pa{&mbr};
   using PolymorphicBase =
@@ -782,7 +776,7 @@ TEST(PolymorphicTest, InteractionWithPMRAllocators) {
 }
 
 TEST(PolymorphicTest, InteractionWithPMRAllocatorsWhenCopyThrows) {
-  std::array<std::byte, 1024> buffer;
+  std::array<std::byte, 1024> buffer{};
   std::pmr::monotonic_buffer_resource mbr{buffer.data(), buffer.size()};
   std::pmr::polymorphic_allocator<ThrowsOnCopyConstruction> pa{&mbr};
   using PolymorphicType = xyz::polymorphic<
